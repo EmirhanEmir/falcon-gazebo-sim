@@ -1,0 +1,82 @@
+# =========================
+# OS / Editor
+# =========================
+.DS_Store
+Thumbs.db
+*~
+*.swp
+*.swo
+
+.vscode/
+.idea/
+
+# =========================
+# Build outputs
+# =========================
+build/
+install/
+log/
+
+cmake-build-*/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+
+# =========================
+# Compiled files
+# =========================
+*.o
+*.obj
+*.so
+*.a
+*.dll
+*.exe
+
+# =========================
+# Python
+# =========================
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+env/
+
+# =========================
+# Gazebo / Simulation logs
+# =========================
+*.log
+logs/
+gazebo_logs/
+
+# Generated test outputs
+docs/test_results/*
+!docs/test_results/.gitkeep
+
+# =========================
+# ROS / colcon
+# =========================
+.colcon/
+build/
+install/
+log/
+
+# =========================
+# Temporary files
+# =========================
+tmp/
+temp/
+.cache/
+
+# =========================
+# Claude Code - local/private state
+# =========================
+.claude/settings.local.json
+.claude/*.local.*
+.claude/cache/
+.claude/tmp/
+
+# DO NOT ignore:
+# .claude/agents/
+# CLAUDE.md
