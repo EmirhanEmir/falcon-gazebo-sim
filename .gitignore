@@ -80,3 +80,4 @@ temp/
 # DO NOT ignore:
 # .claude/agents/
 # CLAUDE.md
+model/meshes/*.stl

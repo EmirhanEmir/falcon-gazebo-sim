@@ -161,6 +161,21 @@ After a significant implementation change:
 
 Testing and validation are separate responsibilities and are never merged into one agent.
 
+### Orchestration rule: specialist agents over `general-purpose`
+
+`general-purpose` must only be used when no project specialist agent fits the task. For any task that falls within a specialist's ownership boundary, the main Claude Code session delegates to that specialist — never to `general-purpose` — even when `general-purpose` is technically capable of doing the work.
+
+| Domain | Use this specialist, not `general-purpose` |
+|---|---|
+| Geometry / SDF / mesh / mass / inertia / CG | `geometry-structure` |
+| Aerodynamics / XFOIL / XFLR5 / aerodynamic coefficients / force-moment modeling | `aerodynamics` |
+| Motors / propellers / electrical / RPM / thrust / torque | `propulsion` |
+| Control surfaces / actuators / servo / ArduPilot SITL / MAVLink integration | `controls-integration` |
+| Gazebo simulation execution / test scenarios / runtime logs / regression tests | `gazebo-testing` |
+| Engineering review / units / frames / signs / provenance / independent verification | `validation` |
+
+Main Claude stays in a coordinator/orchestrator role: it does not perform specialist engineering work itself, and it does not delegate specialist-owned work to `general-purpose` just because a specialist happens to be unavailable in a given session. `general-purpose` is reserved for tasks that fall outside every specialist's ownership boundary entirely (e.g. pure repository/file-hygiene work unrelated to aircraft engineering data). This rule applies for the entire workflow, not just a single task.
+
 Full workflow diagram and ownership boundaries: `docs/architecture/AGENT_WORKFLOW.md`.
 
 ## Project agents

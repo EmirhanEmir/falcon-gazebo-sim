@@ -1,0 +1,2246 @@
+FALCON V2 MASTER DATASET — GAZEBO SIM HARMONIC KODLAMA ÖNCESİ
+================================================================
+Hazırlanma tarihi: 2026-08-21
+
+Amaç
+----
+Falcon V2 projesinde Gazebo Sim Harmonic kodlama aşamasına geçmeden önce
+toplanan, çıkarılan, hesaplanan ve doğrulanan tüm proje verilerini tek bir TXT
+dosyasında saklamak.
+
+VERİ ÖNCELİĞİ
+--------------
+1) Üretici manuali
+2) Gerçek uçak ölçümü
+3) Gerçek motor/pervane/component üretici verisi
+4) STL geometrisi
+5) XFOIL / XFLR5 analiz sonucu
+6) Hesap / V1 tahmin
+
+Not:
+- Başka Falcon/Talon projelerinden veri karıştırılmamalıdır.
+- "V1", "yaklaşık", "provisional", "tahmin" etiketli değerler final değildir.
+- XFLR5 Type 7 control sweep analizleri inviscid olduğu için CDv=0; bu drag
+  değerleri gerçek total aircraft drag olarak kullanılmamalıdır.
+
+================================================================
+1. PROJE KAPSAMI
+================================================================
+
+Uçak:
+Titan Dynamics Falcon V2 — conventional tail
+
+Hedef:
+Gazebo Sim Harmonic + ArduPlane SITL içinde mümkün olduğunca gerçek fiziğe yakın
+6-DOF sabit kanat UAV modeli.
+
+İtki modeli sabit "throttle -> Newton" tablosu olmayacak.
+
+Hedef propulsion zinciri:
+Throttle
+-> ESC duty-cycle / uygulanan ortalama gerilim
+-> motor elektrik modeli
+-> motor akımı
+-> motor elektromanyetik torku
+-> motor + pervane angular dynamics
+-> RPM(t)
+-> propeller advance ratio J
+-> APC Ct(J), Cp(J)
+-> thrust + aerodynamic prop torque
+-> reaction torque
+-> gerçek propeller hub konumundan kuvvet/moment
+-> Gazebo 6-DOF dynamics
+
+================================================================
+2. KOORDİNAT SİSTEMİ
+================================================================
+
+Falcon STL / proje body frame:
++X = ileri / burun
++Y = sol
++Z = yukarı
+
+Gazebo modelinde de bu FLU sistemi korunmalı.
+
+XFLR5 ana kanat root leading-edge referansı:
+Main Wing X = 0
+Main Wing Z = 0
+Main Wing Tilt = 0 deg
+
+XFLR5 +X yönü STL +X yönüne ters / kuyruğa doğru kabul edildiği için CG ve tail
+dönüşümlerinde bu işaret farkı dikkate alındı.
+
+================================================================
+3. ÜRETİCİ MANUALİ — ANA GEOMETRİ
+================================================================
+
+Kaynak:
+Titan Dynamics Falcon V2 Build & User Manual Rev 1.0
+
+Ana kanat:
+Wing span        = 2.093 m
+Wing area        = 0.4514 m²
+Root chord       = 0.260 m
+Tip chord        = 0.051 m
+Manual average chord = 0.176 m
+Aspect Ratio     = 9.71
+Sweep            = 3 deg
+Dihedral         = 0.5 deg
+Root incidence   = +4 deg
+Tip incidence    = 0 deg
+Geometric washout= 4 deg
+
+Ana kanat airfoilleri:
+Root = NACA 4411
+Tip  = NACA 3411
+
+Horizontal stabilizer:
+Airfoil = inverted NACA 2410
+
+Genel:
+MTOW = 7 kg
+Cruise speed = 45–65 km/h = yaklaşık 12.5–18.1 m/s
+Önerilen prop çapı = 11–14 in
+
+Üretici performans / stall hesabında:
+CLmax = 1.42
+
+Bu CLmax gerçek uçuş ölçümü değil, üretici hesap girdisidir.
+
+Manual 6 kg AUW performans grafiklerinde:
+- induced drag
+- parasite drag
+- total drag
+- power required
+- efficiency
+- fuselage AoA vs airspeed
+bulunur.
+
+Manual bu grafiklerin tahmini olduğunu açıkça belirtir.
+
+Manual setup notları:
+- ArduPlane öneriliyor
+- control surfaces için başlangıç throw ±30 deg veya daha fazla
+- CG toleransı yaklaşık ±10 mm
+- left prop CCW
+- right prop CW
+- AUTOTUNE_LEVEL=8 vb. başlangıç önerileri
+
+================================================================
+4. MANUAL YAPISAL BİLGİLER
+================================================================
+
+Ana kanat:
+1 x 10 OD x 8 ID x 1000 mm front main wing spar
+1 x  8 OD x 6 ID x 1000 mm rear main wing spar
+2 x  8 OD x 6 ID x 800 mm inner wing spar
+2 x 4 x 600 mm flap/aileron hinge
+2 x 4 x 400 mm wingtip support
+
+Conventional tail:
+1 x 4 x 500 mm hstab support
+1 x 3 x 500 mm elevator hinge
+1 x 4 x 170 mm vstab support
+1 x 3 x 220 mm rudder hinge
+
+Servolar:
+Conventional tail için 7 x Emax ES08MAII
+
+LWPLA / printed structure önerileri manualde mevcut; inertia V2 çalışmasında kullanılabilir.
+
+================================================================
+5. KÜTLE
+================================================================
+
+Total flight-ready mass = 6.000 kg
+
+Ağırlık:
+W = m*g
+g ≈ 9.81 m/s²
+W ≈ 58.86 N
+
+6 kg değer, üretici manualindeki 6 kg performans grafiklerini doğrudan relevant
+validation reference yapar.
+
+================================================================
+6. GERÇEK CG
+================================================================
+
+STL/global uçak koordinatlarında:
+
+CG:
+X = 0.168309 m
+Y = 0.000000 m
+Z = 0.100000 m
+
+Bu proje boyunca gerçek CG referansı olarak kullanıldı.
+
+================================================================
+7. ANA BATARYA KONUMU
+================================================================
+
+4S ana batarya yaklaşık merkezi:
+X = 0.300631 m
+Y = 0
+Z = 0.038547 m
+
+CG’ye göre:
+Delta X = +0.132322 m
+Delta Y = 0
+Delta Z = -0.061453 m
+
+Yani yaklaşık:
+132.3 mm CG’nin önünde
+61.5 mm CG’nin altında
+
+================================================================
+8. XFLR5 CG DÖNÜŞÜMÜ
+================================================================
+
+Main-wing root LE STL yaklaşık:
+X = +231.96 mm
+Z = +121.03 mm
+
+CG’nin main-wing LE’ye göre STL farkı:
+Delta X ≈ -63.65 mm
+Delta Z ≈ -21.03 mm
+
+XFLR5’te kullanılan:
+Mass  = 6.000 kg
+CoG_x = +0.0637 m
+CoG_y = 0
+CoG_z = -0.0210 m
+
+================================================================
+9. ATALET MODELİ — V1 / PROVISIONAL
+================================================================
+
+Ixx = 0.7284 kg·m²
+Iyy = 0.2507 kg·m²
+Izz = 0.9523 kg·m²
+Ixy = 0
+Iyz = 0
+Ixz = 0.01485 kg·m²
+
+Final değildir.
+
+Gazebo V1 için kullanılabilir; ileride gerçek:
+- sparlar
+- servolar
+- ESC’ler
+- avionics
+- GPS
+- flight controller
+- bataryalar
+- kablolama
+- motor/prop dağılımı
+ile Inertia V2 hesaplanmalıdır.
+
+XFLR5 Type 7:
+Use Plane Inertia = OFF
+Bu değerler Mean alanına doğrudan girildi.
+
+Use Plane Inertia = ON iken XFLR5 sıfır inertia çekti ve eigenvalue problemleri oluştu.
+
+================================================================
+10. STL PAKETİ — 12 ANA PARÇA
+================================================================
+
+body
+left_wing
+right_wing
+left_aileron
+right_aileron
+left_elevator
+right_elevator
+rudder
+left_motor
+right_motor
+left_pervane
+right_pervane
+
+Tüm parçalar ortak global coordinate system’de hizalı.
+
+================================================================
+11. STL YAKLAŞIK BOUNDING ÖLÇÜLERİ
+================================================================
+
+body:
+≈1053.8 x 560.0 x 330.5 mm
+
+each wing:
+≈266.5 x 972.0 x 47.0 mm
+
+each aileron:
+≈61.1 x 479.4 x 21.0 mm
+
+each elevator:
+≈45.0 x 189.4 x 9.1 mm
+
+rudder:
+≈45.3 x 8.9 x 169.5 mm
+
+each motor:
+≈66.5 x 38.2 x 38.2 mm
+
+each prop STL:
+≈16.9 x 273.4 x 21.2 mm
+
+body bounds:
+X = -0.5269 -> +0.5269 m
+Y = -0.2800 -> +0.2800 m
+Z = 0 -> +0.3305 m
+
+Aerodynamic geometride manual değerleri STL bounding değerlerinden daha önceliklidir.
+
+================================================================
+12. ANA KANAT XFLR5 FINAL SECTION MODELİ
+================================================================
+
+y=0.000000  chord=0.260000  offset=0.000000  twist=4.000  airfoil=NACA4411
+y=0.156975  chord=0.252114  offset=0.010198  twist=3.400  airfoil=FALCON_MORPH_M3p850
+y=0.313950  chord=0.252431  offset=0.018346  twist=2.800  airfoil=FALCON_MORPH_M3p700
+y=0.470925  chord=0.229743  offset=0.032244  twist=2.200  airfoil=FALCON_MORPH_M3p550
+y=0.627900  chord=0.214818  offset=0.044202  twist=1.600  airfoil=FALCON_MORPH_M3p400
+y=0.784875  chord=0.188098  offset=0.059109  twist=1.000  airfoil=FALCON_MORPH_M3p250
+y=0.889525  chord=0.184315  offset=0.065539  twist=0.600  airfoil=FALCON_MORPH_M3p150
+y=0.973245  chord=0.158932  offset=0.076273  twist=0.280  airfoil=FALCON_MORPH_M3p070
+y=1.046500  chord=0.051000  offset=0.107095  twist=0.000  airfoil=NACA3411
+
+Half-span = 1.0465 m
+Full span = 2.093 m
+
+Airfoiller XFLR5 import limiti nedeniyle 151-point cosine spacing’e resample edildi.
+
+XFLR5 import sonrası:
+Span ≈ 2.09 m
+Area ≈ 0.45 m²
+AR ≈ 9.70
+Sweep ≈ 3 deg
+Root chord = 0.260 m
+Tip chord = 0.051 m
+Root twist = +4 deg
+Tip twist = 0 deg
+Dihedral = 0.5 deg
+
+Panel:
+VLM panels ≈ 2400
+3D panels ≈ 4824
+
+Plane Editor:
+Main Wing X = 0
+Main Wing Z = 0
+Tilt = 0 deg
+
++4 deg root incidence section twist içinde olduğu için ayrıca plane tilt verilmedi.
+
+================================================================
+13. ANA KANAT 2D XFOIL
+================================================================
+
+Ana airfoiller:
+NACA4411
+NACA3411
+NACA2410_INV
+ve spanwise morph airfoiller.
+
+Wing XFOIL:
+48 polar groups
+5986 points
+
+Düşük noktalı gruplar:
+NACA2410_INV Re=300k -> 95 points
+NACA2410_INV Re=550k -> 95 points
+
+NACA4411 representative:
+Re=150k:
+CLmax ≈ 1.424
+alpha_CLmax ≈ 13.25 deg
+CDmin ≈ 0.0120
+alpha0 ≈ -4.02 deg
+
+Re=200k:
+CLmax ≈ 1.430
+alpha_CLmax ≈ 15.25 deg
+CDmin ≈ 0.00981
+alpha0 ≈ -4.37 deg
+
+Re=300k:
+CLmax ≈ 1.427
+alpha_CLmax ≈ 14.75 deg
+CDmin ≈ 0.00775
+alpha0 ≈ -4.55 deg
+
+Cruise civarı:
+CLalpha_2D ≈ 6.0–6.2 /rad
+
+NACA3411:
+Re40k  CLmax ≈ 1.254
+Re50k  ≈ 1.288
+Re60k  ≈ 1.299
+Re75k  ≈ 1.330
+Re100k ≈ 1.356
+
+Yaklaşık:
+alpha0 ≈ -3.3 -> -3.5 deg
+CLalpha ≈ 6.0–6.2 /rad
+
+NACA2410_INV representative Re≈200k:
+alpha=-10 -> CL≈-1.17
+alpha=-5  -> CL≈-0.79
+alpha=0   -> CL≈-0.30
+alpha=+5  -> CL≈+0.44
+
+Zero-lift:
+≈ +1.8 -> +2.1 deg
+
+Post-stall XFOIL verileri doğrudan güvenilir kabul edilmedi.
+
+================================================================
+14. MAIN WING 3D — TYPE 1 VLM2
+================================================================
+
+Koşullar:
+Type 1 fixed speed
+VLM2
+thin surfaces
+Neumann BC
+viscous correction
+
+Hızlar:
+12.5
+15
+18
+20 m/s
+
+Representative CL:
+alpha=-8   -> CL=-0.193686
+alpha=-6   -> CL=-0.019100
+alpha=-5.5 -> CL=+0.024601
+alpha=0    -> CL=0.504441
+alpha=5    -> CL=0.934221
+alpha=9    -> CL=1.269198
+
+3D CLalpha ≈ 4.94 /rad
+zero-lift alpha ≈ -5.8 deg
+
+================================================================
+15. MAIN-WING YÜKSEK ALPHA GÜVENİLİRLİK SINIRI
+================================================================
+
+Viscous interpolation warning yaklaşık:
+alpha ≈ 9.5 deg
+
+Bu nedenle:
+alpha <= ≈9 deg
+attached-flow XFLR5 açısından daha güvenilir kabul edildi.
+
+9.5 deg ve üzeri sonuçlar post-stall doğrulama için doğrudan kullanılmamalı.
+
+================================================================
+16. MAIN-WING DRAG — TYPE 1 VISCOUS
+================================================================
+
+alpha=0 civarı:
+
+12.5 m/s:
+CD = 0.019408
+CDv = 0.010732
+
+15 m/s:
+CD = 0.018264
+CDv = 0.009587
+
+18 m/s:
+CD = 0.017356
+CDv = 0.008680
+
+20 m/s:
+CD = 0.016914
+CDv = 0.008237
+
+CDi ≈ 0.008677 civarı.
+
+12.5 m/s:
+CDmin ≈ 0.01435 @ alpha≈-2.5 deg
+CL≈0.287
+
+Wing-only L/Dmax ≈26 @ alpha≈0.5 deg
+
+Bunlar wing-only değerleridir; full-aircraft total drag değildir.
+
+================================================================
+17. 6 KG REQUIRED CL
+================================================================
+
+rho = 1.225 kg/m³
+S = 0.4514 m²
+W ≈58.86 N
+
+12.5 m/s -> CLreq ≈1.36
+15 m/s   -> CLreq ≈0.946
+18 m/s   -> CLreq ≈0.657
+20 m/s   -> CLreq ≈0.532
+
+Yaklaşık required alpha:
+12.5 m/s -> >9 deg / kritik bölge
+15 m/s   -> ≈5.1 deg
+18 m/s   -> ≈1.8 deg
+20 m/s   -> ≈0.3 deg
+
+================================================================
+18. STALL HIZI
+================================================================
+
+Manual CLmax=1.42 kabulüyle:
+Vstall ≈12.24 m/s
+≈44.1 km/h
+
+%20 stall margin:
+Vmin_safe ≈14.69 m/s
+≈52.9 km/h
+
+================================================================
+19. HORIZONTAL TAIL GEOMETRİSİ
+================================================================
+
+Final XFLR5:
+Span ≈0.560 m
+Area ≈0.07875 m²
+MAC ≈0.1501 m
+AR ≈3.98
+Root-to-tip sweep ≈20.02 deg
+
+Airfoil:
+NACA2410_INV
+
+Section yaklaşıkları:
+y=0.000 chord=0.198
+y=0.070 chord=0.170
+y=0.130 chord=0.146
+y=0.190 chord=0.122
+y=0.240 chord=0.102
+y=0.260 chord=0.092
+y=0.280 chord=0.049
+
+Eski kaba STL estimate:
+span ≈0.560 m
+area ≈0.0810 m²
+MAC ≈0.1574 m
+total elevator area ≈0.01578 m²
+tail arm ≈0.549 m
+
+================================================================
+20. HORIZONTAL TAIL XFLR5 KONUMU
+================================================================
+
+Main-wing root LE STL:
+X≈+231.96 mm
+Z≈+121.03 mm
+
+Horizontal-tail root LE:
+X≈-321.37 mm
+Z≈+79.52 mm
+
+XFLR5:
+Elevator X = +0.5533 m
+Elevator Z = -0.0415 m
+Tilt = 0 deg
+
+XFLR5:
+Elevator Lever Arm ≈0.54 m
+Tail Volume ≈0.42
+
+STL tail arm ≈0.549 m ile uyumlu.
+
+================================================================
+21. GERÇEK ELEVATOR HINGE
+================================================================
+
+Global hinge X ≈ -472.6835 mm
+
+Movable elevator span:
+y ≈50.60 ->240.00 mm
+
+Hinge x/c:
+y=50.6 mm ->74.71%
+y=70 mm ->73.98%
+y=130 mm ->71.07%
+y=190 mm ->67.21%
+y=220 mm ->64.61%
+y=240 mm ->62.54%
+
+TE flap:
+LE flap OFF
+TE flap ON
+Flap Angle=0
+Hinge Y=50% thickness
+Hinge X=section-specific
+
+XFLR5 toplam 8 Elevator Flap controls gördü.
+Sweep’te hepsi gain=1.
+Wing Tilt=0
+Elevator Tilt=0
+
+================================================================
+22. ELEVATOR TYPE 7 SWEEP
+================================================================
+
+Koşullar:
+Type 7 Stability Polar
+VLM2
+Thin surfaces
+Viscous OFF
+beta=0
+phi=0
+Use Plane Inertia=OFF
+Mass=6 kg
+CG=(+0.0637,0,-0.0210)
+V1 inertias
+
+XFLR5 sign:
++ = trailing edge down
+- = trailing edge up
+
+delta_e=-10:
+alpha=3.22252 deg
+V=17.35812 m/s
+CL≈0.706701
+CLa=5.3001
+Cma=-1.4719
+Cmq=-8.1193
+NP=0.12588
+CMde=-0.6014
+
+delta_e=-8:
+alpha=2.47198
+V=18.16224
+CL≈0.645357
+CLa=5.3193
+Cma=-1.4704
+Cmq=-8.2518
+NP=0.12559
+CMde=-0.60631
+
+delta_e=-6:
+alpha=1.75144
+V=19.05573
+CL≈0.586190
+CLa=5.3389
+Cma=-1.4746
+Cmq=-8.4249
+NP=0.12554
+CMde=-0.61392
+
+delta_e=-4:
+alpha=1.09089
+V=20.00777
+CL≈0.531726
+CLa=5.3609
+Cma=-1.4904
+Cmq=-8.6828
+NP=0.12594
+CMde=-0.62752
+
+delta_e=-2:
+alpha=0.59568
+V=20.82652
+CL≈0.490769
+CLa=5.3925
+Cma=-1.5402
+Cmq=-9.1941
+NP=0.12764
+CMde=-0.65898
+
+delta_e=0:
+alpha=0.36455
+V=21.24412
+CL≈0.471685
+CLa=5.4459
+Cma=-1.6581
+Cmq=-10.229
+NP=0.13186
+CMde=-0.7282
+
+delta_e=+2:
+alpha=-1.17453
+V=24.89660
+CL≈0.343639
+CLa=5.407
+Cma=-1.4944
+Cmq=-9.1398
+NP=0.12558
+CMde=-0.65551
+
+delta_e=+4:
+alpha=-2.40748
+V=29.77044
+CL≈0.240542
+CLa=5.3898
+Cma=-1.4068
+Cmq=-8.6303
+NP=0.12214
+CMde=-0.62568
+
+delta_e=+6:
+alpha=-3.49448
+V=37.80907
+CL≈0.149303
+CLa=5.3814
+Cma=-1.3531
+Cmq=-8.3751
+NP=0.11999
+CMde=-0.61394
+
+delta_e=+8:
+alpha=-4.55164
+V=59.54707
+CL≈0.060317
+CLa=5.3745
+Cma=-1.3098
+Cmq=-8.2005
+NP=0.11826
+CMde=-0.60812
+
+delta_e=+10:
+zero-moment alpha≈-5.60981 deg
+negative lift nedeniyle trim skip edildi.
+
+Pratik trim:
+≈18.2 m/s -> elevator≈-8 deg
+≈19.1 ->≈-6 deg
+≈20.0 ->≈-4 deg
+≈20.8 ->≈-2 deg
+≈21.24 ->≈0 deg
+
+================================================================
+23. NEUTRAL ELEVATOR / PITCH
+================================================================
+
+Vtrim ≈21.244 m/s
+alpha_trim ≈0.3646 deg
+CL ≈0.4717
+
+CLa ≈+5.4459 /rad
+Cma ≈-1.6581
+Cmq ≈-10.2288
+
+XNP ≈0.1319 m
+XCP ≈0.0635–0.064 m
+CGx =0.0637 m
+
+Cm_delta_e neutral ≈-0.728 /rad
+Sweep genel ≈-0.60 -> -0.73 /rad
+
+================================================================
+24. STATIC MARGIN
+================================================================
+
+XFLR5 c_ref ≈0.224 m
+
+SM=(XNP-XCG)/c_ref
+≈(0.13186-0.0637)/0.224
+≈0.304
+≈30.4%
+
+Güçlü pozitif longitudinal static margin.
+
+Not:
+XFLR5 c_ref≈0.224 m, manual average chord 0.176 m ile aynı tanım değildir.
+
+================================================================
+25. LONGITUDINAL DYNAMIC MODES
+================================================================
+
+Short-period:
+lambda ≈ -5.67462 ±13.25078i
+fn ≈2.294 Hz
+fd ≈2.109 Hz
+zeta ≈0.394
+Stable
+
+Phugoid:
+lambda ≈ -0.00185 ±0.61576i
+f ≈0.098 Hz
+zeta ≈0.003
+Stable fakat çok hafif damped
+
+Phillips phugoid:
+lambda≈-0.00253+0.60270i
+fn≈0.096 Hz
+zeta≈0.004
+
+================================================================
+26. VERTICAL TAIL GEOMETRİ
+================================================================
+
+Manual vertical-tail airfoil adı vermiyor.
+
+STL sections:
+Root z≈145 mm: chord≈164.39 mm, t/c≈10%
+Mid  z≈215 mm: chord≈129.31 mm, t/c≈9.99%
+Tip  z≈285 mm: chord≈94.22 mm,  t/c≈10%
+
+Yaklaşık simetrik / NACA0010-benzeri fakat NACA0010 olarak kabul edilmedi.
+
+Raw STL XFOIL sorunları:
+poor input coordinate distribution
+excessive panel angle ≈-80.6 deg
+TCRHEK2 / NaN vb.
+
+Clean profiles:
+VTAIL_Z120.0_FIXED
+VTAIL_Z130.5_TE_74.81
+VTAIL_Z145.0_TE_72.75
+VTAIL_Z180.0_TE_70.32
+VTAIL_Z215.0_TE_67.24
+VTAIL_Z250.0_TE_63.20
+VTAIL_Z285.0_TE_57.64
+VTAIL_Z299.0_TE_54.79
+
+Final exposed model:
+span ≈0.1790 m
+area ≈0.02385 m²
+MAC ≈0.13941 m
+AR ≈1.344
+
+Eski kaba STL area ≈0.0301 m²; body-blend dahil.
+
+================================================================
+27. VERTICAL TAIL XFOIL
+================================================================
+
+Successful:
+37 polar groups
+4167 points
+
+Low groups:
+TEST_VTAIL_ROOT_CLEAN Re150k ->21 pts
+VTAIL_TIP_CLEAN Re225k ->99 pts
+
+Representative:
+CLalpha ≈8.2 /rad @Re≈150k
+CDmin ≈0.0107
+alpha0 ≈0 deg
+CL(-10)≈-0.885
+CL(+10)≈+0.885
+
+CDmin trend:
+Re50k  ≈0.0181
+Re100k ≈0.0130
+Re150k ≈0.0107
+Re200k ≈0.0096
+Re250k ≈0.0088
+Re300k ≈0.0076
+Re350k ≈0.0068
+
+================================================================
+28. VERTICAL TAIL XFLR5 YERLEŞİMİ
+================================================================
+
+Fin X ≈0.5537 m
+Fin Y =0
+Fin Z ≈-0.0010 m
+Fin Tilt =0 deg
+
+Two-sided Fin = OFF
+Double Fin = OFF
+
+XFLR5 Wing Definition fin span gösteriminde yaklaşık 2x yükseklik raporlayabiliyor;
+gerçek modeled exposed fin vertical height =0.179 m.
+
+================================================================
+29. RUDDER HINGE
+================================================================
+
+Global hinge X yaklaşık sabit.
+Taper nedeniyle x/c değişiyor.
+
+Z=130.5 mm ->74.81%
+Z=145.0 mm ->72.75%
+Z=180.0 mm ->70.32%
+Z=215.0 mm ->67.24%
+Z=250.0 mm ->63.20%
+Z=285.0 mm ->57.64%
+Z=299.0 mm ->54.79%
+
+TE flap:
+LE OFF
+TE ON
+Flap Angle=0
+Hinge Y=50% thickness
+Hinge X=section-specific
+
+================================================================
+30. NEUTRAL FIN TYPE 7 — TAM STABILITY DERIVATIVES
+================================================================
+
+V∞=21.244 m/s
+alpha=0.364 deg
+Mass=6.000 kg
+Control=0
+beta=0
+phi=0
+
+XNP=0.132 m
+XCP=0.064 m
+YCP≈0
+ZCP≈0.014 m
+
+CL=0.47167
+CDi=0.00823
+CDv=0
+CY≈-0.00002
+Cl≈0
+Cm≈0
+Cn≈+0.00001
+
+CXu=-0.01645
+CLu=-0.00009
+Cmu=0
+
+CXa=+0.31835
+CLa=+5.44594
+Cma=-1.65805
+
+CXq=+0.39295
+CLq=+9.48457
+Cmq=-10.22875
+
+CYb=-0.13216
+Clb=-0.00717
+Cnb=+0.03554
+
+CYp=-0.04567
+Clp=-0.54187
+Cnp=-0.05878
+
+CYr=+0.08776
+Clr=+0.10586
+Cnr=-0.02227
+
+Yorum:
+Cnb>0 -> directionally statically stable
+Cnr<0 -> yaw damping stable
+Clb<0 -> weak positive dihedral effect
+Clp<0 -> strong roll damping
+
+================================================================
+31. LATERAL DYNAMIC MODES
+================================================================
+
+Roll subsidence:
+lambda=-9.46425
+tau≈0.106 s
+Stable
+
+Dutch roll:
+lambda=-0.30549 ±3.20273i
+fn≈0.512 Hz
+fd≈0.510 Hz
+zeta≈0.095
+Period≈1.96 s
+Stable, lightly damped
+
+Phillips Dutch:
+lambda≈-0.31706+3.17052i
+fn≈0.507 Hz
+fd≈0.505 Hz
+zeta≈0.100
+
+Spiral:
+lambda=+0.08227
+doubling≈8.426 s
+Mildly unstable / yavaş kararsız
+
+================================================================
+32. RUDDER CONTROL SWEEP
+================================================================
+
+All rudder flap gains=1
+Elevator controls=0
+Type7 VLM2 inviscid
+-10 -> +10 deg, step=2
+
+-10:
+CY=-0.014982
+Cl=-0.000133
+Cn=+0.004437
+
+-8:
+CY=-0.011838
+Cl=-0.000101
+Cn=+0.003505
+
+-6:
+CY=-0.008817
+Cl=-0.000072
+Cn=+0.002610
+
+-4:
+CY=-0.005860
+Cl=-0.000045
+Cn=+0.001734
+
+-2:
+CY=-0.002943
+Cl=-0.000020
+Cn=+0.000870
+
+0:
+CY=-0.000020
+Cl=0
+Cn=+0.000007
+
++2:
+CY=+0.002908
+Cl=+0.000020
+Cn=-0.000859
+
++4:
+CY=+0.005827
+Cl=+0.000045
+Cn=-0.001723
+
++6:
+CY=+0.008785
+Cl=+0.000071
+Cn=-0.002599
+
++8:
+CY=+0.011798
+Cl=+0.000099
+Cn=-0.003491
+
++10:
+CY=+0.014916
+Cl=+0.000128
+Cn=-0.004416
+
+Approx rudder derivatives:
+CY_delta_r ≈ +0.085 /rad
+Cn_delta_r ≈ -0.025 /rad
+Cl_delta_r ≈ +0.0007 /rad
+
+Near center ±2 deg:
+CYdr≈+0.084
+Cndr≈-0.0248
+Cldr≈+0.0006
+
+Rudder response yaklaşık lineer ve simetrik.
+Ana etki yaw + sideforce.
+Roll coupling çok küçük.
+
+Longitudinal trim rudder ile çok az değişir:
+neutral alpha≈0.364 deg
+neutral V≈21.244 m/s
+±10 rudder alpha≈0.329–0.330 deg
+V≈21.31 m/s
+
+Sweep inviscid: drag total gerçek drag değildir.
+
+================================================================
+33. AILERON GEOMETRİSİ
+================================================================
+
+Her aileron:
+span≈0.4794 m
+area≈0.0270 m²
+total≈0.0540 m²
+average chord≈0.0566 m
+
+STL gerçek span:
+y≈310.4 ->789.7 mm
+
+XFLR5 aktif sınır:
+start y=0.313950 m
+end y=0.784875 m
+
+================================================================
+34. AILERON HINGE
+================================================================
+
+y=0.313950 ->69.75%
+y=0.470925 ->70.65%
+y=0.627900 ->70.04%
+y=0.784875 ->72.14%
+
+Yaklaşık %70–72 chord bandı.
+
+TE flap:
+LE OFF
+TE ON
+Flap Angle=0
+Hinge Y=50% thickness
+Hinge X section-specific
+
+================================================================
+35. AILERON XFLR5 FLAP MAPPING
+================================================================
+
+XFLR5:
+Wing Flap 1
+Wing Flap 2
+Wing Flap 3
+Wing Flap 4
+Wing Flap 5
+Wing Flap 6
+
+Aileron differential:
+WF1=+1
+WF2=+1
+WF3=+1
+WF4=-1
+WF5=-1
+WF6=-1
+
+Bu mapping simetrik roll moment ürettiği için çalışır kabul edildi.
+
+================================================================
+36. AILERON TYPE 7 SWEEP
+================================================================
+
+-10 -> +10 deg, step 2
+Type7 VLM2 inviscid
+
+-10:
+alpha=1.565
+CL=0.501949
+CDi=0.013975
+CY=-0.004436
+Cl=-0.053400
+Cn=-0.000242
+V=20.5907
+
+-8:
+alpha=1.489
+CL=0.500838
+CDi=0.012223
+CY=-0.003556
+Cl=-0.042925
+Cn=-0.000194
+V=20.6144
+
+-6:
+alpha=1.396
+CL=0.499550
+CDi=0.010894
+CY=-0.002678
+Cl=-0.032459
+Cn=-0.000146
+V=20.6416
+
+-4:
+alpha=1.268
+CL=0.497519
+CDi=0.009991
+CY=-0.001803
+Cl=-0.021996
+Cn=-0.000099
+V=20.6841
+
+-2:
+alpha=1.005
+CL=0.491440
+CDi=0.008942
+CY=-0.000946
+Cl=-0.011504
+Cn=-0.000051
+V=20.8120
+
+0:
+alpha=0.421
+CL=0.474152
+CDi=0.008303
+CY=-0.000011
+Cl=0
+Cn=+0.000006
+V=21.1887
+
++2:
+alpha=1.005
+CL=0.491439
+CDi=0.008984
+CY=+0.000923
+Cl=+0.011505
+Cn=+0.000064
+V=20.8120
+
++4:
+alpha=1.268
+CL=0.497519
+CDi=0.009987
+CY=+0.001782
+Cl=+0.021996
+Cn=+0.000112
+V=20.6841
+
++6:
+alpha=1.396
+CL=0.499551
+CDi=0.010885
+CY=+0.002658
+Cl=+0.032459
+Cn=+0.000159
+V=20.6416
+
++8:
+alpha=1.489
+CL=0.500838
+CDi=0.012212
+CY=+0.003536
+Cl=+0.042926
+Cn=+0.000207
+V=20.6144
+
++10:
+alpha=1.565
+CL=0.501949
+CDi=0.013962
+CY=+0.004416
+Cl=+0.053400
+Cn=+0.000255
+V=20.5907
+
+Approx:
+Cl_delta_a≈+0.308 /rad
+Cn_delta_a≈+0.00144 /rad
+CY_delta_a≈+0.0254 /rad
+
+Near center:
+Clda≈+0.330
+Cnda≈+0.00165
+CYda≈+0.0268
+
+Güçlü roll control.
+Yaw coupling küçük ama sıfır değil.
+Sweep simetrik.
+Adverse/proverse etiketi physical side/deflection mapping kesinleşmeden yalnızca işaretten verilmemeli.
+
+================================================================
+37. GAZEBO ANA AERODYNAMIC DERIVATIVE SET
+================================================================
+
+Reference:
+S=0.4514 m²
+b=2.093 m
+c_ref≈0.224 m
+
+Longitudinal:
+CLa=+5.44594
+Cma=-1.65805
+CLq=+9.48457
+Cmq=-10.22875
+CXa=+0.31835
+CXq=+0.39295
+Cm_delta_e≈-0.73 /rad neutral
+
+Sideforce:
+CY_beta=-0.13216
+CY_p=-0.04567
+CY_r=+0.08776
+CY_delta_a≈+0.0254
+CY_delta_r≈+0.085
+
+Roll:
+Cl_beta=-0.00717
+Cl_p=-0.54187
+Cl_r=+0.10586
+Cl_delta_a≈+0.308
+Cl_delta_r≈+0.0007
+
+Yaw:
+Cn_beta=+0.03554
+Cn_p=-0.05878
+Cn_r=-0.02227
+Cn_delta_a≈+0.00144
+Cn_delta_r≈-0.025
+
+Normalized rates:
+p_hat = p*b/(2V)
+q_hat = q*c_ref/(2V)
+r_hat = r*b/(2V)
+
+Relative air:
+Vrel=Vbody-Vwind
+V=|Vrel|
+qbar=0.5*rho*V²
+
+AoA:
+alpha=atan2(w,u)
+Gazebo sign convention unit test ile doğrulanmalı.
+
+Sideslip:
+beta=asin(v/V) veya numerically safe atan2 form.
+
+Aerodynamic coefficients V1:
+CY = CYb*beta + CYp*p_hat + CYr*r_hat + CYda*delta_a + CYdr*delta_r
+Cl = Clb*beta + Clp*p_hat + Clr*r_hat + Clda*delta_a + Cldr*delta_r
+Cn = Cnb*beta + Cnp*p_hat + Cnr*r_hat + Cnda*delta_a + Cndr*delta_r
+Cm = Cm0 + Cma*alpha + Cmq*q_hat + Cmde*delta_e
+
+Lift:
+CL = CL0 + CLa*alpha + CLq*q_hat + elevator etkisi
+Ancak V1 için lookup/saturation daha güvenli olabilir.
+
+Forces:
+L=qbar*S*CL
+D=qbar*S*CD
+Y=qbar*S*CY
+
+Moments:
+Mx=qbar*S*b*Cl
+My=qbar*S*c_ref*Cm
+Mz=qbar*S*b*Cn
+
+================================================================
+38. FULL-AIRCRAFT DRAG MODEL — V1
+================================================================
+
+Type7 control sweep’ler inviscid:
+CDv=0
+CD=CDi
+Bu değerler real total aircraft drag değildir.
+
+V1 calibrated full-aircraft polar:
+CD = CD0 + k*CL²
+
+CD0≈0.0351
+k≈0.0528
+
+Neutral inviscid XFLR5:
+CL≈0.47167
+CDi≈0.008226
+
+Buradan:
+k_XFLR5≈0.0370
+e_XFLR5≈0.887
+
+Manual-calibrated V1:
+e≈0.62 mertebesi.
+
+Farkı açıklayan unsurlar:
+- fuselage drag
+- motor/nacelle drag
+- anten/çıkıntılar
+- yüzey pürüzlülüğü
+- printed structure excrescence drag
+- trim/interference losses
+- XFLR5 inviscid/ideal varsayımlar
+
+================================================================
+39. 6 KG LEVEL-FLIGHT DRAG TABLOSU — V1
+================================================================
+
+12.5 m/s:
+CLreq≈1.363
+CD≈0.133
+parasite drag≈1.52 N
+induced drag≈4.23 N
+total drag≈5.75 N
+aero power≈71.9 W
+
+15 m/s:
+CLreq≈0.946
+CD≈0.082
+parasite≈2.18 N
+induced≈2.94 N
+total≈5.12 N
+power≈76.9 W
+
+18 m/s:
+CLreq≈0.657
+CD≈0.058
+parasite≈3.14 N
+induced≈2.04 N
+total≈5.19 N
+power≈93.4 W
+
+20 m/s:
+CLreq≈0.532
+CD≈0.050
+parasite≈3.88 N
+induced≈1.65 N
+total≈5.54 N
+power≈110.7 W
+
+22 m/s:
+CLreq≈0.440
+CD≈0.045
+parasite≈4.70 N
+induced≈1.37 N
+total≈6.06 N
+power≈133.4 W
+
+25 m/s:
+CLreq≈0.341
+CD≈0.041
+parasite≈6.07 N
+induced≈1.06 N
+total≈7.12 N
+power≈178.1 W
+
+Best L/D / minimum drag:
+≈15–17 m/s
+Dmin≈5.0–5.1 N
+L/Dmax≈11.5–11.7
+
+================================================================
+40. NOMINAL 18 M/S VALIDATION NOKTASI
+================================================================
+
+Mass=6.0 kg
+V≈18 m/s
+CL≈0.657
+Drag≈5.19 N
+Required total thrust≈5.19 N
+Required thrust per motor≈2.595 N
+Elevator trim≈-8 deg
+XFLR5 -8 deg elevator trim V≈18.162 m/s, alpha≈2.472 deg
+
+Bu Gazebo ilk straight-level validation için ana benchmark.
+
+================================================================
+41. MOTOR SİSTEMİ
+================================================================
+
+2 x SunnySky X2820 860KV
+
+Toplanan üretici/web verileri:
+KV≈860 rpm/V
+Internal resistance R≈25.8 mΩ =0.0258 Ω
+No-load current I0≈1.3 A @10 V
+Mass≈143 g / motor
+Total motor mass≈0.286 kg
+Max current≈65 A /30 s
+Max power≈960 W / motor
+4S uygun
+APC 13x6.5 önerilen kombinasyonlardan biri
+
+================================================================
+42. ESC
+================================================================
+
+2 x Hobbywing Skywalker 80A
+
+Approx mass:
+≈80 g each
+≈160 g total
+
+Kesin konumlar bilinmiyor.
+Kanat içinde oldukları biliniyor.
+
+Gazebo V1 ESC:
+V_ESC = throttle * V_battery
+throttle 0..1
+
+V2:
+PWM response
+delay
+efficiency
+current limit
+eklenebilir.
+
+================================================================
+43. BATARYALAR
+================================================================
+
+Ana propulsion battery:
+4S 22000 mAh 25C
+
+Vnom=14.8 V
+Vfull=16.8 V
+mass≈1.666 kg
+
+Center:
+(0.300631,0,0.038547) m
+
+Ek batarya:
+3S 3300 mAh
+mass≈0.248 kg
+exact position unknown
+
+Battery V2:
+V_battery = V_oc(SOC) - I_total*R_internal
+
+Henüz bilinmeyen:
+battery internal resistance
+SOC-OCV curve
+temperature effect
+
+================================================================
+44. PERVANE
+================================================================
+
+APC 13x6.5E
+
+D=13 in=0.3302 m
+Pitch=6.5 in=0.1651 m
+mass≈1.06 oz≈30.1 g each
+total≈60.1 g
+
+Counter-rotation:
+Left prop = CCW
+Right prop = CW
+
+Physical counter-rotating systemde reverse-handed counterpart gerekir.
+APC reverse counterpart: 13x6.5EP / reverse-left-hand rotation.
+
+Aynı handed prop sadece motor ters döndürülerek fiziksel eşdeğer sayılmamalı.
+
+================================================================
+45. STL PROP ÇAP HATASI
+================================================================
+
+STL prop diameter≈273.4 mm
+Gerçek APC 13"=330.2 mm
+
+Ratio≈0.828
+
+Visual scale correction≈1.208
+
+Aerodynamic hesapta kesin:
+D=0.3302 m
+
+================================================================
+46. MOTOR / PROP STL KONUMU
+================================================================
+
+Prop hubs:
+
+LEFT:
+X=+0.2951 m
+Y=+0.3000 m
+Z=+0.1271 m
+
+RIGHT:
+X=+0.2951 m
+Y=-0.3000 m
+Z=+0.1271 m
+
+Motor centers:
+
+LEFT:
+X=+0.2623
+Y=+0.3000
+Z=+0.1269
+
+RIGHT:
+X=+0.2623
+Y=-0.3000
+Z=+0.1269
+
+================================================================
+47. PROP HUB CG-RELATIVE KONUM
+================================================================
+
+CG=(0.168309,0,0.100000)
+
+LEFT:
+DeltaX≈+0.1268
+DeltaY≈+0.3000
+DeltaZ≈+0.0271
+
+RIGHT:
+DeltaX≈+0.1268
+DeltaY≈-0.3000
+DeltaZ≈+0.0271
+
+Thrust CG’ye uygulanmamalı.
+Gerçek hub/thrust-line noktasında uygulanmalı.
+
+================================================================
+48. THRUST AXIS
+================================================================
+
+STL prop normal:
+≈(+0.999996,+0.000018,-0.002668)
+
+Neredeyse saf +X.
+Vertical angle offset≈0.15 deg.
+
+Gazebo V1:
+thrust axis=+X kabul edilebilir.
+
+================================================================
+49. STATIC MOTOR/PROP BENCH REFERANSI
+================================================================
+
+SunnySky X2820 860KV + APC13x6.5 +4S representative:
+
+RPM≈9230
+Thrust≈3350 gf≈32.85 N / motor
+Current≈63.2 A
+Electrical input≈935 W / motor
+
+2 motors static:
+≈65.7 N
+≈6.70 kgf
+
+6 kg aircraft static T/W≈1.12
+
+63.2 A motorun 65 A /30 s limitine çok yakın.
+Bu burst/full-static, cruise değil.
+
+================================================================
+50. APC INDEPENDENT VALIDATION
+================================================================
+
+APC official data approximate:
+9000 RPM static ->29.664 N
+10000 RPM static ->36.877 N
+
+9230 RPM interpolation:
+≈31.32 N
+
+SunnySky:
+≈32.85 N
+
+Difference≈4.7–5%
+
+İki bağımsız veri seti iyi uyuşuyor.
+
+================================================================
+51. APC RPM GÜVENLİK LİMİTİ
+================================================================
+
+Thin Electric:
+RPMmax≈150000/diameter[in]
+
+13":
+≈11538 RPM
+
+Gazebo hard limit önerisi:
+≈11500 RPM
+
+Teorik no-load:
+860*14.8≈12728 RPM
+860*16.8≈14448 RPM
+
+Loaded RPM daha düşük.
+Prop safety nedeniyle hard clamp/overspeed logic gerekli.
+
+================================================================
+52. MOTOR SI SABİTLERİ
+================================================================
+
+KV=860 rpm/V
+
+Kt≈60/(2*pi*KV)
+≈0.0111 N·m/A
+
+SI Ke aynı numerik mertebede V/(rad/s).
+
+Electrical:
+V = I*R + Ke*omega
+
+I = (V_ESC - Ke*omega)/R
+
+Torque:
+Q_motor = Kt*(I - I0_effective)
+
+I0≈1.3 A @10 V referans.
+No-load/friction model V2’de geliştirilebilir.
+
+================================================================
+53. MOTOR + PERVANE ANGULAR DYNAMICS
+================================================================
+
+I_rotor * d(omega)/dt = Q_motor - Q_prop
+
+I_rotor =
+motor rotor inertia + prop inertia
+
+RPM anında set edilmeyecek.
+Throttle step ile fiziksel spin-up/spin-down oluşacak.
+
+Exact rotational inertia henüz bilinmiyor.
+V1’de estimate veya bench spin-up kalibrasyonu gerekir.
+
+================================================================
+54. ADVANCE RATIO
+================================================================
+
+n = RPM/60 [rev/s]
+
+J = V_axial / (n*D)
+
+D=0.3302 m
+
+V_axial:
+prop thrust-axis boyunca relative airflow.
+
+Aynı RPM, farklı airspeed’de farklı J üretir.
+
+================================================================
+55. PROP THRUST MODELİ
+================================================================
+
+APC lookup:
+Ct=Ct(J)
+
+T = Ct * rho * n² * D⁴
+
+Ct resmi APC 13x6.5E data üzerinden interpolate edilmeli.
+
+Aynı 7000 RPM:
+V=0 ile V=20 m/s aynı thrust üretmez.
+
+================================================================
+56. PROP POWER / TORQUE
+================================================================
+
+Cp=Cp(J)
+
+P_prop = Cp * rho * n³ * D⁵
+
+omega=2*pi*n
+
+Q_prop=P_prop/omega
+
+Bu Q_prop motor angular dynamics denkleminde karşı yük torque olarak kullanılır.
+
+================================================================
+57. REACTION TORQUE
+================================================================
+
+Uçağa:
+Q_reaction=-Q_prop
+
+Sol/sağ ters döndüğü için eşit RPM’de büyük ölçüde birbirini götürür.
+
+Unequal RPM/throttle veya motor arızasında residual moment doğal oluşur.
+
+================================================================
+58. DIFFERENTIAL THRUST
+================================================================
+
+Motorlar CG’den ±0.300 m lateral uzaklıkta.
+
+Approx yaw moment:
+Mz≈0.300*(T_right-T_left)
+
+Bunu ayrıca yapay control derivative olarak kodlamaya gerek yok.
+Gerçek force doğru hub noktasında uygulanırsa Gazebo r×F ile üretir.
+
+================================================================
+59. THRUST-LINE PITCH MOMENT
+================================================================
+
+Prop hubs CG’nin yaklaşık 27.1 mm üzerinde.
+
+18 m/s:
+T≈2.59 N / motor
+
+Moment magnitude:
+2*0.0271*2.59≈0.14 N·m
+
+İşaret Gazebo FLU convention ile doğrulanmalı.
+
+================================================================
+60. VISUAL RPM = PHYSICS RPM
+================================================================
+
+Tek state:
+omega_left
+omega_right
+
+Aynı omega:
+- prop joint visual
+- thrust
+- power
+- torque
+- reaction torque
+için kullanılmalı.
+
+================================================================
+61. PROPULSION VALIDATION TAHMİNLERİ — ANA MODEL DEĞİL
+================================================================
+
+Bu değerler sabit lookup yapılmayacak; fizik modelinden beklenen denge noktalarıdır.
+
+12.5 m/s:
+Throttle≈43.2%
+RPM≈4800
+T/motor≈2.88 N
+Total≈5.75 N
+
+15 m/s:
+Throttle≈46.9%
+RPM≈5262
+T/motor≈2.56 N
+Total≈5.12 N
+
+18 m/s:
+Throttle≈53.6%
+RPM≈6021
+T/motor≈2.59 N
+Total≈5.19 N
+
+20 m/s:
+Throttle≈58.2%
+RPM≈6533
+T/motor≈2.77 N
+Total≈5.54 N
+
+22 m/s:
+Throttle≈63.8%
+RPM≈7125
+T/motor≈3.03 N
+Total≈6.06 N
+
+25 m/s:
+Throttle≈72.4%
+RPM≈8022
+T/motor≈3.56 N
+Total≈7.12 N
+
+Nominal 14.8V fixed-throttle first estimates:
+45% ->≈13.7 m/s, RPM≈5030
+50% ->≈16.6 m/s, RPM≈5624
+55% ->≈18.7 m/s, RPM≈6179
+60% ->≈20.7 m/s, RPM≈6724
+65% ->≈22.5 m/s, RPM≈7257
+70% ->≈24.3 m/s, RPM≈7778
+75% ->≈26.0 m/s, RPM≈8296
+80% ->≈27.6 m/s, RPM≈8803
+90% ->≈30.9 m/s, RPM≈9801
+100% -> theoretical≈34 m/s, RPM≈10780
+
+80%+ lower-confidence:
+battery sag
+ESC/motor efficiency
+unloading
+drag
+prop-wing interference
+
+================================================================
+62. CRUISE ELEKTRİK TÜKETİMİ — İLK TAHMİN
+================================================================
+
+18 m/s /≈6020 RPM:
+APC shaft power≈78 W / motor
+
+First motor efficiency estimate≈0.73
+
+Electrical≈107 W / motor
+≈214 W total
+
+At 14.8V:
+I_total≈14.4 A
+
+22 Ah theoretical propulsion-only:
+≈1.53 h
+
+%80 usable:
+≈1.22 h
+
+Gerçek uçuşta daha düşük olabilir.
+
+================================================================
+63. BATTERY V2
+================================================================
+
+V_battery=V_oc(SOC)-I_total*R_internal
+
+current artar
+-> voltage sag artar
+-> motor torque/RPM düşer
+-> thrust düşer
+
+Rinternal ve gerçek SOC curve henüz belirlenmedi.
+
+================================================================
+64. STALL MODELİ — HENÜZ FINAL DEĞİL
+================================================================
+
+XFLR5 attached-flow güvenilirliği≈9–9.5 deg civarında düşüyor.
+Manual CLmax≈1.42.
+
+Gazebo’da lineer CL sonsuza kadar devam ettirilmemeli.
+
+V1:
+lookup / smooth saturation
+
+V2:
+stall onset
+post-stall CL drop
+CD rise
+Cm variation
+aerodynamic-center migration
+
+================================================================
+65. CONTROL SURFACE LIMITS
+================================================================
+
+Manual başlangıç:
+±30 deg veya daha fazla
+
+Analiz derivatives:
+çoğunlukla ±10 deg aralığında
+
+Dolayısıyla en güvenilir lineer range:
+≈±10 deg
+
+Mechanical joint limit başlangıçta ±30 deg olabilir.
+Aero derivative’lar ±10 ötesinde kör lineer extrapolate edilmemeli.
+
+================================================================
+66. MOVABLE LINKS / JOINTS
+================================================================
+
+left_aileron
+right_aileron
+left_elevator
+right_elevator
+rudder
+left_prop
+right_prop
+
+Ayrı link/joint için mesh hazır.
+
+Motor body meshleri ayrı visual olabilir.
+Gerçek motor mass/inertia dağılıma doğru dahil edilmeli.
+
+================================================================
+67. GAZEBO V1 MİMARİSİ
+================================================================
+
+A) SDF / structure
+- meshes
+- collision
+- mass
+- CG
+- V1 inertia
+- control-surface hinge joints
+- prop joints
+- motor/prop positions
+
+B) Aerodynamics system/plugin
+- relative wind
+- alpha
+- beta
+- qbar
+- CL/CD/CY
+- Cl/Cm/Cn
+- p/q/r damping
+- elevator/rudder/aileron derivatives
+- stall-limited lookup
+- forces/moments
+
+C) Propulsion system/plugin
+- battery voltage
+- ESC duty
+- motor electrical model
+- current
+- motor torque
+- rotor angular dynamics
+- APC Ct/Cp lookup
+- thrust
+- prop torque
+- reaction torque
+- prop joint RPM
+- RPM safety cap
+
+D) Later V2
+- battery SOC/sag
+- thermal/current limits
+- propwash
+- ground effect
+- wind/turbulence
+- sensor noise
+- ArduPlane SITL
+
+================================================================
+68. GAZEBO İLK VALIDATION TESTLERİ
+================================================================
+
+1) Ground/no-wind, throttle=0
+2) Motor RPM spin-up
+3) Static thrust vs RPM
+4) Static current/power plausibility
+5) Prop torque vs RPM
+6) Equal counter-rotating torque cancellation
+7) Differential-throttle yaw
+8) Single-engine failure
+9) Straight-level trim≈18 m/s
+10) Elevator trim≈-8 deg
+11) Neutral elevator trim≈21.24 m/s
+12) Aileron roll response
+13) Rudder yaw response
+14) Dutch-roll disturbance
+15) Roll subsidence
+16) Spiral slow divergence
+17) Short-period
+18) Phugoid
+19) Stall approach
+20) Manufacturer 6kg curves comparison
+
+================================================================
+69. GAZEBO ANA BENCHMARKLER
+================================================================
+
+18 m/s:
+Mass=6 kg
+CLreq≈0.657
+Drag≈5.19 N
+Treq≈5.19 N total
+≈2.595 N / motor
+Elevator≈-8 deg
+RPM first estimate≈6020
+Throttle first estimate≈0.536
+
+Neutral elevator:
+V≈21.244 m/s
+alpha≈0.365 deg
+CL≈0.4717
+
+Longitudinal:
+Cma≈-1.658
+Cmq≈-10.229
+Short period zeta≈0.394
+Phugoid zeta≈0.003
+
+Lateral:
+Cnb≈+0.03554
+Cnr≈-0.02227
+Clp≈-0.54187
+
+Dutch:
+f≈0.512 Hz
+zeta≈0.095
+T≈1.96 s
+
+Roll:
+lambda≈-9.464
+tau≈0.106 s
+
+Spiral:
+lambda≈+0.08227
+doubling≈8.43 s
+
+================================================================
+70. V1 ÖZET PARAMETRE BLOĞU
+================================================================
+
+Mass=6.000 kg
+CG=(0.168309,0,0.100000) m
+
+Ixx=0.7284
+Iyy=0.2507
+Izz=0.9523
+Ixy=0
+Iyz=0
+Ixz=0.01485
+
+S=0.4514 m²
+b=2.093 m
+c_ref≈0.224 m
+
+CLa=5.44594
+Cma=-1.65805
+CLq=9.48457
+Cmq=-10.22875
+Cmde≈-0.73/rad
+
+CYb=-0.13216
+CYp=-0.04567
+CYr=+0.08776
+CYda≈+0.0254
+CYdr≈+0.085
+
+Clb=-0.00717
+Clp=-0.54187
+Clr=+0.10586
+Clda≈+0.308
+Cldr≈+0.0007
+
+Cnb=+0.03554
+Cnp=-0.05878
+Cnr=-0.02227
+Cnda≈+0.00144
+Cndr≈-0.025
+
+Drag:
+CD≈0.0351+0.0528*CL²
+
+Motor:
+2x X2820 860KV
+KV=860 rpm/V
+R≈0.0258 ohm
+I0≈1.3 A
+4S Vnom=14.8 V
+Vfull=16.8 V
+
+Prop:
+APC 13x6.5E + reverse-handed counterpart
+D=0.3302 m
+P=0.1651 m
+RPM hard≈11500
+
+Left hub:
+(0.2951,+0.3000,0.1271) m
+
+Right hub:
+(0.2951,-0.3000,0.1271) m
+
+axis≈+X
+
+Core equations:
+V_ESC = throttle*V_battery
+I = (V_ESC - Ke*omega)/R
+Q_motor = Kt*(I-I0)
+I_rotor*omega_dot = Q_motor-Q_prop
+n = RPM/60
+J = V_axial/(nD)
+T = Ct(J)*rho*n²D⁴
+P = Cp(J)*rho*n³D⁵
+Q_prop = P/omega
+Q_reaction = -Q_prop
+
+================================================================
+71. HENÜZ FINAL OLMAYAN / V2’DE İYİLEŞTİRİLECEKLER
+================================================================
+
+- Inertia V1
+- CD0/k calibration
+- exact fuselage parasite drag
+- battery internal resistance
+- battery SOC curve
+- ESC efficiency
+- ESC delay
+- ESC current limiting
+- motor efficiency map
+- motor no-load/friction loss model
+- motor thermal model
+- exact motor rotor inertia
+- exact prop rotational inertia
+- exact 3S battery location
+- exact ESC positions
+- exact avionics/servo masses/positions
+- prop-wing interference
+- propwash over tail
+- induced disk flow
+- post-stall aero
+- ground effect
+- wind/turbulence
+- body aerodynamic interference
+- stall aerodynamic center migration
+- real-flight validation
+
+================================================================
+72. KRİTİK UYGULAMA UYARILARI
+================================================================
+
+- STL prop çapını aero hesapta kullanma; gerçek D=0.3302 m.
+- Type7 control CD değerleri inviscid; gerçek total drag değildir.
+- XFLR5 non-dimensional derivative normalization korunmalı.
+- p_hat/q_hat/r_hat doğru reference dimensions ile hesaplanmalı.
+- degrees/radians karıştırılmamalı; control derivatives /rad.
+- XFLR5 control sign ile Gazebo joint sign aynı varsayılmamalı; unit-test ile eşlenmeli.
+- +X forward, +Y left, +Z up convention korunmalı.
+- force/moment signs kısa unit testlerle doğrulanmalı.
+- thrust CG’ye değil gerçek hub/thrust-line konumuna uygulanmalı.
+- reaction torque mutlaka uygulanmalı.
+- left/right prop counter-rotation korunmalı.
+- visual RPM ile physics RPM aynı state olmalı.
+- RPM anlık set edilmemeli; omega_dot ile fiziksel çözülmeli.
+- APC Ct/Cp J’ye bağlı interpolate edilmeli.
+- throttle sabit thrust lookup ana model olarak kullanılmamalı.
+- stall öncesi linear derivatives sonsuza kadar extrapolate edilmemeli.
+- ±10 deg control derivative range en güvenilir analiz bandı.
+- mechanical actuator başlangıç limitleri≈±30 deg olabilir.
+- Inertia V1 provisional olarak işaretlenmeli.
+
+================================================================
+73. PROJE DURUMU — GAZEBO KODLAMA ÖNCESİ
+================================================================
+
+[✓] Manufacturer manual toplandı
+[✓] STL ana parçaları incelendi
+[✓] coordinate frame sabitlendi
+[✓] mass=6kg belirlendi
+[✓] CG belirlendi
+[✓] Inertia V1 oluşturuldu
+
+[✓] Wing 2D XFOIL
+[✓] Wing morph profiles
+[✓] Main wing 3D XFLR5
+[✓] Main-wing fixed-speed Type1 polars
+[✓] high-alpha usable limit belirlendi
+
+[✓] Horizontal-tail geometry
+[✓] horizontal-tail X/Z placement
+[✓] inverted NACA2410 polars
+[✓] real elevator hinge extraction
+[✓] elevator TE flap model
+[✓] Type7 elevator trim sweep
+[✓] Cma/Cmq
+[✓] neutral point
+[✓] static margin
+[✓] short-period
+[✓] phugoid
+
+[✓] Vertical-tail STL section extraction
+[✓] clean vertical-tail profiles
+[✓] vertical-tail XFOIL
+[✓] vertical-tail 3D XFLR5
+[✓] real rudder hinge
+[✓] neutral-fin Type7
+[✓] CYb/Clb/Cnb
+[✓] Clp/Cnr etc.
+[✓] Dutch roll
+[✓] roll mode
+[✓] spiral mode
+[✓] rudder sweep
+[✓] CYdr/Cldr/Cndr
+
+[✓] Aileron geometry
+[✓] aileron hinge
+[✓] aileron TE flap model
+[✓] aileron Type7 sweep
+[✓] Clda/Cnda/CYda
+
+[✓] Drag V1
+[✓] 6kg level-flight drag table
+[✓] 18m/s benchmark
+
+[✓] X2820 860KV motor identification
+[✓] APC 13x6.5E prop identification
+[✓] reverse-handed prop requirement
+[✓] motor/prop STL positions
+[✓] prop STL diameter mismatch found
+[✓] real prop diameter selected
+[✓] motor electrical parameters collected
+[✓] APC Ct/Cp physical formulation defined
+[✓] RPM dynamic architecture defined
+[✓] reaction torque architecture defined
+[✓] battery-sag V2 path defined
+
+NEXT:
+[→] Gazebo Sim Harmonic implementation
+
+================================================================
+74. ÖNERİLEN KODLAMA SIRASI
+================================================================
+
+1) Existing Gazebo model structure audit
+2) SDF frame / mass / CG / inertia doğrulama
+3) mesh scales and placements
+4) collision geometry
+5) control-surface hinge joints and limits
+6) prop joints and correct visual scale
+7) Aerodynamics plugin/system V1
+8) coefficient sign unit tests
+9) Propulsion plugin/system V1
+10) APC Ct/Cp lookup tables
+11) motor electrical + omega dynamics
+12) static motor/prop validation
+13) combined level-flight validation
+14) ArduPlane control channel mapping
+15) SITL
+16) V2 improvements
+
+================================================================
+DOSYA SONU
+================================================================

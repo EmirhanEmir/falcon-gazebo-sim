@@ -38,6 +38,7 @@ validation
 Rules:
 
 - The main Claude Code session is the only entry point that assigns work to a specialist agent. Specialist agents don't self-assign cross-boundary work.
+- `general-purpose` is used only when no project specialist agent fits the task. Any task inside a specialist's ownership boundary (below) is delegated to that specialist, never to `general-purpose` — see `CLAUDE.md` § "Orchestration rule: specialist agents over `general-purpose`" for the full domain-to-agent mapping. `general-purpose` is reserved for genuinely general work that falls outside all six ownership boundaries.
 - A specialist agent only touches files within its own ownership boundary (below). If a task spans boundaries, main Claude splits it and delegates each part to its owning agent.
 - `gazebo-testing` always runs after a specialist makes a non-trivial change. It reports `TEST_FAILED` with observed vs. expected behavior, evidence, suspected subsystem, and the responsible agent. It never edits physics parameters to make a test pass.
 - `validation` always reviews after testing. It is read-only: it classifies findings `CRITICAL` / `MAJOR` / `MINOR` / `INFO` and routes issues back to the responsible specialist. It never silently corrects a parameter.
