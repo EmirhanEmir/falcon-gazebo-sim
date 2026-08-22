@@ -1,0 +1,403 @@
+FALCON V2 structural test suite run: 20260822T004808Z
+
+--- Running: structural_state_capture ---
+=== FALCON V2 structural state capture: 20260822T004808Z ===
+World: /home/emirhan/Desktop/FalconV2/tests/gazebo/worlds/falcon_v2_zero_g_world.sdf
+
+--- gz sdf --check (model/model.sdf) ---
+Valid.
+
+--- gz sdf --check (test world) ---
+Valid.
+
+--- gz model --list ---
+
+Requesting state for world [falcon_v2_zero_g_test]...
+
+Available models:
+    - falcon_v2
+
+--- gz model -m falcon_v2 -p (model pose) ---
+
+Requesting state for world [falcon_v2_zero_g_test]...
+
+Model: [4]
+  - Name: falcon_v2
+  - Pose [ XYZ (m) ] [ RPY (rad) ]:
+    [0.000000 0.000000 0.000000]
+    [0.000000 -0.000000 0.000000]
+
+--- gz model -m falcon_v2 -l (all links: mass, inertial pose, inertia matrix, link pose) ---
+
+Requesting state for world [falcon_v2_zero_g_test]...
+
+- Link [5]
+  - Name: base_link
+  - Parent: falcon_v2 [4]
+  - Mass (kg): 5.934800
+  - Inertial Pose [ XYZ (m) ] [ RPY (rad) ]:
+    [0.168309 0.000000 0.100000]
+    [0.000000 -0.000000 0.000000]
+  - Inertial Matrix (kg.m^2):
+    [0.728400 0.000000 0.014850]
+    [0.000000 0.250700 0.000000]
+    [0.014850 0.000000 0.952300]
+  - Pose [ XYZ (m) ] [ RPY (rad) ]:
+    [0.000000 0.000000 0.000000]
+    [0.000000 -0.000000 0.000000]
+- Link [18]
+  - Name: left_aileron
+  - Parent: falcon_v2 [4]
+  - Mass (kg): 0.001000
+  - Inertial Pose [ XYZ (m) ] [ RPY (rad) ]:
+    [-0.025962 0.236107 0.007807]
+    [0.000000 -0.000000 0.000000]
+  - Inertial Matrix (kg.m^2):
+    [0.000019 0.000000 0.000000]
+    [0.000000 0.000000 0.000000]
+    [0.000000 0.000000 0.000019]
+  - Pose [ XYZ (m) ] [ RPY (rad) ]:
+    [0.032943 0.313950 0.110356]
+    [0.000000 -0.000000 0.000000]
+- Link [21]
+  - Name: right_aileron
+  - Parent: falcon_v2 [4]
+  - Mass (kg): 0.001000
+  - Inertial Pose [ XYZ (m) ] [ RPY (rad) ]:
+    [-0.025962 -0.236107 0.007807]
+    [0.000000 -0.000000 0.000000]
+  - Inertial Matrix (kg.m^2):
+    [0.000019 0.000000 0.000000]
+    [0.000000 0.000000 0.000000]
+    [0.000000 0.000000 0.000019]
+  - Pose [ XYZ (m) ] [ RPY (rad) ]:
+    [0.032943 -0.313950 0.110356]
+    [0.000000 -0.000000 0.000000]
+- Link [24]
+  - Name: left_elevator
+  - Parent: falcon_v2 [4]
+  - Mass (kg): 0.001000
+  - Inertial Pose [ XYZ (m) ] [ RPY (rad) ]:
+    [-0.020211 0.094700 -0.004031]
+    [0.000000 -0.000000 0.000000]
+  - Inertial Matrix (kg.m^2):
+    [0.000003 0.000000 0.000000]
+    [0.000000 0.000000 0.000000]
+    [0.000000 0.000000 0.000003]
+  - Pose [ XYZ (m) ] [ RPY (rad) ]:
+    [-0.474959 0.050600 0.087119]
+    [0.000000 -0.000000 0.000000]
+- Link [27]
+  - Name: right_elevator
+  - Parent: falcon_v2 [4]
+  - Mass (kg): 0.001000
+  - Inertial Pose [ XYZ (m) ] [ RPY (rad) ]:
+    [-0.020211 -0.094700 -0.004031]
+    [0.000000 -0.000000 0.000000]
+  - Inertial Matrix (kg.m^2):
+    [0.000003 0.000000 0.000000]
+    [0.000000 0.000000 0.000000]
+    [0.000000 0.000000 0.000003]
+  - Pose [ XYZ (m) ] [ RPY (rad) ]:
+    [-0.474959 -0.050600 0.087119]
+    [0.000000 -0.000000 0.000000]
+- Link [30]
+  - Name: rudder
+  - Parent: falcon_v2 [4]
+  - Mass (kg): 0.001000
+  - Inertial Pose [ XYZ (m) ] [ RPY (rad) ]:
+    [-0.019247 0.000000 0.084500]
+    [0.000000 -0.000000 0.000000]
+  - Inertial Matrix (kg.m^2):
+    [0.000002 0.000000 0.000000]
+    [0.000000 0.000003 0.000000]
+    [0.000000 0.000000 0.000000]
+  - Pose [ XYZ (m) ] [ RPY (rad) ]:
+    [-0.476094 0.000000 0.130500]
+    [0.000000 -0.000000 0.000000]
+- Link [33]
+  - Name: left_prop
+  - Parent: falcon_v2 [4]
+  - Mass (kg): 0.030100
+  - Inertial Pose [ XYZ (m) ] [ RPY (rad) ]:
+    [0.000000 0.000000 0.000000]
+    [0.000000 -0.000000 0.000000]
+  - Inertial Matrix (kg.m^2):
+    [0.000273 0.000000 0.000000]
+    [0.000000 0.000273 0.000000]
+    [0.000000 0.000000 0.000273]
+  - Pose [ XYZ (m) ] [ RPY (rad) ]:
+    [0.295100 0.300000 0.127100]
+    [0.000000 -0.000000 0.000000]
+- Link [35]
+  - Name: right_prop
+  - Parent: falcon_v2 [4]
+  - Mass (kg): 0.030100
+  - Inertial Pose [ XYZ (m) ] [ RPY (rad) ]:
+    [0.000000 0.000000 0.000000]
+    [0.000000 -0.000000 0.000000]
+  - Inertial Matrix (kg.m^2):
+    [0.000273 0.000000 0.000000]
+    [0.000000 0.000273 0.000000]
+    [0.000000 0.000000 0.000273]
+  - Pose [ XYZ (m) ] [ RPY (rad) ]:
+    [0.295100 -0.300000 0.127100]
+    [0.000000 -0.000000 0.000000]
+
+--- gz model -m falcon_v2 -j (all joints: type, parent/child link, axis) ---
+
+Requesting state for world [falcon_v2_zero_g_test]...
+
+- Joint [37]
+  - Name: left_aileron_joint
+  - Parent: falcon_v2 [4]
+  - Type: revolute
+  - Parent Link: base_link [5]
+  - Child Link: left_aileron [18]
+  - Pose [ XYZ (m) ] [ RPY (rad) ]:
+    [0.000000 0.000000 0.000000]
+    [0.000000 -0.000000 0.000000]
+  - Axis unit vector [ XYZ ]:
+    [0.000994 0.999899 0.014146]
+- Joint [38]
+  - Name: right_aileron_joint
+  - Parent: falcon_v2 [4]
+  - Type: revolute
+  - Parent Link: base_link [5]
+  - Child Link: right_aileron [21]
+  - Pose [ XYZ (m) ] [ RPY (rad) ]:
+    [0.000000 0.000000 0.000000]
+    [0.000000 -0.000000 0.000000]
+  - Axis unit vector [ XYZ ]:
+    [-0.000994 0.999899 -0.014146]
+- Joint [39]
+  - Name: left_elevator_joint
+  - Parent: falcon_v2 [4]
+  - Type: revolute
+  - Parent Link: base_link [5]
+  - Child Link: left_elevator [24]
+  - Pose [ XYZ (m) ] [ RPY (rad) ]:
+    [0.000000 0.000000 0.000000]
+    [0.000000 -0.000000 0.000000]
+  - Axis unit vector [ XYZ ]:
+    [0.002983 0.999993 -0.002072]
+- Joint [40]
+  - Name: right_elevator_joint
+  - Parent: falcon_v2 [4]
+  - Type: revolute
+  - Parent Link: base_link [5]
+  - Child Link: right_elevator [27]
+  - Pose [ XYZ (m) ] [ RPY (rad) ]:
+    [0.000000 0.000000 0.000000]
+    [0.000000 -0.000000 0.000000]
+  - Axis unit vector [ XYZ ]:
+    [-0.002983 0.999993 0.002072]
+- Joint [41]
+  - Name: rudder_joint
+  - Parent: falcon_v2 [4]
+  - Type: revolute
+  - Parent Link: base_link [5]
+  - Child Link: rudder [30]
+  - Pose [ XYZ (m) ] [ RPY (rad) ]:
+    [0.000000 0.000000 0.000000]
+    [0.000000 -0.000000 0.000000]
+  - Axis unit vector [ XYZ ]:
+    [0.010378 0 0.999946]
+- Joint [42]
+  - Name: left_prop_joint
+  - Parent: falcon_v2 [4]
+  - Type: revolute
+  - Parent Link: base_link [5]
+  - Child Link: left_prop [33]
+  - Pose [ XYZ (m) ] [ RPY (rad) ]:
+    [0.000000 0.000000 0.000000]
+    [0.000000 -0.000000 0.000000]
+  - Axis unit vector [ XYZ ]:
+    [1 0 0]
+- Joint [43]
+  - Name: right_prop_joint
+  - Parent: falcon_v2 [4]
+  - Type: revolute
+  - Parent Link: base_link [5]
+  - Child Link: right_prop [35]
+  - Pose [ XYZ (m) ] [ RPY (rad) ]:
+    [0.000000 0.000000 0.000000]
+    [0.000000 -0.000000 0.000000]
+  - Axis unit vector [ XYZ ]:
+    [1 0 0]
+
+--- server stderr/stdout tail (last 40 lines, checked for Err/Wrn) ---
+[1;32m[Msg] [0m[1;32mGazebo Sim Server v[0m[1;32m8.14.0[0m[1;32m[0m
+[1;32m[Msg] [0m[1;32mLoading SDF world file[[0m[1;32m/home/emirhan/Desktop/FalconV2/tests/gazebo/worlds/falcon_v2_zero_g_world.sdf[0m[1;32m].[0m
+[1;32m[Msg] [0m[1;32mServing entity system service on [[0m[1;32m/[0m[1;32mentity/system/add[0m[1;32m][0m[1;32m[0m
+[1;32m[Msg] [0m[1;32mLoaded level [[0m[1;32mdefault[0m[1;32m][0m[1;32m[0m
+[1;32m[Msg] [0m[1;32mServing world controls on [[0m[1;32m/world/falcon_v2_zero_g_test[0m[1;32m/control], [[0m[1;32m/world/falcon_v2_zero_g_test[0m[1;32m/control/state] and [[0m[1;32m/world/falcon_v2_zero_g_test[0m[1;32m/playback/control][0m[1;32m[0m
+[1;32m[Msg] [0m[1;32mServing GUI information on [[0m[1;32m/world/falcon_v2_zero_g_test[0m[1;32m/[0m[1;32mgui/info[0m[1;32m][0m[1;32m[0m
+[1;32m[Msg] [0m[1;32mWorld [[0m[1;32mfalcon_v2_zero_g_test[0m[1;32m] initialized with [[0m[1;32m1ms[0m[1;32m] physics profile.[0m[1;32m[0m
+[1;32m[Msg] [0m[1;32mServing world SDF generation service on [[0m[1;32m/world/falcon_v2_zero_g_test[0m[1;32m/[0m[1;32mgenerate_world_sdf[0m[1;32m][0m[1;32m[0m
+[1;32m[Msg] [0m[1;32mServing world names on [[0m[1;32m/gazebo/worlds[0m[1;32m][0m[1;32m[0m
+[1;32m[Msg] [0m[1;32mResource path add service on [[0m[1;32m/gazebo/resource_paths/add[0m[1;32m].[0m[1;32m[0m
+[1;32m[Msg] [0m[1;32mResource path get service on [[0m[1;32m/gazebo/resource_paths/get[0m[1;32m].[0m[1;32m[0m
+[1;32m[Msg] [0m[1;32mResource path resolve service on [[0m[1;32m/gazebo/resource_paths/resolve[0m[1;32m].[0m[1;32m[0m
+[1;32m[Msg] [0m[1;32mResource paths published on [[0m[1;32m/gazebo/resource_paths[0m[1;32m].[0m[1;32m[0m
+[1;32m[Msg] [0m[1;32mServer control service on [[0m[1;32m/server_control[0m[1;32m].[0m[1;32m[0m
+[1;32m[Msg] [0m[1;32mFound no publishers on /stats, adding root stats topic[0m[1;32m[0m
+[1;32m[Msg] [0m[1;32mFound no publishers on /clock, adding root clock topic[0m[1;32m[0m
+[1;32m[Msg] [0m[1;32mServing scene information on [[0m[1;32m/world/falcon_v2_zero_g_test[0m[1;32m/[0m[1;32mscene/info[0m[1;32m][0m[1;32m[0m
+[1;32m[Msg] [0m[1;32mServing graph information on [[0m[1;32m/world/falcon_v2_zero_g_test[0m[1;32m/[0m[1;32mscene/graph[0m[1;32m][0m[1;32m[0m
+[1;32m[Msg] [0m[1;32mServing full state on [[0m[1;32m/world/falcon_v2_zero_g_test[0m[1;32m/[0m[1;32mstate[0m[1;32m][0m[1;32m[0m
+[1;32m[Msg] [0m[1;32mServing full state (async) on [[0m[1;32m/world/falcon_v2_zero_g_test[0m[1;32m/[0m[1;32mstate_async[0m[1;32m][0m[1;32m[0m
+[1;32m[Msg] [0m[1;32mPublishing scene information on [[0m[1;32m/world/falcon_v2_zero_g_test/scene/info[0m[1;32m][0m[1;32m[0m
+[1;32m[Msg] [0m[1;32mPublishing entity deletions on [[0m[1;32m/world/falcon_v2_zero_g_test/scene/deletion[0m[1;32m][0m[1;32m[0m
+[1;32m[Msg] [0m[1;32mPublishing state changes on [[0m[1;32m/world/falcon_v2_zero_g_test/state[0m[1;32m][0m[1;32m[0m
+[1;32m[Msg] [0m[1;32mPublishing pose messages on [[0m[1;32m/world/falcon_v2_zero_g_test[0m[1;32m/[0m[1;32mpose/info[0m[1;32m][0m[1;32m[0m
+[1;32m[Msg] [0m[1;32mPublishing dynamic pose messages on [[0m[1;32m/world/falcon_v2_zero_g_test[0m[1;32m/[0m[1;32mdynamic_pose/info[0m[1;32m][0m[1;32m[0m
+
+--- grep for Err/error in server log ---
+
+sdf_check_status=0 world_check_status=0 model_ready=1 err_count_in_server_log=0
+Log saved to: /home/emirhan/Desktop/FalconV2/tests/gazebo/results/structural_state_20260822T004808Z.txt
+Server log saved to: /home/emirhan/Desktop/FalconV2/tests/gazebo/results/server_log_20260822T004808Z.txt
+
+--- Running: model_load ---
+=== MODEL_LOAD_TEST ===
+Model 'falcon_v2' valid: True -> PASS
+Link count: 8 (expected 8), names match expected set: True -> PASS
+Joint count: 7 (expected 7), names match expected set: True -> PASS
+  left_aileron_joint: valid=True parent=base_link (expected base_link) child=left_aileron (expected left_aileron) -> PASS
+  right_aileron_joint: valid=True parent=base_link (expected base_link) child=right_aileron (expected right_aileron) -> PASS
+  left_elevator_joint: valid=True parent=base_link (expected base_link) child=left_elevator (expected left_elevator) -> PASS
+  right_elevator_joint: valid=True parent=base_link (expected base_link) child=right_elevator (expected right_elevator) -> PASS
+  rudder_joint: valid=True parent=base_link (expected base_link) child=rudder (expected rudder) -> PASS
+  left_prop_joint: valid=True parent=base_link (expected base_link) child=left_prop (expected left_prop) -> PASS
+  right_prop_joint: valid=True parent=base_link (expected base_link) child=right_prop (expected right_prop) -> PASS
+
+Mesh URI resolution / parse-error check: see server_log_*.txt from capture_structural_state.sh (err_count_in_server_log=0 recorded there) and gz sdf --check output (both logged as 'Valid.').
+MODEL_LOAD_TEST overall: PASS
+
+--- Running: freefall_dynamics_suite ---
+=== MASS_CG_INERTIA_TEST ===
+base_link: mass=5.934800 kg (expected 5.9348) -> PASS
+left_aileron: mass=0.001000 kg (expected 0.001) -> PASS
+right_aileron: mass=0.001000 kg (expected 0.001) -> PASS
+left_elevator: mass=0.001000 kg (expected 0.001) -> PASS
+right_elevator: mass=0.001000 kg (expected 0.001) -> PASS
+rudder: mass=0.001000 kg (expected 0.001) -> PASS
+left_prop: mass=0.030100 kg (expected 0.0301) -> PASS
+right_prop: mass=0.030100 kg (expected 0.0301) -> PASS
+Total mass (sum of 8 links, runtime-queried): 6.000000 kg (expected 6.0) -> PASS
+base_link inertia (Ixx,Iyy,Izz,Ixz)=(0.7284,0.2507,0.9523,0.01485) vs documented (0.7284,0.2507,0.9523,0.01485) -> PASS
+base_link CG (as loaded, spawn-height + sub-mm free-fall-drop corrected) = (0.168309, 0.0, 0.09999999999999964) vs documented Gazebo/CAD CG (0.168309, 0.0, 0.1) -> PASS
+Aggregate 8-link mass-weighted CG (runtime-computed, spawn-height corrected) = (0.16919559236666662, 0.0, 0.10029148699999801) (mass=6.000000 kg)
+  vs `gz sdf --inertial-stats` reference (GEOMETRY.md section 33.7) (0.169196, 0.0, 0.100291) -> PASS
+  shift vs documented Gazebo/CAD CG (0.168309, 0.0, 0.1): 0.933 mm (GEOMETRY.md section 33.4 documents ~0.9mm X / ~0.29mm Z, well inside mfr +/-10mm tolerance) -> PASS
+MASS_CG_INERTIA_TEST overall: PASS
+
+=== STATIC_GRAVITY_TEST / NUMERICAL_STABILITY_IDLE_TEST ===
+Any NaN/Inf observed across 3500 sampled steps: False
+Free-fall window t=[0.100,0.900]s: measured dvz/dt = -9.8100 m/s^2 (expected -9.81) -> PASS
+Max lateral (X/Y) speed during free fall: 0.00000 m/s (gravity alone should not induce lateral motion) -> PASS
+Max base_link angular speed during free fall: 0.00000 rad/s (bound: <20 rad/s; see note on control-surface coupling) -> PASS
+Max base_link linear speed over entire 3.50s run: 9.908 m/s (bound: <50 m/s) -> PASS
+base_link Z range over run: [-0.0085, 5.0000] m (spawned at z=5.0)
+STATIC_GRAVITY_TEST overall: PASS
+NUMERICAL_STABILITY_IDLE_TEST overall: PASS
+
+=== COLLISION_SANITY_TEST ===
+Post-contact (t>=2.0s) base_link Z range: [-0.0076, -0.0061] m
+  No sinking through ground (min_z > -0.30 m): PASS
+  No spontaneous launch (max_z < 6.0 m): PASS
+COLLISION_SANITY_TEST overall: PASS
+
+--- Running: control_joint_limits_and_motion ---
+=== CONTROL_JOINT_LIMIT_TEST ===
+left_aileron_joint: valid=True lower=-0.5236 upper=0.5236 -> PASS
+right_aileron_joint: valid=True lower=-0.5236 upper=0.5236 -> PASS
+left_elevator_joint: valid=True lower=-0.5236 upper=0.5236 -> PASS
+right_elevator_joint: valid=True lower=-0.5236 upper=0.5236 -> PASS
+rudder_joint: valid=True lower=-0.5236 upper=0.5236 -> PASS
+CONTROL_JOINT_LIMIT_TEST overall: PASS
+left_aileron_joint: swept max=0.5226 rad (target 0.5226), min=-0.5226 rad (target -0.5226), any_nan=False, max_readback_fidelity_err=0.000000 rad -> PASS
+right_aileron_joint: swept max=0.5226 rad (target 0.5226), min=-0.5226 rad (target -0.5226), any_nan=False, max_readback_fidelity_err=0.000000 rad -> PASS
+left_elevator_joint: swept max=0.5226 rad (target 0.5226), min=-0.5226 rad (target -0.5226), any_nan=False, max_readback_fidelity_err=0.000000 rad -> PASS
+right_elevator_joint: swept max=0.5226 rad (target 0.5226), min=-0.5226 rad (target -0.5226), any_nan=False, max_readback_fidelity_err=0.000000 rad -> PASS
+rudder_joint: swept max=0.5226 rad (target 0.5226), min=-0.5226 rad (target -0.5226), any_nan=False, max_readback_fidelity_err=0.000000 rad -> PASS
+
+=== CONTROL_JOINT_FREE_MOTION_TEST (primary: reset_position full-range sweep) ===
+CONTROL_JOINT_FREE_MOTION_TEST overall: PASS
+
+=== SUPPLEMENTARY: torque-driven dynamic sweep (informational, not pass/fail) ===
+left_aileron_joint: torque=2e-05 N*m over 300 steps -> final=0.5236 rad, max=0.5236 rad, any_nan=False
+right_aileron_joint: torque=2e-05 N*m over 300 steps -> final=0.5236 rad, max=0.5236 rad, any_nan=False
+left_elevator_joint: torque=2e-05 N*m over 300 steps -> final=0.5236 rad, max=0.5236 rad, any_nan=False
+right_elevator_joint: torque=2e-05 N*m over 300 steps -> final=0.5236 rad, max=0.5236 rad, any_nan=False
+rudder_joint: torque=2e-05 N*m over 300 steps -> final=0.5236 rad, max=0.5236 rad, any_nan=False
+
+--- Running: prop_joints ---
+=== PROP_JOINT_EXISTENCE_TEST / PROP_JOINT_AXIS_TEST (see also structural_state_*.txt for CLI cross-check) ===
+left_prop_joint: valid=True parent=base_link child=left_prop -> PASS
+right_prop_joint: valid=True parent=base_link child=right_prop -> PASS
+Axis vector [1, 0, 0] for both prop joints confirmed via `gz model -m falcon_v2 -j` CLI capture (structural_state_*.txt).
+PROP_JOINT_EXISTENCE_TEST overall: PASS
+
+=== SUPPLEMENTARY: continuous-rotation demonstration (spin both props via set_velocity) ===
+left_prop_joint: spun at 50.0 rad/s for 500 steps -> final_pos=25.100 rad (3.995 rev), any_nan=False -> PASS
+right_prop_joint: spun at 50.0 rad/s for 500 steps -> final_pos=25.100 rad (3.995 rev), any_nan=False -> PASS
+
+--- Running: mesh_placement ---
+=== MESH_PLACEMENT_VISUAL_TEST (independent STL re-parse + SDF pose cross-check) ===
+body.stl: 919765 triangles, raw size (mm) = (1053.76,560.00,330.48) -> PASS
+left_aileron.stl: 28786 triangles, raw size (mm) = (61.12,479.37,20.95) -> PASS
+left_elevator.stl: 31462 triangles, raw size (mm) = (44.97,189.40,9.07) -> PASS
+left_motor.stl: 697134 triangles, raw size (mm) = (66.48,38.23,38.24) -> PASS
+left_pervane.stl: 79088 triangles, raw size (mm) = (16.93,273.42,21.18) -> PASS
+left_wing.stl: 181330 triangles, raw size (mm) = (266.51,972.03,46.96) -> PASS
+right_aileron.stl: 28786 triangles, raw size (mm) = (61.12,479.37,20.95) -> PASS
+right_elevator.stl: 31462 triangles, raw size (mm) = (44.97,189.40,9.07) -> PASS
+right_motor.stl: 697134 triangles, raw size (mm) = (66.48,38.23,38.24) -> PASS
+right_pervane.stl: 79088 triangles, raw size (mm) = (16.93,273.42,21.18) -> PASS
+right_wing.stl: 181328 triangles, raw size (mm) = (266.51,972.03,46.96) -> PASS
+rudder.stl: 34857 triangles, raw size (mm) = (45.32,8.91,169.50) -> PASS
+Mesh parse/plausibility check overall: PASS
+
+--- World-frame visual AABBs (independently computed) ---
+body_visual: lo=(-0.5269, -0.28, -0.0) hi=(0.5269, 0.28, 0.3305) center=(0.0, 0.0, 0.1652)
+left_wing_visual: lo=(-0.0275, 0.08, 0.1035) hi=(0.239, 1.052, 0.1505) center=(0.1057, 0.566, 0.127)
+right_wing_visual: lo=(-0.0275, -1.052, 0.1035) hi=(0.239, -0.08, 0.1505) center=(0.1057, -0.566, 0.127)
+left_motor_visual: lo=(0.2363, 0.2809, 0.1079) hi=(0.3028, 0.3191, 0.1461) center=(0.2696, 0.3, 0.127)
+right_motor_visual: lo=(0.2363, -0.3191, 0.1079) hi=(0.3028, -0.2809, 0.1461) center=(0.2696, -0.3, 0.127)
+left_aileron_visual: lo=(-0.0236, 0.3104, 0.1077) hi=(0.0375, 0.7897, 0.1286) center=(0.007, 0.5501, 0.1182)
+right_aileron_visual: lo=(-0.0236, -0.7897, 0.1077) hi=(0.0375, -0.3104, 0.1286) center=(0.007, -0.5501, 0.1182)
+left_elevator_visual: lo=(-0.5177, 0.0506, 0.0786) hi=(-0.4727, 0.24, 0.0876) center=(-0.4952, 0.1453, 0.0831)
+right_elevator_visual: lo=(-0.5177, -0.24, 0.0786) hi=(-0.4727, -0.0506, 0.0876) center=(-0.4952, -0.1453, 0.0831)
+rudder_visual: lo=(-0.518, -0.0045, 0.1303) hi=(-0.4727, 0.0045, 0.2998) center=(-0.4953, -0.0, 0.215)
+left_prop_visual: lo=(0.2849, 0.1349, 0.1143) hi=(0.3053, 0.4652, 0.1399) center=(0.2951, 0.3, 0.1271)
+right_prop_visual: lo=(0.2849, -0.4651, 0.1143) hi=(0.3053, -0.1348, 0.1399) center=(0.2951, -0.3, 0.1271)
+
+Wingspan (independently computed, left tip Y 1.0520 to right tip Y -1.0520) = 2.1041 m vs manufacturer 2.093 m (tol 0.05 m) -> PASS
+
+body_visual: center=(0.0, 0.0, 0.1652) within +/-3.0 m of origin -> PASS
+left_wing_visual: center=(0.1057, 0.566, 0.127) within +/-3.0 m of origin -> PASS
+right_wing_visual: center=(0.1057, -0.566, 0.127) within +/-3.0 m of origin -> PASS
+left_motor_visual: center=(0.2696, 0.3, 0.127) within +/-3.0 m of origin -> PASS
+right_motor_visual: center=(0.2696, -0.3, 0.127) within +/-3.0 m of origin -> PASS
+
+left_aileron_visual: AABB center=(0.007, 0.5501, 0.1182) vs link/hinge origin (0.032943, 0.31395, 0.110356), dist=0.2377 m (tol 0.5 m) -> PASS
+right_aileron_visual: AABB center=(0.007, -0.5501, 0.1182) vs link/hinge origin (0.032943, -0.31395, 0.110356), dist=0.2377 m (tol 0.5 m) -> PASS
+left_elevator_visual: AABB center=(-0.4952, 0.1453, 0.0831) vs link/hinge origin (-0.474959, 0.0506, 0.087119), dist=0.0969 m (tol 0.5 m) -> PASS
+right_elevator_visual: AABB center=(-0.4952, -0.1453, 0.0831) vs link/hinge origin (-0.474959, -0.0506, 0.087119), dist=0.0969 m (tol 0.5 m) -> PASS
+rudder_visual: AABB center=(-0.4953, -0.0, 0.215) vs link/hinge origin (-0.476094, 0.0, 0.1305), dist=0.0867 m (tol 0.5 m) -> PASS
+
+left_prop_visual: visual bbox size=(0.0205, 0.3303, 0.0256) m, measured diameter=0.3303 m vs real APC 13x6.5E 0.3302 m (tol 0.02) -> PASS; AABB-center-to-hub dist=0.039 mm (tol 5.0 mm) -> PASS
+right_prop_visual: visual bbox size=(0.0205, 0.3303, 0.0256) m, measured diameter=0.3303 m vs real APC 13x6.5E 0.3302 m (tol 0.02) -> PASS; AABB-center-to-hub dist=0.039 mm (tol 5.0 mm) -> PASS
+
+MESH_PLACEMENT_VISUAL_TEST overall: PASS
+
+=== Script-level summary ===
+structural_state_capture: PASS
+model_load: PASS
+mesh_placement: PASS
+prop_joints: PASS
+control_joint_limits_and_motion: PASS
+freefall_dynamics_suite: PASS
+

@@ -1,0 +1,32 @@
+=== MASS_CG_INERTIA_TEST ===
+base_link: mass=5.934800 kg (expected 5.9348) -> PASS
+left_aileron: mass=0.001000 kg (expected 0.001) -> PASS
+right_aileron: mass=0.001000 kg (expected 0.001) -> PASS
+left_elevator: mass=0.001000 kg (expected 0.001) -> PASS
+right_elevator: mass=0.001000 kg (expected 0.001) -> PASS
+rudder: mass=0.001000 kg (expected 0.001) -> PASS
+left_prop: mass=0.030100 kg (expected 0.0301) -> PASS
+right_prop: mass=0.030100 kg (expected 0.0301) -> PASS
+Total mass (sum of 8 links, runtime-queried): 6.000000 kg (expected 6.0) -> PASS
+base_link inertia (Ixx,Iyy,Izz,Ixz)=(0.7284,0.2507,0.9523,0.01485) vs documented (0.7284,0.2507,0.9523,0.01485) -> PASS
+base_link CG (as loaded, spawn-height + sub-mm free-fall-drop corrected) = (0.168309, 0.0, 0.09999999999999964) vs documented Gazebo/CAD CG (0.168309, 0.0, 0.1) -> PASS
+Aggregate 8-link mass-weighted CG (runtime-computed, spawn-height corrected) = (0.16919559236666662, 0.0, 0.10029148699999801) (mass=6.000000 kg)
+  vs `gz sdf --inertial-stats` reference (GEOMETRY.md section 33.7) (0.169196, 0.0, 0.100291) -> PASS
+  shift vs documented Gazebo/CAD CG (0.168309, 0.0, 0.1): 0.933 mm (GEOMETRY.md section 33.4 documents ~0.9mm X / ~0.29mm Z, well inside mfr +/-10mm tolerance) -> PASS
+MASS_CG_INERTIA_TEST overall: PASS
+
+=== STATIC_GRAVITY_TEST / NUMERICAL_STABILITY_IDLE_TEST ===
+Any NaN/Inf observed across 3500 sampled steps: False
+Free-fall window t=[0.100,0.900]s: measured dvz/dt = -9.8100 m/s^2 (expected -9.81) -> PASS
+Max lateral (X/Y) speed during free fall: 0.00000 m/s (gravity alone should not induce lateral motion) -> PASS
+Max base_link angular speed during free fall: 0.00000 rad/s (bound: <20 rad/s; see note on control-surface coupling) -> PASS
+Max base_link linear speed over entire 3.50s run: 9.908 m/s (bound: <50 m/s) -> PASS
+base_link Z range over run: [-0.0085, 5.0000] m (spawned at z=5.0)
+STATIC_GRAVITY_TEST overall: PASS
+NUMERICAL_STABILITY_IDLE_TEST overall: PASS
+
+=== COLLISION_SANITY_TEST ===
+Post-contact (t>=2.0s) base_link Z range: [-0.0076, -0.0061] m
+  No sinking through ground (min_z > -0.30 m): PASS
+  No spontaneous launch (max_z < 6.0 m): PASS
+COLLISION_SANITY_TEST overall: PASS

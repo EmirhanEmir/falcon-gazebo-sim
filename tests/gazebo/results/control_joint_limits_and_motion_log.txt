@@ -1,0 +1,22 @@
+=== CONTROL_JOINT_LIMIT_TEST ===
+left_aileron_joint: valid=True lower=-0.5236 upper=0.5236 -> PASS
+right_aileron_joint: valid=True lower=-0.5236 upper=0.5236 -> PASS
+left_elevator_joint: valid=True lower=-0.5236 upper=0.5236 -> PASS
+right_elevator_joint: valid=True lower=-0.5236 upper=0.5236 -> PASS
+rudder_joint: valid=True lower=-0.5236 upper=0.5236 -> PASS
+CONTROL_JOINT_LIMIT_TEST overall: PASS
+left_aileron_joint: swept max=0.5226 rad (target 0.5226), min=-0.5226 rad (target -0.5226), any_nan=False, max_readback_fidelity_err=0.000000 rad -> PASS
+right_aileron_joint: swept max=0.5226 rad (target 0.5226), min=-0.5226 rad (target -0.5226), any_nan=False, max_readback_fidelity_err=0.000000 rad -> PASS
+left_elevator_joint: swept max=0.5226 rad (target 0.5226), min=-0.5226 rad (target -0.5226), any_nan=False, max_readback_fidelity_err=0.000000 rad -> PASS
+right_elevator_joint: swept max=0.5226 rad (target 0.5226), min=-0.5226 rad (target -0.5226), any_nan=False, max_readback_fidelity_err=0.000000 rad -> PASS
+rudder_joint: swept max=0.5226 rad (target 0.5226), min=-0.5226 rad (target -0.5226), any_nan=False, max_readback_fidelity_err=0.000000 rad -> PASS
+
+=== CONTROL_JOINT_FREE_MOTION_TEST (primary: reset_position full-range sweep) ===
+CONTROL_JOINT_FREE_MOTION_TEST overall: PASS
+
+=== SUPPLEMENTARY: torque-driven dynamic sweep (informational, not pass/fail) ===
+left_aileron_joint: torque=2e-05 N*m over 300 steps -> final=0.5236 rad, max=0.5236 rad, any_nan=False
+right_aileron_joint: torque=2e-05 N*m over 300 steps -> final=0.5236 rad, max=0.5236 rad, any_nan=False
+left_elevator_joint: torque=2e-05 N*m over 300 steps -> final=0.5236 rad, max=0.5236 rad, any_nan=False
+right_elevator_joint: torque=2e-05 N*m over 300 steps -> final=0.5236 rad, max=0.5236 rad, any_nan=False
+rudder_joint: torque=2e-05 N*m over 300 steps -> final=0.5236 rad, max=0.5236 rad, any_nan=False

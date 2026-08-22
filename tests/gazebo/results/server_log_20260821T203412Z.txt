@@ -1,0 +1,25 @@
+[1;32m[Msg] [0m[1;32mGazebo Sim Server v[0m[1;32m8.14.0[0m[1;32m[0m
+[1;32m[Msg] [0m[1;32mLoading SDF world file[[0m[1;32m/home/emirhan/Desktop/FalconV2/tests/gazebo/worlds/falcon_v2_zero_g_world.sdf[0m[1;32m].[0m
+[1;32m[Msg] [0m[1;32mServing entity system service on [[0m[1;32m/[0m[1;32mentity/system/add[0m[1;32m][0m[1;32m[0m
+[1;32m[Msg] [0m[1;32mLoaded level [[0m[1;32mdefault[0m[1;32m][0m[1;32m[0m
+[1;32m[Msg] [0m[1;32mServing world controls on [[0m[1;32m/world/falcon_v2_zero_g_test[0m[1;32m/control], [[0m[1;32m/world/falcon_v2_zero_g_test[0m[1;32m/control/state] and [[0m[1;32m/world/falcon_v2_zero_g_test[0m[1;32m/playback/control][0m[1;32m[0m
+[1;32m[Msg] [0m[1;32mServing GUI information on [[0m[1;32m/world/falcon_v2_zero_g_test[0m[1;32m/[0m[1;32mgui/info[0m[1;32m][0m[1;32m[0m
+[1;32m[Msg] [0m[1;32mWorld [[0m[1;32mfalcon_v2_zero_g_test[0m[1;32m] initialized with [[0m[1;32m1ms[0m[1;32m] physics profile.[0m[1;32m[0m
+[1;32m[Msg] [0m[1;32mServing world SDF generation service on [[0m[1;32m/world/falcon_v2_zero_g_test[0m[1;32m/[0m[1;32mgenerate_world_sdf[0m[1;32m][0m[1;32m[0m
+[1;32m[Msg] [0m[1;32mServing world names on [[0m[1;32m/gazebo/worlds[0m[1;32m][0m[1;32m[0m
+[1;32m[Msg] [0m[1;32mResource path add service on [[0m[1;32m/gazebo/resource_paths/add[0m[1;32m].[0m[1;32m[0m
+[1;32m[Msg] [0m[1;32mResource path get service on [[0m[1;32m/gazebo/resource_paths/get[0m[1;32m].[0m[1;32m[0m
+[1;32m[Msg] [0m[1;32mResource path resolve service on [[0m[1;32m/gazebo/resource_paths/resolve[0m[1;32m].[0m[1;32m[0m
+[1;32m[Msg] [0m[1;32mResource paths published on [[0m[1;32m/gazebo/resource_paths[0m[1;32m].[0m[1;32m[0m
+[1;32m[Msg] [0m[1;32mServer control service on [[0m[1;32m/server_control[0m[1;32m].[0m[1;32m[0m
+[1;32m[Msg] [0m[1;32mFound no publishers on /stats, adding root stats topic[0m[1;32m[0m
+[1;32m[Msg] [0m[1;32mFound no publishers on /clock, adding root clock topic[0m[1;32m[0m
+[1;32m[Msg] [0m[1;32mServing scene information on [[0m[1;32m/world/falcon_v2_zero_g_test[0m[1;32m/[0m[1;32mscene/info[0m[1;32m][0m[1;32m[0m
+[1;32m[Msg] [0m[1;32mServing graph information on [[0m[1;32m/world/falcon_v2_zero_g_test[0m[1;32m/[0m[1;32mscene/graph[0m[1;32m][0m[1;32m[0m
+[1;32m[Msg] [0m[1;32mServing full state on [[0m[1;32m/world/falcon_v2_zero_g_test[0m[1;32m/[0m[1;32mstate[0m[1;32m][0m[1;32m[0m
+[1;32m[Msg] [0m[1;32mServing full state (async) on [[0m[1;32m/world/falcon_v2_zero_g_test[0m[1;32m/[0m[1;32mstate_async[0m[1;32m][0m[1;32m[0m
+[1;32m[Msg] [0m[1;32mPublishing scene information on [[0m[1;32m/world/falcon_v2_zero_g_test/scene/info[0m[1;32m][0m[1;32m[0m
+[1;32m[Msg] [0m[1;32mPublishing entity deletions on [[0m[1;32m/world/falcon_v2_zero_g_test/scene/deletion[0m[1;32m][0m[1;32m[0m
+[1;32m[Msg] [0m[1;32mPublishing state changes on [[0m[1;32m/world/falcon_v2_zero_g_test/state[0m[1;32m][0m[1;32m[0m
+[1;32m[Msg] [0m[1;32mPublishing pose messages on [[0m[1;32m/world/falcon_v2_zero_g_test[0m[1;32m/[0m[1;32mpose/info[0m[1;32m][0m[1;32m[0m
+[1;32m[Msg] [0m[1;32mPublishing dynamic pose messages on [[0m[1;32m/world/falcon_v2_zero_g_test[0m[1;32m/[0m[1;32mdynamic_pose/info[0m[1;32m][0m[1;32m[0m

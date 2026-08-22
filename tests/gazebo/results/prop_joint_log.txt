@@ -1,0 +1,9 @@
+=== PROP_JOINT_EXISTENCE_TEST / PROP_JOINT_AXIS_TEST (see also structural_state_*.txt for CLI cross-check) ===
+left_prop_joint: valid=True parent=base_link child=left_prop -> PASS
+right_prop_joint: valid=True parent=base_link child=right_prop -> PASS
+Axis vector [1, 0, 0] for both prop joints confirmed via `gz model -m falcon_v2 -j` CLI capture (structural_state_*.txt).
+PROP_JOINT_EXISTENCE_TEST overall: PASS
+
+=== SUPPLEMENTARY: continuous-rotation demonstration (spin both props via set_velocity) ===
+left_prop_joint: spun at 50.0 rad/s for 500 steps -> final_pos=25.100 rad (3.995 rev), any_nan=False -> PASS
+right_prop_joint: spun at 50.0 rad/s for 500 steps -> final_pos=25.100 rad (3.995 rev), any_nan=False -> PASS

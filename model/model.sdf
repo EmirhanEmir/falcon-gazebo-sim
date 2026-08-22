@@ -1,0 +1,1045 @@
+<?xml version="1.0" ?>
+<sdf version="1.9">
+  <!--
+    ============================================================================
+    FALCON V2 - Gazebo Sim Harmonic model, STRUCTURAL V1
+    ============================================================================
+    Author (this pass): geometry-structure specialist agent, 2026-08-21.
+    Scope: physical/mechanical skeleton ONLY - links, joints, mass, CG,
+    inertia, visual mesh placement, collision primitives, hinge/prop joint
+    geometry. NO aerodynamic force/moment model, NO propulsion thrust/torque
+    model, NO ArduPilot/SITL/MAVLink integration, NO control-actuation logic,
+    and NO plugins of any kind are present in this file. Movable joints exist
+    but carry no actuator and produce no aerodynamic/propulsive force.
+
+    Coordinate frame: Gazebo/CAD FLU body frame throughout (+X forward,
+    +Y left, +Z up), per CLAUDE.md. All 12 STL meshes share one common
+    global/assembly coordinate system (docs/source_of_truth/geometry/
+    GEOMETRY.md section 13.2) - no mesh was re-origined or re-centered; raw
+    mesh coordinates are used with only the STL_SCALE_TO_SI = 0.001 scale
+    factor applied (GEOMETRY.md section 13.1, status
+    DERIVED_WITH_STRONG_EVIDENCE: strong convergent numeric evidence for
+    millimeters, not a CAD-metadata confirmation). No XFLR5-frame value is
+    used anywhere in this file.
+
+    Primary source-of-truth documents (all read in full before authoring
+    this file; see also the updates made alongside this file):
+      - CLAUDE.md
+      - docs/source_of_truth/master/FALCON_V2_MASTER_DATASET_BEFORE_GAZEBO.txt
+      - docs/source_of_truth/geometry/GEOMETRY.md
+      - docs/source_of_truth/mass_properties/MASS_PROPERTIES.md
+      - docs/source_of_truth/controls/CONTROLS.md
+      - docs/source_of_truth/propulsion/PROPULSION.md
+
+    ============================================================================
+    MASS DISTRIBUTION STRATEGY (chosen and documented here; see also
+    GEOMETRY.md "Mass Distribution Strategy" section and the final report)
+    ============================================================================
+    HYBRID of strategy (A) and (B), chosen deliberately over a pure (B):
+      - left_prop / right_prop: assigned their REAL, CONFIRMED component
+        mass (0.0301 kg each, master dataset section 44): real sourced data
+        exists for this component, so an arbitrary near-zero placeholder
+        would be *less* accurate for no benefit. NOT tagged
+        TEMPORARY_NUMERICAL_MASS (it is real data), but each prop's
+        ROTATIONAL INERTIA below IS tagged V1_PROVISIONAL_ROTATIONAL_INERTIA
+        (exact prop rotational inertia is not known; see per-link comment).
+      - left_aileron / right_aileron / left_elevator / right_elevator /
+        rudder: no component-level mass exists anywhere in the source of
+        truth for these specific parts (MASS_PROPERTIES.md section 6:
+        airframe structural mass is an undifferentiated approx 3.58 kg
+        DATA_REQUIRED remainder). Each is assigned a TEMPORARY_NUMERICAL_MASS
+        of 0.001 kg (1 g): a near-massless numerical minimum, NOT a physical
+        claim.
+      - base_link carries the remainder: 6.000 - (2*0.0301 + 5*0.001)
+        = 6.000 - 0.0652 = 5.9348 kg, so total mass across all 8 links
+        sums to EXACTLY 6.000 kg (verified in the closing report).
+      - No known component mass is double-counted: motor mass (0.286 kg
+        total) stays inside base_link (motors are fixed visuals, not
+        separate links, per task architecture) and is NOT separately
+        subtracted a second time; propeller mass (0.0602 kg total) is
+        subtracted from base_link exactly once, matching its assignment
+        to left_prop/right_prop.
+
+    KNOWN, DOCUMENTED LIMITATION (flagged for validation, not silently
+    resolved): base_link's <inertial><inertia> below uses the
+    V1_PROVISIONAL whole-aircraft tensor (master dataset section 9/70)
+    UNMODIFIED, i.e. exactly as documented, with no parallel-axis
+    correction for the small mass now moved onto the 7 movable child
+    links. base_link's <inertial><mass> is 5.9348 kg, not the 6.000 kg
+    the tensor's own documentation basis assumes. This is a deliberate
+    choice, not an oversight: the V1 tensor was already an externally
+    supplied XFLR5 input (master dataset section 9: "Use Plane Inertia =
+    OFF ... bu degerler Mean alanina dogrudan girildi"), not a CAD-derived
+    sum over real components, so attempting a rigorous parallel-axis
+    subtraction for 7 assumed point masses would fabricate a precision the
+    source data does not have (MASS_PROPERTIES.md explicitly forbids
+    "silently improving or re-deriving" the V1 tensor without a real
+    component mass distribution). The resulting inconsistency is judged
+    small (0.0652 kg / 6.000 kg is about 1.09% of total mass, located
+    close to the aircraft's central region for the 5 control surfaces and
+    at a modest approx 0.30 m lateral / approx 0.13 m longitudinal offset
+    for the props) and is left for validation to weigh, not silently
+    corrected here. Mass, CG, and inertia are otherwise UNCHANGED from
+    their documented source values: no unauthorized modification.
+
+    ============================================================================
+    COLLISION STRATEGY (see also GEOMETRY.md update alongside this file)
+    ============================================================================
+    No raw high-poly STL mesh is used as collision geometry anywhere in
+    this file (per task instruction). Primitives only:
+      - Fuselage: 3 boxes along X (nose+wing-root band, mid-fuselage,
+        tail band), sized from confirmed GEOMETRY.md section 13/25
+        bounding-box and slice data. The mid-fuselage box's Y half-width
+        has no direct slice measurement in the source of truth and is
+        conservatively set equal to the (confirmed) tail-band Y half-width
+        (0.280 m) rather than interpolated/guessed narrower: tagged
+        ASSUMPTION, deliberately oversized/conservative, never undersized.
+      - Left/right wing: 1 box each, using each wing's own full mesh
+        bounding box (GEOMETRY.md section 13/15). This is a coarse,
+        deliberately conservative (oversized at the tapered tip) V1
+        approximation, not a tapered/multi-segment fit: flagged as a
+        simplification, not final.
+      - Horizontal/vertical tail (fixed portions): NOT given a separate
+        collision primitive. Per GEOMETRY.md section 26.3, the fixed
+        horizontal-stabilizer and vertical-fin structure is part of
+        body.stl, and the fuselage "tail band" box above already fully
+        envelops that region (its Y = +/-0.280 m and Z = [0,0.330480] m
+        span exceed both the elevator's 240 mm half-span and the rudder's
+        299.75 mm max height). Adding a second primitive there would
+        duplicate collision volume.
+      - Motors (left/right): 1 small box each, using the motor mesh's own
+        bounding box. Not explicitly required by the task's collision list
+        (which named fuselage/wing/h-tail/v-tail) but added as a
+        reasonable, low-cost completeness extension: carries no mass (SDF
+        collision geometry is massless; mass is set only in <inertial>).
+      - Movable control surfaces (aileron/elevator/rudder): each gets its
+        own thin box collision matching its own mesh bounding box,
+        expressed in the link's own local frame (offset from the link's
+        hinge-point origin): full derivation in the per-link comments
+        below.
+      - Propellers: NO collision geometry (deliberate V1 decision). A
+        rotating thin disk at high RPM has no current physical use-case in
+        this structural-only pass (no ground-contact or self-collision
+        scenario involves the prop disk specifically), and adding one
+        risks spurious/self-collision artifacts once a propulsion plugin
+        exists. This may be revisited once propulsion/ArduPilot
+        integration exists.
+
+    self_collide is explicitly set false at the model level: several
+    movable-surface meshes intentionally abut/slightly overlap their
+    parent structure at the hinge line (e.g. aileron vs. wing cutout,
+    GEOMETRY.md section 16): enabling self-collision would produce
+    spurious contact forces there with no benefit for this
+    structural-only pass.
+
+    ============================================================================
+    HINGE-AXIS FITTING METHOD (aileron / elevator / rudder): summary; full
+    method, data, and residuals reported in the closing report and in
+    docs/source_of_truth/geometry/GEOMETRY.md (hinge-fit update)
+    ============================================================================
+    Method (CORRECTED, validation review pass - see GEOMETRY.md section
+    33.1 for the full before/after record; this replaces an earlier
+    version of this comment that used a fixed-radius-tolerance vertex
+    average, found by validation not to be reproducible for the secondary
+    (tilt) axis component): direct re-parse of the relevant STL file's own
+    vertex data (read-only; no mesh file modified), sliced into narrow
+    bands (+/-3 mm) centered on each master-dataset-documented %chord
+    station (elevator master dataset section 21; rudder section 29;
+    aileron section 33-34). Within each band, the forward-most (hinge-side)
+    point is found by a DETERMINISTIC, exactly-reproducible rule: take the
+    single greatest-X value in the band (xmax), then collect every vertex
+    within 0.001 mm of xmax (true float32-duplicate points, arising from
+    STL's per-triangle unshared vertex storage: the same physical point is
+    stored once per adjacent triangle), round to 3 decimal mm and take the
+    UNIQUE spatial points (not multiplicity-weighted - triangle-density
+    around a vertex varies with local mesh topology and must not bias the
+    average), then average those unique point(s). This eliminates the
+    band-width/tolerance sensitivity that caused the secondary-axis
+    non-reproducibility: a wider fixed-radius tolerance was pulling in
+    unrelated nearby vertices (a different part of the local surface, or,
+    for the rudder, an uneven mix of left/right skin-duplicate counts)
+    whose distance from xmax happened to fall inside the tolerance, biasing
+    the secondary-axis (Y or Z) mean in a way that was not stable under
+    reasonable tolerance choices - exactly what validation's independent
+    re-derivation surfaced. The station's own independent variable (Y for
+    aileron/elevator, Z for rudder) is taken from the SAME extremal
+    point(s)' actual coordinate, not the nominal master-dataset target
+    (e.g. the nominal y=70 mm station's true extremal vertex sits at
+    y=72.616 mm - a few mm off nominal, expected since we are locating a
+    real mesh feature within a band, not assuming it sits at the band
+    center). A 2D least-squares line was then fit through these per-station
+    points (X, and the secondary axis, each regressed linearly against the
+    station's own actual coordinate).
+    Boundary-station exclusion (elevator, rudder): the two stations sitting
+    exactly at the movable surface's own mesh Y/Z boundary (elevator
+    y=50.6/240 mm; rudder z=130.5/299.0 mm) were EXCLUDED: both
+    independently return X = -472.684 mm, exactly the mesh's own global
+    bounding-box max-X vertex, at BOTH the root AND tip band, ~2 mm off the
+    smooth trend defined by the interior stations - an end-cap/boundary-
+    face contamination artifact (the flat face closing off the mesh at its
+    own Y/Z extremity), not the true local hinge chord position. Confirmed
+    reproducible under the corrected deterministic method (not an artifact
+    of the old tolerance-average method).
+    Aileron tip-station exclusion (secondary/Z axis only, new finding this
+    pass): station y=784.875 mm's extremal vertex (Y=782.582, Z=128.564 mm)
+    is a local outlier ~12 mm above the smooth Z(Y) trend established by
+    Y=700-780 mm (which rises smoothly from Z~115.8 to Z~116.9 mm over that
+    range) - confirmed via a band-width sensitivity scan to be a single,
+    isolated tip-proximity artifact vertex (station y=784.875 sits only
+    4.865 mm from the aileron mesh's own tip boundary at y=789.740 mm,
+    likely a tip-cap/closing-face vertex). The PRIMARY (X) value at this
+    same station (X=33.396 mm) is NOT similarly affected - it stays
+    consistent with the smooth X(Y) trend - so the aileron's X-fit still
+    safely uses all 4 given stations, while its Z-fit (secondary/tilt
+    axis) uses only the 3 non-tip stations (313.950, 470.925, 627.900 mm).
+    Rudder's lateral (Y) hinge position: NOT forced by assumption - it now
+    has direct, rigorous per-station evidence. At every interior station,
+    the true extremal-X point is a MIRROR-SYMMETRIC PAIR of distinct
+    vertices (Y = +d and Y = -d, essentially identical X and Z) - the
+    hinge cut face's two skin surfaces (left/right of the thin rudder,
+    Y-thickness ~8-9 mm) meet at almost exactly the same X. Averaging the
+    two UNIQUE points of each pair gives Y = 0.0000 mm exactly, at every
+    single interior station (5 of 5) - not "noise consistent with Y=0" (an
+    earlier, weaker characterization this comment previously used) but a
+    direct, exact, per-station geometric confirmation. A prior version of
+    this analysis reported Y-values of a few tenths of a mm using the
+    tolerance-average method and separately, validation's own
+    re-derivation using a naive single-vertex tie-break reported -3.6 to
+    -4.4 mm - both are explained by the same underlying tie: any method
+    that does not correctly identify and evenly average the true mirror
+    pair will read out an arbitrary, method-dependent value between 0 and
+    the pair's own +/-d spread, which is exactly what both those imperfect
+    methods did.
+
+    Residuals (RMS / max, mm, PRIMARY axis = X for all three; interior/
+    non-outlier stations only, corrected deterministic method):
+      - Elevator (4 interior stations: y=70,130,190,220 mm): RMS 0.0096
+        mm, max 0.0153 mm.
+      - Rudder (5 interior stations: z=145,180,215,250,285 mm): RMS 0.0263
+        mm, max 0.0349 mm.
+      - Aileron (4 stations: y=313.95,470.93,627.90,784.88 mm): RMS
+        0.0123 mm, max 0.0204 mm.
+    Residuals (RMS / max, mm, SECONDARY/tilt axis - Z for elevator/aileron,
+    Y for rudder - reported separately per validation's request, not
+    previously published):
+      - Elevator Z(Y), 4 interior stations: RMS 0.0003 mm, max 0.0004 mm.
+        Fitted slope dZ/dY = -0.002072 (tilt approx -0.119 deg) - an ORDER
+        OF MAGNITUDE smaller than an earlier, incorrect version of this
+        file's dZ/dY=-0.022208 (tilt approx -1.27 deg), which was an
+        artifact of the old tolerance-average method, not a real feature.
+      - Rudder Y(Z), 5 interior stations: RMS 0.0000 mm, max 0.0000 mm
+        (exact, by the mirror-pair-averaging construction above). Y is
+        therefore set to exactly 0 with direct per-station evidence, not
+        assumption.
+      - Aileron Z(Y), 3 non-tip-outlier stations: RMS 0.0020 mm, max
+        0.0028 mm. Fitted slope dZ/dY = +0.014147 (tilt approx +0.81 deg) -
+        different from an earlier, incorrect version of this file's
+        dZ/dY=+0.019252 (tilt approx +1.10 deg, computed including the
+        tip-outlier station), and also different from validation's own
+        rough independent estimate (dZ/dY approx 0.025-0.036, which their
+        review noted was itself "depending on band-width/vertex-selection"
+        - consistent with that estimate also being affected by the same
+        tip-proximity artifact under a less deterministic method).
+    All three PRIMARY (X) fits remain sub-0.04 mm RMS, essentially a
+    straight line in each case, consistent with GEOMETRY.md's prior
+    qualitative "nearly straight, mildly swept" characterization (section
+    17/18/27). The SECONDARY (tilt) axis is now also reproducibly fit,
+    with residuals reported for the first time, rather than asserted from
+    an unstable, tolerance-dependent average.
+
+    Left/right mirror symmetry: aileron and elevator hinge lines are
+    derived for the right side by an exact Y-mirror of the left-side fit
+    (right Y = -left Y; right dX/dY = -left dX/dY; right dZ/dY = -left
+    dZ/dY): consistent with the already-CONFIRMED Y-mirror symmetry of the
+    underlying meshes (GEOMETRY.md section 22, deltas <=0.052 mm for every
+    L/R pair). No independent right-side STL re-fit was performed since
+    the source meshes are themselves confirmed exact mirrors; a full
+    independent right-side re-fit is left as an optional cross-check for
+    validation.
+
+    SIGN CONVENTION: SIGN_TEST_REQUIRED for all 5 control-surface joints.
+    The <axis><xyz> vectors below define the joint's ROTATION AXIS
+    direction only: they do NOT assert which physical rotation direction
+    (e.g. trailing-edge-up vs. -down) corresponds to a positive commanded
+    joint angle in Gazebo. Per CONTROLS.md section 4, this must be
+    resolved later by ELEVATOR_TEST / AILERON_TEST / RUDDER_TEST
+    (gazebo-testing owns execution; controls-integration owns the actuator
+    once tested).
+
+    ============================================================================
+    PROPELLER LINKS/JOINTS
+    ============================================================================
+    Hub positions (master dataset section 46, CONFIRMED, GEOMETRY.md
+    section 7):
+      left  hub = (0.2951, +0.3000, 0.1271) m
+      right hub = (0.2951, -0.3000, 0.1271) m
+    Axis: +X for both (master dataset section 48: measured prop-face
+    normal (+0.999996, +0.000018, -0.002668), essentially pure +X, approx
+    0.153 deg off).
+    Joint type: revolute with a very large <limit> (+/-1e16 rad) to
+    emulate continuous rotation: SDF has no dedicated "continuous" joint
+    type.
+    Rotation DIRECTION (left=CCW, right=CW, master dataset section 44) is
+    a physical fact recorded here in comments only: it is NOT encoded by
+    the joint definition itself (a single +X axis has no inherent "CCW vs
+    CW" until a plugin commands a signed velocity/torque; no propulsion
+    plugin exists in this pass, so nothing here could enforce it even if
+    it were encoded).
+    VIEWING-REFERENCE-FRAME CAVEAT (correction, validation review pass):
+    master dataset section 44 states only the bare fact "Left prop = CCW /
+    Right prop = CW" - it does NOT state a viewing reference frame (e.g.
+    "as viewed from behind/pilot's-eye" vs. "as viewed from the front"),
+    and no other repository document (PROPULSION.md, CONTROLS.md,
+    GEOMETRY.md) supplies one either. CCW/CW is not a physically meaningful
+    statement without a stated viewpoint (the same physical rotation looks
+    CCW from one end of the shaft and CW from the other), so this specific
+    viewing-frame detail is DATA_REQUIRED, not assumed here. A prior
+    version of this comment asserted "as viewed from behind" without a
+    supporting citation - that was an unsourced claim, not a documented
+    fact, and has been removed rather than re-labeled ASSUMPTION, since no
+    reasoned basis for picking one specific viewpoint over another exists
+    in the source of truth. This must not be lost by a future
+    propulsion-plugin author: left propeller commanded velocity must be
+    positive-CCW and right must be positive-CW, but WHICH viewing
+    convention "CCW"/"CW" was measured against must be confirmed from the
+    manufacturer manual or CAD source before any signed velocity command
+    is written - SIGN_TEST_REQUIRED and VIEWPOINT_CONFIRMATION_REQUIRED,
+    neither resolved here.
+
+    VISUAL-ONLY propeller scale correction: APPLIED, scoped to <visual>
+    only (never <collision>, none exists for props, and never consumed by
+    any physics in this structural-only pass, since no propulsion plugin
+    exists yet). STL mesh propeller diameter approx 0.2734 m is
+    VISUAL_MESH_ONLY (GEOMETRY.md section 20-21.2) and must NEVER be used
+    by any future physics code; the real physical propeller for ALL
+    propulsion/physics calculations is APC 13x6.5E, D = 0.3302 m
+    (PROPULSION.md section 0). Decision: apply an additional 1.208x
+    visual-only enlargement (0.001 * 1.208 = 0.001208) to the propeller
+    <visual><mesh><scale> ONLY, so the model displays at a realistic size.
+    Because a naive uniform scale multiplies ALL vertex coordinates (not
+    just apparent size) about the mesh's own distant local (0,0,0) origin,
+    applying 0.001208 directly would also shift the visually-rendered hub
+    approx 60 mm away from its true position. To keep the enlarged disk
+    centered on the real hub, the <visual><pose> translation was computed
+    as T = -1.208 * hub_position_m (derived and verified numerically to
+    reproduce the hub to less than 0.1 mm; see per-link comment). No
+    <collision> exists for props, so this scale never has an opportunity
+    to leak into any future collision or physics computation.
+  -->
+
+  <model name="falcon_v2">
+    <static>false</static>
+    <self_collide>false</self_collide>
+    <pose>0 0 0 0 0 0</pose>
+
+    <!-- ============================================================
+         BASE LINK: fixed structure - body, both wings, both motor
+         nacelles (visual only), full aircraft mass minus the 7 movable
+         child links, Gazebo/CAD CG, V1_PROVISIONAL whole-aircraft
+         inertia.
+         ============================================================ -->
+    <link name="base_link">
+      <pose>0 0 0 0 0 0</pose>
+
+      <inertial>
+        <!--
+          CG: Gazebo/CAD reference CG (0.168309, 0, 0.100000) m -
+          CONFIRMED, MASS_PROPERTIES.md section 3.1/3.4. This is the ONLY
+          CG used anywhere in this file; the XFLR5 reference CG (0.0637,
+          0, -0.0210) is NEVER used for SDF purposes (CLAUDE.md CG-duality
+          rule).
+          Mass: 5.9348 kg = 6.000 kg total - 0.0652 kg on the 7 movable
+          child links (see mass-distribution-strategy header comment).
+          Inertia: V1_PROVISIONAL whole-aircraft tensor, UNMODIFIED, about
+          the Gazebo/CAD CG, master dataset section 9/70,
+          MASS_PROPERTIES.md section 5.1.
+          Ixz sign convention vs. SDF's expected off-diagonal sign is
+          EXPLICITLY UNVERIFIED (MASS_PROPERTIES.md section 5.1): entered
+          here exactly as documented (+0.01485), flagged, not silently
+          resolved. validation must check this before this value is
+          treated as final.
+        -->
+        <pose>0.168309 0 0.100000 0 0 0</pose>
+        <mass>5.9348</mass>
+        <inertia>
+          <ixx>0.7284</ixx>
+          <iyy>0.2507</iyy>
+          <izz>0.9523</izz>
+          <ixy>0</ixy>
+          <ixz>0.01485</ixz>
+          <iyz>0</iyz>
+        </inertia>
+      </inertial>
+
+      <!-- Fixed visuals: mesh in raw global/assembly coordinates,
+           strategy (A): link origin = model origin = (0,0,0), only the
+           STL_SCALE_TO_SI=0.001 scale applied, no additional visual pose
+           offset, since the mesh already carries the correct absolute
+           position for every fixed part. -->
+      <visual name="body_visual">
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <uri>meshes/body.stl</uri>
+            <scale>0.001 0.001 0.001</scale>
+          </mesh>
+        </geometry>
+      </visual>
+
+      <visual name="left_wing_visual">
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <uri>meshes/left_wing.stl</uri>
+            <scale>0.001 0.001 0.001</scale>
+          </mesh>
+        </geometry>
+      </visual>
+
+      <visual name="right_wing_visual">
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <uri>meshes/right_wing.stl</uri>
+            <scale>0.001 0.001 0.001</scale>
+          </mesh>
+        </geometry>
+      </visual>
+
+      <!--
+        Motor visuals: mesh kept at its own raw global coordinates
+        (strategy A, no re-offset). Per task instruction, this uses the
+        master-dataset/GEOMETRY.md section 7 "motor center" reference -
+        (0.2623, +/-0.3000, 0.1269) m - for POSITIONING PURPOSES only
+        insofar as that is the value the mesh's own placement is
+        cross-checked against; the mesh itself is NOT re-translated to
+        that point (it is already authored in shared global coordinates
+        matching it to within the documented approx 7.3 mm
+        bounding-box-vs-named-center difference noted in GEOMETRY.md
+        section 7, which is explicitly NOT resolved by re-offsetting the
+        mesh - doing so would be an unauthorized mesh/visual placement
+        change beyond this task's scope). The raw mesh, at scale 0.001
+        and zero additional pose, is what is rendered.
+      -->
+      <visual name="left_motor_visual">
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <uri>meshes/left_motor.stl</uri>
+            <scale>0.001 0.001 0.001</scale>
+          </mesh>
+        </geometry>
+      </visual>
+
+      <visual name="right_motor_visual">
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <uri>meshes/right_motor.stl</uri>
+            <scale>0.001 0.001 0.001</scale>
+          </mesh>
+        </geometry>
+      </visual>
+
+      <!-- Fixed collision: primitives only, see collision-strategy
+           header comment for full reasoning and provenance of every
+           box. -->
+
+      <!-- Fuselage box 1: nose + wing-root band. X in
+           [-0.027512,0.526880] (nose tip 0.526880 m confirmed
+           GEOMETRY.md section 13/14; -0.027512 m = wing mesh's own
+           forward X bound). Y=+/-0.094649 m = CONFIRMED wing-root-station
+           body slice (GEOMETRY.md section 25). Z=[0,0.330480] m = full
+           confirmed body Z bound (no nose-specific Z slice exists; using
+           the full range is a deliberately conservative/oversized
+           choice, not a measured nose cross-section). -->
+      <collision name="fuselage_collision_fwd">
+        <pose>0.249684 0 0.165240 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.554392 0.189298 0.330480</size>
+          </box>
+        </geometry>
+      </collision>
+
+      <!-- Fuselage box 2: mid-fuselage, between the wing-root band and
+           the tail band. X in [-0.472684,-0.027512] m (spans between the
+           wing mesh's forward bound and the elevator/rudder mesh's
+           aft-most X bound). Y=+/-0.280000 m is ASSUMPTION: no confirmed
+           mid-fuselage slice exists in the source of truth; the
+           confirmed tail-band half-width (0.280 m, wider than the
+           confirmed wing-root half-width of 0.094649 m) is used here as
+           a deliberately conservative (oversized, never undersized)
+           stand-in. Z full body range as above. -->
+      <collision name="fuselage_collision_mid">
+        <pose>-0.250098 0 0.165240 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.445172 0.560000 0.330480</size>
+          </box>
+        </geometry>
+      </collision>
+
+      <!-- Fuselage box 3: tail band. X in [-0.526880,-0.472684] m (tail
+           tip to the elevator/rudder mesh's own forward X bound).
+           Y=+/-0.280000 m = CONFIRMED tail-station body slice
+           (GEOMETRY.md section 25): this same box also serves as the
+           horizontal/vertical-tail fixed-structure collision volume, per
+           the collision-strategy header comment (its Y and Z extents
+           exceed both the elevator half-span and the rudder height). Z
+           full body range, CONFIRMED (body's own global max Z occurs in
+           this X-band, GEOMETRY.md section 14.1). -->
+      <collision name="fuselage_collision_tail">
+        <pose>-0.499782 0 0.165240 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.054196 0.560000 0.330480</size>
+          </box>
+        </geometry>
+      </collision>
+
+      <!-- Left/right wing collision: single box per wing, each wing's
+           own full mesh bounding box (GEOMETRY.md section 13/15).
+           Deliberately coarse V1 approximation: a constant-chord box is
+           oversized outboard relative to the real tapered planform (root
+           chord 0.260 m vs. tip chord 0.051 m); this is a conservative
+           simplification, not a tapered/multi-segment fit. -->
+      <collision name="left_wing_collision">
+        <pose>0.105743 0.566014 0.127019 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.266510 0.972027 0.046956</size>
+          </box>
+        </geometry>
+      </collision>
+
+      <collision name="right_wing_collision">
+        <pose>0.105743 -0.566014 0.127019 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.266510 0.972027 0.046956</size>
+          </box>
+        </geometry>
+      </collision>
+
+      <!-- Motor collision: small box per motor nacelle, each motor's own
+           full mesh bounding box (GEOMETRY.md section 13/19). Not
+           explicitly required by the task's named collision list; added
+           as a low-cost completeness extension (carries no mass). -->
+      <collision name="left_motor_collision">
+        <pose>0.269577 0.299975 0.126974 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.066484 0.038225 0.038237</size>
+          </box>
+        </geometry>
+      </collision>
+
+      <collision name="right_motor_collision">
+        <pose>0.269577 -0.299975 0.126974 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.066484 0.038225 0.038237</size>
+          </box>
+        </geometry>
+      </collision>
+    </link>
+
+    <!-- ============================================================
+         LEFT AILERON: movable link, mesh-pose strategy (B): link origin
+         placed at the fitted hinge line's root point (y=313.950 mm end
+         of the XFLR5-active span, master dataset section 33), mesh
+         visual/collision offset by the negative of that same point so
+         the rendered mesh does not visually shift (link_origin +
+         mesh_offset reproduces the mesh's own authored global position,
+         verified numerically).
+
+         CORRECTED this pass (validation review; see header comment
+         "HINGE-AXIS FITTING METHOD" and GEOMETRY.md section 33.1 for full
+         method/evidence): the secondary (Z/tilt) axis component below was
+         re-derived with a deterministic method and a documented tip-
+         outlier exclusion; the primary (X) component and link origin's
+         X/Y are effectively unchanged (sub-0.001 m), Z changed by
+         approx 0.5 mm.
+
+         Link origin (m):      (0.032943, 0.313950, 0.110356)
+         Mesh visual offset:  (-0.032943, -0.313950, -0.110356)
+         Joint axis (unit vec, fitted hinge-line direction, dY=+1 sense):
+                                (0.000994, 0.999899, 0.014146)
+         Movable span reference (XFLR5-active): y = 0.313950 to 0.784875 m
+         Hinge fit residual, PRIMARY/X (mm): RMS 0.0123, max 0.0204 (4
+         stations). Hinge fit residual, SECONDARY/Z (mm): RMS 0.0020, max
+         0.0028 (3 stations; y=784.875 mm excluded from the Z-fit only, as
+         a tip-proximity artifact - see header comment; its X value is
+         unaffected and still used).
+         Hinge %chord evidence (master dataset section 33-34): approx
+         69.75% to 72.14% band
+         Mass: TEMPORARY_NUMERICAL_MASS = 0.001 kg (see header comment)
+         Inertia: thin-box approximation using this link's own mesh
+         bounding-box size (61.119 x 479.366 x 20.953 mm), about this
+         link's own local mass-center estimate (its mesh bounding-box
+         center): a geometric approximation for a near-massless
+         placeholder link, not a claim of physical accuracy.
+         ============================================================ -->
+    <link name="left_aileron">
+      <pose>0.032943 0.313950 0.110356 0 0 0</pose>
+
+      <inertial>
+        <pose>-0.025962 0.236107 0.007807 0 0 0</pose>
+        <mass>0.001</mass>
+        <inertia>
+          <ixx>1.9186e-05</ixx>
+          <iyy>3.4788e-07</iyy>
+          <izz>1.9461e-05</izz>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyz>0</iyz>
+        </inertia>
+      </inertial>
+
+      <visual name="left_aileron_visual">
+        <pose>-0.032943 -0.313950 -0.110356 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <uri>meshes/left_aileron.stl</uri>
+            <scale>0.001 0.001 0.001</scale>
+          </mesh>
+        </geometry>
+      </visual>
+
+      <collision name="left_aileron_collision">
+        <pose>-0.025962 0.236107 0.007807 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.061119 0.479366 0.020953</size>
+          </box>
+        </geometry>
+      </collision>
+    </link>
+
+    <!-- Mechanical limit +/-30 deg (0.5236 rad), tagged
+         MECHANICAL_INITIAL_LIMIT (master dataset section 3/65
+         manufacturer manual starting recommendation: NOT a claim that
+         the aerodynamic model is linear that far; the aero-validated
+         linear range is only approx +/-10 deg, a separate fact,
+         CONTROLS.md section 3). Joint rotation sign: SIGN_TEST_REQUIRED,
+         not asserted here (AILERON_SIGN_TEST_REQUIRED, CONTROLS.md
+         section 4.3). -->
+    <joint name="left_aileron_joint" type="revolute">
+      <parent>base_link</parent>
+      <child>left_aileron</child>
+      <axis>
+        <xyz>0.000994 0.999899 0.014146</xyz>
+        <limit>
+          <lower>-0.5236</lower>
+          <upper>0.5236</upper>
+        </limit>
+      </axis>
+    </joint>
+
+    <!-- ============================================================
+         RIGHT AILERON: exact Y-mirror of left_aileron (link origin Y
+         and axis X/Z-slope components negated), per the mesh's own
+         confirmed Y-mirror symmetry (GEOMETRY.md section 22, deltas
+         <=0.052 mm).
+         ============================================================ -->
+    <link name="right_aileron">
+      <pose>0.032943 -0.313950 0.110356 0 0 0</pose>
+
+      <inertial>
+        <pose>-0.025962 -0.236107 0.007807 0 0 0</pose>
+        <mass>0.001</mass>
+        <inertia>
+          <ixx>1.9186e-05</ixx>
+          <iyy>3.4788e-07</iyy>
+          <izz>1.9461e-05</izz>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyz>0</iyz>
+        </inertia>
+      </inertial>
+
+      <visual name="right_aileron_visual">
+        <pose>-0.032943 0.313950 -0.110356 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <uri>meshes/right_aileron.stl</uri>
+            <scale>0.001 0.001 0.001</scale>
+          </mesh>
+        </geometry>
+      </visual>
+
+      <collision name="right_aileron_collision">
+        <pose>-0.025962 -0.236107 0.007807 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.061119 0.479366 0.020953</size>
+          </box>
+        </geometry>
+      </collision>
+    </link>
+
+    <joint name="right_aileron_joint" type="revolute">
+      <parent>base_link</parent>
+      <child>right_aileron</child>
+      <axis>
+        <xyz>-0.000994 0.999899 -0.014146</xyz>
+        <limit>
+          <lower>-0.5236</lower>
+          <upper>0.5236</upper>
+        </limit>
+      </axis>
+    </joint>
+
+    <!-- ============================================================
+         LEFT ELEVATOR: movable link, strategy (B). Link origin at the
+         fitted hinge line's root point (y=50.6 mm, movable-span root
+         per master dataset section 21).
+
+         CORRECTED this pass (validation review; see header comment
+         "HINGE-AXIS FITTING METHOD" and GEOMETRY.md section 33.1): the
+         secondary (Z/tilt) axis component was re-derived with a
+         deterministic method (previous version's dZ/dY=-0.022208, an
+         order of magnitude too large, was a tolerance-average artifact).
+         X/Y are effectively unchanged; Z changed by approx 1.1 mm.
+
+         Link origin (m):      (-0.474959, 0.050600, 0.087119)
+         Mesh visual offset:   (0.474959, -0.050600, -0.087119)
+         Joint axis (unit vec): (0.002983, 0.999993, -0.002072)
+         Movable span: y = 0.0506 to 0.240 m (master dataset section 21;
+         matches left_elevator.stl's own mesh Y-span essentially exactly,
+         per GEOMETRY.md section 26.3 point 3: confirms
+         movable-surface-only scope).
+         Hinge fit residual, PRIMARY/X (mm; 4 interior stations
+         70/130/190/220, boundary stations 50.6/240 excluded as
+         end-cap-contaminated, see header comment): RMS 0.0096, max
+         0.0153. Hinge fit residual, SECONDARY/Z (mm, same 4 stations):
+         RMS 0.0003, max 0.0004 - a very tight fit; tilt approx -0.12 deg.
+         Hinge %chord evidence (master dataset section 21): 74.71% (root)
+         to 62.54% (tip).
+         Component scope: RESOLVED movable-surface-only, body.stl carries
+         the fixed horizontal-stabilizer structure (GEOMETRY.md section
+         26.3; small stated residual ambiguity, not CAD-confirmed).
+         ============================================================ -->
+    <link name="left_elevator">
+      <pose>-0.474959 0.050600 0.087119 0 0 0</pose>
+
+      <inertial>
+        <pose>-0.020211 0.094700 -0.004031 0 0 0</pose>
+        <mass>0.001</mass>
+        <inertia>
+          <ixx>2.9962e-06</ixx>
+          <iyy>1.7540e-07</iyy>
+          <izz>3.1579e-06</izz>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyz>0</iyz>
+        </inertia>
+      </inertial>
+
+      <visual name="left_elevator_visual">
+        <pose>0.474959 -0.050600 -0.087119 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <uri>meshes/left_elevator.stl</uri>
+            <scale>0.001 0.001 0.001</scale>
+          </mesh>
+        </geometry>
+      </visual>
+
+      <collision name="left_elevator_collision">
+        <pose>-0.020211 0.094700 -0.004031 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.044973 0.189400 0.009066</size>
+          </box>
+        </geometry>
+      </collision>
+    </link>
+
+    <!-- Mechanical limit +/-30 deg (0.5236 rad), MECHANICAL_INITIAL_LIMIT.
+         ELEVATOR_SIGN_TEST_REQUIRED (CONTROLS.md section 4.1): XFLR5
+         convention (+ = trailing-edge-down) recorded in CONTROLS.md, NOT
+         asserted as this joint's positive-rotation direction. -->
+    <joint name="left_elevator_joint" type="revolute">
+      <parent>base_link</parent>
+      <child>left_elevator</child>
+      <axis>
+        <xyz>0.002983 0.999993 -0.002072</xyz>
+        <limit>
+          <lower>-0.5236</lower>
+          <upper>0.5236</upper>
+        </limit>
+      </axis>
+    </joint>
+
+    <!-- ============================================================
+         RIGHT ELEVATOR: exact Y-mirror of left_elevator.
+         ============================================================ -->
+    <link name="right_elevator">
+      <pose>-0.474959 -0.050600 0.087119 0 0 0</pose>
+
+      <inertial>
+        <pose>-0.020211 -0.094700 -0.004031 0 0 0</pose>
+        <mass>0.001</mass>
+        <inertia>
+          <ixx>2.9962e-06</ixx>
+          <iyy>1.7540e-07</iyy>
+          <izz>3.1579e-06</izz>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyz>0</iyz>
+        </inertia>
+      </inertial>
+
+      <visual name="right_elevator_visual">
+        <pose>0.474959 0.050600 -0.087119 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <uri>meshes/right_elevator.stl</uri>
+            <scale>0.001 0.001 0.001</scale>
+          </mesh>
+        </geometry>
+      </visual>
+
+      <collision name="right_elevator_collision">
+        <pose>-0.020211 -0.094700 -0.004031 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.044973 0.189400 0.009066</size>
+          </box>
+        </geometry>
+      </collision>
+    </link>
+
+    <joint name="right_elevator_joint" type="revolute">
+      <parent>base_link</parent>
+      <child>right_elevator</child>
+      <axis>
+        <xyz>-0.002983 0.999993 0.002072</xyz>
+        <limit>
+          <lower>-0.5236</lower>
+          <upper>0.5236</upper>
+        </limit>
+      </axis>
+    </joint>
+
+    <!-- ============================================================
+         RUDDER: movable link, strategy (B), single centerline part (no
+         mirror). Link origin at the fitted hinge line's bottom/root
+         point (z=130.5 mm, movable-height-band root per master dataset
+         section 29).
+
+         CORRECTED this pass (validation review; see header comment
+         "HINGE-AXIS FITTING METHOD" and GEOMETRY.md section 33.1): Y is
+         still exactly 0, but now backed by direct per-station
+         mirror-pair evidence (5 of 5 interior stations, exact) rather
+         than a "noise" characterization of a tolerance-average result
+         that (as validation found) was not actually reproducible. X
+         changed by approx 0.02 mm (well within the prior fit's own
+         residual band) - not a substantive change.
+
+         Link origin (m):      (-0.476094, 0.000000, 0.130500)
+         Mesh visual offset:   (0.476094, 0.000000, -0.130500)
+         Joint axis (unit vec): (0.010378, 0.000000, 0.999946)
+         Movable height band: z = 0.1305 to 0.299 m (master dataset
+         section 29).
+         Hinge fit residual, PRIMARY/X (mm; 5 interior stations 145/180/
+         215/250/285, boundary stations 130.5/299.0 excluded as
+         end-cap-contaminated, see header comment): RMS 0.0263, max
+         0.0349. Hinge fit residual, SECONDARY/Y (mm, same 5 stations):
+         RMS 0.0000, max 0.0000 (exact - see header comment for the
+         mirror-pair-averaging evidence this is based on).
+         Hinge %chord evidence (master dataset section 29): 74.81%
+         (bottom) to 54.79% (top).
+         Component scope: RESOLVED movable-surface-only, body.stl carries
+         the fixed vertical-fin structure (GEOMETRY.md section 26.3).
+         ============================================================ -->
+    <link name="rudder">
+      <pose>-0.476094 0.000000 0.130500 0 0 0</pose>
+
+      <inertial>
+        <pose>-0.019247 0.000000 0.084500 0 0 0</pose>
+        <mass>0.001</mass>
+        <inertia>
+          <ixx>2.4008e-06</ixx>
+          <iyy>2.5653e-06</iyy>
+          <izz>1.7775e-07</izz>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyz>0</iyz>
+        </inertia>
+      </inertial>
+
+      <visual name="rudder_visual">
+        <pose>0.476094 0.000000 -0.130500 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <uri>meshes/rudder.stl</uri>
+            <scale>0.001 0.001 0.001</scale>
+          </mesh>
+        </geometry>
+      </visual>
+
+      <collision name="rudder_collision">
+        <pose>-0.019247 0.000000 0.084500 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.045316 0.008911 0.169500</size>
+          </box>
+        </geometry>
+      </collision>
+    </link>
+
+    <!-- Mechanical limit +/-30 deg (0.5236 rad), MECHANICAL_INITIAL_LIMIT.
+         RUDDER_SIGN_TEST_REQUIRED (CONTROLS.md section 4.2): the master
+         dataset does not even state which physical trailing-edge
+         direction XFLR5's "+" rudder deflection corresponds to; NOT
+         asserted here. -->
+    <joint name="rudder_joint" type="revolute">
+      <parent>base_link</parent>
+      <child>rudder</child>
+      <axis>
+        <xyz>0.010378 0.000000 0.999946</xyz>
+        <limit>
+          <lower>-0.5236</lower>
+          <upper>0.5236</upper>
+        </limit>
+      </axis>
+    </joint>
+
+    <!-- ============================================================
+         LEFT PROP: movable link, strategy (B). Link origin at the real
+         physical prop hub (CONFIRMED, master dataset section 46,
+         GEOMETRY.md section 7).
+
+         Link origin (m):        (0.2951, 0.3000, 0.1271)
+         VISUAL scale APPLIED: 0.001208 (= 0.001 * 1.208 visual-only
+         enlargement, see header comment and PROPULSION.md section
+         0/21.2).
+         Visual pose offset T = -1.208 * hub_position_m, so the enlarged
+         disk stays centered on the true hub:
+                                  (-0.356481, -0.362400, -0.153537)
+         Verified numerically: hub vertex (295.084,300.007,127.073 mm
+         raw) reproduces to (0.29508, 0.30001, 0.12707) m, within 0.1 mm
+         of the true hub (0.2951, 0.3000, 0.1271) m.
+         Mass: 0.0301 kg - REAL, CONFIRMED component mass (master dataset
+         section 44), NOT TEMPORARY_NUMERICAL_MASS. Subtracted from
+         base_link.
+         Rotational inertia: V1_PROVISIONAL_ROTATIONAL_INERTIA. Exact
+         prop rotational inertia is NOT known (PROPULSION.md section
+         1.1/4: "Exact rotational inertia henuz bilinmiyor"). This value
+         is a simple uniform-thin-rod approximation using the REAL mass
+         (0.0301 kg) and REAL diameter (D=0.3302 m, APC 13x6.5E, never
+         the STL mesh figure): I = (1/12)*m*D^2 = 2.7349e-4 kg*m^2,
+         applied identically to all three axes (Ixx=Iyy=Izz) as a
+         simplifying symmetric approximation that deliberately ignores
+         the arbitrary instantaneous blade-angle asymmetry of the
+         exported mesh pose. This is a placeholder for the
+         spin-up/spin-down dynamics a future propulsion plugin will need
+         (PROPULSION.md section 4), NOT a measured or CAD value.
+         Rotation direction: physical fact only, NOT enforced by this
+         joint, see header comment ("PROPELLER LINKS/JOINTS").
+         No collision geometry (see header comment).
+         ============================================================ -->
+    <link name="left_prop">
+      <pose>0.2951 0.3000 0.1271 0 0 0</pose>
+
+      <inertial>
+        <pose>0 0 0 0 0 0</pose>
+        <mass>0.0301</mass>
+        <inertia>
+          <ixx>2.7349e-04</ixx>
+          <iyy>2.7349e-04</iyy>
+          <izz>2.7349e-04</izz>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyz>0</iyz>
+        </inertia>
+      </inertial>
+
+      <visual name="left_prop_visual">
+        <pose>-0.356481 -0.362400 -0.153537 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <uri>meshes/left_pervane.stl</uri>
+            <!-- VISUAL_MESH_ONLY scale correction: 0.001 * 1.208. Never
+                 use this scale factor, or the resulting approx 0.2734 m
+                 mesh diameter, in any physics/propulsion calculation.
+                 Real physical diameter for physics is always D=0.3302 m
+                 (PROPULSION.md section 0). -->
+            <scale>0.001208 0.001208 0.001208</scale>
+          </mesh>
+        </geometry>
+      </visual>
+    </link>
+
+    <!-- Continuous-rotation joint: revolute with a very large limit (no
+         dedicated SDF "continuous" joint type exists). Axis = +X (master
+         dataset section 48, essentially pure +X, approx 0.153 deg
+         measured offset not applied here: V1 uses the idealized +X per
+         task instruction). Rotation direction (left=CCW) is a documented
+         physical fact, not enforced by this joint definition (no
+         propulsion plugin exists yet to command a signed velocity). -->
+    <joint name="left_prop_joint" type="revolute">
+      <parent>base_link</parent>
+      <child>left_prop</child>
+      <axis>
+        <xyz>1 0 0</xyz>
+        <limit>
+          <lower>-1e16</lower>
+          <upper>1e16</upper>
+        </limit>
+      </axis>
+    </joint>
+
+    <!-- ============================================================
+         RIGHT PROP: mirror hub position (Y negated); mesh itself is a
+         distinct, separately-modeled physical part (right-hand/CW-handed
+         propeller per master dataset section 44, NOT a simple Y-mirror
+         of the left propeller's blade geometry in reality, though the
+         STL mesh bounding-box placement is a Y-mirror to <0.015 mm,
+         GEOMETRY.md section 22). Visual scale correction and
+         rotational-inertia reasoning identical to left_prop.
+         ============================================================ -->
+    <link name="right_prop">
+      <pose>0.2951 -0.3000 0.1271 0 0 0</pose>
+
+      <inertial>
+        <pose>0 0 0 0 0 0</pose>
+        <mass>0.0301</mass>
+        <inertia>
+          <ixx>2.7349e-04</ixx>
+          <iyy>2.7349e-04</iyy>
+          <izz>2.7349e-04</izz>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyz>0</iyz>
+        </inertia>
+      </inertial>
+
+      <visual name="right_prop_visual">
+        <pose>-0.356481 0.362400 -0.153537 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <uri>meshes/right_pervane.stl</uri>
+            <scale>0.001208 0.001208 0.001208</scale>
+          </mesh>
+        </geometry>
+      </visual>
+    </link>
+
+    <joint name="right_prop_joint" type="revolute">
+      <parent>base_link</parent>
+      <child>right_prop</child>
+      <axis>
+        <xyz>1 0 0</xyz>
+        <limit>
+          <lower>-1e16</lower>
+          <upper>1e16</upper>
+        </limit>
+      </axis>
+    </joint>
+
+  </model>
+</sdf>

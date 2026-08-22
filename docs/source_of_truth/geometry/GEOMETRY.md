@@ -5,6 +5,7 @@
 **Compiled:** 2026-08-21
 **Last updated:** 2026-08-21 (consolidation pass: re-confirmed prior mesh-analysis findings unchanged; reclassified the mesh-derived ≈273 mm propeller-diameter figure as `VISUAL_MESH_ONLY` per explicit project-owner instruction — see §20 banner and §21.2. No new numeric value introduced; no mesh file modified. Previous update: deep mesh geometric analysis pass, §4/§12–§30.)
 **Last updated (again):** 2026-08-21 (master-dataset synchronization pass — see §32 for the full index of this pass's changes; source: `docs/source_of_truth/master/FALCON_V2_MASTER_DATASET_BEFORE_GAZEBO.txt`, cited by section number throughout, e.g. "master dataset §8"). Source-priority order applied throughout this pass, per task instruction: manufacturer manual > real aircraft measurement > real component manufacturer data > current STL geometry > XFOIL/XFLR5 result > derived calculation > V1 estimate/provisional. No mesh file modified in this pass.
+**Last updated (again):** 2026-08-21 (first Gazebo structural implementation pass — `model/model.sdf` and `model/model.config` created for the first time; see §33 for the full record: hinge-axis line fits with residuals for aileron/elevator/rudder, mesh-pose strategy, collision strategy, mass-distribution strategy, and the visual-only propeller-scale decision. No mesh file modified; no mass/CG/inertia *value* changed from what was already documented in §5–§9/§32 and `MASS_PROPERTIES.md`.)
 **Repository investigation performed:** full-tree `find`, extension search (`*.sdf *.stl *.dae *.obj *.urdf *.xacro *.csv *.xlsx *.pdf *.xflr5 *.xfl *.step *.stp *.iges *.igs *.json *.yaml *.yml *.xml`), keyword `grep` (`ixx|iyy|izz|ixy|ixz|iyz|inertia|xflr5|xfoil|battery|motor mount|esc|servo|hinge|dihedral|sweep|incidence|fuselage|wing root|CAD|mesh|collision|<link|<joint|<pose`) across the whole working tree, and full `git log`/`git ls-tree` history review (single commit, matches working tree exactly — no deleted or historical files carry additional data). Follow-up pass (2026-08-21): `ls -la`/`find` on `model/meshes/`, binary STL header/facet-count parse and file-size consistency check on all 12 files, repo-wide search for native CAD/SDF/URDF extensions (none found beyond the 12 STL files), `git status`/`git log --oneline --all` (mesh files confirmed untracked, not in git history). Second follow-up pass (2026-08-21, this update): full binary-STL vertex parse (numpy, all 12 files, ~919k–697k facets each) computing vertex-wise bounding boxes, geometric centers, left/right mirror-symmetry deltas, coordinate-slice relationship checks (body-vs-wing, body-vs-tail-surfaces, wing-vs-aileron cutout boundary), and chordwise thickness-profile checks for hinge/component-scope evidence. All analysis performed by direct read-only parsing of the binary STL files at `model/meshes/`; no file was modified, moved, renamed, or converted.
 
 Status legend used throughout this document: `CONFIRMED` (stated directly by an authoritative source), `DERIVED` (computed from confirmed values, derivation shown), `DATA_REQUIRED` (not present anywhere in the repository — not guessed), `CONFLICT_REQUIRES_RESOLUTION` (two authoritative-looking sources disagree — both reported, neither picked), `VISUAL_MESH_ONLY` (a value measured directly from an STL mesh that is confirmed to be a visual-geometry artifact only, not a physical/physics reference — see §20/§21.2 for the propeller-diameter case; such a value must never be consumed by any propulsion, RPM, thrust, torque, or airspeed-dependent physics calculation).
@@ -944,3 +945,151 @@ This section is a navigation index only — the substantive content, derivations
 **Inertia** (master dataset §9: V1 provisional tensor) is **not** a geometry-file item — it is documented in `docs/source_of_truth/mass_properties/MASS_PROPERTIES.md` §5, per this repository's existing file-ownership split (this document cross-references it rather than duplicating the tensor here, consistent with §1 of this document).
 
 **What this pass explicitly did not do:** it did not create, modify, or touch `model.sdf`, any plugin source, any world/launch file, or any ArduPilot config file (out of scope per task instruction). It did not modify any `.stl` file (read-only per task instruction and per `CLAUDE.md`'s "no mesh modification without authorization" rule). It did not fit a single SDF joint axis for any control surface, and it did not perform a Gazebo joint-sign unit test — both remain explicitly open (`HINGE_GEOMETRY_READY`, §6). It did not change the aircraft's mass, CG, or any aerodynamic coefficient. Where the master dataset's own wording carried a "yaklaşık" (approximate)/V1/provisional qualifier, that qualifier is preserved in this document's status tags rather than silently upgraded.
+
+---
+
+## 33. First Gazebo Structural Implementation Pass (2026-08-21)
+
+**Scope:** `model/model.sdf` and `model/model.config` created for the first time — the first physical skeleton of FALCON V2 in Gazebo Sim Harmonic. Structural only: links, joints, mass/CG/inertia placement, visual mesh placement, collision primitives. No aerodynamic, propulsion-force, or control-actuation model; no plugins. Validated with `gz sdf --check` (`Valid.`) and `gz sdf --inertial-stats` (see §33.7). No `.stl` file modified. No mass, CG, or inertia *source value* changed from what was already documented in §5–§9/§32 and `MASS_PROPERTIES.md` §3/§5 — this section records how those already-documented values were *placed into SDF*, and the new hinge-axis-fitting/collision/mass-split engineering work performed to make that placement possible.
+
+### 33.1 Hinge-axis line fits — method, data, and residuals
+
+**Revised 2026-08-22 (post-`validation` MAJOR-1 correction pass).** The original version of this subsection (written 2026-08-21) reported a hinge-line fit whose **primary/chordwise (X) component was independently re-confirmed correct by `validation`**, but whose **secondary (tilt) component did not reproduce** under `validation`'s independent re-implementation of the stated method, and whose characterization of the rudder's lateral (Y) position as "noise" was found not to hold up. Root cause, corrected method, corrected values, and newly-reported secondary-axis residuals are documented in full below — nothing from the original pass is silently dropped; the discrepancy and its resolution are recorded explicitly.
+
+Per-station %chord data already existed (`HINGE_GEOMETRY_READY`, §6) but had not been fitted into a single SDF-ready joint axis. This pass performed that fit directly from the STL mesh vertex data (read-only re-parse, not a re-derivation of the %chord figures themselves).
+
+**Root cause of the original non-reproducibility (diagnosed this pass):** the original method took the mesh's forward-most (max-X) vertex within a ±3 mm station band, then **averaged every vertex within a fixed radial tolerance (0.5 mm) of that maximum** to estimate the secondary-axis (Y or Z) coordinate. Direct re-inspection of the raw vertex data (band-width/tolerance sensitivity scan, all three surfaces) showed the true "hinge cut" at a given station is not always a single point — it can be a short near-vertical/near-planar edge, or (for the rudder specifically) a genuine **mirror-symmetric pair** of distinct vertices (the thin skin's left and right surfaces meeting almost, but not exactly, at the same X). A fixed-radius average over such a cluster pulls in a triangulation-density-dependent, tolerance-dependent mix of nearby-but-distinct points, which is why the secondary axis was unstable under re-implementation even though the primary (X) axis — which changes slowly and smoothly with span — was not visibly affected by the same instability.
+
+**Corrected method:** for each control surface, at each master-dataset-documented span/height station, the mesh is sliced into a narrow band (±3 mm) centered on that station. Within each band: (1) find the single greatest X value in the band, `xmax`; (2) collect every vertex within 0.001 mm of `xmax` — this is a **deterministic, exactly-reproducible tie-breaking rule**, and at this sub-micron tolerance the collected vertices are true float32-duplicate copies of the same physical point(s), an artifact of binary STL's per-triangle unshared vertex storage (each triangle stores its own copy of every vertex it touches, so a single physical point shared by *n* triangles appears *n* times in the raw vertex stream); (3) round each collected vertex to 3 decimal mm and take the **unique** spatial points (not multiplicity-weighted — the number of triangles referencing a given physical point varies with local mesh topology and must not bias an average); (4) average those unique point(s) to get that station's (X, Y, Z). The station's own independent (regression) variable is taken as this point's **own actual coordinate** (Y for aileron/elevator, Z for rudder), not the nominal master-dataset target — e.g. the nominal "y=70 mm" station's true extremal vertex sits at y=72.616 mm, a few mm off nominal, which is expected since a real mesh feature within a search band is being located, not assumed to sit exactly at the band center. A 2D least-squares line (X, and the secondary axis, each regressed linearly against the station's own actual coordinate) is then fit through these points. This is the same edge already identified, from independent bounding-box/thickness evidence, as the physical hinge cut (§16–§18: chordwise thickness increases monotonically to this boundary with no full-airfoil thickness peak — a partial-chord section cut at a hinge line, not a complete airfoil).
+
+**Boundary-station exclusion (elevator, rudder) — reconfirmed under the corrected method:** the two stations sitting exactly at the movable surface's own mesh Y/Z boundary (elevator y=50.6/240 mm; rudder z=130.5/299.0 mm) both independently return X = −472.684 mm — exactly the mesh's own global bounding-box max-X vertex — at *both* the root and tip band, roughly 2 mm off the smooth trend defined by the interior stations. This reproduces under the new deterministic method (it is not an artifact of the old tolerance-average method), confirming it as a real end-cap/boundary-face contamination artifact (the flat face closing the mesh at its own Y/Z extremity), not the true local hinge chord position. These two raw samples per surface are reported but excluded from the fit.
+
+**Aileron tip-station exclusion — new finding this pass (secondary/Z axis only):** station y=784.875 mm's extremal point (actual coordinates Y=782.582, Z=128.564 mm) is a local outlier roughly 12 mm above the smooth Z(Y) trend established over Y=700–780 mm (which rises smoothly from Z≈115.8 to Z≈116.9 mm across that range — checked via a dedicated band-width sensitivity scan at multiple Y centers). Station y=784.875 sits only 4.865 mm from the aileron mesh's own tip boundary (Y=789.740 mm, §16), consistent with this being an isolated tip-cap/closing-face artifact vertex, not part of the smooth hinge line. Critically, this station's **primary (X) value (33.396 mm) is not similarly affected** — it stays fully consistent with the smooth X(Y) trend — so the aileron's X-fit still safely uses all 4 given stations, while its Z-fit (secondary/tilt axis) uses only the 3 non-tip stations (313.950, 470.925, 627.900 mm), with the exclusion and its evidence stated explicitly rather than silently dropped.
+
+**Rudder lateral (Y) position — corrected characterization:** the original pass characterized per-station Y values as "±0.1–0.3 mm noise consistent with Y=0" — re-investigation under the corrected method shows this was an oversimplification of a more specific and stronger finding, not a wrong conclusion. At every interior station, the true extremal-X point is a **mirror-symmetric pair of two distinct vertices** (Y ≈ +d and Y ≈ −d, essentially identical X and Z — the hinge cut face's two skin surfaces, separated by the rudder's own thin Y-thickness of ≈8–9 mm, meet at almost exactly the same X). Averaging the two **unique** points of each pair gives **Y = 0.0000 mm exactly, at all 5 of 5 interior stations** — a direct, exact, per-station geometric result, not an assumption or a "noise is small so we forced it to zero" simplification. This also explains why two different imperfect methods produced two different-looking wrong answers for Y: the original tolerance-average method (this document's first version) picked up an uneven, triangulation-density-biased mix from both sides of the pair and got small-but-nonzero values (a few tenths of a mm); a naive single-vertex argmax with no tie-breaking rule (independently tried by `validation` during its review) arbitrarily picks *one* member of the tied pair and gets a value close to that member's own ±d (of the order 3.6–4.4 mm, matching the per-station |d| values found here) — both are symptoms of the same unhandled tie, not evidence against Y=0.
+
+**Residuals — PRIMARY axis (X for all three surfaces), corrected deterministic method:**
+
+| Surface | Stations used (mm) | RMS residual | Max residual |
+|---|---|---|---|
+| Elevator | 4 interior: y=70, 130, 190, 220 (y=50.6, 240 excluded, boundary artifact) | 0.0096 mm | 0.0153 mm |
+| Rudder | 5 interior: z=145, 180, 215, 250, 285 (z=130.5, 299.0 excluded, boundary artifact) | 0.0263 mm | 0.0349 mm |
+| Aileron | 4: y=313.95, 470.93, 627.90, 784.88 | 0.0123 mm | 0.0204 mm |
+
+**Residuals — SECONDARY/tilt axis (Z for elevator/aileron, Y for rudder), reported for the first time this pass, per `validation`'s explicit request:**
+
+| Surface | Stations used (mm) | Fitted slope | Tilt angle | RMS residual | Max residual |
+|---|---|---|---|---|---|
+| Elevator, Z(Y) | 4 interior: y=70, 130, 190, 220 | dZ/dY = −0.002072 | ≈ −0.12° | 0.0003 mm | 0.0004 mm |
+| Rudder, Y(Z) | 5 interior: z=145, 180, 215, 250, 285 | dY/dZ = 0 (exact, by mirror-pair construction) | 0° | 0.0000 mm | 0.0000 mm |
+| Aileron, Z(Y) | 3 non-tip-outlier: y=313.95, 470.93, 627.90 (y=784.88 excluded, tip artifact) | dZ/dY = +0.014147 | ≈ +0.81° | 0.0020 mm | 0.0028 mm |
+
+For traceability: the original (incorrect) pass had reported dZ/dY ≈ −0.022208 (≈ −1.27°) for the elevator — roughly an order of magnitude larger than the corrected −0.002072 (≈ −0.12°), and now understood to have been a tolerance-average artifact, not a real feature. It had reported dZ/dY ≈ +0.019252 (≈ +1.10°) for the aileron, computed by including the tip-outlier station — the corrected, outlier-excluded value is +0.014147 (≈ +0.81°). `validation`'s own independent rough estimate for the aileron (≈0.025–0.036, noted by `validation` itself as varying with "band-width/vertex-selection") is consistent with that same tip-proximity artifact affecting a less-deterministic re-derivation, not a materially different underlying geometry.
+
+All three PRIMARY (X) fits remain sub-0.04 mm RMS — effectively a straight line in each case, quantifying and confirming the prior qualitative "nearly straight, mildly swept" characterization (§17/§18/§27). The SECONDARY (tilt) axis is now also reproducibly fit, with residuals reported for the first time, rather than asserted from an unstable, tolerance-dependent average. **Status: `DERIVED_FROM_MESH`, method (including the tie-breaking rule) and residuals for both axis components fully reported.** This is a materially stronger evidentiary basis than the pre-fit `HINGE_GEOMETRY_READY`/`HINGE_REQUIRES_CONFIRMATION` state, but the **Gazebo joint-rotation sign** is still explicitly **not** resolved by this fit (see §33.1.1) — fitting the axis *direction* (a line has no inherent sign) is a distinct question from which physical rotation a positive Gazebo joint command produces.
+
+**Fitted hinge lines (Gazebo/CAD frame, meters, left side; right side is an exact Y-mirror — see §33.1.2):**
+
+| Surface | Link/joint origin (root of movable span) | Axis unit vector (dY or dZ = +1 sense) |
+|---|---|---|
+| Left aileron | (0.032943, 0.313950, 0.110356) | (0.000994, 0.999899, 0.014146) |
+| Left elevator | (−0.474959, 0.050600, 0.087119) | (0.002983, 0.999993, −0.002072) |
+| Rudder | (−0.476094, 0.000000, 0.130500) | (0.010378, 0.000000, 0.999946) |
+
+Changes from the original (incorrect) pass are small for X/Y in absolute terms (link-origin X shifted ≤0.02 mm for rudder, ≤0.001 m for aileron/elevator; Y unchanged) but material for Z (elevator origin Z shifted ≈1.1 mm; aileron origin Z shifted ≈0.5 mm) and for the axis direction vectors' secondary component (see the tilt-angle table above) — small in absolute magnitude (sub-degree to ~1°), which is why `validation` rated this MAJOR (a real provenance/reproducibility gap on a load-bearing constant) rather than CRITICAL (nothing currently consumes these axes for force/moment computation).
+
+### 33.1.1 Sign convention — explicitly not resolved
+
+Per `CLAUDE.md`/master dataset §72 ("XFLR5 control sign ile Gazebo joint sign aynı varsayılmamalı"), the axis vectors above define a rotation **axis**, not a rotation **sign**. Which physical deflection direction (e.g. trailing-edge-up vs. -down) a positive Gazebo joint angle produces is `SIGN_TEST_REQUIRED` for all three surfaces (`AILERON_SIGN_TEST_REQUIRED` / `ELEVATOR_SIGN_TEST_REQUIRED` / `RUDDER_SIGN_TEST_REQUIRED`, `CONTROLS.md` §4) — to be resolved by `gazebo-testing`'s `AILERON_TEST`/`ELEVATOR_TEST`/`RUDDER_TEST` once an actuator exists. Not asserted or guessed here.
+
+### 33.1.2 Left/right mirror symmetry check
+
+Aileron and elevator right-side hinge lines were derived by an exact Y-mirror of the left-side fit (right Y = −left Y; right dX/dY = −left dX/dY; right dZ/dY = −left dZ/dY), rather than by an independent right-side re-fit — justified by the already-`CONFIRMED` exact Y-mirror symmetry of the underlying meshes (§22: deltas ≤0.052 mm for every L/R pair). Verified programmatically on the final `model.sdf`: link-origin Y-mirror delta and joint-axis mirror delta are both exactly `[0, 0, 0]` for both the aileron and elevator pairs (by construction, since the right-side numbers were computed via the mirror formula, not independently re-fit). An independent right-side STL re-fit, as an optional cross-check, is left for `validation`. Rudder has no left/right pair (single centerline part, §18).
+
+### 33.2 Mesh-pose strategy — decision
+
+**Chosen: (B) for all 7 movable links, (A) for all fixed `base_link` visuals**, exactly as the task's guidance anticipated:
+
+- **Fixed `base_link` visuals** (body, left/right wing, left/right motor): strategy (A) — link origin = model origin = (0,0,0), mesh kept at its own raw global/assembly coordinates, only `STL_SCALE_TO_SI = 0.001` applied, no additional visual `<pose>` offset. No local rotation axis is needed for a fixed part, so there is no reason to re-origin it.
+- **Movable links** (aileron ×2, elevator ×2, rudder, prop ×2): strategy (B) — link origin placed at the physical hinge/hub point (§33.1 for control surfaces; the `CONFIRMED` prop hub, §7, for the props), with the mesh's `<visual>`/`<collision>` `<pose>` offset by exactly the negative of that same point (in meters), so that `link_origin + mesh_offset` reproduces the mesh's own authored global position with no visual shift. Verified numerically for every movable link (see `model/model.sdf` per-link header comments); also independently verified via `gz sdf --check` (loads without error) and by construction (the offset is computed as `-1 × origin`, an exact algebraic inverse, not an approximation) for all links except the propellers, where an additional visual-only scale factor is applied — see §33.5 for that specific verification.
+
+### 33.3 Collision strategy — decision, full box inventory
+
+No raw STL mesh is used as collision geometry anywhere in `model.sdf` (primitives only), per task instruction. Full inventory, with provenance for every box:
+
+| Component | Box(es) | Provenance |
+|---|---|---|
+| Fuselage (3 boxes) | fwd (nose+wing-root band): center (0.249684,0,0.165240) m, size (0.554392,0.189298,0.330480) m | X-bounds from confirmed body/wing mesh bounds (§13); Y=±0.094649 m = `CONFIRMED` wing-root-station body slice (§25); Z = full confirmed body range (conservative, no nose-specific Z slice exists) |
+| | mid: center (−0.250098,0,0.165240) m, size (0.445172,0.560000,0.330480) m | X-bounds as above; **Y=±0.280000 m is `ASSUMPTION`** — no mid-fuselage slice exists in the source of truth; the wider, confirmed tail-band half-width is used as a deliberately conservative (oversized, never undersized) stand-in |
+| | tail: center (−0.499782,0,0.165240) m, size (0.054196,0.560000,0.330480) m | X-bounds from confirmed body/tail mesh bounds; Y=±0.280000 m = `CONFIRMED` tail-station body slice (§25); Z = full confirmed body range (body's own global max Z occurs in this X-band, §14.1) |
+| Horizontal/vertical tail (fixed portions) | *(none — see reasoning)* | Not given a separate primitive: per §26.3 the fixed h-stab/v-fin structure is part of `body.stl`, and the fuselage tail box above already envelops that region (Y=±0.280 m exceeds the elevator's 240 mm half-span; Z up to 0.330480 m exceeds the rudder's 299.75 mm max height) — a second primitive there would duplicate collision volume |
+| Left/right wing | 1 box each: center (0.105743,±0.566014,0.127019) m, size (0.266510,0.972027,0.046956) m | Each wing's own full mesh bounding box (§13/§15). Deliberately coarse — a constant-chord box is oversized outboard relative to the real tapered planform (root chord 0.260 m vs. tip chord 0.051 m); a simplification, not a tapered/multi-segment fit |
+| Left/right motor | 1 box each: center (0.269577,±0.299975,0.126974) m, size (0.066484,0.038225,0.038237) m | Each motor's own full mesh bounding box (§13/§19). Not explicitly required by the task's named collision list (fuselage/wing/h-tail/v-tail); added as a low-cost completeness extension |
+| Aileron / elevator / rudder (each, on its own link) | 1 thin box each, matching the part's own mesh bounding-box size, expressed in the link's own local frame (offset from the hinge-point link origin) | §13/§16–§18 mesh bounding boxes; local-frame offset computed the same way as the visual-mesh offset (§33.2) |
+| Propellers | *(none — deliberate)* | A rotating thin disk at high RPM has no current physical use-case in this structural-only pass (no ground-contact/self-collision scenario involves it specifically); adding one risks spurious/self-collision artifacts once a propulsion plugin exists. May be revisited once propulsion/ArduPilot integration exists |
+
+`self_collide` is set `false` at the model level: several movable-surface meshes intentionally abut/slightly overlap their parent structure at the hinge line (e.g. aileron vs. wing cutout, §16) — enabling self-collision would produce spurious contact forces there with no benefit for this structural-only pass.
+
+### 33.4 Mass-distribution strategy — decision (cross-referenced from `MASS_PROPERTIES.md`)
+
+**Hybrid of (A) and (B)**, not a pure (B), chosen and fully documented in `MASS_PROPERTIES.md` §7 (new section, this pass) and in `model/model.sdf`'s header comment — summarized here for cross-reference only, not duplicated in full. In brief: `left_prop`/`right_prop` get their real `CONFIRMED` component mass (0.0301 kg each, master dataset §44); the 5 control-surface links get a `TEMPORARY_NUMERICAL_MASS` of 0.001 kg each (no component-level mass data exists for them); `base_link` carries the remainder, 5.9348 kg, so total mass across all 8 links is exactly 6.000 kg (verified: `gz sdf --inertial-stats` reports `Total mass of the model: 6`).
+
+**Known, documented limitation:** `base_link`'s `<inertial><inertia>` uses the `V1_PROVISIONAL` whole-aircraft tensor (master dataset §9/§70) **unmodified**, while `base_link`'s own mass (5.9348 kg) no longer exactly matches the tensor's original 6.000 kg documentation basis. This was a deliberate choice, not an oversight — see `model/model.sdf` header comment for the full reasoning (rigorously subtracting a parallel-axis point-mass contribution for the 7 child links would fabricate a precision the externally-supplied V1 tensor does not have). **Quantified consequence**, measured via `gz sdf --inertial-stats` on the actual final `model.sdf`: the multi-link system's aggregate mass-weighted CG is (0.169196, 0, 0.100291) m versus the documented Gazebo/CAD CG (0.168309, 0, 0.100000) m — a shift of ≈0.89 mm in X and ≈0.29 mm in Z, well inside the manufacturer's own ≈±10 mm CG tolerance (master dataset §3). The aggregate moment-of-inertia matrix is Ixx=0.735117, Iyy=0.253645, Izz=0.961294, Ixz=0.0147044 (kg·m²) versus the documented base tensor 0.7284/0.2507/0.9523/0.01485 — differences of roughly 0.9–1.5%, attributable entirely to the small (≈1.09% of total mass) known point masses on the movable links pulling the aggregate figures slightly via the parallel-axis effect. This is flagged for `validation`, not silently treated as exact.
+
+### 33.5 Visual-only propeller scale — decision and isolation verification
+
+**Decision: applied.** An additional 1.208× visual-only enlargement (`0.001 × 1.208 = 0.001208`) is applied to the propeller `<visual><mesh><scale>` only, so the rendered model displays at a realistic size (STL mesh propeller diameter ≈0.2734 m vs. real APC 13x6.5E D=0.3302 m, §20–§21.2). Reasoning: no physics in this structural-only pass consumes propeller mesh geometry at all (no propulsion plugin exists), so there is zero risk of this scale leaking into physics; it improves visual/inspection fidelity for the project owner and future specialists at no cost.
+
+**Isolation:** the scale is applied only inside `left_prop_visual`/`right_prop_visual`'s `<mesh><scale>` element. No `<collision>` exists for either propeller link (§33.3), so there is no collision geometry this scale could contaminate. `PROPULSION.md` §0 and the `model.sdf` header comment both restate, in loud terms, that any future propulsion/physics code must use the real D=0.3302 m constant directly, never this visual scale factor or the resulting ≈0.2734 m mesh dimension.
+
+**Pivot-point math (so the enlarged disk stays centered on the real hub, not the mesh's own distant local origin):** a naive uniform `<scale>` multiplies every raw mesh vertex coordinate, which would also inflate the mesh's *position* relative to the shared assembly origin (the mesh's local (0,0,0) sits near the fuselage nose region, far from the propeller itself) — using `0.001208` with no compensating offset would shift the rendered hub roughly 60 mm from its true position. The `<visual><pose>` translation was therefore computed as `T = -scale_ratio × hub_position_m` (`scale_ratio = 1.208`), which scales the mesh geometry by 1.208× **about the hub point** rather than about the mesh's own local origin:
+
+```
+left_prop:  T = -1.208 × (0.2951, 0.3000, 0.1271) = (-0.356481, -0.362400, -0.153537) m
+right_prop: T = -1.208 × (0.2951, -0.3000, 0.1271) = (-0.356481, 0.362400, -0.153537) m
+```
+
+Verified numerically: applying this scale+offset to the `left_pervane.stl` mesh's own bounding-box-center vertex (295.084, 300.007, 127.073 mm raw) reproduces (0.29508, 0.30001, 0.12707) m — within 0.1 mm of the true hub (0.2951, 0.3000, 0.1271) m. `Status: DERIVED, verified by direct computation, not asserted without checking.`
+
+### 33.6 Self-check results (performed this pass)
+
+All checks below were run against the final `model/model.sdf`, not asserted from memory:
+
+| Check | Method | Result |
+|---|---|---|
+| XML/SDF syntax validity | `gz sdf --check model/model.sdf` | `Valid.` |
+| Mesh URIs resolve | Programmatic parse of every `<uri>`, checked against `model/meshes/` | All 12 mesh files resolve |
+| Total mass = 6.000 kg exactly | `gz sdf --inertial-stats` + independent per-link summation | `Total mass of the model: 6` (exact); per-link sum = 6.000000000000002 (float rounding only) |
+| CG consistency | `gz sdf --inertial-stats` aggregate CG vs. documented Gazebo/CAD CG | Aggregate (0.169196,0,0.100291) m vs. documented (0.168309,0,0.100000) m — ≈0.89/0/0.29 mm delta, quantified and flagged, §33.4 |
+| Inertia positive-definiteness (all 8 links) | Eigenvalue decomposition of each link's 3×3 inertia matrix | All 8 links positive-definite (smallest eigenvalue > 0 in every case) |
+| Inertia symmetry | By construction (Ixy/Ixz/Iyz entered directly, matrix built symmetric) | Symmetric by construction for all 8 links |
+| Link/joint graph validity (no disconnected movable link) | `gz sdf --graph pose` and `--graph frame` | All 7 movable links attach to `base_link` via their joint; no orphaned link |
+| Hinge left/right symmetry | Programmatic mirror-delta check (link pose + joint axis) | Exact `[0,0,0]` delta for both aileron and elevator L/R pairs (right side constructed as an exact mirror, §33.1.2) |
+| Prop hub left/right symmetry | Direct comparison of link `<pose>` | Y-mirror exact by construction: (0.2951,±0.3000,0.1271) |
+| No duplicate visual/collision names | Programmatic per-link name-uniqueness check | No duplicates found on any of the 8 links |
+| No double-counted mass | Manual accounting, §33.4 + `model.sdf` header comment | Motor mass (0.286 kg) stays in `base_link` only, not duplicated; propeller mass (0.0602 kg) subtracted from `base_link` exactly once, matching its assignment to `left_prop`/`right_prop` |
+| Joint axis vectors are unit vectors | Programmatic norm check on all 7 `<axis><xyz>` | All 7 norms = 1.000000 |
+| Joint parent/child references valid | Programmatic cross-check against the 8 declared link names | All 7 joints reference existing links |
+
+### 33.7 `gz sdf --inertial-stats` raw output (for traceability)
+
+```
+Total mass of the model: 6
+Centre of mass in model frame:
+X: 0.169196
+Y: 0
+Z: 0.100291
+Moment of inertia matrix:
+0.735117     -2.1684e-19  0.0147044
+-2.1684e-19  0.253645     1.35525e-19
+0.0147044    1.35525e-19  0.961294
+```
+
+### 33.8 Residual open items after this pass (not resolved here, not silently dropped)
+
+1. Control-surface joint rotation **sign** (§33.1.1) — `SIGN_TEST_REQUIRED` for all 5 control-surface joints; `gazebo-testing`/`controls-integration` own this next.
+2. Propeller rotation **direction** (left CCW / right CW, master dataset §44) is documented in `model.sdf` comments only — not enforced by the structural joint itself (no propulsion plugin exists to command a signed velocity yet).
+3. Ixz sign convention vs. SDF's expected off-diagonal sign — still explicitly unverified (`MASS_PROPERTIES.md` §5.1); entered into `model.sdf` exactly as documented, flagged, not resolved.
+4. The mid-fuselage collision box's Y half-width (§33.3) is `ASSUMPTION`-tagged, not measured — a future slice measurement at that X-band would let it be tightened.
+5. The known base_link-mass-vs-inertia-tensor-basis inconsistency (§33.4) is flagged for `validation`, not resolved.
+6. No propulsion, aerodynamic, or control-actuation plugin exists — `model.sdf` is structure only, exactly as scoped.

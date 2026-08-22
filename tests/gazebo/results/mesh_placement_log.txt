@@ -1,0 +1,47 @@
+=== MESH_PLACEMENT_VISUAL_TEST (independent STL re-parse + SDF pose cross-check) ===
+body.stl: 919765 triangles, raw size (mm) = (1053.76,560.00,330.48) -> PASS
+left_aileron.stl: 28786 triangles, raw size (mm) = (61.12,479.37,20.95) -> PASS
+left_elevator.stl: 31462 triangles, raw size (mm) = (44.97,189.40,9.07) -> PASS
+left_motor.stl: 697134 triangles, raw size (mm) = (66.48,38.23,38.24) -> PASS
+left_pervane.stl: 79088 triangles, raw size (mm) = (16.93,273.42,21.18) -> PASS
+left_wing.stl: 181330 triangles, raw size (mm) = (266.51,972.03,46.96) -> PASS
+right_aileron.stl: 28786 triangles, raw size (mm) = (61.12,479.37,20.95) -> PASS
+right_elevator.stl: 31462 triangles, raw size (mm) = (44.97,189.40,9.07) -> PASS
+right_motor.stl: 697134 triangles, raw size (mm) = (66.48,38.23,38.24) -> PASS
+right_pervane.stl: 79088 triangles, raw size (mm) = (16.93,273.42,21.18) -> PASS
+right_wing.stl: 181328 triangles, raw size (mm) = (266.51,972.03,46.96) -> PASS
+rudder.stl: 34857 triangles, raw size (mm) = (45.32,8.91,169.50) -> PASS
+Mesh parse/plausibility check overall: PASS
+
+--- World-frame visual AABBs (independently computed) ---
+body_visual: lo=(-0.5269, -0.28, -0.0) hi=(0.5269, 0.28, 0.3305) center=(0.0, 0.0, 0.1652)
+left_wing_visual: lo=(-0.0275, 0.08, 0.1035) hi=(0.239, 1.052, 0.1505) center=(0.1057, 0.566, 0.127)
+right_wing_visual: lo=(-0.0275, -1.052, 0.1035) hi=(0.239, -0.08, 0.1505) center=(0.1057, -0.566, 0.127)
+left_motor_visual: lo=(0.2363, 0.2809, 0.1079) hi=(0.3028, 0.3191, 0.1461) center=(0.2696, 0.3, 0.127)
+right_motor_visual: lo=(0.2363, -0.3191, 0.1079) hi=(0.3028, -0.2809, 0.1461) center=(0.2696, -0.3, 0.127)
+left_aileron_visual: lo=(-0.0236, 0.3104, 0.1077) hi=(0.0375, 0.7897, 0.1286) center=(0.007, 0.5501, 0.1182)
+right_aileron_visual: lo=(-0.0236, -0.7897, 0.1077) hi=(0.0375, -0.3104, 0.1286) center=(0.007, -0.5501, 0.1182)
+left_elevator_visual: lo=(-0.5177, 0.0506, 0.0786) hi=(-0.4727, 0.24, 0.0876) center=(-0.4952, 0.1453, 0.0831)
+right_elevator_visual: lo=(-0.5177, -0.24, 0.0786) hi=(-0.4727, -0.0506, 0.0876) center=(-0.4952, -0.1453, 0.0831)
+rudder_visual: lo=(-0.518, -0.0045, 0.1303) hi=(-0.4727, 0.0045, 0.2998) center=(-0.4953, -0.0, 0.215)
+left_prop_visual: lo=(0.2849, 0.1349, 0.1143) hi=(0.3053, 0.4652, 0.1399) center=(0.2951, 0.3, 0.1271)
+right_prop_visual: lo=(0.2849, -0.4651, 0.1143) hi=(0.3053, -0.1348, 0.1399) center=(0.2951, -0.3, 0.1271)
+
+Wingspan (independently computed, left tip Y 1.0520 to right tip Y -1.0520) = 2.1041 m vs manufacturer 2.093 m (tol 0.05 m) -> PASS
+
+body_visual: center=(0.0, 0.0, 0.1652) within +/-3.0 m of origin -> PASS
+left_wing_visual: center=(0.1057, 0.566, 0.127) within +/-3.0 m of origin -> PASS
+right_wing_visual: center=(0.1057, -0.566, 0.127) within +/-3.0 m of origin -> PASS
+left_motor_visual: center=(0.2696, 0.3, 0.127) within +/-3.0 m of origin -> PASS
+right_motor_visual: center=(0.2696, -0.3, 0.127) within +/-3.0 m of origin -> PASS
+
+left_aileron_visual: AABB center=(0.007, 0.5501, 0.1182) vs link/hinge origin (0.032943, 0.31395, 0.110356), dist=0.2377 m (tol 0.5 m) -> PASS
+right_aileron_visual: AABB center=(0.007, -0.5501, 0.1182) vs link/hinge origin (0.032943, -0.31395, 0.110356), dist=0.2377 m (tol 0.5 m) -> PASS
+left_elevator_visual: AABB center=(-0.4952, 0.1453, 0.0831) vs link/hinge origin (-0.474959, 0.0506, 0.087119), dist=0.0969 m (tol 0.5 m) -> PASS
+right_elevator_visual: AABB center=(-0.4952, -0.1453, 0.0831) vs link/hinge origin (-0.474959, -0.0506, 0.087119), dist=0.0969 m (tol 0.5 m) -> PASS
+rudder_visual: AABB center=(-0.4953, -0.0, 0.215) vs link/hinge origin (-0.476094, 0.0, 0.1305), dist=0.0867 m (tol 0.5 m) -> PASS
+
+left_prop_visual: visual bbox size=(0.0205, 0.3303, 0.0256) m, measured diameter=0.3303 m vs real APC 13x6.5E 0.3302 m (tol 0.02) -> PASS; AABB-center-to-hub dist=0.039 mm (tol 5.0 mm) -> PASS
+right_prop_visual: visual bbox size=(0.0205, 0.3303, 0.0256) m, measured diameter=0.3303 m vs real APC 13x6.5E 0.3302 m (tol 0.02) -> PASS; AABB-center-to-hub dist=0.039 mm (tol 5.0 mm) -> PASS
+
+MESH_PLACEMENT_VISUAL_TEST overall: PASS

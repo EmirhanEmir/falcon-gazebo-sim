@@ -6,6 +6,8 @@
 **Last updated:** 2026-08-21 (consolidation pass: re-confirmed the CG-duality discipline in §3 was intact; made frame/origin/axis-convention/intended-usage explicit and separate for both the Gazebo/CAD CG and the XFLR5 reference CG, §3.1/§3.2; added an explicit designation statement, §3.4, naming the Gazebo/CAD CG as the value for the SDF `<inertial>` block with no XFLR5→Gazebo conversion applied. No numeric value changed; both CG origins remain `DATA_REQUIRED`, not resolved by this pass.)
 
 **Last updated (again):** 2026-08-21 (master-dataset synchronization pass — source: `docs/source_of_truth/master/FALCON_V2_MASTER_DATASET_BEFORE_GAZEBO.txt`, §1–§74, read in full, cited by section number; source-priority order applied: manufacturer manual > real aircraft measurement > real component manufacturer data > current STL geometry > XFOIL/XFLR5 result > derived calculation > V1 estimate/provisional; the master dataset's own status qualifiers, e.g. "V1"/"provisional"/"yaklaşık", are preserved, not silently promoted). Three substantive changes this pass, all detailed in the sections they touch: (1) a V1-provisional inertia tensor is now documented at §5, replacing the prior "no inertia data of any kind" finding — it does not block Gazebo V1 use, per the master dataset's own explicit statement; (2) main battery mass and center coordinate are now documented at §6.1 (secondary 3S battery position remains `DATA_REQUIRED`, not invented); (3) a derived Gazebo/CAD↔XFLR5 coordinate transform (X/Z only) is documented at §3.5, cross-referencing the full derivation in `GEOMETRY.md` §8.3. No mass or CG value was changed — only inertia (previously entirely absent) and battery mass/position (previously entirely absent) were added, and both are geometry/mass-distribution facts explicitly within this agent's ownership, not tuning changes.
+
+**Last updated (again):** 2026-08-21 (first Gazebo structural implementation pass — `model/model.sdf` created for the first time; see new §7 for the per-link mass-distribution split actually implemented in SDF, and its cross-check against the values already documented in §1–§5 above. No mass, CG, or inertia *source value* was changed by this pass — §7 records how the already-`CONFIRMED`/`V1_PROVISIONAL` values in §1–§5 were partitioned across 8 SDF links, not a new measurement.)
 **Repository investigation performed:** full-tree `find`, extension search (`*.sdf *.stl *.dae *.obj *.urdf *.xacro *.csv *.xlsx *.pdf *.xflr5 *.xfl *.step *.stp *.iges *.igs *.json *.yaml *.yml *.xml`), keyword `grep` for `ixx|iyy|izz|ixy|ixz|iyz|inertia|xflr5|xfoil|battery|motor mount|esc|servo|hinge|CAD` (case-insensitive) across the whole working tree, and full `git log`/`git ls-tree` history review (single commit, `1c2d17d`, matches the working tree exactly — no deleted or historical files carry additional mass-property data).
 
 Status legend: `CONFIRMED`, `DERIVED` (derivation shown), `DATA_REQUIRED` (not found anywhere in repo), `CONFLICT_REQUIRES_RESOLUTION` (two authoritative sources disagree, both reported), `UNVERIFIED` (found but revision/applicability to current FALCON V2 cannot be confirmed — excluded from authoritative tables), `REVISION_REQUIRES_CONFIRMATION` (component value found but which aircraft revision it belongs to is ambiguous — excluded from authoritative tables).
@@ -219,6 +221,30 @@ remaining, unaccounted           ≈ 3.580 kg
 ```
 
 This is a running total for tracking purposes only — it does **not** validate or cross-check anything (the ≈3.58 kg remainder is exactly what §9 item 18 below, "Airframe structural mass," plus servos/wiring/avionics, must eventually account for), and no component mass is inferred, backed-out, or estimated from this arithmetic. The full component-sum-equals-6.000-kg validation rule (§10 rule 1) remains **not yet checkable** in full — only ≈40% of the total mass is currently itemized.
+
+### 6.3 SDF mass-distribution split (first Gazebo structural implementation pass, 2026-08-21)
+
+**This subsection records how the values already established in §1–§6 above were partitioned across `model/model.sdf`'s 8 links — it introduces no new mass measurement.** Full reasoning is in `model/model.sdf`'s header comment and `GEOMETRY.md` §33.4 (cross-referenced, not duplicated at length here).
+
+Movable-link masses could not be derived from a real component breakdown (§6.2's ≈3.58 kg "airframe structural mass" remainder is still fully undifferentiated) — a **hybrid** of mass-distribution strategy (A) (partition real known masses) and (B) (near-massless numerical placeholders) was chosen, per the task's own explicit allowance to make and document a reasoned choice rather than defaulting blindly to (B):
+
+| Link | Mass (kg) | Basis | Status |
+|---|---|---|---|
+| `base_link` | 5.9348 | 6.000 − (2×0.0301 + 5×0.001) | Remainder — carries the aircraft's full documented CG (§3.1) and `V1_PROVISIONAL` inertia tensor (§5.1) unmodified |
+| `left_prop` | 0.0301 | Real propeller component mass, master dataset §44 | `CONFIRMED` (real data — **not** `TEMPORARY_NUMERICAL_MASS`, since real sourced data exists for this specific component) |
+| `right_prop` | 0.0301 | Same | `CONFIRMED` |
+| `left_aileron` | 0.001 | Numerical minimum (1 g) — no component-level mass exists for this part anywhere in §6 | `TEMPORARY_NUMERICAL_MASS` |
+| `right_aileron` | 0.001 | Same | `TEMPORARY_NUMERICAL_MASS` |
+| `left_elevator` | 0.001 | Same | `TEMPORARY_NUMERICAL_MASS` |
+| `right_elevator` | 0.001 | Same | `TEMPORARY_NUMERICAL_MASS` |
+| `rudder` | 0.001 | Same | `TEMPORARY_NUMERICAL_MASS` |
+| **Total** | **6.000** | Verified via `gz sdf --inertial-stats`: `Total mass of the model: 6` | Matches §2 exactly |
+
+**No double-counting:** motor mass (0.286 kg total, §6.2) remains inside `base_link` only — motors are fixed visuals, not separate SDF links, per the task's structural architecture, and are not separately subtracted. Propeller mass (0.0602 kg total, §6.2) is subtracted from `base_link` exactly once, matching its assignment to `left_prop`/`right_prop` — not added on top of the existing 6.000 kg total.
+
+**Known, documented limitation (flagged for `validation`):** `base_link`'s inertia tensor (§5.1) is used **unmodified**, even though `base_link`'s own assigned mass (5.9348 kg) no longer exactly matches the tensor's original 6.000 kg documentation basis. This was a deliberate choice — rigorously subtracting a parallel-axis point-mass contribution for the 7 child links would fabricate a precision the externally-supplied `V1_PROVISIONAL` tensor does not have (per this section's own §5.1 rule against silently improving/re-deriving it). The measured consequence, via `gz sdf --inertial-stats` on the real `model.sdf`: the 8-link system's aggregate mass-weighted CG is (0.169196, 0, 0.100291) m vs. the documented (0.168309, 0, 0.100000) m — a ≈0.89 mm / 0 / ≈0.29 mm shift, well inside the manufacturer's own ≈±10 mm CG tolerance (master dataset §3) — and the aggregate inertia matrix (Ixx=0.735117, Iyy=0.253645, Izz=0.961294, Ixz=0.0147044 kg·m²) differs from the base tensor by roughly 0.9–1.5%, attributable to the small known point masses on the movable links. Full numeric detail: `GEOMETRY.md` §33.4/§33.7.
+
+**Prop rotational inertia:** each prop link's rotational inertia (Ixx=Iyy=Izz=2.7349×10⁻⁴ kg·m²) is tagged `V1_PROVISIONAL_ROTATIONAL_INERTIA` — a simple uniform-thin-rod approximation (`I = (1/12)·m·D²`) using the *real* mass (0.0301 kg) and *real* diameter (D=0.3302 m, APC 13x6.5E — never the `VISUAL_MESH_ONLY` STL figure), applied identically to all three axes as a documented simplification. This is **not** a measured or CAD value (PROPULSION.md §1.1/§4: exact prop rotational inertia remains genuinely unknown, only a V1-estimate/bench-calibration path is authorized).
 
 ---
 

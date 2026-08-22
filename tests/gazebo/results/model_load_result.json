@@ -1,0 +1,56 @@
+{
+  "result": {
+    "model_valid": true,
+    "model_name": "falcon_v2",
+    "link_count": 8,
+    "joint_count": 7,
+    "link_names": [
+      "base_link",
+      "left_aileron",
+      "left_elevator",
+      "left_prop",
+      "right_aileron",
+      "right_elevator",
+      "right_prop",
+      "rudder"
+    ],
+    "joint_info": {
+      "left_aileron_joint": {
+        "valid": true,
+        "parent": "base_link",
+        "child": "left_aileron"
+      },
+      "right_aileron_joint": {
+        "valid": true,
+        "parent": "base_link",
+        "child": "right_aileron"
+      },
+      "left_elevator_joint": {
+        "valid": true,
+        "parent": "base_link",
+        "child": "left_elevator"
+      },
+      "right_elevator_joint": {
+        "valid": true,
+        "parent": "base_link",
+        "child": "right_elevator"
+      },
+      "rudder_joint": {
+        "valid": true,
+        "parent": "base_link",
+        "child": "rudder"
+      },
+      "left_prop_joint": {
+        "valid": true,
+        "parent": "base_link",
+        "child": "left_prop"
+      },
+      "right_prop_joint": {
+        "valid": true,
+        "parent": "base_link",
+        "child": "right_prop"
+      }
+    }
+  },
+  "pass": true
+}

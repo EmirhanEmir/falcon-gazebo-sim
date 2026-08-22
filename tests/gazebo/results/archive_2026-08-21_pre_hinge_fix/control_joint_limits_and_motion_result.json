@@ -1,0 +1,100 @@
+{
+  "limits": {
+    "left_aileron_joint": {
+      "joint_valid": true,
+      "lower": -0.5236,
+      "upper": 0.5236
+    },
+    "right_aileron_joint": {
+      "joint_valid": true,
+      "lower": -0.5236,
+      "upper": 0.5236
+    },
+    "left_elevator_joint": {
+      "joint_valid": true,
+      "lower": -0.5236,
+      "upper": 0.5236
+    },
+    "right_elevator_joint": {
+      "joint_valid": true,
+      "lower": -0.5236,
+      "upper": 0.5236
+    },
+    "rudder_joint": {
+      "joint_valid": true,
+      "lower": -0.5236,
+      "upper": 0.5236
+    }
+  },
+  "limit_test_pass": true,
+  "motion_detail": {
+    "left_aileron_joint": {
+      "max_reached_rad": 0.5226,
+      "min_reached_rad": -0.5226,
+      "any_nan": false,
+      "max_fidelity_err_rad": 0.0,
+      "reached_upper_near_limit": true,
+      "reached_lower_near_limit": true
+    },
+    "right_aileron_joint": {
+      "max_reached_rad": 0.5226,
+      "min_reached_rad": -0.5226,
+      "any_nan": false,
+      "max_fidelity_err_rad": 0.0,
+      "reached_upper_near_limit": true,
+      "reached_lower_near_limit": true
+    },
+    "left_elevator_joint": {
+      "max_reached_rad": 0.5226,
+      "min_reached_rad": -0.5226,
+      "any_nan": false,
+      "max_fidelity_err_rad": 0.0,
+      "reached_upper_near_limit": true,
+      "reached_lower_near_limit": true
+    },
+    "right_elevator_joint": {
+      "max_reached_rad": 0.5226,
+      "min_reached_rad": -0.5226,
+      "any_nan": false,
+      "max_fidelity_err_rad": 0.0,
+      "reached_upper_near_limit": true,
+      "reached_lower_near_limit": true
+    },
+    "rudder_joint": {
+      "max_reached_rad": 0.5226,
+      "min_reached_rad": -0.5226,
+      "any_nan": false,
+      "max_fidelity_err_rad": 0.0,
+      "reached_upper_near_limit": true,
+      "reached_lower_near_limit": true
+    }
+  },
+  "motion_test_pass": true,
+  "supplementary_torque_sweep": {
+    "left_aileron_joint": {
+      "final_pos_rad": 0.5236000000000189,
+      "max_pos_rad": 0.5236000000025158,
+      "any_nan": false
+    },
+    "right_aileron_joint": {
+      "final_pos_rad": 0.5236000000000189,
+      "max_pos_rad": 0.5236000000025158,
+      "any_nan": false
+    },
+    "left_elevator_joint": {
+      "final_pos_rad": 0.523600000000033,
+      "max_pos_rad": 0.5236000000031075,
+      "any_nan": false
+    },
+    "right_elevator_joint": {
+      "final_pos_rad": 0.523600000000033,
+      "max_pos_rad": 0.5236000000031075,
+      "any_nan": false
+    },
+    "rudder_joint": {
+      "final_pos_rad": 0.5236000000000343,
+      "max_pos_rad": 0.5236000000041974,
+      "any_nan": false
+    }
+  }
+}

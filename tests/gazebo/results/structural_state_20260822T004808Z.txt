@@ -1,0 +1,255 @@
+=== FALCON V2 structural state capture: 20260822T004808Z ===
+World: /home/emirhan/Desktop/FalconV2/tests/gazebo/worlds/falcon_v2_zero_g_world.sdf
+
+--- gz sdf --check (model/model.sdf) ---
+Valid.
+
+--- gz sdf --check (test world) ---
+Valid.
+
+--- gz model --list ---
+
+Requesting state for world [falcon_v2_zero_g_test]...
+
+Available models:
+    - falcon_v2
+
+--- gz model -m falcon_v2 -p (model pose) ---
+
+Requesting state for world [falcon_v2_zero_g_test]...
+
+Model: [4]
+  - Name: falcon_v2
+  - Pose [ XYZ (m) ] [ RPY (rad) ]:
+    [0.000000 0.000000 0.000000]
+    [0.000000 -0.000000 0.000000]
+
+--- gz model -m falcon_v2 -l (all links: mass, inertial pose, inertia matrix, link pose) ---
+
+Requesting state for world [falcon_v2_zero_g_test]...
+
+- Link [5]
+  - Name: base_link
+  - Parent: falcon_v2 [4]
+  - Mass (kg): 5.934800
+  - Inertial Pose [ XYZ (m) ] [ RPY (rad) ]:
+    [0.168309 0.000000 0.100000]
+    [0.000000 -0.000000 0.000000]
+  - Inertial Matrix (kg.m^2):
+    [0.728400 0.000000 0.014850]
+    [0.000000 0.250700 0.000000]
+    [0.014850 0.000000 0.952300]
+  - Pose [ XYZ (m) ] [ RPY (rad) ]:
+    [0.000000 0.000000 0.000000]
+    [0.000000 -0.000000 0.000000]
+- Link [18]
+  - Name: left_aileron
+  - Parent: falcon_v2 [4]
+  - Mass (kg): 0.001000
+  - Inertial Pose [ XYZ (m) ] [ RPY (rad) ]:
+    [-0.025962 0.236107 0.007807]
+    [0.000000 -0.000000 0.000000]
+  - Inertial Matrix (kg.m^2):
+    [0.000019 0.000000 0.000000]
+    [0.000000 0.000000 0.000000]
+    [0.000000 0.000000 0.000019]
+  - Pose [ XYZ (m) ] [ RPY (rad) ]:
+    [0.032943 0.313950 0.110356]
+    [0.000000 -0.000000 0.000000]
+- Link [21]
+  - Name: right_aileron
+  - Parent: falcon_v2 [4]
+  - Mass (kg): 0.001000
+  - Inertial Pose [ XYZ (m) ] [ RPY (rad) ]:
+    [-0.025962 -0.236107 0.007807]
+    [0.000000 -0.000000 0.000000]
+  - Inertial Matrix (kg.m^2):
+    [0.000019 0.000000 0.000000]
+    [0.000000 0.000000 0.000000]
+    [0.000000 0.000000 0.000019]
+  - Pose [ XYZ (m) ] [ RPY (rad) ]:
+    [0.032943 -0.313950 0.110356]
+    [0.000000 -0.000000 0.000000]
+- Link [24]
+  - Name: left_elevator
+  - Parent: falcon_v2 [4]
+  - Mass (kg): 0.001000
+  - Inertial Pose [ XYZ (m) ] [ RPY (rad) ]:
+    [-0.020211 0.094700 -0.004031]
+    [0.000000 -0.000000 0.000000]
+  - Inertial Matrix (kg.m^2):
+    [0.000003 0.000000 0.000000]
+    [0.000000 0.000000 0.000000]
+    [0.000000 0.000000 0.000003]
+  - Pose [ XYZ (m) ] [ RPY (rad) ]:
+    [-0.474959 0.050600 0.087119]
+    [0.000000 -0.000000 0.000000]
+- Link [27]
+  - Name: right_elevator
+  - Parent: falcon_v2 [4]
+  - Mass (kg): 0.001000
+  - Inertial Pose [ XYZ (m) ] [ RPY (rad) ]:
+    [-0.020211 -0.094700 -0.004031]
+    [0.000000 -0.000000 0.000000]
+  - Inertial Matrix (kg.m^2):
+    [0.000003 0.000000 0.000000]
+    [0.000000 0.000000 0.000000]
+    [0.000000 0.000000 0.000003]
+  - Pose [ XYZ (m) ] [ RPY (rad) ]:
+    [-0.474959 -0.050600 0.087119]
+    [0.000000 -0.000000 0.000000]
+- Link [30]
+  - Name: rudder
+  - Parent: falcon_v2 [4]
+  - Mass (kg): 0.001000
+  - Inertial Pose [ XYZ (m) ] [ RPY (rad) ]:
+    [-0.019247 0.000000 0.084500]
+    [0.000000 -0.000000 0.000000]
+  - Inertial Matrix (kg.m^2):
+    [0.000002 0.000000 0.000000]
+    [0.000000 0.000003 0.000000]
+    [0.000000 0.000000 0.000000]
+  - Pose [ XYZ (m) ] [ RPY (rad) ]:
+    [-0.476094 0.000000 0.130500]
+    [0.000000 -0.000000 0.000000]
+- Link [33]
+  - Name: left_prop
+  - Parent: falcon_v2 [4]
+  - Mass (kg): 0.030100
+  - Inertial Pose [ XYZ (m) ] [ RPY (rad) ]:
+    [0.000000 0.000000 0.000000]
+    [0.000000 -0.000000 0.000000]
+  - Inertial Matrix (kg.m^2):
+    [0.000273 0.000000 0.000000]
+    [0.000000 0.000273 0.000000]
+    [0.000000 0.000000 0.000273]
+  - Pose [ XYZ (m) ] [ RPY (rad) ]:
+    [0.295100 0.300000 0.127100]
+    [0.000000 -0.000000 0.000000]
+- Link [35]
+  - Name: right_prop
+  - Parent: falcon_v2 [4]
+  - Mass (kg): 0.030100
+  - Inertial Pose [ XYZ (m) ] [ RPY (rad) ]:
+    [0.000000 0.000000 0.000000]
+    [0.000000 -0.000000 0.000000]
+  - Inertial Matrix (kg.m^2):
+    [0.000273 0.000000 0.000000]
+    [0.000000 0.000273 0.000000]
+    [0.000000 0.000000 0.000273]
+  - Pose [ XYZ (m) ] [ RPY (rad) ]:
+    [0.295100 -0.300000 0.127100]
+    [0.000000 -0.000000 0.000000]
+
+--- gz model -m falcon_v2 -j (all joints: type, parent/child link, axis) ---
+
+Requesting state for world [falcon_v2_zero_g_test]...
+
+- Joint [37]
+  - Name: left_aileron_joint
+  - Parent: falcon_v2 [4]
+  - Type: revolute
+  - Parent Link: base_link [5]
+  - Child Link: left_aileron [18]
+  - Pose [ XYZ (m) ] [ RPY (rad) ]:
+    [0.000000 0.000000 0.000000]
+    [0.000000 -0.000000 0.000000]
+  - Axis unit vector [ XYZ ]:
+    [0.000994 0.999899 0.014146]
+- Joint [38]
+  - Name: right_aileron_joint
+  - Parent: falcon_v2 [4]
+  - Type: revolute
+  - Parent Link: base_link [5]
+  - Child Link: right_aileron [21]
+  - Pose [ XYZ (m) ] [ RPY (rad) ]:
+    [0.000000 0.000000 0.000000]
+    [0.000000 -0.000000 0.000000]
+  - Axis unit vector [ XYZ ]:
+    [-0.000994 0.999899 -0.014146]
+- Joint [39]
+  - Name: left_elevator_joint
+  - Parent: falcon_v2 [4]
+  - Type: revolute
+  - Parent Link: base_link [5]
+  - Child Link: left_elevator [24]
+  - Pose [ XYZ (m) ] [ RPY (rad) ]:
+    [0.000000 0.000000 0.000000]
+    [0.000000 -0.000000 0.000000]
+  - Axis unit vector [ XYZ ]:
+    [0.002983 0.999993 -0.002072]
+- Joint [40]
+  - Name: right_elevator_joint
+  - Parent: falcon_v2 [4]
+  - Type: revolute
+  - Parent Link: base_link [5]
+  - Child Link: right_elevator [27]
+  - Pose [ XYZ (m) ] [ RPY (rad) ]:
+    [0.000000 0.000000 0.000000]
+    [0.000000 -0.000000 0.000000]
+  - Axis unit vector [ XYZ ]:
+    [-0.002983 0.999993 0.002072]
+- Joint [41]
+  - Name: rudder_joint
+  - Parent: falcon_v2 [4]
+  - Type: revolute
+  - Parent Link: base_link [5]
+  - Child Link: rudder [30]
+  - Pose [ XYZ (m) ] [ RPY (rad) ]:
+    [0.000000 0.000000 0.000000]
+    [0.000000 -0.000000 0.000000]
+  - Axis unit vector [ XYZ ]:
+    [0.010378 0 0.999946]
+- Joint [42]
+  - Name: left_prop_joint
+  - Parent: falcon_v2 [4]
+  - Type: revolute
+  - Parent Link: base_link [5]
+  - Child Link: left_prop [33]
+  - Pose [ XYZ (m) ] [ RPY (rad) ]:
+    [0.000000 0.000000 0.000000]
+    [0.000000 -0.000000 0.000000]
+  - Axis unit vector [ XYZ ]:
+    [1 0 0]
+- Joint [43]
+  - Name: right_prop_joint
+  - Parent: falcon_v2 [4]
+  - Type: revolute
+  - Parent Link: base_link [5]
+  - Child Link: right_prop [35]
+  - Pose [ XYZ (m) ] [ RPY (rad) ]:
+    [0.000000 0.000000 0.000000]
+    [0.000000 -0.000000 0.000000]
+  - Axis unit vector [ XYZ ]:
+    [1 0 0]
+
+--- server stderr/stdout tail (last 40 lines, checked for Err/Wrn) ---
+[1;32m[Msg] [0m[1;32mGazebo Sim Server v[0m[1;32m8.14.0[0m[1;32m[0m
+[1;32m[Msg] [0m[1;32mLoading SDF world file[[0m[1;32m/home/emirhan/Desktop/FalconV2/tests/gazebo/worlds/falcon_v2_zero_g_world.sdf[0m[1;32m].[0m
+[1;32m[Msg] [0m[1;32mServing entity system service on [[0m[1;32m/[0m[1;32mentity/system/add[0m[1;32m][0m[1;32m[0m
+[1;32m[Msg] [0m[1;32mLoaded level [[0m[1;32mdefault[0m[1;32m][0m[1;32m[0m
+[1;32m[Msg] [0m[1;32mServing world controls on [[0m[1;32m/world/falcon_v2_zero_g_test[0m[1;32m/control], [[0m[1;32m/world/falcon_v2_zero_g_test[0m[1;32m/control/state] and [[0m[1;32m/world/falcon_v2_zero_g_test[0m[1;32m/playback/control][0m[1;32m[0m
+[1;32m[Msg] [0m[1;32mServing GUI information on [[0m[1;32m/world/falcon_v2_zero_g_test[0m[1;32m/[0m[1;32mgui/info[0m[1;32m][0m[1;32m[0m
+[1;32m[Msg] [0m[1;32mWorld [[0m[1;32mfalcon_v2_zero_g_test[0m[1;32m] initialized with [[0m[1;32m1ms[0m[1;32m] physics profile.[0m[1;32m[0m
+[1;32m[Msg] [0m[1;32mServing world SDF generation service on [[0m[1;32m/world/falcon_v2_zero_g_test[0m[1;32m/[0m[1;32mgenerate_world_sdf[0m[1;32m][0m[1;32m[0m
+[1;32m[Msg] [0m[1;32mServing world names on [[0m[1;32m/gazebo/worlds[0m[1;32m][0m[1;32m[0m
+[1;32m[Msg] [0m[1;32mResource path add service on [[0m[1;32m/gazebo/resource_paths/add[0m[1;32m].[0m[1;32m[0m
+[1;32m[Msg] [0m[1;32mResource path get service on [[0m[1;32m/gazebo/resource_paths/get[0m[1;32m].[0m[1;32m[0m
+[1;32m[Msg] [0m[1;32mResource path resolve service on [[0m[1;32m/gazebo/resource_paths/resolve[0m[1;32m].[0m[1;32m[0m
+[1;32m[Msg] [0m[1;32mResource paths published on [[0m[1;32m/gazebo/resource_paths[0m[1;32m].[0m[1;32m[0m
+[1;32m[Msg] [0m[1;32mServer control service on [[0m[1;32m/server_control[0m[1;32m].[0m[1;32m[0m
+[1;32m[Msg] [0m[1;32mFound no publishers on /stats, adding root stats topic[0m[1;32m[0m
+[1;32m[Msg] [0m[1;32mFound no publishers on /clock, adding root clock topic[0m[1;32m[0m
+[1;32m[Msg] [0m[1;32mServing scene information on [[0m[1;32m/world/falcon_v2_zero_g_test[0m[1;32m/[0m[1;32mscene/info[0m[1;32m][0m[1;32m[0m
+[1;32m[Msg] [0m[1;32mServing graph information on [[0m[1;32m/world/falcon_v2_zero_g_test[0m[1;32m/[0m[1;32mscene/graph[0m[1;32m][0m[1;32m[0m
+[1;32m[Msg] [0m[1;32mServing full state on [[0m[1;32m/world/falcon_v2_zero_g_test[0m[1;32m/[0m[1;32mstate[0m[1;32m][0m[1;32m[0m
+[1;32m[Msg] [0m[1;32mServing full state (async) on [[0m[1;32m/world/falcon_v2_zero_g_test[0m[1;32m/[0m[1;32mstate_async[0m[1;32m][0m[1;32m[0m
+[1;32m[Msg] [0m[1;32mPublishing scene information on [[0m[1;32m/world/falcon_v2_zero_g_test/scene/info[0m[1;32m][0m[1;32m[0m
+[1;32m[Msg] [0m[1;32mPublishing entity deletions on [[0m[1;32m/world/falcon_v2_zero_g_test/scene/deletion[0m[1;32m][0m[1;32m[0m
+[1;32m[Msg] [0m[1;32mPublishing state changes on [[0m[1;32m/world/falcon_v2_zero_g_test/state[0m[1;32m][0m[1;32m[0m
+[1;32m[Msg] [0m[1;32mPublishing pose messages on [[0m[1;32m/world/falcon_v2_zero_g_test[0m[1;32m/[0m[1;32mpose/info[0m[1;32m][0m[1;32m[0m
+[1;32m[Msg] [0m[1;32mPublishing dynamic pose messages on [[0m[1;32m/world/falcon_v2_zero_g_test[0m[1;32m/[0m[1;32mdynamic_pose/info[0m[1;32m][0m[1;32m[0m
+
+--- grep for Err/error in server log ---
+
+sdf_check_status=0 world_check_status=0 model_ready=1 err_count_in_server_log=0

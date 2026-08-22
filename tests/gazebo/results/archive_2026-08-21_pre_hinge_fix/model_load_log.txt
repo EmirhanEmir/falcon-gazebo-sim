@@ -1,0 +1,14 @@
+=== MODEL_LOAD_TEST ===
+Model 'falcon_v2' valid: True -> PASS
+Link count: 8 (expected 8), names match expected set: True -> PASS
+Joint count: 7 (expected 7), names match expected set: True -> PASS
+  left_aileron_joint: valid=True parent=base_link (expected base_link) child=left_aileron (expected left_aileron) -> PASS
+  right_aileron_joint: valid=True parent=base_link (expected base_link) child=right_aileron (expected right_aileron) -> PASS
+  left_elevator_joint: valid=True parent=base_link (expected base_link) child=left_elevator (expected left_elevator) -> PASS
+  right_elevator_joint: valid=True parent=base_link (expected base_link) child=right_elevator (expected right_elevator) -> PASS
+  rudder_joint: valid=True parent=base_link (expected base_link) child=rudder (expected rudder) -> PASS
+  left_prop_joint: valid=True parent=base_link (expected base_link) child=left_prop (expected left_prop) -> PASS
+  right_prop_joint: valid=True parent=base_link (expected base_link) child=right_prop (expected right_prop) -> PASS
+
+Mesh URI resolution / parse-error check: see server_log_*.txt from capture_structural_state.sh (err_count_in_server_log=0 recorded there) and gz sdf --check output (both logged as 'Valid.').
+MODEL_LOAD_TEST overall: PASS

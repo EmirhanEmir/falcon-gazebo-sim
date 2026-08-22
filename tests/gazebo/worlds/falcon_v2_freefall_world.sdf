@@ -1,0 +1,72 @@
+<?xml version="1.0"?>
+<!--
+  FALCON V2 structural test world - FREE FALL / GROUND CONTACT variant.
+
+  Purpose (gazebo-testing, structural-V1 test pass, 2026-08-21): provides a
+  reproducible, deterministic scenario for:
+    - MODEL_LOAD_TEST      (independent real load, not just gz sdf --check)
+    - STATIC_GRAVITY_TEST  (falls under gravity, no aero forces exist yet)
+    - MASS_CG_INERTIA_TEST (mass/CG/inertia as loaded by the physics engine;
+                             zero-torque-about-CG free-fall sanity check)
+    - COLLISION_SANITY_TEST (aircraft eventually contacts the ground plane)
+    - NUMERICAL_STABILITY_IDLE_TEST (no NaN / energy gain / runaway values)
+
+  Gravity is standard Earth gravity (0 0 -9.81), matching Gazebo's default
+  and CLAUDE.md's SI-units rule. This world does NOT modify any aircraft
+  physics parameter - it only places the unmodified model/model.sdf above a
+  flat ground plane. No plugin is attached to the aircraft model itself.
+
+  falcon_v2 is spawned at (0, 0, 5) m so it free-falls for a documented
+  interval before ground contact (t_contact = sqrt(2*5/9.81) ~= 1.009 s),
+  giving a clean "no contact yet" window for STATIC_GRAVITY_TEST /
+  MASS_CG_INERTIA_TEST before the "post-contact" window used by
+  COLLISION_SANITY_TEST.
+-->
+<sdf version="1.9">
+  <world name="falcon_v2_freefall_test">
+    <physics name="1ms" type="dartsim">
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>0</real_time_factor>
+    </physics>
+    <gravity>0 0 -9.81</gravity>
+
+    <plugin filename="gz-sim-physics-system" name="gz::sim::systems::Physics"></plugin>
+    <plugin filename="gz-sim-scene-broadcaster-system" name="gz::sim::systems::SceneBroadcaster"></plugin>
+
+    <light type="directional" name="sun">
+      <cast_shadows>true</cast_shadows>
+      <pose>0 0 10 0 0 0</pose>
+      <diffuse>0.8 0.8 0.8 1</diffuse>
+      <specular>0.2 0.2 0.2 1</specular>
+      <direction>-0.5 0.1 -0.9</direction>
+    </light>
+
+    <model name="ground_plane">
+      <static>true</static>
+      <link name="link">
+        <collision name="collision">
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>100 100</size>
+            </plane>
+          </geometry>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>100 100</size>
+            </plane>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+
+    <include>
+      <uri>file:///home/emirhan/Desktop/FalconV2/model</uri>
+      <name>falcon_v2</name>
+      <pose>0 0 5 0 0 0</pose>
+    </include>
+  </world>
+</sdf>

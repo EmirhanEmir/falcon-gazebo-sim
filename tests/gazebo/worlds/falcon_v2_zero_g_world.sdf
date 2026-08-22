@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+<!--
+  FALCON V2 structural test world - ZERO-GRAVITY / NO-GROUND variant.
+
+  Purpose (gazebo-testing, structural-V1 test pass, 2026-08-21): isolates
+  joint/link kinematics (control-surface joints, prop joints, static mesh
+  placement) from base_link translation/rotation under gravity, so joint
+  behavior can be inspected cleanly without conflating it with free-fall
+  motion. Gravity is explicitly zeroed for THIS TEST WORLD ONLY - this is a
+  test-harness choice, not a change to any aircraft physics parameter (mass,
+  CG, inertia, aero, control authority, thrust are untouched; gravity is a
+  world property, not an aircraft property, and the aircraft has no
+  gravity-dependent behavior implemented yet in this structural-only pass).
+  No plugin is attached to the aircraft model itself in this file - test
+  scripts drive joints directly via the gz-sim Python test-fixture API
+  (Joint.set_velocity / Joint.reset_position), not via an SDF-embedded
+  controller plugin.
+
+  Used by:
+    - CONTROL_JOINT_EXISTENCE_TEST
+    - CONTROL_JOINT_LIMIT_TEST
+    - CONTROL_JOINT_FREE_MOTION_TEST
+    - PROP_JOINT_EXISTENCE_TEST
+    - PROP_JOINT_AXIS_TEST
+    - MESH_PLACEMENT_VISUAL_TEST (initial-pose cross-check component)
+-->
+<sdf version="1.9">
+  <world name="falcon_v2_zero_g_test">
+    <physics name="1ms" type="dartsim">
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>0</real_time_factor>
+    </physics>
+    <gravity>0 0 0</gravity>
+
+    <plugin filename="gz-sim-physics-system" name="gz::sim::systems::Physics"></plugin>
+    <plugin filename="gz-sim-scene-broadcaster-system" name="gz::sim::systems::SceneBroadcaster"></plugin>
+
+    <include>
+      <uri>file:///home/emirhan/Desktop/FalconV2/model</uri>
+      <name>falcon_v2</name>
+      <pose>0 0 0 0 0 0</pose>
+    </include>
+  </world>
+</sdf>

@@ -1,0 +1,27 @@
+{
+  "existence": {
+    "left_prop_joint": {
+      "valid": true,
+      "parent_link_name": "base_link",
+      "child_link_name": "left_prop"
+    },
+    "right_prop_joint": {
+      "valid": true,
+      "parent_link_name": "base_link",
+      "child_link_name": "right_prop"
+    }
+  },
+  "existence_pass": true,
+  "spin_supplementary": {
+    "left_prop_joint": {
+      "final_pos_rad": 25.09999999995022,
+      "revolutions": 3.9947890715986505,
+      "any_nan": false
+    },
+    "right_prop_joint": {
+      "final_pos_rad": 25.09999999995022,
+      "revolutions": 3.9947890715986505,
+      "any_nan": false
+    }
+  }
+}
