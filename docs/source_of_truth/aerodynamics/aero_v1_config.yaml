@@ -1,0 +1,171 @@
+# =============================================================================
+# FALCON V2 - Aerodynamics V1 coefficient/config dataset (source of truth)
+# =============================================================================
+# Owner: aerodynamics
+# Task:  AERODYNAMICS_V1_IMPLEMENTATION (2026-08-22)
+#
+# This file is the single structured-data source for every numeric aerodynamic
+# parameter consumed by plugins/aerodynamics/ (the Gazebo Sim Harmonic System
+# plugin "FalconV2Aerodynamics"). Per CLAUDE.md's source-of-truth policy,
+# aerodynamic datasets live here, not hardcoded inline in plugin source code.
+# The plugin loads this file at Configure() time from the path given by the
+# <config_path> SDF plugin parameter in model/model.sdf.
+#
+# PROVENANCE RULE: every value below cites the exact source. Nothing here is
+# invented. Where a task-authorized derivation was required (CL0, Cm0, the
+# high-alpha saturation constants), the derivation is summarized inline and
+# the full arithmetic is recorded in docs/source_of_truth/aerodynamics/
+# AERODYNAMICS.md (new section, this pass, search "AERODYNAMICS_V1_IMPLEMENTATION").
+#
+# STATUS TAGS USED BELOW (consistent with AERODYNAMICS.md's legend):
+#   CONFIRMED         - stated directly by CLAUDE.md / master dataset / AERODYNAMICS.md,
+#                        used exactly as given, not modified.
+#   DERIVED           - computed from CONFIRMED values via a documented method,
+#                        shown in AERODYNAMICS.md.
+#   V1_CALIBRATED     - master dataset's own calibration label (drag polar).
+#   ASSUMPTION        - a value with no source data; used because a working
+#                        number was required for V1, explicitly NOT validated.
+#   TEMPORARY         - a placeholder/engineering-safety value, not a physical
+#                        constant.
+#
+# Do not edit numeric values here without updating AERODYNAMICS.md's
+# provenance record. Do not add new coefficients not present in CLAUDE.md /
+# the master dataset / an authorized derivation - report DATA_REQUIRED
+# instead (see AERODYNAMICS.md for the current list).
+# =============================================================================
+
+reference_geometry:
+  # S, b: CLAUDE.md manufacturer geometry / MD sec 3. c_ref: XFLR5's own internal
+  # aerodynamic reference chord, MD sec 24/37/70, AERODYNAMICS.md sec 2.2 -
+  # explicitly NOT the manufacturer's 0.176 m average chord (do not conflate).
+  wing_area_S_m2: 0.4514                # CONFIRMED, CLAUDE.md
+  wingspan_b_m: 2.093                   # CONFIRMED, CLAUDE.md
+  reference_chord_c_ref_m: 0.224        # CONFIRMED, AERODYNAMICS.md sec 2.2 (MD sec 24/37/70)
+
+environment:
+  air_density_rho_kg_m3: 1.225          # CONFIRMED, standard sea-level (ISA), V1 fixed value per task brief
+  # Numerical-safety-only floor for the V-denominator in p_hat/q_hat/r_hat.
+  # NOT a physical constant. Chosen far below any realistic flight speed so it
+  # never distorts real dynamic-pressure-scaled forces (qbar~V^2 already goes
+  # to exactly zero at true V=0, independent of this floor).
+  v_safe_floor_m_s: 0.0010              # TEMPORARY, engineering numerical-safety choice
+
+# CG used by this plugin for reference only (force is applied at the link's
+# own <inertial><pose>, i.e. wherever geometry-structure has placed the CG in
+# model.sdf - this plugin does NOT hardcode a duplicate CG value for force
+# application; this entry is retained purely for documentation/traceability).
+cg_reference:
+  gazebo_cad_cg_m: [0.168309, 0.0, 0.100000]   # CONFIRMED, MASS_PROPERTIES.md sec 3.1 - cited only, not re-applied by the plugin
+
+longitudinal:
+  CLa_per_rad: 5.44594        # CONFIRMED, AERODYNAMICS.md sec 6.2 (MD sec 30/37/70)
+  Cma_per_rad: -1.65805       # CONFIRMED, AERODYNAMICS.md sec 6.2
+  CLq: 9.48457                # CONFIRMED, AERODYNAMICS.md sec 6.2 (q_hat-normalized)
+  Cmq: -10.22875               # CONFIRMED, AERODYNAMICS.md sec 6.2
+  Cmde_per_rad: -0.73         # CONFIRMED, AERODYNAMICS.md sec 7.1 (neutral-trim-point Cm_delta_e, rounded from -0.7282 - master dataset's own chosen V1 constant)
+  # CLde (elevator lift derivative): DELIBERATELY OMITTED.
+  # A finite-difference extraction attempt from the Type-7 elevator trim-sweep
+  # table (AERODYNAMICS.md sec 7.1) produced estimates ranging 0.080-0.508 /rad
+  # across adjacent row pairs (a >6x spread, with a discontinuity straddling
+  # delta_e=0) - i.e. NOT a stable, extractable constant, because each table
+  # row is a distinct trim SEARCH result (different V and alpha satisfying a
+  # separate 1g moment/lift balance for each delta_e), not a fixed-speed
+  # direct control sweep. Fabricating a CLde from this unstable extraction
+  # would violate the project's no-fabrication rule. See AERODYNAMICS.md
+  # (this pass) for the full arithmetic. CL's control contribution is
+  # therefore limited to what CLAUDE.md's V1 equation set allows: none for
+  # elevator (equation form: CL = CL0 + CLa*alpha + CLq*q_hat only).
+  CL0: 0.437035           # DERIVED, AERODYNAMICS.md (this pass): CL0 = CL_trim - CLa*alpha_trim(rad); CL_trim=0.471685, alpha_trim=0.36455 deg
+  Cm0: 0.010550            # DERIVED, AERODYNAMICS.md (this pass): Cm0 = -Cma*alpha_trim(rad), from Cm_trim=0 at delta_e=0, q_hat=0
+
+lateral_directional:
+  CYb: -0.13216            # CONFIRMED, CLAUDE.md / AERODYNAMICS.md sec 6.2
+  CYp: -0.04567            # CONFIRMED
+  CYr: 0.08776             # CONFIRMED
+  CYda_per_rad: 0.0254     # CONFIRMED, AERODYNAMICS.md sec 7.3 (full +/-10 deg range value)
+  CYdr_per_rad: 0.085      # CONFIRMED, AERODYNAMICS.md sec 7.2
+
+  Clb: -0.00717             # CONFIRMED
+  Clp: -0.54187             # CONFIRMED
+  Clr: 0.10586              # CONFIRMED
+  Clda_per_rad: 0.308      # CONFIRMED, AERODYNAMICS.md sec 7.3
+  Cldr_per_rad: 0.0007     # CONFIRMED, AERODYNAMICS.md sec 7.2
+
+  Cnb: 0.03554              # CONFIRMED
+  Cnp: -0.05878             # CONFIRMED
+  Cnr: -0.02227             # CONFIRMED
+  Cnda_per_rad: 0.00144    # CONFIRMED, AERODYNAMICS.md sec 7.3
+  Cndr_per_rad: -0.025     # CONFIRMED, AERODYNAMICS.md sec 7.2
+
+drag_polar:
+  # V1 full-aircraft calibrated drag model. NEVER the inviscid Type-7
+  # control-sweep CDv/CDi values (those have CDv=0, not real total drag -
+  # AERODYNAMICS.md sec 6.5).
+  CD0: 0.0351               # V1_CALIBRATED, AERODYNAMICS.md sec 6.5 (MD sec 38/39)
+  k: 0.0528                 # V1_CALIBRATED, AERODYNAMICS.md sec 6.5
+
+high_alpha_limiter:
+  # V1_SMOOTH_SATURATION. Positive side: real data (CLmax manufacturer value,
+  # 9-9.5 deg XFLR5 attached-flow reliability boundary). Negative side:
+  # ASSUMPTION (see notes) - no negative-alpha full-aircraft CLmin/stall data
+  # exists in the source of truth.
+  CLmax_manufacturer: 1.42              # CONFIRMED as a manufacturer performance-calc input (MD sec 3), NOT flight-measured - AERODYNAMICS.md sec 5.2/11
+  alpha_transition_deg: 9.25            # DERIVED: midpoint of the stated 9-9.5 deg XFLR5 attached-flow reliability band (AERODYNAMICS.md sec 5.1/11)
+  # Positive-side formula (alpha > alpha_transition):
+  #   CL = CLmax - (CLmax - CL_lin(alpha_t)) * exp(-k_pos*(alpha-alpha_t))
+  #   k_pos = CLa / (CLmax - CL_lin(alpha_t))   [C1-continuous with the linear branch at alpha_t; no free/unexplained parameter]
+  # Computed once at load time by the plugin from CLa/CL0/CLmax/alpha_transition_deg - not restated as a separate config number to avoid a
+  # second, potentially-inconsistent source of truth for the same derived quantity.
+  negative_side_status: ASSUMPTION
+  negative_side_note: >
+    No full-aircraft negative-alpha CLmin/stall data exists anywhere in the
+    source of truth (only positive CLmax=1.42 is given; the wing-only 3D VLM
+    table in AERODYNAMICS.md sec 5.1 extends to alpha=-8 deg with no stated
+    CLmin/stall onset). Per the task brief's explicit instruction not to
+    invent symmetry without source support, the negative-side saturation
+    below uses a SYMMETRIC MAGNITUDE bound (-CLmax, -alpha_transition) purely
+    as a numerical safety measure to prevent unbounded negative lift/drag
+    growth (the stated V1 requirement), not as a claim of validated negative-
+    alpha stall physics. True negative-alpha stall behavior remains
+    DATA_REQUIRED. Formula (alpha < -alpha_transition), by the same C1-
+    continuity construction: CL = -CLmax + A_neg*exp(k_neg*(alpha-(-alpha_t))),
+    A_neg = CL_lin(-alpha_t) + CLmax, k_neg = CLa/A_neg.
+
+control_mapping:
+  # Explicit joint-position -> aerodynamic-deflection-sign mapping layer.
+  # ALL THREE sign parameters below are ASSUMPTION: joint-sign-to-deflection-
+  # sign identity (1:1), pending controls-integration's ELEVATOR_TEST /
+  # AILERON_TEST / RUDDER_TEST (CONTROLS.md sec 4). Flip to -1.0 post-test if
+  # the physical direction is found reversed - no code change needed.
+  elevator_sign: 1.0            # ASSUMPTION, pending ELEVATOR_SIGN_TEST
+  aileron_sign: 1.0             # ASSUMPTION, pending AILERON_SIGN_TEST (per-side handling: see aileron_differential_convention below)
+  rudder_sign: 1.0              # ASSUMPTION, pending RUDDER_SIGN_TEST
+  aileron_differential_convention: >
+    delta_a (the single scalar fed into CY/Cl/Cn) is extracted as
+    0.5*aileron_sign*(theta_right_aileron_joint - theta_left_aileron_joint).
+    Rationale: CONTROLS.md sec 9.3 found that left_aileron_joint and
+    right_aileron_joint's fitted rotation axes share the SAME +Y-dominant
+    sign sense (not a true sign-flipped mirror), so an equal-sign joint
+    command on both sides is expected to produce the SAME physical
+    trailing-edge direction on both sides (a symmetric/flap-like motion, not
+    differential roll) - so the DIFFERENCE of the two joint angles, not
+    their sum, is what isolates the differential (roll-producing) component
+    that XFLR5's WF1-WF6 sweep represents as a single delta_a parameter.
+    This is ASSUMPTION-tagged like the sign parameters above pending
+    AILERON_TEST (run independently per side per CONTROLS.md sec 4.3).
+  elevator_symmetric_convention: >
+    delta_e = 0.5*elevator_sign*(theta_left_elevator_joint + theta_right_elevator_joint).
+    Rationale: unlike the ailerons, the elevator's two joints are intended to
+    move together (same physical direction) for pure pitch, so the SUM (not
+    difference) of the two joint angles is used. ASSUMPTION-tagged pending
+    ELEVATOR_SIGN_TEST.
+  rudder_convention: >
+    delta_r = rudder_sign*theta_rudder_joint (single joint, no combination needed).
+  # Aero-derivative validated linear range - CONTROLS.md sec 3, AERODYNAMICS.md
+  # sec 7.4/11/18: control derivatives are only directly swept to +/-10 deg,
+  # even though the mechanical joint limit is +/-30 deg (0.5236 rad). Per the
+  # "no silent extrapolation" rule, delta_a/delta_e/delta_r are CLAMPED to
+  # this range before being used in the linear coefficient formulas (the
+  # joint itself is free to move to its full mechanical +/-30 deg limit -
+  # only the AERODYNAMIC MODEL INPUT is bounded here). Tag: V1_CONSERVATIVE_CLAMP.
+  control_deflection_clamp_deg: 10.0

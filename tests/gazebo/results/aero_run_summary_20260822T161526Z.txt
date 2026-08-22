@@ -1,0 +1,187 @@
+FALCON V2 AERODYNAMICS_V1 test suite run: 20260822T161526Z
+
+--- Running: aero_kinematic_signs ---
+Total steps run: 5415 (expected 5415)
+Any NaN/Inf observed anywhere: False
+Diagnostics messages received over whole run: 108
+base_link inertia (queried at runtime): {'mass': 5.9348, 'ixx': 0.7284, 'iyy': 0.2507, 'izz': 0.9523, 'ixy': 0.0, 'ixz': 0.01485, 'iyz': 0.0}
+
+=== ZERO_AIRSPEED_AERO_TEST ===
+Spawned at rest, no control applied at all, 200 samples, gravity=0.
+Max observed |lin vel| = 0.000e+00 m/s, max |ang vel| = 0.000e+00 rad/s (both expect ~0) -> PASS
+Diagnostics at end of window: {'V': 0.0, 'alpha': -0.0, 'beta': 0.0, 'qbar': 0.0, 'CL': 0.437035, 'CD': 0.04518477841668, 'CY': 0.0, 'Cl': 0.0, 'Cm': 0.01055, 'Cn': 0.0}
+  V=0, qbar=0 as reported -> PASS
+No NaN/Inf -> PASS
+ZERO_AIRSPEED_AERO_TEST overall: PASS
+
+=== AOA_SIGN_TEST ===
+AOA_POS_8DEG: imposed body vel (u,v,w)=(15.0041,0.0000,-2.0206) (intended alpha=+8deg, nose up relative to wind)
+  diagnostics alpha = 7.6701 deg (expected sign: +) -> PASS
+  cross-check vs independent python AeroModel.hh replica: alpha_replica=7.6701 deg -> PASS
+AOA_NEG_8DEG: imposed body vel (u,v,w)=(15.0009,0.0000,2.0809) (intended alpha=-8deg, nose down relative to wind)
+  diagnostics alpha = -7.8975 deg (expected sign: -) -> PASS
+  cross-check vs independent python AeroModel.hh replica: alpha_replica=-7.8975 deg -> PASS
+
+=== SIDESLIP_SIGN_TEST ===
+BETA_POS_8DEG: imposed body vel (u,v,w)=(14.9971,2.1055,0.0301)
+  diagnostics beta = 7.9917 deg (expected sign: +) -> PASS
+  cross-check vs independent python replica: beta_replica=7.9917 deg -> PASS
+BETA_NEG_8DEG: imposed body vel (u,v,w)=(14.9971,-2.1055,0.0301)
+  diagnostics beta = -7.9917 deg (expected sign: -) -> PASS
+  cross-check vs independent python replica: beta_replica=-7.9917 deg -> PASS
+Adopted convention (per AERODYNAMICS.md sec 19.6): positive beta = relative wind from the aircraft's LEFT side. Confirmed live: v>0 (wind-from-left component) -> diagnostics beta>0.
+
+=== LIFT_SIGN_TEST / DRAG_SIGN_TEST ===
+Hold condition (converged, real force/torque P-controller): u=14.9968 v=0.0000 w=0.0295 p=-0.00000 q=-0.00253 r=-0.00000
+Diagnostics at hold end: {'V': 14.99684946944046, 'alpha': -0.0019674042125040975, 'beta': 4.205554865445241e-19, 'qbar': 137.75461508054718, 'CL': 0.4261416958177653, 'CD': 0.044688308131482474, 'CY': -2.1415490559800274e-18, 'Cl': -1.3359281904563854e-18, 'Cm': 0.014005962625713431, 'Cn': 7.075104419943457e-19}
+Independent replica: CL=0.426321 CD=0.044696 qbar=137.7546 expected Fz(lift,+up)=26.5041 N, Fx(drag axis)=-2.8315 N
+Measured (real physics, LINEAR controller released / ANGULAR still held at 0, 15 free steps, mass=5.9348 kg):
+  u(t), w(t) samples: [(2.2, 14.99634, 0.03391), (2.201, 14.99586, 0.03828), (2.202, 14.99539, 0.04263), (2.203, 14.99492, 0.04696), (2.204, 14.99445, 0.05126), (2.205, 14.99398, 0.05555), (2.206, 14.99351, 0.05982), (2.207, 14.99304, 0.06407), (2.208, 14.99257, 0.0683), (2.209, 14.99211, 0.07251), (2.21, 14.99164, 0.0767), (2.211, 14.99117, 0.08088), (2.212, 14.9907, 0.08504), (2.213, 14.99023, 0.08918), (2.214, 14.98976, 0.09331)]
+  ax(slope) = -0.46877 m/s^2 -> Fx_measured = -2.78208 N (expect <0, drag opposing +X forward motion)
+  az(slope) = 4.24188 m/s^2 -> Fz_measured = 25.17472 N (expect >0, lift acting +Z up)
+  q(t) drift over same window (rotation-contamination check): slope=-0.0624 rad/s^2, q range [-0.00319,-0.00236] rad/s (should stay small over this short window)
+LIFT_SIGN_TEST (Fz>0): PASS; magnitude vs replica within 25%: PASS
+DRAG_SIGN_TEST (Fx<0, opposes airflow): PASS; magnitude vs replica within 25%: PASS
+
+=== DRAG_POLAR_TEST ===
+  alpha=0.0deg: CL=0.426142 CD=0.044688 expected(CD0+k*CL^2)=0.044688 -> PASS
+  alpha=3.0deg: CL=0.704731 CD=0.061323 expected(CD0+k*CL^2)=0.061323 -> PASS
+  alpha=6.0deg: CL=0.983239 CD=0.086145 expected(CD0+k*CL^2)=0.086145 -> PASS
+CD0=0.0351 k=0.0528 (aero_v1_config.yaml, V1_CALIBRATED)
+DRAG_POLAR_TEST overall: PASS
+
+=== HIGH_ALPHA_LIMITER_TEST ===
+  alpha_target=15.0deg alpha_live=14.576deg q_residual=0.08051rad/s: live CL=1.424722 expected(static+CLq*qHat)=1.424722 (static-only=1.419211) |CL|<=CLmax+0.1(1.52)=True finite=True -> PASS
+  alpha_target=30.0deg alpha_live=29.480deg q_residual=0.20483rad/s: live CL=1.432572 expected(static+CLq*qHat)=1.432572 (static-only=1.420000) |CL|<=CLmax+0.1(1.52)=True finite=True -> PASS
+  alpha_target=60.0deg alpha_live=58.749deg q_residual=1.21652rad/s: live CL=1.463145 expected(static+CLq*qHat)=1.463145 (static-only=1.420000) |CL|<=CLmax+0.1(1.52)=True finite=True -> PASS
+  alpha_target=-15.0deg alpha_live=-14.732deg q_residual=-0.08556rad/s: live CL=-0.851941 expected(static+CLq*qHat)=-0.851941 (static-only=-0.846086) |CL|<=CLmax+0.1(1.52)=True finite=True -> PASS
+  alpha_target=-30.0deg alpha_live=-29.520deg q_residual=-0.21020rad/s: live CL=-1.296581 expected(static+CLq*qHat)=-1.296581 (static-only=-1.283680) |CL|<=CLmax+0.1(1.52)=True finite=True -> PASS
+HIGH_ALPHA_LIMITER_TEST overall: PASS
+
+=== test_aero_kinematic_signs.py OVERALL: PASS ===
+
+--- Running: aero_stability_derivatives ---
+Total steps run: 2520 (expected 2520)
+Any NaN/Inf observed anywhere: False
+Diagnostics messages received over whole run (observational only, see file header): 50
+base_link inertia (queried at runtime, used only to convert measured Δomega into an approximate moment estimate): {'mass': 5.9348, 'ixx': 0.7284, 'iyy': 0.2507, 'izz': 0.9523, 'ixy': 0.0, 'ixz': 0.01485, 'iyz': 0.0}
+
+=== CMA_POS_8DEG ===
+Cma_RESTORING_SIGN_TEST: HIGHEST PRIORITY. alpha=+8deg (nose up), q=0 held, then pitch-axis control released. Expected (textbook, statically-stable aircraft, AND per aerodynamics' scoped Cm-to-My fix applied this pass): restoring nose-down moment (q>0 per the FLU '+Y=nose down' convention documented in AeroModel.hh). The FIRST run of this test (pre-fix) found this came out DESTABILIZING instead, reported as TEST_FAILED - this run independently re-confirms whether the fix resolved it live.
+Hold-end state (converged): u=15.0041 v=0.0000 w=-2.0206 p=0.00000 q=0.03940 r=0.00000
+Released axis: y (q). q(t) over release window: [0.05108, 0.06268, 0.07421, 0.08567, 0.09706, 0.10838, 0.11965, 0.13085, 0.14198, 0.15306, 0.16407, 0.17503, 0.18593, 0.19677, 0.20755, 0.21827, 0.22894, 0.23955, 0.25011, 0.26061]
+Measured slope dq/dt = 11.02347 rad/s^2 over 20 free steps -> moment_measured = I_yy*slope = 0.2507*11.02347 = 2.76358 N*m
+Independent replica (from hold-end state, same formula the plugin uses): CCm... -> My_expected = 2.95867 N*m (qbar=140.388, ref_len=0.224)
+
+=== CMA_NEG_8DEG ===
+Cma_RESTORING_SIGN_TEST, negative-alpha consistency check: alpha=-8deg (nose down), expect restoring nose-UP moment (q<0) post-fix, mirroring the positive-alpha case symmetrically.
+Hold-end state (converged): u=15.0009 v=0.0000 w=2.0809 p=0.00000 q=-0.04459 r=0.00000
+Released axis: y (q). q(t) over release window: [-0.05781, -0.07093, -0.08398, -0.09695, -0.10984, -0.12267, -0.13542, -0.1481, -0.16071, -0.17325, -0.18572, -0.19813, -0.21046, -0.22274, -0.23494, -0.24709, -0.25916, -0.27118, -0.28313, -0.29501]
+Measured slope dq/dt = -12.48042 rad/s^2 over 20 free steps -> moment_measured = I_yy*slope = 0.2507*-12.48042 = -3.12884 N*m
+Independent replica (from hold-end state, same formula the plugin uses): CCm... -> My_expected = -3.34825 N*m (qbar=140.481, ref_len=0.224)
+
+=== CMQ_DAMPING ===
+Cmq_DAMPING_SIGN_TEST: alpha=beta=0, q=+0.4 rad/s held, then pitch-axis control released. Expected: moment opposes existing q (damping, q decays toward 0), REGARDLESS of the Cma finding above (rate/damping terms are self-referential and frame-independent per AeroModel.hh's own analysis).
+Hold-end state (converged): u=14.9967 v=0.0000 w=0.0702 p=0.00000 q=0.39058 r=0.00000
+Released axis: y (q). q(t) over release window: [0.38778, 0.38501, 0.38225, 0.37951, 0.37678, 0.37407, 0.37138, 0.3687, 0.36603, 0.36338, 0.36074, 0.35812, 0.35551, 0.35292, 0.35033, 0.34777, 0.34521, 0.34267, 0.34014, 0.33763]
+Measured slope dq/dt = -2.63887 rad/s^2 over 20 free steps -> moment_measured = I_yy*slope = 0.2507*-2.63887 = -0.66156 N*m
+Independent replica (from hold-end state, same formula the plugin uses): CCm... -> My_expected = -0.67069 N*m (qbar=137.755, ref_len=0.224)
+
+=== CLP_DAMPING ===
+Clp_DAMPING_SIGN_TEST: alpha=beta=0, p=+0.4 rad/s held, then roll-axis control released. Expected: moment opposes existing p (damping).
+Hold-end state (converged): u=14.9968 v=0.0003 w=0.0296 p=0.37534 q=-0.00251 r=-0.00267
+Released axis: x (p). p(t) over release window: [0.37282, 0.37031, 0.36782, 0.36535, 0.3629, 0.36046, 0.35804, 0.35563, 0.35324, 0.35087, 0.34851, 0.34617, 0.34385, 0.34154, 0.33924, 0.33696, 0.3347, 0.33245, 0.33022, 0.328]
+Measured slope dp/dt = -2.35804 rad/s^2 over 20 free steps -> moment_measured = I_xx*slope = 0.7284*-2.35804 = -1.71760 N*m
+Independent replica (from hold-end state, same formula the plugin uses): CCl... -> Mx_expected = -1.84969 N*m (qbar=137.755, ref_len=2.093)
+
+=== CNR_DAMPING ===
+Cnr_DAMPING_SIGN_TEST: alpha=beta=0, r=+0.4 rad/s held, then yaw-axis control released. Expected: moment opposes existing r (damping).
+Hold-end state (converged): u=14.9969 v=-0.0400 w=0.0295 p=0.00495 q=-0.00255 r=0.39826
+Released axis: z (r). r(t) over release window: [0.39812, 0.39798, 0.39785, 0.39771, 0.39758, 0.39744, 0.3973, 0.39717, 0.39703, 0.3969, 0.39676, 0.39663, 0.39649, 0.39636, 0.39622, 0.39608, 0.39595, 0.39581, 0.39568, 0.39554]
+Measured slope dr/dt = -0.13559 rad/s^2 over 20 free steps -> moment_measured = I_zz*slope = 0.9523*-0.13559 = -0.12912 N*m
+Independent replica (from hold-end state, same formula the plugin uses): CCn... -> Mz_expected = -0.09555 N*m (qbar=137.757, ref_len=2.093)
+
+=== CNB_STABILITY ===
+Cnb_STATIC_STABILITY_SIGN_TEST: beta=+8deg (wind from left, adopted convention), r=0 held, then yaw-axis control released. Expected: restoring yaw moment turning the nose back toward the relative wind (nose LEFT per the FLU '+Z=nose left' convention, i.e. r>0), matching Cnb=+0.03554 > 0 ('directionally statically stable', AERODYNAMICS.md sec 6.2).
+Hold-end state (converged): u=14.9971 v=2.1055 w=0.0301 p=-0.00155 q=-0.00259 r=0.00875
+Released axis: z (r). r(t) over release window: [0.00943, 0.01011, 0.0108, 0.01148, 0.01216, 0.01284, 0.01352, 0.01421, 0.01489, 0.01557, 0.01625, 0.01693, 0.01761, 0.01829, 0.01896, 0.01964, 0.02032, 0.021, 0.02168, 0.02236]
+Measured slope dr/dt = 0.68024 rad/s^2 over 20 free steps -> moment_measured = I_zz*slope = 0.9523*0.68024 = 0.64780 N*m
+Independent replica (from hold-end state, same formula the plugin uses): CCn... -> Mz_expected = 0.65695 N*m (qbar=140.475, ref_len=2.093)
+
+############################################################
+=== Cma_RESTORING_SIGN_TEST VERDICT (highest priority) ===
+alpha=+8deg: measured My=2.76358 N*m, dq/dt=11.02347 rad/s^2 -> RESTORING (nose-down, q growing positive)
+alpha=-8deg: measured My=-3.12884 N*m, dq/dt=-12.48042 rad/s^2 -> RESTORING (nose-up, q growing negative)
+VERDICT: FIX CONFIRMED LIVE - the scoped Cm-to-My sign correction (negating only the static Cm0+Cma*alpha+Cmde*deltaE group, leaving the self-referential Cmq*qHat rate group untouched) now produces a RESTORING pitching moment for both +8deg and -8deg alpha disturbances, as measured directly via real Δq/Δt response on base_link in a live Gazebo instance (not just the pure-math self-test, and not just the diagnostics topic - out.Cm itself is unchanged/still XFLR5-convention, only the applied My torque differs). This reverses the PRE-FIX finding from this test's first run (My=-2.83 N*m/destabilizing at alpha=+8deg) - see docs/test_results/2026-08-22_aerodynamics_v1_test_report.md sec 1 for that original result and this run's superseding report for the full comparison.
+############################################################
+
+=== Cmq_DAMPING_SIGN_TEST / Clp_DAMPING_SIGN_TEST / Cnr_DAMPING_SIGN_TEST verdicts ===
+Cmq: rate0=0.3906 rad/s, measured slope=-2.63887 rad/s^2, measured moment=-0.66156 N*m -> PASS (damps/opposes the rate)
+Clp: rate0=0.3753 rad/s, measured slope=-2.35804 rad/s^2, measured moment=-1.71760 N*m -> PASS (damps/opposes the rate)
+Cnr: rate0=0.3983 rad/s, measured slope=-0.13559 rad/s^2, measured moment=-0.12912 N*m -> PASS (damps/opposes the rate)
+Damping tests overall: PASS
+
+=== Cnb_STATIC_STABILITY_SIGN_TEST verdict ===
+beta=+8deg held, yaw-axis released: measured slope dr/dt=0.68024 rad/s^2, measured moment=0.64780 N*m -> PASS (restoring: nose turns toward the relative wind)
+
+=== RATE_NORMALIZATION_TEST (merged - see file header) ===
+Cmq (ref_len=0.224, axis=y): measured=-0.66156 N*m vs formula-replica-expected=-0.67069 N*m, ratio=0.986 -> PASS
+Clp (ref_len=2.093, axis=x): measured=-1.71760 N*m vs formula-replica-expected=-1.84969 N*m, ratio=0.929 -> PASS
+Cnr (ref_len=2.093, axis=z): measured=-0.12912 N*m vs formula-replica-expected=-0.09555 N*m, ratio=1.351 -> PASS
+p_hat=p*b/(2V), q_hat=q*c_ref/(2V), r_hat=r*b/(2V) (b=2.093, c_ref=0.224) - reference-length/normalization confirmed via real measured moment magnitude above.
+RATE_NORMALIZATION_TEST overall: PASS
+
+=== test_aero_stability_derivatives.py OVERALL (Cma finding reported separately, see verdict above): PASS ===
+
+--- Running: aero_control_surfaces ---
+Total steps run: 1260 (expected 1260)
+Any NaN/Inf observed anywhere: False
+base_link inertia (queried at runtime): {'mass': 5.9348, 'ixx': 0.7284, 'iyy': 0.2507, 'izz': 0.9523, 'ixy': 0.0, 'ixz': 0.01485, 'iyz': 0.0}
+
+=== AILERON_ROLL ===
+AILERON_ROLL_SIGN_TEST: left_aileron_joint=-8.0deg, right_aileron_joint=8.0deg (differential; per aero_v1_config.yaml aileron_differential_convention this maps to delta_a=0.5*aileron_sign*(right-left)=8.0deg). Roll-axis released after convergence; roll moment (Clda) checked for nonzero/sane magnitude - direction NOT asserted as physically 'correct' (aileron_sign is ASSUMPTION-tagged, controls-integration's call).
+Commanded joint positions: {'left_aileron_joint': -0.13962634015954636, 'right_aileron_joint': 0.13962634015954636}
+Hold-end state (converged): u=14.9968 v=0.0003 w=0.0295 p=0.07003 q=-0.00253 r=-0.00015
+delta_a=8.00deg delta_e=0.00deg delta_r=0.00deg (aileron_sign=1.0 elevator_sign=1.0 rudder_sign=1.0, aero_v1_config.yaml)
+Released axis: x (p). p(t) over release window: [0.07719, 0.0843, 0.09136, 0.09838, 0.10535, 0.11227, 0.11915, 0.12598, 0.13276, 0.1395, 0.14619, 0.15284, 0.15944, 0.166, 0.17251, 0.17898, 0.18541, 0.19179, 0.19813, 0.20443]
+Measured slope dp/dt = 6.69530 rad/s^2 over 20 free steps -> moment_measured = I_xx*slope = 0.7284*6.69530 = 4.87685 N*m
+Independent replica (from hold-end state + same delta mapping): Cl (Clda)-driven Mx_expected = 5.25221 N*m (qbar=137.755, ref_len=2.093)
+Nonzero: PASS; Finite: PASS; Sane magnitude (within 5x of formula replica): PASS; Same sign as replica (both use the SAME, still-ASSUMPTION-tagged config sign, so this checks plumbing self-consistency, not real-world direction): yes
+AILERON_ROLL overall (plumbing/magnitude, NOT a physical-direction claim): PASS
+
+=== RUDDER_YAW ===
+RUDDER_YAW_SIGN_TEST: rudder_joint=8.0deg (maps to delta_r=rudder_sign*theta=8.0deg). Yaw-axis released after convergence; yaw moment (Cndr) checked for nonzero/sane magnitude - direction NOT asserted as physically 'correct' (rudder_sign is ASSUMPTION-tagged).
+Commanded joint positions: {'rudder_joint': 0.13962634015954636}
+Hold-end state (converged): u=14.9968 v=0.0014 w=0.0295 p=0.00008 q=-0.00253 r=-0.00603
+delta_a=0.00deg delta_e=0.00deg delta_r=8.00deg (aileron_sign=1.0 elevator_sign=1.0 rudder_sign=1.0, aero_v1_config.yaml)
+Released axis: z (r). r(t) over release window: [-0.0065, -0.00697, -0.00744, -0.00791, -0.00838, -0.00885, -0.00932, -0.00979, -0.01026, -0.01073, -0.0112, -0.01166, -0.01213, -0.0126, -0.01307, -0.01354, -0.014, -0.01447, -0.01494, -0.01541]
+Measured slope dr/dt = -0.46875 rad/s^2 over 20 free steps -> moment_measured = I_zz*slope = 0.9523*-0.46875 = -0.44639 N*m
+Independent replica (from hold-end state + same delta mapping): Cn (Cndr)-driven Mz_expected = -0.45268 N*m (qbar=137.755, ref_len=2.093)
+Nonzero: PASS; Finite: PASS; Sane magnitude (within 5x of formula replica): PASS; Same sign as replica (both use the SAME, still-ASSUMPTION-tagged config sign, so this checks plumbing self-consistency, not real-world direction): yes
+RUDDER_YAW overall (plumbing/magnitude, NOT a physical-direction claim): PASS
+
+=== ELEVATOR_PITCH ===
+ELEVATOR_PITCH_SIGN_TEST: left_elevator_joint=right_elevator_joint=8.0deg (symmetric; maps to delta_e=0.5*elevator_sign*(left+right)=8.0deg). Pitch-axis released after convergence; pitch moment (Cmde) checked for nonzero/sane magnitude - direction NOT asserted as physically 'correct' (elevator_sign is ASSUMPTION-tagged). RE-TEST NOTE (2026-08-22, post Cm-to-My fix): Cmde is part of the STATIC group (Cm0+Cma*alpha+Cmde*deltaE) that aerodynamics' scoped fix now negates when computing the applied My torque - so this test's measured sign is EXPECTED to be FLIPPED relative to the pre-fix run's result, and that is NOT a new bug (see AeroModel.hh 'RESOLVED FINDING' comment and aero_lib.compute_aero()'s docstring, which mirrors the same scoped correction, so the replica cross-check below already reflects it too).
+Commanded joint positions: {'left_elevator_joint': 0.13962634015954636, 'right_elevator_joint': 0.13962634015954636}
+Hold-end state (converged): u=14.9968 v=-0.0000 w=0.0314 p=-0.00000 q=0.01608 r=-0.00000
+delta_a=0.00deg delta_e=8.00deg delta_r=0.00deg (aileron_sign=1.0 elevator_sign=1.0 rudder_sign=1.0, aero_v1_config.yaml)
+Released axis: y (q). q(t) over release window: [0.02084, 0.02558, 0.03028, 0.03496, 0.03961, 0.04423, 0.04883, 0.0534, 0.05795, 0.06247, 0.06697, 0.07144, 0.07589, 0.08032, 0.08472, 0.0891, 0.09345, 0.09779, 0.1021, 0.10639]
+Measured slope dq/dt = 4.50069 rad/s^2 over 20 free steps -> moment_measured = I_yy*slope = 0.2507*4.50069 = 1.12832 N*m
+Independent replica (from hold-end state + same delta mapping): Cm (Cmde)-driven My_expected = 1.20728 N*m (qbar=137.755, ref_len=0.224)
+Nonzero: PASS; Finite: PASS; Sane magnitude (within 5x of formula replica): PASS; Same sign as replica (both use the SAME, still-ASSUMPTION-tagged config sign, so this checks plumbing self-consistency, not real-world direction): yes
+ELEVATOR_PITCH overall (plumbing/magnitude, NOT a physical-direction claim): PASS
+
+=== test_aero_control_surfaces.py OVERALL (plumbing/magnitude only - physical sign direction is controls-integration's determination): PASS ===
+
+=== Script-level summary ===
+aero_control_surfaces: PASS
+aero_kinematic_signs: PASS
+aero_stability_derivatives: PASS
+
+NOTE (updated 2026-08-22, post Cm-to-My fix re-test): test_aero_stability_
+derivatives.py's own script-level PASS now REQUIRES Cma_RESTORING_SIGN_TEST
+to have measured a restoring (not destabilizing) moment - see that script's
+own verdict block and docs/test_results/2026-08-22_aerodynamics_v1_retest_
+cma_fix.md for the full writeup (supersedes the original TEST_FAILED report
+docs/test_results/2026-08-22_aerodynamics_v1_test_report.md, kept as history).
+Summary saved to: /home/emirhan/Desktop/FalconV2/tests/gazebo/results/aero_run_summary_20260822T161526Z.txt

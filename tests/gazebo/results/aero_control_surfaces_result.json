@@ -1,0 +1,42 @@
+{
+  "results": {
+    "AILERON_ROLL": {
+      "moment_measured": 4.876854706905302,
+      "moment_expected_replica": 5.252207992799232,
+      "nonzero_ok": true,
+      "finite_ok": true,
+      "sane_ok": true,
+      "same_sign_as_replica": true,
+      "overall": true
+    },
+    "RUDDER_YAW": {
+      "moment_measured": -0.44638841933067047,
+      "moment_expected_replica": -0.45268445856929446,
+      "nonzero_ok": true,
+      "finite_ok": true,
+      "sane_ok": true,
+      "same_sign_as_replica": true,
+      "overall": true
+    },
+    "ELEVATOR_PITCH": {
+      "moment_measured": 1.128324220489734,
+      "moment_expected_replica": 1.2072760475427142,
+      "nonzero_ok": true,
+      "finite_ok": true,
+      "sane_ok": true,
+      "same_sign_as_replica": true,
+      "overall": true
+    }
+  },
+  "overall": true,
+  "any_nan": false,
+  "inertia": {
+    "mass": 5.9348,
+    "ixx": 0.7284,
+    "iyy": 0.2507,
+    "izz": 0.9523,
+    "ixy": 0.0,
+    "ixz": 0.01485,
+    "iyz": 0.0
+  }
+}

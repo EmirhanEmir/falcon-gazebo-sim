@@ -1,0 +1,71 @@
+Total steps run: 2520 (expected 2520)
+Any NaN/Inf observed anywhere: False
+Diagnostics messages received over whole run (observational only, see file header): 50
+base_link inertia (queried at runtime, used only to convert measured Δomega into an approximate moment estimate): {'mass': 5.9348, 'ixx': 0.7284, 'iyy': 0.2507, 'izz': 0.9523, 'ixy': 0.0, 'ixz': 0.01485, 'iyz': 0.0}
+
+=== CMA_POS_8DEG ===
+Cma_RESTORING_SIGN_TEST: HIGHEST PRIORITY. alpha=+8deg (nose up), q=0 held, then pitch-axis control released. Expected (textbook, statically-stable aircraft, AND per aerodynamics' scoped Cm-to-My fix applied this pass): restoring nose-down moment (q>0 per the FLU '+Y=nose down' convention documented in AeroModel.hh). The FIRST run of this test (pre-fix) found this came out DESTABILIZING instead, reported as TEST_FAILED - this run independently re-confirms whether the fix resolved it live.
+Hold-end state (converged): u=15.0041 v=0.0000 w=-2.0206 p=0.00000 q=0.03940 r=0.00000
+Released axis: y (q). q(t) over release window: [0.05108, 0.06268, 0.07421, 0.08567, 0.09706, 0.10838, 0.11965, 0.13085, 0.14198, 0.15306, 0.16407, 0.17503, 0.18593, 0.19677, 0.20755, 0.21827, 0.22894, 0.23955, 0.25011, 0.26061]
+Measured slope dq/dt = 11.02347 rad/s^2 over 20 free steps -> moment_measured = I_yy*slope = 0.2507*11.02347 = 2.76358 N*m
+Independent replica (from hold-end state, same formula the plugin uses): CCm... -> My_expected = 2.95867 N*m (qbar=140.388, ref_len=0.224)
+
+=== CMA_NEG_8DEG ===
+Cma_RESTORING_SIGN_TEST, negative-alpha consistency check: alpha=-8deg (nose down), expect restoring nose-UP moment (q<0) post-fix, mirroring the positive-alpha case symmetrically.
+Hold-end state (converged): u=15.0009 v=0.0000 w=2.0809 p=0.00000 q=-0.04459 r=0.00000
+Released axis: y (q). q(t) over release window: [-0.05781, -0.07093, -0.08398, -0.09695, -0.10984, -0.12267, -0.13542, -0.1481, -0.16071, -0.17325, -0.18572, -0.19813, -0.21046, -0.22274, -0.23494, -0.24709, -0.25916, -0.27118, -0.28313, -0.29501]
+Measured slope dq/dt = -12.48042 rad/s^2 over 20 free steps -> moment_measured = I_yy*slope = 0.2507*-12.48042 = -3.12884 N*m
+Independent replica (from hold-end state, same formula the plugin uses): CCm... -> My_expected = -3.34825 N*m (qbar=140.481, ref_len=0.224)
+
+=== CMQ_DAMPING ===
+Cmq_DAMPING_SIGN_TEST: alpha=beta=0, q=+0.4 rad/s held, then pitch-axis control released. Expected: moment opposes existing q (damping, q decays toward 0), REGARDLESS of the Cma finding above (rate/damping terms are self-referential and frame-independent per AeroModel.hh's own analysis).
+Hold-end state (converged): u=14.9967 v=0.0000 w=0.0702 p=0.00000 q=0.39058 r=0.00000
+Released axis: y (q). q(t) over release window: [0.38778, 0.38501, 0.38225, 0.37951, 0.37678, 0.37407, 0.37138, 0.3687, 0.36603, 0.36338, 0.36074, 0.35812, 0.35551, 0.35292, 0.35033, 0.34777, 0.34521, 0.34267, 0.34014, 0.33763]
+Measured slope dq/dt = -2.63887 rad/s^2 over 20 free steps -> moment_measured = I_yy*slope = 0.2507*-2.63887 = -0.66156 N*m
+Independent replica (from hold-end state, same formula the plugin uses): CCm... -> My_expected = -0.67069 N*m (qbar=137.755, ref_len=0.224)
+
+=== CLP_DAMPING ===
+Clp_DAMPING_SIGN_TEST: alpha=beta=0, p=+0.4 rad/s held, then roll-axis control released. Expected: moment opposes existing p (damping).
+Hold-end state (converged): u=14.9968 v=0.0003 w=0.0296 p=0.37534 q=-0.00251 r=-0.00267
+Released axis: x (p). p(t) over release window: [0.37282, 0.37031, 0.36782, 0.36535, 0.3629, 0.36046, 0.35804, 0.35563, 0.35324, 0.35087, 0.34851, 0.34617, 0.34385, 0.34154, 0.33924, 0.33696, 0.3347, 0.33245, 0.33022, 0.328]
+Measured slope dp/dt = -2.35804 rad/s^2 over 20 free steps -> moment_measured = I_xx*slope = 0.7284*-2.35804 = -1.71760 N*m
+Independent replica (from hold-end state, same formula the plugin uses): CCl... -> Mx_expected = -1.84969 N*m (qbar=137.755, ref_len=2.093)
+
+=== CNR_DAMPING ===
+Cnr_DAMPING_SIGN_TEST: alpha=beta=0, r=+0.4 rad/s held, then yaw-axis control released. Expected: moment opposes existing r (damping).
+Hold-end state (converged): u=14.9969 v=-0.0400 w=0.0295 p=0.00495 q=-0.00255 r=0.39826
+Released axis: z (r). r(t) over release window: [0.39812, 0.39798, 0.39785, 0.39771, 0.39758, 0.39744, 0.3973, 0.39717, 0.39703, 0.3969, 0.39676, 0.39663, 0.39649, 0.39636, 0.39622, 0.39608, 0.39595, 0.39581, 0.39568, 0.39554]
+Measured slope dr/dt = -0.13559 rad/s^2 over 20 free steps -> moment_measured = I_zz*slope = 0.9523*-0.13559 = -0.12912 N*m
+Independent replica (from hold-end state, same formula the plugin uses): CCn... -> Mz_expected = -0.09555 N*m (qbar=137.757, ref_len=2.093)
+
+=== CNB_STABILITY ===
+Cnb_STATIC_STABILITY_SIGN_TEST: beta=+8deg (wind from left, adopted convention), r=0 held, then yaw-axis control released. Expected: restoring yaw moment turning the nose back toward the relative wind (nose LEFT per the FLU '+Z=nose left' convention, i.e. r>0), matching Cnb=+0.03554 > 0 ('directionally statically stable', AERODYNAMICS.md sec 6.2).
+Hold-end state (converged): u=14.9971 v=2.1055 w=0.0301 p=-0.00155 q=-0.00259 r=0.00875
+Released axis: z (r). r(t) over release window: [0.00943, 0.01011, 0.0108, 0.01148, 0.01216, 0.01284, 0.01352, 0.01421, 0.01489, 0.01557, 0.01625, 0.01693, 0.01761, 0.01829, 0.01896, 0.01964, 0.02032, 0.021, 0.02168, 0.02236]
+Measured slope dr/dt = 0.68024 rad/s^2 over 20 free steps -> moment_measured = I_zz*slope = 0.9523*0.68024 = 0.64780 N*m
+Independent replica (from hold-end state, same formula the plugin uses): CCn... -> Mz_expected = 0.65695 N*m (qbar=140.475, ref_len=2.093)
+
+############################################################
+=== Cma_RESTORING_SIGN_TEST VERDICT (highest priority) ===
+alpha=+8deg: measured My=2.76358 N*m, dq/dt=11.02347 rad/s^2 -> RESTORING (nose-down, q growing positive)
+alpha=-8deg: measured My=-3.12884 N*m, dq/dt=-12.48042 rad/s^2 -> RESTORING (nose-up, q growing negative)
+VERDICT: FIX CONFIRMED LIVE - the scoped Cm-to-My sign correction (negating only the static Cm0+Cma*alpha+Cmde*deltaE group, leaving the self-referential Cmq*qHat rate group untouched) now produces a RESTORING pitching moment for both +8deg and -8deg alpha disturbances, as measured directly via real Δq/Δt response on base_link in a live Gazebo instance (not just the pure-math self-test, and not just the diagnostics topic - out.Cm itself is unchanged/still XFLR5-convention, only the applied My torque differs). This reverses the PRE-FIX finding from this test's first run (My=-2.83 N*m/destabilizing at alpha=+8deg) - see docs/test_results/2026-08-22_aerodynamics_v1_test_report.md sec 1 for that original result and this run's superseding report for the full comparison.
+############################################################
+
+=== Cmq_DAMPING_SIGN_TEST / Clp_DAMPING_SIGN_TEST / Cnr_DAMPING_SIGN_TEST verdicts ===
+Cmq: rate0=0.3906 rad/s, measured slope=-2.63887 rad/s^2, measured moment=-0.66156 N*m -> PASS (damps/opposes the rate)
+Clp: rate0=0.3753 rad/s, measured slope=-2.35804 rad/s^2, measured moment=-1.71760 N*m -> PASS (damps/opposes the rate)
+Cnr: rate0=0.3983 rad/s, measured slope=-0.13559 rad/s^2, measured moment=-0.12912 N*m -> PASS (damps/opposes the rate)
+Damping tests overall: PASS
+
+=== Cnb_STATIC_STABILITY_SIGN_TEST verdict ===
+beta=+8deg held, yaw-axis released: measured slope dr/dt=0.68024 rad/s^2, measured moment=0.64780 N*m -> PASS (restoring: nose turns toward the relative wind)
+
+=== RATE_NORMALIZATION_TEST (merged - see file header) ===
+Cmq (ref_len=0.224, axis=y): measured=-0.66156 N*m vs formula-replica-expected=-0.67069 N*m, ratio=0.986 -> PASS
+Clp (ref_len=2.093, axis=x): measured=-1.71760 N*m vs formula-replica-expected=-1.84969 N*m, ratio=0.929 -> PASS
+Cnr (ref_len=2.093, axis=z): measured=-0.12912 N*m vs formula-replica-expected=-0.09555 N*m, ratio=1.351 -> PASS
+p_hat=p*b/(2V), q_hat=q*c_ref/(2V), r_hat=r*b/(2V) (b=2.093, c_ref=0.224) - reference-length/normalization confirmed via real measured moment magnitude above.
+RATE_NORMALIZATION_TEST overall: PASS
+
+=== test_aero_stability_derivatives.py OVERALL (Cma finding reported separately, see verdict above): PASS ===

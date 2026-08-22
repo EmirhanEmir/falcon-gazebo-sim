@@ -1,0 +1,58 @@
+Total steps run: 5415 (expected 5415)
+Any NaN/Inf observed anywhere: False
+Diagnostics messages received over whole run: 108
+base_link inertia (queried at runtime): {'mass': 5.9348, 'ixx': 0.7284, 'iyy': 0.2507, 'izz': 0.9523, 'ixy': 0.0, 'ixz': 0.01485, 'iyz': 0.0}
+
+=== ZERO_AIRSPEED_AERO_TEST ===
+Spawned at rest, no control applied at all, 200 samples, gravity=0.
+Max observed |lin vel| = 0.000e+00 m/s, max |ang vel| = 0.000e+00 rad/s (both expect ~0) -> PASS
+Diagnostics at end of window: {'V': 0.0, 'alpha': -0.0, 'beta': 0.0, 'qbar': 0.0, 'CL': 0.437035, 'CD': 0.04518477841668, 'CY': 0.0, 'Cl': 0.0, 'Cm': 0.01055, 'Cn': 0.0}
+  V=0, qbar=0 as reported -> PASS
+No NaN/Inf -> PASS
+ZERO_AIRSPEED_AERO_TEST overall: PASS
+
+=== AOA_SIGN_TEST ===
+AOA_POS_8DEG: imposed body vel (u,v,w)=(15.0041,0.0000,-2.0206) (intended alpha=+8deg, nose up relative to wind)
+  diagnostics alpha = 7.6701 deg (expected sign: +) -> PASS
+  cross-check vs independent python AeroModel.hh replica: alpha_replica=7.6701 deg -> PASS
+AOA_NEG_8DEG: imposed body vel (u,v,w)=(15.0009,0.0000,2.0809) (intended alpha=-8deg, nose down relative to wind)
+  diagnostics alpha = -7.8975 deg (expected sign: -) -> PASS
+  cross-check vs independent python AeroModel.hh replica: alpha_replica=-7.8975 deg -> PASS
+
+=== SIDESLIP_SIGN_TEST ===
+BETA_POS_8DEG: imposed body vel (u,v,w)=(14.9971,2.1055,0.0301)
+  diagnostics beta = 7.9917 deg (expected sign: +) -> PASS
+  cross-check vs independent python replica: beta_replica=7.9917 deg -> PASS
+BETA_NEG_8DEG: imposed body vel (u,v,w)=(14.9971,-2.1055,0.0301)
+  diagnostics beta = -7.9917 deg (expected sign: -) -> PASS
+  cross-check vs independent python replica: beta_replica=-7.9917 deg -> PASS
+Adopted convention (per AERODYNAMICS.md sec 19.6): positive beta = relative wind from the aircraft's LEFT side. Confirmed live: v>0 (wind-from-left component) -> diagnostics beta>0.
+
+=== LIFT_SIGN_TEST / DRAG_SIGN_TEST ===
+Hold condition (converged, real force/torque P-controller): u=14.9968 v=0.0000 w=0.0295 p=-0.00000 q=-0.00253 r=-0.00000
+Diagnostics at hold end: {'V': 14.99684946944046, 'alpha': -0.0019674042125040975, 'beta': 4.205554865445241e-19, 'qbar': 137.75461508054718, 'CL': 0.4261416958177653, 'CD': 0.044688308131482474, 'CY': -2.1415490559800274e-18, 'Cl': -1.3359281904563854e-18, 'Cm': 0.014005962625713431, 'Cn': 7.075104419943457e-19}
+Independent replica: CL=0.426321 CD=0.044696 qbar=137.7546 expected Fz(lift,+up)=26.5041 N, Fx(drag axis)=-2.8315 N
+Measured (real physics, LINEAR controller released / ANGULAR still held at 0, 15 free steps, mass=5.9348 kg):
+  u(t), w(t) samples: [(2.2, 14.99634, 0.03391), (2.201, 14.99586, 0.03828), (2.202, 14.99539, 0.04263), (2.203, 14.99492, 0.04696), (2.204, 14.99445, 0.05126), (2.205, 14.99398, 0.05555), (2.206, 14.99351, 0.05982), (2.207, 14.99304, 0.06407), (2.208, 14.99257, 0.0683), (2.209, 14.99211, 0.07251), (2.21, 14.99164, 0.0767), (2.211, 14.99117, 0.08088), (2.212, 14.9907, 0.08504), (2.213, 14.99023, 0.08918), (2.214, 14.98976, 0.09331)]
+  ax(slope) = -0.46877 m/s^2 -> Fx_measured = -2.78208 N (expect <0, drag opposing +X forward motion)
+  az(slope) = 4.24188 m/s^2 -> Fz_measured = 25.17472 N (expect >0, lift acting +Z up)
+  q(t) drift over same window (rotation-contamination check): slope=-0.0624 rad/s^2, q range [-0.00319,-0.00236] rad/s (should stay small over this short window)
+LIFT_SIGN_TEST (Fz>0): PASS; magnitude vs replica within 25%: PASS
+DRAG_SIGN_TEST (Fx<0, opposes airflow): PASS; magnitude vs replica within 25%: PASS
+
+=== DRAG_POLAR_TEST ===
+  alpha=0.0deg: CL=0.426142 CD=0.044688 expected(CD0+k*CL^2)=0.044688 -> PASS
+  alpha=3.0deg: CL=0.704731 CD=0.061323 expected(CD0+k*CL^2)=0.061323 -> PASS
+  alpha=6.0deg: CL=0.983239 CD=0.086145 expected(CD0+k*CL^2)=0.086145 -> PASS
+CD0=0.0351 k=0.0528 (aero_v1_config.yaml, V1_CALIBRATED)
+DRAG_POLAR_TEST overall: PASS
+
+=== HIGH_ALPHA_LIMITER_TEST ===
+  alpha_target=15.0deg alpha_live=14.576deg q_residual=0.08051rad/s: live CL=1.424722 expected(static+CLq*qHat)=1.424722 (static-only=1.419211) |CL|<=CLmax+0.1(1.52)=True finite=True -> PASS
+  alpha_target=30.0deg alpha_live=29.480deg q_residual=0.20483rad/s: live CL=1.432572 expected(static+CLq*qHat)=1.432572 (static-only=1.420000) |CL|<=CLmax+0.1(1.52)=True finite=True -> PASS
+  alpha_target=60.0deg alpha_live=58.749deg q_residual=1.21652rad/s: live CL=1.463145 expected(static+CLq*qHat)=1.463145 (static-only=1.420000) |CL|<=CLmax+0.1(1.52)=True finite=True -> PASS
+  alpha_target=-15.0deg alpha_live=-14.732deg q_residual=-0.08556rad/s: live CL=-0.851941 expected(static+CLq*qHat)=-0.851941 (static-only=-0.846086) |CL|<=CLmax+0.1(1.52)=True finite=True -> PASS
+  alpha_target=-30.0deg alpha_live=-29.520deg q_residual=-0.21020rad/s: live CL=-1.296581 expected(static+CLq*qHat)=-1.296581 (static-only=-1.283680) |CL|<=CLmax+0.1(1.52)=True finite=True -> PASS
+HIGH_ALPHA_LIMITER_TEST overall: PASS
+
+=== test_aero_kinematic_signs.py OVERALL: PASS ===

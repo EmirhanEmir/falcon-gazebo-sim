@@ -1041,5 +1041,49 @@
       </axis>
     </joint>
 
+    <!-- ============================================================
+         AERODYNAMICS PLUGIN
+         Author (this addition): aerodynamics specialist agent, 2026-08-22,
+         task AERODYNAMICS_V1_IMPLEMENTATION. This is an ADDITIVE change
+         only: no link, joint, mass, CG, inertia, collision, visual, or
+         hinge-geometry element above was modified to add this block
+         (geometry-structure's structural content, lines 1-1042, is
+         unchanged). Scope: aerodynamic force/moment physics only - no
+         propulsion, no control-actuation (this plugin READS the 5
+         control-surface joint positions defined above, it does not
+         command/write them).
+
+         Build: plugins/aerodynamics/ (see plugins/aerodynamics/README.md).
+         Full architecture/provenance/derivation record:
+         docs/source_of_truth/aerodynamics/AERODYNAMICS.md (this pass) and
+         docs/source_of_truth/aerodynamics/aero_v1_config.yaml (the
+         structured coefficient dataset this plugin loads at Configure()
+         time - no coefficient is hardcoded in this SDF block or in the
+         plugin's C++ source).
+
+         config_path is an absolute path, matching this repository's
+         existing convention for single-machine-dev test infrastructure
+         (e.g. tests/gazebo/worlds/*.sdf's file:// includes and
+         tests/gazebo/scripts/*.py's WORLD_SDF constants) - not resolved
+         relative to the model directory by SDF itself; a documented,
+         known V1 portability limitation, not a silent one.
+         ============================================================ -->
+    <plugin filename="FalconV2Aerodynamics" name="falcon_v2_aero::AerodynamicsSystem">
+      <config_path>/home/emirhan/Desktop/FalconV2/docs/source_of_truth/aerodynamics/aero_v1_config.yaml</config_path>
+      <!-- Optional override of the YAML air_density value (kg/m^3). ISA
+           sea-level default 1.225, CONFIRMED provenance - see
+           aero_v1_config.yaml "environment" block. -->
+      <air_density>1.225</air_density>
+      <!-- gz.msgs.Vector3d topic, WORLD frame, m/s. V1: Vwind=0 (no
+           publisher exists yet) - this is the "architecture must support
+           future wind input" hook (CLAUDE.md), not an implemented wind
+           model. -->
+      <wind_topic>/model/falcon_v2/wind</wind_topic>
+      <!-- Throttled gz.msgs.Double_V diagnostics publish rate (Hz) on
+           /model/falcon_v2/aerodynamics/diagnostics. Field order:
+           V, alpha_rad, beta_rad, qbar, CL, CD, CY, Cl, Cm, Cn. -->
+      <diagnostics_rate_hz>20.0</diagnostics_rate_hz>
+    </plugin>
+
   </model>
 </sdf>

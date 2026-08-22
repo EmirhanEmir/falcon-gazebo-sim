@@ -1,0 +1,38 @@
+Total steps run: 1260 (expected 1260)
+Any NaN/Inf observed anywhere: False
+base_link inertia (queried at runtime): {'mass': 5.9348, 'ixx': 0.7284, 'iyy': 0.2507, 'izz': 0.9523, 'ixy': 0.0, 'ixz': 0.01485, 'iyz': 0.0}
+
+=== AILERON_ROLL ===
+AILERON_ROLL_SIGN_TEST: left_aileron_joint=-8.0deg, right_aileron_joint=8.0deg (differential; per aero_v1_config.yaml aileron_differential_convention this maps to delta_a=0.5*aileron_sign*(right-left)=8.0deg). Roll-axis released after convergence; roll moment (Clda) checked for nonzero/sane magnitude - direction NOT asserted as physically 'correct' (aileron_sign is ASSUMPTION-tagged, controls-integration's call).
+Commanded joint positions: {'left_aileron_joint': -0.13962634015954636, 'right_aileron_joint': 0.13962634015954636}
+Hold-end state (converged): u=14.9968 v=0.0003 w=0.0295 p=0.07003 q=-0.00253 r=-0.00015
+delta_a=8.00deg delta_e=0.00deg delta_r=0.00deg (aileron_sign=1.0 elevator_sign=1.0 rudder_sign=1.0, aero_v1_config.yaml)
+Released axis: x (p). p(t) over release window: [0.07719, 0.0843, 0.09136, 0.09838, 0.10535, 0.11227, 0.11915, 0.12598, 0.13276, 0.1395, 0.14619, 0.15284, 0.15944, 0.166, 0.17251, 0.17898, 0.18541, 0.19179, 0.19813, 0.20443]
+Measured slope dp/dt = 6.69530 rad/s^2 over 20 free steps -> moment_measured = I_xx*slope = 0.7284*6.69530 = 4.87685 N*m
+Independent replica (from hold-end state + same delta mapping): Cl (Clda)-driven Mx_expected = 5.25221 N*m (qbar=137.755, ref_len=2.093)
+Nonzero: PASS; Finite: PASS; Sane magnitude (within 5x of formula replica): PASS; Same sign as replica (both use the SAME, still-ASSUMPTION-tagged config sign, so this checks plumbing self-consistency, not real-world direction): yes
+AILERON_ROLL overall (plumbing/magnitude, NOT a physical-direction claim): PASS
+
+=== RUDDER_YAW ===
+RUDDER_YAW_SIGN_TEST: rudder_joint=8.0deg (maps to delta_r=rudder_sign*theta=8.0deg). Yaw-axis released after convergence; yaw moment (Cndr) checked for nonzero/sane magnitude - direction NOT asserted as physically 'correct' (rudder_sign is ASSUMPTION-tagged).
+Commanded joint positions: {'rudder_joint': 0.13962634015954636}
+Hold-end state (converged): u=14.9968 v=0.0014 w=0.0295 p=0.00008 q=-0.00253 r=-0.00603
+delta_a=0.00deg delta_e=0.00deg delta_r=8.00deg (aileron_sign=1.0 elevator_sign=1.0 rudder_sign=1.0, aero_v1_config.yaml)
+Released axis: z (r). r(t) over release window: [-0.0065, -0.00697, -0.00744, -0.00791, -0.00838, -0.00885, -0.00932, -0.00979, -0.01026, -0.01073, -0.0112, -0.01166, -0.01213, -0.0126, -0.01307, -0.01354, -0.014, -0.01447, -0.01494, -0.01541]
+Measured slope dr/dt = -0.46875 rad/s^2 over 20 free steps -> moment_measured = I_zz*slope = 0.9523*-0.46875 = -0.44639 N*m
+Independent replica (from hold-end state + same delta mapping): Cn (Cndr)-driven Mz_expected = -0.45268 N*m (qbar=137.755, ref_len=2.093)
+Nonzero: PASS; Finite: PASS; Sane magnitude (within 5x of formula replica): PASS; Same sign as replica (both use the SAME, still-ASSUMPTION-tagged config sign, so this checks plumbing self-consistency, not real-world direction): yes
+RUDDER_YAW overall (plumbing/magnitude, NOT a physical-direction claim): PASS
+
+=== ELEVATOR_PITCH ===
+ELEVATOR_PITCH_SIGN_TEST: left_elevator_joint=right_elevator_joint=8.0deg (symmetric; maps to delta_e=0.5*elevator_sign*(left+right)=8.0deg). Pitch-axis released after convergence; pitch moment (Cmde) checked for nonzero/sane magnitude - direction NOT asserted as physically 'correct' (elevator_sign is ASSUMPTION-tagged). RE-TEST NOTE (2026-08-22, post Cm-to-My fix): Cmde is part of the STATIC group (Cm0+Cma*alpha+Cmde*deltaE) that aerodynamics' scoped fix now negates when computing the applied My torque - so this test's measured sign is EXPECTED to be FLIPPED relative to the pre-fix run's result, and that is NOT a new bug (see AeroModel.hh 'RESOLVED FINDING' comment and aero_lib.compute_aero()'s docstring, which mirrors the same scoped correction, so the replica cross-check below already reflects it too).
+Commanded joint positions: {'left_elevator_joint': 0.13962634015954636, 'right_elevator_joint': 0.13962634015954636}
+Hold-end state (converged): u=14.9968 v=-0.0000 w=0.0314 p=-0.00000 q=0.01608 r=-0.00000
+delta_a=0.00deg delta_e=8.00deg delta_r=0.00deg (aileron_sign=1.0 elevator_sign=1.0 rudder_sign=1.0, aero_v1_config.yaml)
+Released axis: y (q). q(t) over release window: [0.02084, 0.02558, 0.03028, 0.03496, 0.03961, 0.04423, 0.04883, 0.0534, 0.05795, 0.06247, 0.06697, 0.07144, 0.07589, 0.08032, 0.08472, 0.0891, 0.09345, 0.09779, 0.1021, 0.10639]
+Measured slope dq/dt = 4.50069 rad/s^2 over 20 free steps -> moment_measured = I_yy*slope = 0.2507*4.50069 = 1.12832 N*m
+Independent replica (from hold-end state + same delta mapping): Cm (Cmde)-driven My_expected = 1.20728 N*m (qbar=137.755, ref_len=0.224)
+Nonzero: PASS; Finite: PASS; Sane magnitude (within 5x of formula replica): PASS; Same sign as replica (both use the SAME, still-ASSUMPTION-tagged config sign, so this checks plumbing self-consistency, not real-world direction): yes
+ELEVATOR_PITCH overall (plumbing/magnitude, NOT a physical-direction claim): PASS
+
+=== test_aero_control_surfaces.py OVERALL (plumbing/magnitude only - physical sign direction is controls-integration's determination): PASS ===

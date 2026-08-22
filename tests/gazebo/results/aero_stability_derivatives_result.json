@@ -1,0 +1,59 @@
+{
+  "results": {
+    "CMA_POS_8DEG": {
+      "rate0": 0.03940253618942184,
+      "slope": 11.023472815075165,
+      "moment_measured": 2.7635846347393436,
+      "moment_expected_replica": 2.958670931832963
+    },
+    "CMA_NEG_8DEG": {
+      "rate0": -0.04458637993505818,
+      "slope": -12.480424734353441,
+      "moment_measured": -3.1288424809024074,
+      "moment_expected_replica": -3.3482473206338663
+    },
+    "CMQ_DAMPING": {
+      "rate0": 0.3905767711154784,
+      "slope": -2.6388705595142516,
+      "moment_measured": -0.6615648492702229,
+      "moment_expected_replica": -0.6706852178744053
+    },
+    "CLP_DAMPING": {
+      "rate0": 0.3753365158595942,
+      "slope": -2.358039213448395,
+      "moment_measured": -1.7175957630758112,
+      "moment_expected_replica": -1.8496858118067765
+    },
+    "CNR_DAMPING": {
+      "rate0": 0.3982561573336542,
+      "slope": -0.13558918781862217,
+      "moment_measured": -0.1291215835596739,
+      "moment_expected_replica": -0.09554532467133968
+    },
+    "CNB_STABILITY": {
+      "rate0": 0.008749075761236869,
+      "slope": 0.6802440789252127,
+      "moment_measured": 0.64779643636048,
+      "moment_expected_replica": 0.6569534498799087
+    },
+    "Cma_RESTORING_SIGN_TEST_measurement_clean": true,
+    "Cma_RESTORING_SIGN_TEST_restoring_confirmed": true,
+    "Cma_RESTORING_SIGN_TEST_destabilizing_confirmed": false,
+    "Cmq_DAMPING_SIGN_TEST": true,
+    "Clp_DAMPING_SIGN_TEST": true,
+    "Cnr_DAMPING_SIGN_TEST": true,
+    "Cnb_STATIC_STABILITY_SIGN_TEST": true,
+    "RATE_NORMALIZATION_TEST": true
+  },
+  "overall": true,
+  "any_nan": false,
+  "inertia": {
+    "mass": 5.9348,
+    "ixx": 0.7284,
+    "iyy": 0.2507,
+    "izz": 0.9523,
+    "ixy": 0.0,
+    "ixz": 0.01485,
+    "iyz": 0.0
+  }
+}

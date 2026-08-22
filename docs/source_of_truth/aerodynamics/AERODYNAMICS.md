@@ -647,3 +647,235 @@ None of these are estimated, guessed, interpolated, or filled with a placeholder
 | Full-aircraft drag polar `CD=CD0+k·CL²` (§6.5) | Closed-form quadratic, not a table — no interpolation needed | Whatever CL range the V1 calibration was fit against (not explicitly bounded in the master dataset) | Any CL requiring extrapolation of the manual's own 6 kg performance-graph range is not separately validated |
 
 No Reynolds-number interpolation is implemented or recommended yet — the 2D airfoil CLmax/CDmin/alpha0 data (§4.1) is reported only at discrete Re values with no stated interpolation method in the master dataset itself, and none is invented here.
+
+---
+
+## 19. `AERODYNAMICS_V1_IMPLEMENTATION` (2026-08-22) — First working force/moment model
+
+**Scope of this pass:** implements the V1 aerodynamic force/moment model as a Gazebo Sim Harmonic C++ System plugin, attached to `model/model.sdf`. This is a code-and-config pass (unlike §1–§18, which were docs-only) — `model/model.sdf` gained one additive `<plugin>` block (no structural element modified), `plugins/aerodynamics/` was created, and `docs/source_of_truth/aerodynamics/aero_v1_config.yaml` was created as the structured coefficient dataset. Files: `plugins/aerodynamics/{AeroModel.hh, AerodynamicsSystem.hh, AerodynamicsSystem.cc, CMakeLists.txt, README.md, test/aero_model_selftest.cc}`, `docs/source_of_truth/aerodynamics/aero_v1_config.yaml`.
+
+### 19.1 Architecture
+
+C++ Gazebo System plugin (`ISystemConfigure` + `ISystemPreUpdate`), chosen over any Classic-era or Python-only approach because this repository's environment has the full `gz-sim8`/`gz-plugin2`/`gz-transport13`/`gz-msgs10`/`gz-math7` development headers installed (verified directly: `pkg-config --modversion gz-sim8` → 8.14.0, etc.) and a System plugin is the only Harmonic-native way to apply a per-timestep force/torque inside the physics loop with full ECM access (link velocity, joint position, quaternion pose) — a Python `TestFixture`-based approach (as used by the existing structural test scripts) is a *test* harness, not a way to permanently attach continuous physics to the model.
+
+The plugin is split into a pure-math header (`AeroModel.hh`, no Gazebo dependency beyond `gz::math::Vector3d`) and a thin ECM-glue class (`AerodynamicsSystem`). This split let the same formulas be exercised by a standalone, Gazebo-independent self-test executable (`aero_model_selftest`) without needing a live Gazebo instance — see §19.9.
+
+All coefficients live in `docs/source_of_truth/aerodynamics/aero_v1_config.yaml` (loaded at `Configure()` time via `yaml-cpp`), not hardcoded in the C++ source, per `CLAUDE.md`'s source-of-truth policy. Every numeric field in that file carries a provenance comment tracing to `CLAUDE.md`/this document/a documented derivation.
+
+### 19.2 `CL0` derivation (`DERIVED`)
+
+Per §8.3's own candidate method, now performed:
+
+```
+CL0 = CL_trim - CLa * alpha_trim(rad)
+```
+
+Using the neutral-trim (`delta_e=0`) row of the elevator sweep (§7.1): `CL_trim = 0.471685`, `alpha_trim = 0.36455°`, and the full-precision `CLa = 5.44594 /rad` (§6.2, per the task brief's "use exactly" derivative set):
+
+```
+alpha_trim(rad) = 0.36455 * pi/180 = 0.0063626 rad
+CL0 = 0.471685 - 5.44594 * 0.0063626 = 0.437035
+```
+
+Verified by direct computation (Python, reproduced in the plugin's self-test `MakeFalconV2Config()`). Sanity check: `CL0 + CLa*alpha_trim = 0.437035 + 0.034650 = 0.471685` reproduces `CL_trim` exactly, by construction. Independent plausibility check: the implied zero-lift angle (`-CL0/CLa = -4.60°`) falls in the same order of magnitude as the wing airfoils' own 2D zero-lift alpha (`≈-4.0° to -4.6°`, §4.1) and the 3D wing's zero-lift alpha (`≈-5.8°`, §5.1) — not identical (a full-aircraft CL0 differs from a wing-alone value due to the tail's contribution), but not implausible either. **Status: `DERIVED`.**
+
+### 19.3 `Cm0` derivation (`DERIVED`)
+
+At the same neutral-trim anchor, `Cm_trim ≈ 0`, `delta_e = 0` (by definition of the neutral row), `q_hat = 0` (steady 1g level flight, no pitch rate). From `Cm = Cm0 + Cma*alpha + Cmq*q_hat + Cmde*delta_e`:
+
+```
+0 = Cm0 + Cma * alpha_trim(rad)
+Cm0 = -Cma * alpha_trim(rad) = -(-1.65805) * 0.0063626 = 0.010550
+```
+
+Using the full-precision `Cma = -1.65805 /rad` (§6.2). **Status: `DERIVED`.** Sign sanity check: a positive `Cm0` is the textbook-expected sign for a longitudinally-stable aircraft trimmed at a small positive alpha with `Cma<0` (see §19.7 for a related, more consequential sign finding about how this `Cm` is subsequently converted into a Gazebo torque).
+
+### 19.4 `CLde` (elevator lift derivative) — omitted, with evidence
+
+The task brief authorized either deriving `CLde` from the Type-7 elevator sweep table (§7.1) or omitting it with documented justification. A finite-difference extraction was attempted: for each adjacent pair of sweep rows, `CLde_est = (ΔCL - CLa_avg·Δalpha) / Δdelta_e`. Result (full arithmetic reproducible from the table in §7.1):
+
+| delta_e pair (deg) | CLde_est (/rad) |
+|---|---|
+| -10 → -8 | 0.235 |
+| -8 → -6 | 0.225 |
+| -6 → -4 | 0.207 |
+| -4 → -2 | 0.158 |
+| -2 → 0 | 0.080 |
+| 0 → 2 | 0.508 |
+| 2 → 4 | 0.374 |
+| 4 → 6 | 0.313 |
+| 6 → 8 | 0.293 |
+
+This ranges over **0.080–0.508 /rad, a >6x spread, with a discontinuity straddling `delta_e=0`** — not a stable, extractable constant. Root cause: each row of the Type-7 sweep is a distinct **trim search result** (a different `V` and `alpha` satisfying a separate 1g moment/lift balance for that `delta_e`, §7.1's own framing), not a fixed-speed, fixed-alpha direct control sweep — so a naive finite difference conflates the elevator's direct lift contribution with the entire trim-point shift (including `CLa`'s own row-to-row variation, 5.30–5.45/rad). Fabricating a `CLde` from this unstable extraction would violate the project's no-fabrication rule. **`CLde` is therefore omitted from the V1 `CL` build-up** (`CL = CL0 + CLa*alpha + CLq*q_hat` only, no elevator term), consistent with the task brief's "(supported control contribution only, per above)" qualifier and its explicit "omit it with documented justification" option. `docs/source_of_truth/aerodynamics/aero_v1_config.yaml`'s `longitudinal.CLde` note reproduces this evidence.
+
+### 19.5 High-alpha smooth-saturation limiter (`V1_SMOOTH_SATURATION`)
+
+Formula (C1-continuous — matches value **and** slope at the transition, so there is no kink and no unexplained free parameter beyond the already-given `CLa`/`CL0` and the two data-traced constants `CLmax`, `alpha_transition`):
+
+```
+alpha_transition = 9.25°  [DERIVED: midpoint of the XFLR5-stated 9-9.5° attached-flow reliability band, §5.1/§11]
+CLmax = 1.42               [CONFIRMED as a manufacturer performance-calc input, MD sec 3; NOT flight-measured, §5.2]
+
+for |alpha| <= alpha_transition:
+    CL = CL0 + CLa*alpha                                  (exact linear model, unchanged)
+
+for alpha > alpha_transition (positive side, traces to real data):
+    headroom_pos = CLmax - (CL0 + CLa*alpha_transition) = 0.103757
+    k_pos = CLa / headroom_pos = 52.4876 /rad
+    CL = CLmax - headroom_pos * exp(-k_pos*(alpha - alpha_transition))
+
+for alpha < -alpha_transition (negative side, ASSUMPTION - see below):
+    A_neg = (CL0 - CLa*alpha_transition) + CLmax = 0.977826
+    k_neg = CLa / A_neg = 5.5694 /rad
+    CL = -CLmax + A_neg * exp(k_neg*(alpha + alpha_transition))
+```
+
+Numeric table (full range, computed by the self-test, `HIGH_ALPHA_LIMITER_TEST`):
+
+| alpha (deg) | CL (linear, unclamped) | CL (saturated) |
+|---|---|---|
+| 0 | 0.437 | 0.437 |
+| 9.25 | 1.316 | 1.316 (exact match, boundary) |
+| 10 | 1.388 | 1.368 |
+| 20 | 2.338 | 1.420 |
+| 90 | 8.992 | 1.420 |
+| -9.25 | -0.442 | -0.442 (exact match, boundary) |
+| -20 | -1.464 | -1.076 |
+| -90 | -8.117 | -1.420 |
+
+**Positive side: traces to real data** (manufacturer `CLmax=1.42`, XFLR5-stated 9–9.5° reliability boundary). **Negative side: `ASSUMPTION`.** No full-aircraft negative-alpha `CLmin`/stall data exists anywhere in the source of truth (the only negative-alpha data present is the wing-*only* 3D VLM table down to -8°, §5.1, with no stated stall onset). Per the task brief's explicit instruction not to invent symmetry without source support, the negative-side bound uses a symmetric magnitude (`-CLmax`, `-alpha_transition`) **purely as a numerical safety measure** to prevent unbounded negative lift/drag growth (the literal V1 requirement — "just prevent unbounded linear growth"), not as a claim of validated negative-alpha stall physics. True negative-alpha stall behavior remains `DATA_REQUIRED`. This is tagged `ASSUMPTION` explicitly in `aero_v1_config.yaml` and in `AeroModel.hh`.
+
+`CD = CD0 + k*CL²` (§6.5, `V1_CALIBRATED`, unchanged) is fed the **saturated** `CL`, not the raw linear value, so induced drag also stays bounded at extreme alpha — the same "prevent unbounded growth" requirement applied consistently.
+
+### 19.6 Angle of attack / sideslip — FLU re-derivation (not a blind FRD copy)
+
+Both formulas were re-derived from first principles (not copied from the FRD textbook forms) by explicit rotation-matrix construction, verified numerically (Python) and again via the compiled self-test. Full derivation and axis-rotation reference table live in `AeroModel.hh`'s header comments (reproduced in summary here):
+
+**Confirmed axis-rotation physical meanings in FLU** (found by asking "where does a body unit vector go, in world coordinates, under a positive rotation about this body axis", using the standard right-handed rotation matrices — identical algebra to FRD, only the physical axis labels differ):
+
+| Axis | Positive-rotation physical meaning in FLU | vs. FRD |
+|---|---|---|
+| +X (roll) | LEFT wingtip moves UP | Same physical roll sense as FRD's "right wing down" (Y and Z both flip meaning between frames — an even number of flips, so roll handedness is unchanged) |
+| +Y (pitch) | NOSE DOWN | **Opposite** of the traditional aerospace "q>0/Cm>0 = nose up" shorthand (only Z flips meaning for this axis pair — an odd number of flips) |
+| +Z (yaw) | NOSE LEFT | **Opposite** of FRD's "r>0 = nose right" (only Y flips meaning — an odd number of flips) |
+
+**Angle of attack:** `alpha = atan2(-w, u)`. Derived by placing a nose-up-by-theta rotation (physically, θ IS the angle of attack by definition of this scenario) at the correct sign relative to the "+Y rotation → nose down" finding above (i.e. nose-up = rotation of `-theta` about +Y), then computing the resulting body-frame relative wind: `u=V·cos(theta)`, `w=-V·sin(theta)`. Alpha's physical meaning ("nose up relative to the wind = positive") has **no free convention** — unlike beta below, there is only one physically sensible definition, and it was verified by an explicit 5°/90°-rotation numeric check, not verbal analogy. **`AOA_SIGN_TEST` (gazebo-testing, live Gazebo) is still required** before this is treated as final against XFLR5's own internal convention.
+
+**Sideslip:** `beta = atan2(v, hypot(u,w))` — chosen over the candidate `atan2(-v, hypot(u,w))` (the literal FRD-textbook-preserving form) after checking both candidates against the **given, unmodified** `Cnb=+0.03554` and `CYb=-0.13216` and their stated physical meanings (§6.2: "Cnβ>0 → directionally statically stable"). For a nose-slipped-left/wind-from-right disturbance: the `atan2(-v,...)` candidate produces a **destabilizing** yaw moment (amplifies the disturbance) under the confirmed "+Z rotation → nose left" axis meaning; the adopted `atan2(+v,...)` candidate produces a **restoring** yaw moment, matching the stated `Cnb` interpretation, and `CYb` under the same candidate produces a sideforce pushing the aircraft away from a right-side crosswind (basic, reliable physics). **Physical meaning of the adopted convention: positive beta = relative wind from the aircraft's LEFT side** (the opposite of the standard FRD "wind from the right" convention — expected, since FLU's yaw-axis handedness is flipped relative to FRD, see table above). This is a **documented inference** from matching two independent, reliable physical checks against the fixed/unmodified `Cnb`/`CYb` signs — `Cnb`/`CYb` themselves are never touched, only the sideslip-angle sign convention (a genuine free choice, unlike alpha) is selected. A third possible check (`Clb`, "dihedral effect") was attempted but **not used as evidence either way** — this document does not assert a verified physical direction for the dihedral-sideslip roll coupling from first principles (subtle fluid-dynamics mechanism, not reliably re-derivable by rotation-matrix bookkeeping alone). **`SIDESLIP_SIGN_TEST` and `Cnb_STATIC_STABILITY_SIGN_TEST` (gazebo-testing, live Gazebo) are still required** before this convention is treated as final.
+
+### 19.7 Force-axis transformation (wind → body, not the naive `Fx=-D,Fz=L` shortcut)
+
+Built from the *same* rotation `R(alpha,beta) = Ry(alpha)·Rz(beta)` implied by the alpha/beta formulas above (guaranteeing self-consistency — verified by reconstructing `R(alpha,beta)·(1,0,0) = Vrel/V` to ~1e-16 over thousands of random trials, and confirming `R(0,0)=identity`):
+
+```
+Fx = -D·cos(a)·cos(b) - Y·cos(a)·sin(b) + L·sin(a)
+Fy = -D·sin(b) + Y·cos(b)
+Fz =  D·sin(a)·cos(b) + Y·sin(a)·sin(b) + L·cos(a)
+```
+
+At `alpha=beta=0`: reduces exactly to `(Fx,Fy,Fz)=(-D,Y,L)`, matching the naive case as the correct zero-angle special case (not a coincidence — the derivation guarantees it). Tested (self-test `LIFT_SIGN_TEST`/`DRAG_SIGN_TEST`/rotation-sanity) at `alpha=0`, `alpha=+10°`, and `alpha=-10°`: `Fx` and `Fz` both vary continuously with alpha in both directions, confirming a proper rotation is applied, not a constant `-D`/`L` split.
+
+**`Cma`/`My` pitch-axis sign finding — RESOLVED this pass, see §19.12 for the full root-cause/fix record.** Unlike the rate/damping terms (`Cmq·q_hat`, `Clp·p_hat`, `Cnr·r_hat`), which are mathematically self-referential (a negative coefficient times a rate always produces a moment opposing that *same* rate, about the *same* axis — true in any frame/handedness; verified algebraically and via the self-test, all three pass), the static terms `Cma·alpha`, `Cm0`, and `Cmde·delta_e` relate an independently-defined angle to a moment about a *different* reference. Given the confirmed "+Y rotation → NOSE DOWN" FLU finding (§19.6 table) — the opposite of the "positive Cm = nose up" shorthand that is only self-consistent with strict right-hand-rule rotation in FRD, not FLU — a literal, unmodified application of `My = qbar·S·c_ref·Cm` to the static group produced, for a nose-up disturbance, a moment that was **destabilizing** rather than the textbook-expected restoring (nose-down) behavior. This was first reported (not silently patched) pending live confirmation, then independently confirmed by `gazebo-testing`'s live measurement (`My=-2.83 N·m at alpha=+8°`, reinforcing not restoring) and root-caused by `validation`'s independent re-derivation. **The precisely-scoped fix (§19.12) is now applied**: only the static group (`Cm0 + Cma·alpha + Cmde·delta_e`) is negated when computing `My`; the rate group (`Cmq·q_hat`) is left unflipped (it was already correct — flipping it would have broken the passing `Cmq_DAMPING_SIGN_TEST`).
+
+Moments (`Mx=qbar·S·b·Cl`, `My=qbar·S·c_ref·Cm`, `Mz=qbar·S·b·Cn`) are applied directly, with **no** wind→body rotation (§8.4, unchanged) — they are already body-axis roll/pitch/yaw moment coefficients per the given architecture.
+
+### 19.8 Force-application point and double-counting analysis
+
+**Decision:** apply the net aerodynamic force at `base_link`'s center of mass (which is exactly the documented Gazebo/CAD CG, `MASS_PROPERTIES.md` §3.1, since `base_link`'s `<inertial><pose>` is `(0.168309, 0, 0.100000)` m), and apply the net moment as a pure torque, both on `base_link` only.
+
+**Implementation (verified against the actual installed `gz-sim8` `Link.hh` API, not assumed):**
+- `Link::AddWorldForce(ecm, force_world)` — the 2-argument overload applies the given world-frame force **at the link's center of mass** (per the header's own documentation: "Add a force expressed in world coordinates and applied at the center of mass of the link"), contributing **zero** additional moment by construction (`r=0` relative to CoM).
+- `Link::AddWorldWrench(ecm, gz::math::Vector3d::Zero, moment_world)` — force argument is exactly zero, so this reduces to a **pure torque** application, which is frame/offset-independent (no `r×F` term exists when `F=0`).
+
+No other force is applied anywhere else in the plugin. This means: the fully-formed `Mx/My/Mz` (which already include every `Cl`/`Cm`/`Cn` derivative contribution — `Clb`, `Clp`, `Clr`, `Clda`, `Cldr`, etc.) are applied once, directly, as a moment; the lift/drag/sideforce are applied once, as a force at the CoM producing zero extra moment. There is no `r×F` double-counting. This required no coordination with `geometry-structure` beyond reading the already-published `base_link` `<inertial><pose>` value (no ambiguity found).
+
+### 19.9 Self-test results (superseded by §19.12's post-fix re-run — kept here as the historical pre-fix record)
+
+Two levels of self-testing were performed (both by `aerodynamics`, neither is a substitute for `gazebo-testing`'s formal, independently-executed and independently-reviewed test suite):
+
+**(a) Standalone, Gazebo-independent executable** (`plugins/aerodynamics/build/aero_model_selftest`, compiled and run this pass, BEFORE the §19.12 fix):
+
+```
+[PASS] ZERO_AIRSPEED_AERO_TEST                  V=0 qbar=0 F=(0,0,0) M=(0,0,0), all finite
+[PASS] AOA_SIGN_TEST (math-level)               nose-up 5deg -> alpha=+5.000deg
+[PASS] AOA_SIGN_TEST negative-alpha case        nose-down -> alpha negative
+[PASS] SIDESLIP_SIGN_TEST (formula self-consistency)
+[PASS] LIFT_SIGN_TEST (alpha=beta=0)            Fz=+10 (lift up)
+[PASS] DRAG_SIGN_TEST (alpha=beta=0)            Fx=-2 (drag aft)
+[PASS] Wind-to-body rotation sanity (+/-alpha)  Fx/Fz vary continuously with alpha
+[FAIL] Cma_RESTORING_SIGN_TEST                  DESTABILIZING under literal formula - see sec 19.7, NOT patched
+[PASS] Cmq_DAMPING_SIGN_TEST
+[PASS] Clp_DAMPING_SIGN_TEST
+[PASS] Cnr_DAMPING_SIGN_TEST
+[PASS] Cnb_STATIC_STABILITY_SIGN_TEST
+[INFO] AILERON_ROLL_SIGN (algebraic only)       needs live AILERON_TEST for physical direction
+[INFO] RUDDER_YAW_SIGN (algebraic only)         needs live RUDDER_TEST
+[INFO] ELEVATOR_PITCH_SIGN (algebraic only)     needs live ELEVATOR_TEST
+[PASS] RATE_NORMALIZATION_TEST (p_hat=p*b/2V)
+[PASS] RATE_NORMALIZATION_TEST (V=0, rates nonzero -> no NaN/Inf)
+[PASS] DRAG_POLAR_TEST + TRIM_BENCHMARK          CL=0.471685 (expect ~0.4717), CD=CD0+k*CL^2 exact
+[PASS] HIGH_ALPHA_LIMITER_TEST                   bounded, monotonic, exact-linear within +/-9.25deg
+
+SUMMARY: 15 PASS, 1 FAIL (honest, documented, sec 19.7), 3 INFO (need live Gazebo)
+```
+
+**Note: `CLq` was loaded from config but not yet referenced in `SaturatedCL()`/`ComputeAero()` at the time of this pre-fix run** — a second, independent finding (`validation`, MAJOR) not caught by this self-test suite at the time, since no test in the (a) run above specifically exercised `q≠0` against `CL`. Fixed alongside the `Cma`/`My` fix in §19.12; a dedicated regression check was added to the self-test to prevent recurrence.
+
+**(b) Live Gazebo smoke test** (this pass, `gz sim -s -r`, `GZ_SIM_SYSTEM_PLUGIN_PATH` pointed at the built `.so`, against the existing `tests/gazebo/worlds/falcon_v2_freefall_world.sdf`): the plugin loads (`Loaded system [falcon_v2_aero::AerodynamicsSystem]`), configures successfully (logs `S=0.4514 b=2.093 c_ref=0.224`, correct diagnostics/wind topics), and ran 3000 physics steps (1 ms each) with no error/crash/NaN. Diagnostics topic (`/model/falcon_v2/aerodynamics/diagnostics`) was echoed live and showed physically sane values throughout a multi-second free-fall: `alpha` converges toward ≈90° (correct — a body falling nose-forward but moving nearly straight down has near-maximal angle of attack in the vertical plane, not a bug), `CL` saturates at exactly `1.42` (the limiter engaging correctly at high alpha), `CD` matches `CD0+k·CL²` exactly, and `Cm`/`Mx`/`My`/`Mz` remain finite and smoothly varying throughout. **This is a smoke test only** — it confirms the plugin loads, reads real ECM state, and produces finite, plausible output over a real physics run; it is explicitly **not** a substitute for `gazebo-testing`'s formal `ZERO_AIRSPEED_AERO_TEST`/`AOA_SIGN_TEST`/etc. with proper pass/fail criteria, result files, and independent `validation` review.
+
+**Tests requiring `gazebo-testing` to execute in a live Gazebo instance** (full list, all 16 named in the task): `AOA_SIGN_TEST`, `SIDESLIP_SIGN_TEST`, `Cma_RESTORING_SIGN_TEST` (**highest priority — known, documented, honestly-reported discrepancy, §19.7**), `Cnb_STATIC_STABILITY_SIGN_TEST` (re-confirm against real quaternion/ECM plumbing, not just the pure-math core), `AILERON_ROLL_SIGN_TEST`, `RUDDER_YAW_SIGN_TEST`, `ELEVATOR_PITCH_SIGN_TEST` (all three gated on `controls-integration`'s not-yet-built command interface — see §19.10), and `TRIM_TEST`/`STRAIGHT_LEVEL_FLIGHT_TEST`-class dynamic tests (require a full free-flight scenario, out of scope for this pass per the task brief). `ZERO_AIRSPEED_AERO_TEST`, `LIFT_SIGN_TEST`, `DRAG_SIGN_TEST`, `Cmq_DAMPING_SIGN_TEST`, `Clp_DAMPING_SIGN_TEST`, `Cnr_DAMPING_SIGN_TEST`, `RATE_NORMALIZATION_TEST`, `DRAG_POLAR_TEST`, `HIGH_ALPHA_LIMITER_TEST` were exercised at the pure-math level here (self-test, above) but should still be re-run by `gazebo-testing` against the live plugin (ECM plumbing, quaternion rotation, joint reads) for formal sign-off.
+
+### 19.10 Control-joint-to-deflection-sign mapping
+
+`AerodynamicsSystem` reads the 5 real joint positions (`left_aileron_joint`, `right_aileron_joint`, `left_elevator_joint`, `right_elevator_joint`, `rudder_joint`) from the ECM every step — there is no parallel/disconnected control-state variable. Mapping to `delta_a`/`delta_e`/`delta_r` (documented in full in `aero_v1_config.yaml`'s `control_mapping` block and `AerodynamicsSystem.cc`):
+
+```
+delta_a = 0.5 * aileron_sign  * (theta_right_aileron - theta_left_aileron)   [differential]
+delta_e = 0.5 * elevator_sign * (theta_left_elevator  + theta_right_elevator) [symmetric]
+delta_r =       rudder_sign   *  theta_rudder
+```
+
+`aileron_sign`, `elevator_sign`, `rudder_sign` all default to `+1.0` — **`ASSUMPTION`: joint-sign-to-deflection-sign identity, pending `controls-integration`'s `ELEVATOR_TEST`/`AILERON_TEST`/`RUDDER_TEST`** (`CONTROLS.md` §4). The aileron **differential** (not symmetric-sum) combination, and the elevator **symmetric-sum** (not differential) combination, are themselves derived from `CONTROLS.md` §9.3's finding that the left/right aileron and elevator joint axes share the same +Y-dominant sign sense (not true sign-flipped mirrors) — also flagged `ASSUMPTION` in `aero_v1_config.yaml`, pending the same per-side sign tests. All three sign parameters are exposed as YAML config values (not hardcoded), so a future sign-test result can be applied by flipping a config value, no code change required. Control deflections are additionally clamped to `±10°` (`control_deflection_clamp_deg`) before being used in the linear coefficient formulas — `V1_CONSERVATIVE_CLAMP`, tracing to `CONTROLS.md` §3 / this document §7.4/§11/§18's `±10°` aero-validated-range statement (the mechanical joint limit is `±30°`, per `geometry-structure`'s SDF; the aerodynamic model is not extrapolated past its validated range even though the joint can mechanically travel further).
+
+### 19.11 `DATA_REQUIRED` items unaffected by this pass
+
+This pass did not resolve, and does not claim to resolve: `Cmα̇`, the `CXa`/`CXq` axis-reconciliation question (still correctly unused — the given V1 equation set never references them), the full XNP/XCP Gazebo-frame coordinate transform, control-surface effectiveness beyond `±10°`, hinge-moment data, vertical-tail airfoil identity, downwash/sidewash interaction, or the physical (nose-left/right, TE-up/down) meaning of a positive rudder/aileron deflection (still `controls-integration`'s open item). See §17 for the full list, unchanged except for item 6 (`CL0`/`Cm0`, now resolved, §19.2/§19.3).
+
+### 19.12 Post-review fix pass (2026-08-22) — `Cma`/`My` axis-handedness bug + missing `CLq` term
+
+Following §19.9's self-reported `Cma_RESTORING_SIGN_TEST` failure, `gazebo-testing` independently confirmed the same behavior via a live measurement (`My=-2.83 N·m at alpha=+8°`, reinforcing not restoring), and `validation` performed a full root-cause review, re-deriving the axis-handedness argument independently (rotation-matrix construction on both the `+X` and `+Z` body axes, in addition to the `+Y` analysis already in §19.7) and identifying one additional MAJOR finding (`CLq` unused). Both are fixed in this sub-pass, in `plugins/aerodynamics/AeroModel.hh`'s `ComputeAero()` only — no coefficient value in `aero_v1_config.yaml` was changed.
+
+**Fix 1 — scoped `Cm`-to-`My` sign correction (CRITICAL).** `validation`'s independent re-derivation confirmed and refined the original diagnosis: only the **static/angle-derived** terms need the axis-handedness correction; the **rate** term does not.
+
+- **Static group** (`Cm0`, `Cma·alpha`, `Cmde·delta_e`): each relates an independently-defined angle (alpha, or a control deflection) to a moment — not self-referential, so it inherits the FLU `+Y`-axis-handedness mismatch identified in §19.7. **Negated** when computing `My`.
+- **Rate group** (`Cmq·q_hat`): self-referential — a negative coefficient times a rate always opposes that *same* rate about the *same* axis, algebraically, regardless of frame handedness. `validation` additionally traced through *why* this term was already correct despite the same nominal `+Y` mirroring: the mirroring affects **both** `q` (read raw from the FLU ECM, itself subject to the same axis relabeling) **and** `My`'s resulting sign, identically — a double-cancellation, not a coincidence, and exactly consistent with `Cmq_DAMPING_SIGN_TEST` having already passed pre-fix. **Left unflipped.**
+- `Cmde` is included in the negated static group deliberately — it is a geometric control-deflection angle, not a rate, so it has the same axis-handedness exposure as `Cma·alpha`, **independently of** the separate, still-open `ELEVATOR_SIGN_TEST` question of whether a positive Gazebo elevator joint command physically means trailing-edge-down. **Consequence, flagged for `gazebo-testing`/`controls-integration`: `ELEVATOR_PITCH_SIGN_TEST`'s measured `My` sign will be flipped relative to any pre-fix measurement — expected, not a regression.**
+- `Cm0` and `Cma` are always flipped **together**, never independently: `Cm0` was specifically derived (§19.3) so that `Cm0 + Cma·alpha_trim = 0` at the neutral trim point; flipping only one would break that zero-moment trim condition.
+- `out.Cm` (the diagnostics-facing value, e.g. published on the `/model/falcon_v2/aerodynamics/diagnostics` topic) is left in **XFLR5's own, unflipped convention** — only the internal `My` computation applies the correction. This keeps `Cm` comparable against the source-of-truth sweep tables (§7.1) for diagnostic purposes.
+
+Implementation (`AeroModel.hh::ComputeAero()`):
+```cpp
+const double cmStatic = cfg.Cm0 + cfg.Cma * out.alpha + cfg.Cmde * deltaE;
+const double cmRate   = cfg.Cmq * qHat;
+out.Cm = cmStatic + cmRate;                                          // XFLR5's own convention, diagnostics only
+const double my = out.qbar * cfg.S * cfg.c_ref * (-cmStatic + cmRate); // only the static group is negated
+```
+
+`validation` also confirmed **no equivalent fix is needed for `Mx` (roll) or `Mz` (yaw)**, closing out the question of whether this class of bug is isolated to pitch:
+- **Roll (`+X`)**: does not flip handedness between FRD and FLU at all (both `Y` and `Z` flip meaning for this axis pair — an even number of flips) — `Cl`→`Mx` needs no correction. Independently re-derived by `validation` via rotation-matrix construction on `+X`, matching the axis-rotation table already in `AeroModel.hh`/§19.6.
+- **Yaw (`+Z`)**: *does* flip handedness (an odd number of flips, same class of issue as pitch), but — unlike alpha — `beta` had a genuine, free sign-convention choice available (§19.6's Candidate A/B analysis), and Candidate B was selected specifically because it made the given, unmodified `Cnb`/`CYb` signs behave correctly through the literal, unmodified `Mz=qbar·S·b·Cn` formula. That choice already absorbed the needed compensation for the *entire* `Cn` quantity (including `Cnda·delta_a` and `Cndr·delta_r`, which share the same "Cn" convention as `Cnb`, all summed into one `Cn` before one `Mz=qbar·S·b·Cn` conversion) — so no separate `Mz`-side correction is needed or applied. Alpha had no equivalent free choice (its sign is physically unambiguous — "nose up" has one meaning), which is precisely why pitch was left exposed and yaw was not.
+
+**Fix 2 — missing `CLq·q_hat` term (MAJOR).** `aero_v1_config.yaml` documents `CLq=9.48457` as `CONFIRMED` and §19.4 already stated the intended V1 formula as `CL = CL0 + CLa·alpha + CLq·q_hat`, and `AerodynamicsSystem.cc` correctly loads `CLq` into `AeroConfig`, but `SaturatedCL()`/`ComputeAero()` never referenced it — a real, non-negligible omission (`validation`: ≈16% of `CL0` at `q=1 rad/s`, `V=15 m/s`), not dangerous (no NaN/instability) but a documented-vs-implemented mismatch. **Fixed**: the high-alpha saturation is applied to the alpha-driven static term only (`SaturatedCL(cfg, alpha)`, unchanged — the source data's `9–9.5°`/`CLmax` reliability boundary characterizes alpha, not `q_hat`), and `cfg.CLq * qHat` is added on top, unsaturated — mirroring the same static/rate split adopted for `Cm` in Fix 1:
+
+```cpp
+out.CL = SaturatedCL(cfg, out.alpha) + cfg.CLq * qHat;
+```
+
+`CD = CD0 + k·CL²` is fed this full (static+rate) `CL`, so induced drag reflects the complete lift coefficient.
+
+**Verification performed this sub-pass:**
+- Plugin rebuilt clean (`-Wall -Wextra -Wpedantic`, no warnings).
+- Standalone self-test re-run: **17 PASS, 0 FAIL, 3 INFO** (up from 15/1/3) — `Cma_RESTORING_SIGN_TEST` now passes (`My(trim)=-0.000014` ≈ 0 as expected at the zero-moment trim point, `My(+2° nose-up)=+1.617668`, restoring); a new regression check (`RATE_NORMALIZATION_TEST (CLq*q_hat now included in CL)`) confirms `CL(q=1)-CL(q=0)` matches `CLq·q_hat` exactly; `Cmq_DAMPING_SIGN_TEST`/`Clp_DAMPING_SIGN_TEST`/`Cnr_DAMPING_SIGN_TEST` all still pass unchanged (regression-clean — the rate group was correctly left untouched); the neutral-trim `DRAG_POLAR_TEST`/`TRIM_BENCHMARK` (`q_hat=0` there) is numerically unaffected, still `CL=0.471685`.
+- Live Gazebo smoke test re-run (`gz sim -s -r`, freefall world, 20 iterations): plugin loads, configures, runs with no error/crash/NaN.
+
+**Requested from `gazebo-testing` (per the coordinating review):** re-run at minimum `Cma_RESTORING_SIGN_TEST`, `Cmq_DAMPING_SIGN_TEST` (regression check), `ELEVATOR_PITCH_SIGN_TEST` (expected sign flip, not a regression — see Fix 1's `Cmde` note), and ideally `ZERO_AIRSPEED_AERO_TEST`/`DRAG_POLAR_TEST`/`HIGH_ALPHA_LIMITER_TEST` (since the `CL` computation changed). `validation` re-review follows before this can be considered `AERODYNAMICS_V1_READY`.
