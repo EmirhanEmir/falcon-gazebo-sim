@@ -1,0 +1,164 @@
+# =============================================================================
+# FALCON V2 - Propulsion V1 coefficient/config dataset (source of truth)
+# =============================================================================
+# Owner: propulsion
+# Task:  PROPULSION_V1_IMPLEMENTATION (2026-08-23)
+#
+# This file is the single structured-data source for every numeric propulsion
+# parameter consumed by plugins/propulsion/ (the Gazebo Sim Harmonic System
+# plugin "FalconV2Propulsion"). Per CLAUDE.md's source-of-truth policy,
+# propulsion datasets live here, not hardcoded inline in plugin source code.
+# The plugin loads this file at Configure() time from the path given by the
+# <config_path> SDF plugin parameter in model/model.sdf. Mirrors
+# docs/source_of_truth/aerodynamics/aero_v1_config.yaml's format/conventions
+# exactly.
+#
+# PROVENANCE RULE: every value below cites its exact source
+# (docs/source_of_truth/propulsion/PROPULSION.md section). Nothing here is
+# invented. Every field carries one of the status tags below.
+#
+# STATUS TAGS USED BELOW (consistent with PROPULSION.md's/aero_v1_config's
+# legend):
+#   CONFIRMED   - stated directly by CLAUDE.md / the master dataset /
+#                 PROPULSION.md, used exactly as given, not modified.
+#   DERIVED     - computed from CONFIRMED values via a documented method.
+#   V1_PROVISIONAL - an explicitly-flagged placeholder pending a real
+#                 measurement/calibration (e.g. rotational inertia).
+#   ASSUMPTION  - a value with no source data; used because a working number
+#                 was required for V1, explicitly NOT validated. Includes
+#                 this V1's electrical-model policy choices (negative-current
+#                 clamp, I0 voltage-independence, current-limit-as-hard-clamp).
+#   TEMPORARY   - a numerical-safety placeholder, not a physical constant.
+#   DATA_REQUIRED - genuinely missing, not guessed.
+#
+# Do not edit numeric values here without updating PROPULSION.md's
+# provenance record. Do not add new coefficients/curves not present in
+# CLAUDE.md / the master dataset / an authorized derivation, and never
+# fabricate a Ct/Cp value - the ONLY Ct/Cp data this plugin uses is the real
+# parsed APC table (propeller.apc_parsed_csv_path below).
+# =============================================================================
+
+motor:
+  model: "SunnySky X2820 860KV"                # CONFIRMED, PROPULSION.md sec 1.1
+  kv_rpm_per_v: 860.0                           # CONFIRMED, manufacturer nameplate, PROPULSION.md sec 1.1
+  resistance_ohm: 0.0258                        # CONFIRMED, PROPULSION.md sec 1.1 (~25.8 mOhm)
+  no_load_current_A: 1.3                        # CONFIRMED, PROPULSION.md sec 1.1 - reference point only, see no_load_current_ref_voltage_V
+  no_load_current_ref_voltage_V: 10.0           # CONFIRMED, PROPULSION.md sec 1.1 - I0 was measured/stated at this voltage
+  mass_kg: 0.143                                # CONFIRMED, PROPULSION.md sec 1.1 (per motor) - reference only; NOT used as a rotational-inertia input in V1 (see physics.i_rotor_kg_m2 below)
+  current_limit_A: 65.0                         # CONFIRMED rating (~65A/30s), PROPULSION.md sec 1.1
+  power_limit_W: 960.0                          # CONFIRMED rating (~960W/motor), PROPULSION.md sec 1.1
+
+  electrical_policy:
+    negative_current_clamp: >
+      I_used = max(I_raw, 0) where I_raw = (V_ESC - Ke*omega)/R. If the
+      back-EMF (Ke*omega) exceeds the applied voltage (V_ESC) - e.g. a
+      windmilling propeller under an engine-out condition in forward flight,
+      or throttle=0 with omega>0 - I_raw would be negative. No battery-regen
+      / reverse-current model exists anywhere in the source of truth, so V1
+      clamps this to zero current rather than fabricating one.
+    negative_current_clamp_status: ASSUMPTION   # simple non-regenerative-ESC assumption, PROPULSION.md sec 1.2/8.2 item 4 (ESC dynamic response explicitly V2)
+    i0_effective_policy: >
+      I0_effective = motor.no_load_current_A (held CONSTANT across all
+      operating voltages/RPM). I0 is only characterized at ONE reference
+      voltage (10 V) anywhere in the source of truth - no voltage-scaling
+      law for I0 exists, so none is invented.
+    i0_effective_status: ASSUMPTION             # PROPULSION.md sec 1.1 - a true voltage-dependent I0 curve is DATA_REQUIRED
+    current_limit_clamp_policy: >
+      I_used is additionally clamped at motor.current_limit_A (the ~65A/30s
+      manufacturer rating), applied as a V1 instantaneous hard clamp.
+    current_limit_clamp_status: ASSUMPTION      # this V1 model does NOT implement a true duration-limited (I^2*t) thermal model - none exists in the source of truth
+
+battery:
+  main_pack: "4S 22000mAh 25C"                  # CONFIRMED, PROPULSION.md sec 1.3
+  v_nominal_V: 14.8                             # CONFIRMED, this specific pack's spec, PROPULSION.md sec 1.3
+  v_full_V: 16.8                                # CONFIRMED, PROPULSION.md sec 1.3
+  v1_operating_voltage_V: 14.8                  # V1_PROVISIONAL: fixed at Vnominal, no SOC/sag model - battery internal resistance / discharge curve is DATA_REQUIRED (PROPULSION.md sec 1.3/8.2 item 7, explicitly deferred to V2)
+
+propeller:
+  model: "APC 13x6.5E"                          # CONFIRMED, PROPULSION.md sec 1.4
+  diameter_m: 0.3302                            # CONFIRMED - 13in nominal. NEVER the ~0.2734m STL mesh figure (PROPULSION.md sec 0) - used everywhere, always, no exceptions.
+  pitch_m: 0.1651                               # CONFIRMED - 6.5in nominal (not directly consumed by the V1 Ct(J)/Cp(J) formulas, retained for reference/provenance)
+  mass_kg: 0.0301                               # CONFIRMED, PROPULSION.md sec 1.4 (per propeller) - matches model.sdf left_prop/right_prop <inertial><mass>
+  apc_raw_data_path: "docs/source_of_truth/propulsion/data/PER3_13x65E.dat"
+  apc_raw_data_source: "APC Propellers official performance data, https://www.apcprop.com/files/PER3_13x65E.dat, file v2022-0915, simulated 2022-09-22, retrieved 2026-08-23" # CONFIRMED, see data/PROVENANCE.md
+  apc_parsed_csv_path: "docs/source_of_truth/propulsion/data/apc_13x65e_parsed.csv"  # DERIVED, mechanically parsed from apc_raw_data_path by data/parse_apc_dat.py - never hand-edited
+  rpm_table_min: 1000.0                         # CONFIRMED (from the parsed APC table's own range)
+  rpm_table_max: 18000.0                        # CONFIRMED (from the parsed APC table's own range)
+  rpm_physical_limit: 11538.0                   # DERIVED = 150000/13 (APC "Thin Electric" structural guideline for a 13in prop), PROPULSION.md sec 1.7
+  rpm_cap_v1: 11500.0                           # V1_PROVISIONAL hard operating cap on |RPM| (numerical/operational clamp on the omega state), slightly below rpm_physical_limit, PROPULSION.md sec 1.7 - distinct from, and not required to coincide with, apc table's own [rpm_table_min,rpm_table_max] lookup-clamp range
+
+physics:
+  rho_kg_m3: 1.225                              # CONFIRMED, ISA sea-level, V1 fixed config parameter (same convention as aero_v1_config.yaml environment.air_density_rho_kg_m3)
+  n_safe_floor_rev_s: 1.0e-3                    # TEMPORARY numerical-safety-only floor for the J=V/(nD) denominator (mirrors AeroModel.hh's vSafeFloor pattern) - NOT physically load-bearing: T/P_prop already -> 0 as n->0 via their own n^2/n^3 factors regardless of this floor's value.
+  i_rotor_kg_m2: 2.7349e-4                      # V1_PROVISIONAL_ROTATIONAL_INERTIA - see i_rotor_derivation note below
+  i_rotor_derivation: >
+    I_rotor (V1) = prop-only rotational inertia = (1/12)*m_prop*D^2, using
+    the REAL propeller mass (0.0301 kg) and REAL diameter (D=0.3302 m,
+    never the STL mesh figure) = 2.7349e-4 kg*m^2 - IDENTICAL to the value
+    already used as model/model.sdf's left_prop/right_prop
+    <inertial><inertia> placeholder (tagged V1_PROVISIONAL_ROTATIONAL_INERTIA
+    there too, geometry-structure's own derivation, reused here rather than
+    recomputed as a second, potentially-inconsistent source of truth for the
+    same quantity).
+    MOTOR-ROTOR CONTRIBUTION: deliberately NOT included. No motor-internal
+    dimensional data (bell/rotor diameter, wall thickness, magnet mass
+    distribution) exists anywhere in the source of truth for the SunnySky
+    X2820 860KV. Per CLAUDE.md/PROPULSION.md's explicit "no arbitrary
+    curves/no invented plausible-looking constant" rule, this V1
+    implementation does NOT add a specific mass-fraction/radius-based
+    estimate for the motor's own rotating mass, even tagged ASSUMPTION -
+    the project's demonstrated pattern elsewhere (e.g. I0 voltage-scaling,
+    negative-alpha CLmax) is to keep missing data DATA_REQUIRED rather than
+    invent a specific unsourced number. KNOWN EFFECT: since the true I_rotor
+    is (prop-only + motor-rotor), and the motor-rotor term is omitted
+    entirely, this V1 I_rotor is very likely an UNDERESTIMATE of the true
+    combined value - meaning V1 spin-up/spin-down transients will likely be
+    FASTER than real hardware. This affects ONLY the transient time constant
+    of the angular-dynamics ODE, NOT steady-state thrust (PROPULSION.md sec
+    4 point 3) - do not calibrate this number to hit the SunnySky bench
+    thrust figure (sec 1.6).
+  i_rotor_motor_rotor_contribution_status: DATA_REQUIRED   # PROPULSION.md sec 1.1/4/8.2 item 2 - only a V1-estimate/bench-spin-up-calibration PATH is authorized, no number is given anywhere in the source of truth
+
+geometry:
+  # Coordinates/thrust-axis owned by geometry-structure, cited here per
+  # PROPULSION.md sec 1.5 - propulsion consumes these as given, does not set
+  # them. Both hubs use the SAME body-frame thrust axis; only the Y
+  # coordinate differs (mirror placement).
+  left_hub_m: [0.2951, 0.3000, 0.1271]          # CONFIRMED, GEOMETRY.md sec 7 / PROPULSION.md sec 1.5 - expressed relative to base_link's own origin (base_link <pose>=0 0 0 0 0 0), i.e. directly usable as a gz-sim Link "offset in the link-fixed frame"
+  right_hub_m: [0.2951, -0.3000, 0.1271]        # CONFIRMED, GEOMETRY.md sec 7 / PROPULSION.md sec 1.5
+  thrust_axis_body: [1.0, 0.0, 0.0]             # CONFIRMED, GEOMETRY.md sec 7 / PROPULSION.md sec 1.5 - V1 idealized +X (measured prop-face normal is (+0.999996,+0.000018,-0.002668), ~0.15deg off pure +X; master dataset sec 48 explicitly accepts the idealized +X for V1)
+
+rotation:
+  # Explicit simulator-native sign convention (this task's requirement 8) -
+  # never described in terms of an external front/behind viewing frame,
+  # since PROPULSION.md sec 1.4 states only "Left=CCW, Right=CW" with NO
+  # stated viewing frame (a prior validation finding already flagged and
+  # removed an unsourced "as viewed from behind" SDF comment claim).
+  sign_convention: >
+    Each motor's OWN internal rotor-dynamics state (omega_left, omega_right,
+    the plugin's explicit ODE-integrated variables) is expressed in that
+    motor's OWN "positive = normal spin-up-under-positive-throttle"
+    direction - i.e. omega>0 always means "this motor accelerating under
+    positive throttle", identically in form for both motors (Kt/Ke/Ct/Cp do
+    not change sign based on mounting side). This own-frame state is then
+    mapped onto the single shared body +X axis (right-hand rule) ONLY at two
+    output points: (a) commanding the SDF joint's angular velocity
+    (left_prop_joint/right_prop_joint, both axis=+X), and (b) computing the
+    reaction-torque vector applied to base_link - both via the
+    left_sign/right_sign multipliers below, applied identically to both
+    quantities (they are the same physical axis).
+  left_sign: 1.0                                # ASSUMPTION - left motor's own-frame positive direction is arbitrarily chosen as the +X/right-hand-rule reference (a free labeling choice - see status note below)
+  right_sign: -1.0                              # DERIVED from the CONFIRMED counter-rotation fact (Left CCW / Right CW - opposite handedness, PROPULSION.md sec 1.4) combined with the left_sign ASSUMPTION above: since the two motors counter-rotate RELATIVE TO EACH OTHER (a viewpoint-independent, unambiguous, CONFIRMED fact), fixing left_sign=+1 forces right_sign=-1 under the same +X/RHR convention.
+  viewpoint_status: DATA_REQUIRED               # The master dataset's "Left=CCW,Right=CW" statement does not specify whether this was stated as viewed from in front of or behind the aircraft. This convention block only fixes the two motors' signs RELATIVE TO EACH OTHER and to this project's own arbitrarily-chosen +X/RHR reference (left=+1) - it does NOT claim to reproduce the "visually CCW/CW as seen from a specific real-world viewpoint" sense. Do not write "as viewed from front/behind" anywhere per this project's prior corrected finding.
+
+interfaces:
+  # V1 test interface - no ArduPilot/SITL exists yet (controls-integration's
+  # future work). Per-motor commandable throttle via gz-transport, mirroring
+  # AerodynamicsSystem.cc's wind-topic subscriber pattern. Default throttle
+  # is 0 if never commanded (both topics use gz.msgs.Double, clamped to
+  # [0,1] by the plugin regardless of the published value).
+  left_throttle_topic: "/model/falcon_v2/propulsion/left/throttle_cmd"
+  right_throttle_topic: "/model/falcon_v2/propulsion/right/throttle_cmd"
+  wind_topic: "/model/falcon_v2/wind"           # same topic aerodynamics already subscribes to (gz.msgs.Vector3d, world frame, m/s) - read-only here, used for relative-airflow V_axial, zero until a publisher exists
+  diagnostics_topic: "/model/falcon_v2/propulsion/diagnostics"
+  diagnostics_rate_hz: 20.0

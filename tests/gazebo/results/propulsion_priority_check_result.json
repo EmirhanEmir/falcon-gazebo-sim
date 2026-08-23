@@ -1,0 +1,25 @@
+{
+  "left_throttle": 0.6,
+  "right_throttle": 0.0,
+  "settle_steps": 5000,
+  "release_steps": 150,
+  "inertia": {
+    "mass": 5.9348,
+    "ixx": 0.7284,
+    "iyy": 0.2507,
+    "izz": 0.9523,
+    "ixy": 0.0,
+    "ixz": 0.01485,
+    "iyz": 0.0
+  },
+  "ixz_correction_pct": 0.03179136577515184,
+  "settle_omega_left_span": 0.0,
+  "qprop_left_avg": 0.3149106746666147,
+  "qprop_right_avg": -6.750975735049081e-06,
+  "expected_single_mx": -0.31491742564234976,
+  "measured_mx": -0.31160968538835726,
+  "ratio": 0.989496483888608,
+  "verdict": "NO_DUPLICATION",
+  "rotation_left_sign": 1.0,
+  "rotation_right_sign": -1.0
+}

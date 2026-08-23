@@ -1,0 +1,324 @@
+<?xml version="1.0"?>
+<!--
+  FALCON V2 - POWERED_FREE_FLIGHT_SMOKE_TEST, GUI reproduction world
+  (gazebo-testing, 2026-08-23).
+
+  Purpose: give tests/gazebo/scripts/run_powered_free_flight_gui.sh a world
+  file that reproduces, in the interactive gz sim GUI, the initial condition
+  of the already-PASSED POWERED_FREE_FLIGHT_SMOKE_TEST (headless
+  gz.sim8.TestFixture run, driver script no longer in the repo per that
+  task's own no-repo-changes requirement). This file does NOT modify
+  model/model.sdf, any plugin, or any docs/source_of_truth/ value - it only
+  places the unmodified model/model.sdf at a starting altitude/velocity and
+  attaches ordinary, stock gz-sim GUI/control-surface-hold plugins that are
+  standard test/launcher infrastructure, not aircraft physics.
+
+  ===========================================================================
+  HOW THE INITIAL CONDITION IS REPRODUCED (read before editing)
+  ===========================================================================
+  The original smoke test reached its initial condition via (1) a one-time
+  world-pose teleport to altitude, then (2) a ~0.5s/500-step
+  aero_lib.hold_step() proportional force/torque controller converging
+  base_link onto the exact target body velocity, then (3) release to free
+  6-DOF flight. That technique exists because TestFixture's Python API has
+  no clean way to set a link's initial linear/angular velocity directly
+  (Link.set_linear_velocity()/set_angular_velocity() were found, and
+  documented in aero_lib.py's header comment, to freeze all further physics
+  integration on that link once the calling script stops invoking them -
+  unusable for "set once, then let it fly free").
+
+  This world file uses a DIFFERENT, but physically equivalent and more
+  precise, mechanism available at the plain-SDF level: SDF's
+  <world><state><model><link><velocity> element, which gz-sim applies ONCE
+  at entity-creation time as a genuine initial condition (not a per-tick
+  Cmd override) - empirically confirmed this pass (gazebo-testing) to NOT
+  exhibit the TestFixture Cmd-setter's "frozen link" behavior: a probe world
+  using only this element showed base_link's world position evolving
+  smoothly under real integration from the very first step (position and
+  altitude both changing tick-to-tick exactly as expected from the
+  commanded body velocity, with gravity/aero free to act throughout). Since
+  the model spawns at zero attitude (identity orientation, matching the
+  original smoke test's own level teleport), body-frame velocity ==
+  world-frame velocity at t=0, so the u/w numbers below can be written
+  directly into this world-frame element. This gives an EXACT, ZERO-ERROR,
+  ZERO-TRANSIENT reproduction of the original scenario's steady-state
+  initial condition - strictly more precise than the original 0.5s
+  convergence-controller phase (which by construction has residual
+  convergence error), at the cost of not modeling that phase's artificial
+  hold-force transient, which was a TestFixture-technique artifact, not
+  itself part of the aircraft physics under test. This deviation is
+  intentional and is called out again in run_powered_free_flight_gui.sh.
+
+  Initial condition values (bit-for-bit identical to the already-verified
+  numbers used by tests/gazebo/scripts/test_trim_benchmarks.py's Benchmark B
+  and by the original smoke test - not re-derived here):
+    u = 18.14534 m/s, v = 0, w = -0.78335 m/s  (V=18.162 m/s, alpha=2.472deg)
+    altitude = 85 m, level attitude (0 0 0 rad)
+    left_elevator_joint = right_elevator_joint = +0.13962634 rad (+8.0 deg
+      physical joint angle -> delta_e_aero=-8deg via the verified
+      elevator_sign=-1.0 mapping, aero_v1_config.yaml)
+    ailerons = 0, rudder = 0
+    left/right throttle = 0.50/0.50 (commanded continuously by
+      powered_free_flight_gui_setup.py once the server is up - SDF has no
+      element for an initial gz-transport topic value)
+
+  ===========================================================================
+  CONTROL-SURFACE JOINT HOLD (JointPositionController, one per surface)
+  ===========================================================================
+  The 5 control-surface joints (left/right_aileron_joint,
+  left/right_elevator_joint, rudder_joint) are, per model/model.sdf's own
+  documented STRUCTURAL V1 design, ~1g massless-numerical free hinges with
+  NO actuator and NO damping (TEMPORARY_NUMERICAL_MASS, see model.sdf). The
+  original smoke test held them at their commanded angle every step via
+  direct ECM position/velocity resets (aero_lib.pin_child_joints() /
+  propulsion_lib.pin_control_surface_joints()) - a TestFixture-only
+  mechanism with no live-server equivalent. This world file attaches the
+  stock gz-sim JointPositionController system (one instance per surface,
+  via <include><plugin>, exactly as SDF's own include.sdf schema supports)
+  as the live-server equivalent: a plain PID position hold driven by
+  Double commands published on each surface's own topic below. Gains are
+  deliberately small (matching each surface's real ~1e-7..1e-5 kg*m^2
+  hinge-axis inertia, queried from the live entity state this pass) so the
+  hold is gentle rather than artificially stiff. This is a TEST-HARNESS
+  SERVO-HOLD REPRESENTATION ONLY (exactly the same role pin_child_joints()
+  already plays elsewhere in this suite) - it is not a claim about the real
+  control-surface actuator, and it applies no force to base_link or to
+  flight dynamics; it only keeps each surface link at its commanded angle
+  so AerodynamicsSystem (which reads joint position, never joint velocity
+  or torque) sees the correct control input. No aerodynamic, propulsion,
+  mass, CG, inertia, or control-sign-mapping parameter is touched.
+
+  left_aileron_joint  cmd_pos topic: /model/falcon_v2/control_surface/left_aileron/cmd_pos
+  right_aileron_joint cmd_pos topic: /model/falcon_v2/control_surface/right_aileron/cmd_pos
+  left_elevator_joint cmd_pos topic: /model/falcon_v2/control_surface/left_elevator/cmd_pos
+  right_elevator_joint cmd_pos topic: /model/falcon_v2/control_surface/right_elevator/cmd_pos
+  rudder_joint        cmd_pos topic: /model/falcon_v2/control_surface/rudder/cmd_pos
+
+  Once free flight begins, NOTHING holds base_link itself - no velocity
+  hold, no P-controller, no kinematic stabilization, no attitude
+  controller, no external holding force is ever applied to base_link by
+  this world file or by powered_free_flight_gui_setup.py. Gravity,
+  FalconV2Aerodynamics, and FalconV2Propulsion (both already attached to
+  model/model.sdf, unmodified here) are the only forces acting on the
+  airframe - genuinely free 6-DOF flight.
+
+  Physics/gravity match the existing falcon_v2_freefall_world.sdf
+  (max_step_size 0.001s, gravity 0 0 -9.81), except real_time_factor is 1
+  here (not 0/unlimited) so the GUI is watchable in real time.
+-->
+<sdf version="1.9">
+  <world name="falcon_v2_powered_free_flight_gui">
+    <physics name="1ms" type="dartsim">
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>1</real_time_factor>
+    </physics>
+    <gravity>0 0 -9.81</gravity>
+
+    <plugin filename="gz-sim-physics-system" name="gz::sim::systems::Physics"></plugin>
+    <plugin filename="gz-sim-scene-broadcaster-system" name="gz::sim::systems::SceneBroadcaster"></plugin>
+    <plugin filename="gz-sim-user-commands-system" name="gz::sim::systems::UserCommands"></plugin>
+
+    <!--
+      Standard gz-sim GUI layout (3D scene + scene manager + interactive/
+      camera-tracking view control + world control/stats + entity
+      selection) - the same stock plugin set used by gz-sim's own example
+      worlds. camera_pose gives a reasonable initial chase-ish view of the
+      spawn point (0 0 85); see run_powered_free_flight_gui.sh's startup
+      message for how to select falcon_v2 and follow it if this framing
+      isn't ideal once the aircraft starts moving.
+    -->
+    <gui fullscreen="0">
+      <plugin filename="MinimalScene" name="3D View">
+        <gz-gui>
+          <title>3D View</title>
+          <property type="bool" key="showTitleBar">false</property>
+          <property type="string" key="state">docked</property>
+        </gz-gui>
+        <engine>ogre2</engine>
+        <scene>scene</scene>
+        <ambient_light>0.4 0.4 0.4</ambient_light>
+        <background_color>0.7 0.8 0.9</background_color>
+        <camera_pose>-25 -15 92 0 0.12 0.5</camera_pose>
+      </plugin>
+      <plugin filename="GzSceneManager" name="Scene Manager">
+        <gz-gui>
+          <property key="resizable" type="bool">false</property>
+          <property key="width" type="double">5</property>
+          <property key="height" type="double">5</property>
+          <property key="state" type="string">floating</property>
+          <property key="showTitleBar" type="bool">false</property>
+        </gz-gui>
+      </plugin>
+      <plugin filename="InteractiveViewControl" name="Interactive view control">
+        <gz-gui>
+          <property key="resizable" type="bool">false</property>
+          <property key="width" type="double">5</property>
+          <property key="height" type="double">5</property>
+          <property key="state" type="string">floating</property>
+          <property key="showTitleBar" type="bool">false</property>
+        </gz-gui>
+      </plugin>
+      <plugin filename="CameraTracking" name="Camera Tracking">
+        <gz-gui>
+          <property key="resizable" type="bool">false</property>
+          <property key="width" type="double">5</property>
+          <property key="height" type="double">5</property>
+          <property key="state" type="string">floating</property>
+          <property key="showTitleBar" type="bool">false</property>
+        </gz-gui>
+      </plugin>
+      <plugin filename="WorldControl" name="World control">
+        <gz-gui>
+          <title>World control</title>
+          <property type="bool" key="showTitleBar">false</property>
+          <property type="bool" key="resizable">false</property>
+          <property type="double" key="height">72</property>
+          <property type="double" key="width">121</property>
+          <property type="string" key="state">floating</property>
+          <anchors target="3D View">
+            <line own="left" target="left"/>
+            <line own="bottom" target="bottom"/>
+          </anchors>
+        </gz-gui>
+        <play_pause>true</play_pause>
+        <step>true</step>
+        <start_paused>false</start_paused>
+      </plugin>
+      <plugin filename="WorldStats" name="World stats">
+        <gz-gui>
+          <title>World stats</title>
+          <property type="bool" key="showTitleBar">false</property>
+          <property type="bool" key="resizable">false</property>
+          <property type="double" key="height">110</property>
+          <property type="double" key="width">290</property>
+          <property type="string" key="state">floating</property>
+          <anchors target="3D View">
+            <line own="right" target="right"/>
+            <line own="bottom" target="bottom"/>
+          </anchors>
+        </gz-gui>
+        <sim_time>true</sim_time>
+        <real_time>true</real_time>
+        <real_time_factor>true</real_time_factor>
+        <iterations>true</iterations>
+      </plugin>
+      <plugin filename="EntityContextMenuPlugin" name="Entity context menu">
+        <gz-gui>
+          <property key="state" type="string">floating</property>
+          <property key="width" type="double">5</property>
+          <property key="height" type="double">5</property>
+          <property key="showTitleBar" type="bool">false</property>
+        </gz-gui>
+      </plugin>
+      <plugin filename="SelectEntities" name="Select Entities">
+        <gz-gui>
+          <property key="resizable" type="bool">false</property>
+          <property key="width" type="double">5</property>
+          <property key="height" type="double">5</property>
+          <property key="state" type="string">floating</property>
+          <property key="showTitleBar" type="bool">false</property>
+        </gz-gui>
+      </plugin>
+    </gui>
+
+    <light type="directional" name="sun">
+      <cast_shadows>true</cast_shadows>
+      <pose>0 0 150 0 0 0</pose>
+      <diffuse>0.8 0.8 0.8 1</diffuse>
+      <specular>0.2 0.2 0.2 1</specular>
+      <direction>-0.5 0.1 -0.9</direction>
+    </light>
+
+    <model name="ground_plane">
+      <static>true</static>
+      <link name="link">
+        <collision name="collision">
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>2000 2000</size>
+            </plane>
+          </geometry>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>2000 2000</size>
+            </plane>
+          </geometry>
+          <material>
+            <ambient>0.3 0.5 0.3 1</ambient>
+            <diffuse>0.3 0.5 0.3 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <include>
+      <uri>file:///home/emirhan/Desktop/FalconV2/model</uri>
+      <name>falcon_v2</name>
+      <pose>0 0 85 0 0 0</pose>
+
+      <!-- Servo-hold representation only - see header comment. Gains sized
+           for each surface's real ~1e-7..1e-5 kg*m^2 hinge-axis inertia. -->
+      <plugin filename="gz-sim-joint-position-controller-system" name="gz::sim::systems::JointPositionController">
+        <joint_name>left_aileron_joint</joint_name>
+        <topic>/model/falcon_v2/control_surface/left_aileron/cmd_pos</topic>
+        <p_gain>0.01</p_gain>
+        <i_gain>0.0</i_gain>
+        <d_gain>0.0005</d_gain>
+        <cmd_min>-0.2</cmd_min>
+        <cmd_max>0.2</cmd_max>
+      </plugin>
+      <plugin filename="gz-sim-joint-position-controller-system" name="gz::sim::systems::JointPositionController">
+        <joint_name>right_aileron_joint</joint_name>
+        <topic>/model/falcon_v2/control_surface/right_aileron/cmd_pos</topic>
+        <p_gain>0.01</p_gain>
+        <i_gain>0.0</i_gain>
+        <d_gain>0.0005</d_gain>
+        <cmd_min>-0.2</cmd_min>
+        <cmd_max>0.2</cmd_max>
+      </plugin>
+      <plugin filename="gz-sim-joint-position-controller-system" name="gz::sim::systems::JointPositionController">
+        <joint_name>left_elevator_joint</joint_name>
+        <topic>/model/falcon_v2/control_surface/left_elevator/cmd_pos</topic>
+        <p_gain>0.01</p_gain>
+        <i_gain>0.0</i_gain>
+        <d_gain>0.0005</d_gain>
+        <cmd_min>-0.2</cmd_min>
+        <cmd_max>0.2</cmd_max>
+      </plugin>
+      <plugin filename="gz-sim-joint-position-controller-system" name="gz::sim::systems::JointPositionController">
+        <joint_name>right_elevator_joint</joint_name>
+        <topic>/model/falcon_v2/control_surface/right_elevator/cmd_pos</topic>
+        <p_gain>0.01</p_gain>
+        <i_gain>0.0</i_gain>
+        <d_gain>0.0005</d_gain>
+        <cmd_min>-0.2</cmd_min>
+        <cmd_max>0.2</cmd_max>
+      </plugin>
+      <plugin filename="gz-sim-joint-position-controller-system" name="gz::sim::systems::JointPositionController">
+        <joint_name>rudder_joint</joint_name>
+        <topic>/model/falcon_v2/control_surface/rudder/cmd_pos</topic>
+        <p_gain>0.01</p_gain>
+        <i_gain>0.0</i_gain>
+        <d_gain>0.0005</d_gain>
+        <cmd_min>-0.2</cmd_min>
+        <cmd_max>0.2</cmd_max>
+      </plugin>
+      <!-- left_prop_joint / right_prop_joint are intentionally NOT given a
+           JointPositionController - FalconV2Propulsion already owns their
+           angular velocity every tick (plugins/propulsion/README.md). -->
+    </include>
+
+    <!-- One-time initial body velocity for base_link - see header comment. -->
+    <state world_name="falcon_v2_powered_free_flight_gui">
+      <model name="falcon_v2">
+        <link name="base_link">
+          <velocity>18.14534 0 -0.78335 0 0 0</velocity>
+        </link>
+      </model>
+    </state>
+  </world>
+</sdf>

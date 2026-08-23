@@ -81,3 +81,4 @@ temp/
 # .claude/agents/
 # CLAUDE.md
 model/meshes/*.stl
+/codex

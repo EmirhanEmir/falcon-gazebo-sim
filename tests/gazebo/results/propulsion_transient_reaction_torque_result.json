@@ -1,0 +1,233 @@
+{
+  "left_throttle": 0.6,
+  "right_throttle": 0.0,
+  "warmup_steps": 500,
+  "release_steps": 600,
+  "subwindow_ticks": 30,
+  "inertia": {
+    "mass": 5.9348,
+    "ixx": 0.7284,
+    "iyy": 0.2507,
+    "izz": 0.9523,
+    "ixy": 0.0,
+    "ixz": 0.01485,
+    "iyz": 0.0
+  },
+  "i_rotor_kg_m2": 0.00027349,
+  "n_subwindows": 20,
+  "windows": [
+    {
+      "t_center": 0.015,
+      "measured_Mx": -0.0005592216904244435,
+      "expected_Mx": -0.001235567607066483,
+      "qprop_left_avg": 0.0012289247975069617,
+      "domega_dt_avg": 2582.078695138344,
+      "hypothesized_extra_torque": 0.7061727023333856,
+      "residual": 0.0006763459166420395
+    },
+    {
+      "t_center": 0.045,
+      "measured_Mx": -0.008674862969741327,
+      "expected_Mx": -0.00927107045257074,
+      "qprop_left_avg": 0.009264426978962079,
+      "domega_dt_avg": 2553.1538059506092,
+      "hypothesized_extra_torque": 0.6982620343894321,
+      "residual": 0.0005962074828294132
+    },
+    {
+      "t_center": 0.075,
+      "measured_Mx": -0.022914951287928274,
+      "expected_Mx": -0.023895912877918736,
+      "qprop_left_avg": 0.023889268956698097,
+      "domega_dt_avg": 2500.01213152119,
+      "hypothesized_extra_torque": 0.6837283178497302,
+      "residual": 0.0009809615899904617
+    },
+    {
+      "t_center": 0.105,
+      "measured_Mx": -0.04219313234351275,
+      "expected_Mx": -0.044189077407527866,
+      "qprop_left_avg": 0.04418243315678139,
+      "domega_dt_avg": 2426.1303305163265,
+      "hypothesized_extra_torque": 0.6635223840929101,
+      "residual": 0.0019959450640151186
+    },
+    {
+      "t_center": 0.135,
+      "measured_Mx": -0.06687059698709906,
+      "expected_Mx": -0.06945479057629424,
+      "qprop_left_avg": 0.06944814605649105,
+      "domega_dt_avg": 2334.012315123113,
+      "hypothesized_extra_torque": 0.63832902806302,
+      "residual": 0.0025841935891951773
+    },
+    {
+      "t_center": 0.165,
+      "measured_Mx": -0.09585806727521329,
+      "expected_Mx": -0.09897746129735316,
+      "qprop_left_avg": 0.09897081653699537,
+      "domega_dt_avg": 2226.241838767962,
+      "hypothesized_extra_torque": 0.6088548804846499,
+      "residual": 0.003119394022139871
+    },
+    {
+      "t_center": 0.195,
+      "measured_Mx": -0.12814412547351955,
+      "expected_Mx": -0.13177049519390668,
+      "qprop_left_avg": 0.13176385020560286,
+      "domega_dt_avg": 2106.4439647747245,
+      "hypothesized_extra_torque": 0.5760913599262394,
+      "residual": 0.0036263697203871292
+    },
+    {
+      "t_center": 0.225,
+      "measured_Mx": -0.16274474897412428,
+      "expected_Mx": -0.1668789323847135,
+      "qprop_left_avg": 0.16687228717257208,
+      "domega_dt_avg": 1978.1269076047054,
+      "hypothesized_extra_torque": 0.5409979279608108,
+      "residual": 0.004134183410589215
+    },
+    {
+      "t_center": 0.255,
+      "measured_Mx": -0.19930144209096826,
+      "expected_Mx": -0.20387119751280008,
+      "qprop_left_avg": 0.20386455207601242,
+      "domega_dt_avg": 1842.8798824276964,
+      "hypothesized_extra_torque": 0.5040092190451507,
+      "residual": 0.004569755421831828
+    },
+    {
+      "t_center": 0.28500000000000003,
+      "measured_Mx": -0.23647823509949092,
+      "expected_Mx": -0.24144269082015796,
+      "qprop_left_avg": 0.24143604516083422,
+      "domega_dt_avg": 1675.8582850174253,
+      "hypothesized_extra_torque": 0.4583304823694156,
+      "residual": 0.0049644557206670326
+    },
+    {
+      "t_center": 0.315,
+      "measured_Mx": -0.2689126068132737,
+      "expected_Mx": -0.2732880379531392,
+      "qprop_left_avg": 0.273281392101879,
+      "domega_dt_avg": 1053.2668977682688,
+      "hypothesized_extra_torque": 0.2880579638706438,
+      "residual": 0.004375431139865493
+    },
+    {
+      "t_center": 0.34500000000000003,
+      "measured_Mx": -0.288270715140673,
+      "expected_Mx": -0.2921224534914007,
+      "qprop_left_avg": 0.2921158075255482,
+      "domega_dt_avg": 567.5855327467066,
+      "hypothesized_extra_torque": 0.15522896735089678,
+      "residual": 0.003851738350727718
+    },
+    {
+      "t_center": 0.375,
+      "measured_Mx": -0.29893441655056735,
+      "expected_Mx": -0.3025171801022029,
+      "qprop_left_avg": 0.3025105340743852,
+      "domega_dt_avg": 305.185893621836,
+      "hypothesized_extra_torque": 0.08346529004663591,
+      "residual": 0.0035827635516355594
+    },
+    {
+      "t_center": 0.405,
+      "measured_Mx": -0.30470413331832824,
+      "expected_Mx": -0.30817694330630446,
+      "qprop_left_avg": 0.3081702972457054,
+      "domega_dt_avg": 163.9014620549272,
+      "hypothesized_extra_torque": 0.04482541085740204,
+      "residual": 0.003472809987976222
+    },
+    {
+      "t_center": 0.435,
+      "measured_Mx": -0.3077841741877565,
+      "expected_Mx": -0.3112368652034108,
+      "qprop_left_avg": 0.3112302191257763,
+      "domega_dt_avg": 87.9680771072305,
+      "hypothesized_extra_torque": 0.024058389408056467,
+      "residual": 0.003452691015654319
+    },
+    {
+      "t_center": 0.465,
+      "measured_Mx": -0.3094031852594983,
+      "expected_Mx": -0.3128850122867067,
+      "qprop_left_avg": 0.3128783662004085,
+      "domega_dt_avg": 47.197530142672555,
+      "hypothesized_extra_torque": 0.012908052518719517,
+      "residual": 0.003481827027208395
+    },
+    {
+      "t_center": 0.495,
+      "measured_Mx": -0.3102334128368455,
+      "expected_Mx": -0.31377097492230094,
+      "qprop_left_avg": 0.31376432883175137,
+      "domega_dt_avg": 25.318267684759842,
+      "hypothesized_extra_torque": 0.006924293029104969,
+      "residual": 0.0035375620854554146
+    },
+    {
+      "t_center": 0.525,
+      "measured_Mx": -0.3106391737301207,
+      "expected_Mx": -0.3142467174787586,
+      "qprop_left_avg": 0.3142400713862898,
+      "domega_dt_avg": 13.580195689655739,
+      "hypothesized_extra_torque": 0.003714047719163948,
+      "residual": 0.0036075437486379203
+    },
+    {
+      "t_center": 0.555,
+      "measured_Mx": -0.31081691589212274,
+      "expected_Mx": -0.31450203509789976,
+      "qprop_left_avg": 0.31449538900472784,
+      "domega_dt_avg": 7.283750660239376,
+      "hypothesized_extra_torque": 0.0019920329680688667,
+      "residual": 0.003685119205777021
+    },
+    {
+      "t_center": 0.585,
+      "measured_Mx": -0.3108722866179855,
+      "expected_Mx": -0.3146390149380919,
+      "qprop_left_avg": 0.31463236884483503,
+      "domega_dt_avg": 3.9065336027933566,
+      "hypothesized_extra_torque": 0.001068397875027955,
+      "residual": 0.003766728320106383
+    }
+  ],
+  "global_slope_measured_vs_expected": 0.9862280834425073,
+  "correlation_r": 0.9999778261736879,
+  "peak_domega_dt_t_center_s": 0.015,
+  "peak_domega_dt_rad_s2": 2582.078695138344,
+  "peak_domega_dt_residual_Nm": 0.0006763459166420395,
+  "peak_domega_dt_hypothesized_extra_torque_Nm": 0.7061727023333856,
+  "smoking_gun_residual_ratio": 0.000957762760309496,
+  "smoking_gun_residual_ratio_note": "CORRECTED 2026-08-23 (round 2 fix-loop, `validation` MINOR finding): this is now a genuine same-instant ratio - both peak_domega_dt_residual_Nm and peak_domega_dt_hypothesized_extra_torque_Nm are read from the SAME sub-window (the one with the largest |domega/dt| across the whole transient, t_center=peak_domega_dt_t_center_s). A prior version computed this ratio from max_early_residual_Nm and max_early_hypothesized_extra_torque_Nm independently maximized across 5 different sub-windows (peaking at different instants, t=0.135s and t=0.015s respectively) - not a same-instant comparison despite the field name/report prose describing it as one. The no-duplication conclusion is unaffected (all per-window ratios in the fast-transient region are far below the duplication-scale threshold).",
+  "residual_ratio_all_windows_min": 0.0008538449084529471,
+  "residual_ratio_all_windows_max": 3.5255857467966463,
+  "verdict": "NO_DUPLICATION_TRANSIENT_CONFIRMED",
+  "reconstruction_vs_diagnostics_cross_check_informational": {
+    "n_matched_events": 12,
+    "max_omega_err_rad_s": 2.5465667186195873,
+    "max_qprop_err_Nm": 0.002427670303048468,
+    "note": "Informational only (async diagnostics-topic-arrival-timing jitter can add a few rad/s at this transient's fastest point) - NOT the visual-omega-regression PASS/FAIL evidence, see visual_omega_regression below."
+  },
+  "visual_omega_regression": {
+    "left_pass": true,
+    "left_max_err_rad_s": 2.586284442443693,
+    "left_mean_err_rad_s": 0.668775260662899,
+    "tolerance_rad_s": 3.653595610050477,
+    "peak_omega_rad_s": 730.7191220100954,
+    "right_pass": true,
+    "right_max_err_rad_s": 0.10463904319656456,
+    "right_mean_err_rad_s": 0.00023874847135516873,
+    "method": "synchronous_tick_aligned_pure_python_replica",
+    "n_matched_ticks": 1109,
+    "joint_velocity_no_longer_tracks_omega_finding": {
+      "max_abs_velocity_final_100_samples_rad_s": 0.16814133308251095,
+      "note": "Joint.velocity() on left_prop_joint no longer reflects omega post-fix (expected: Joint::SetVelocity() is no longer called; ResetPosition() has no accompanying velocity-component side effect). Joint.position() (theta), finite-differenced tick-to-tick, is now the only valid ECM-visible proxy for the plugin's internal omega state."
+    }
+  }
+}

@@ -1,0 +1,25 @@
+==============================================================================
+REGRESSION RE-CHECK (post ResetPosition fix): tests 10/11 only
+==============================================================================
+==============================================================================
+TEST 10: PROP_REACTION_TORQUE_SIGN_TEST (regression re-check)
+==============================================================================
+[REACTION_TORQUE_SIGN_REGRESSION] settle=5000 release=150 left_throttle=0.6 right_throttle=0.0
+  inertia={'mass': 5.9348, 'ixx': 0.7284, 'iyy': 0.2507, 'izz': 0.9523, 'ixy': 0.0, 'ixz': 0.01485, 'iyz': 0.0}  cg=(0.168309, 0.0, 0.1)
+  left_diag_avg: throttle=0.600 Q_prop=0.314911 thrust=17.8762 rpm=6978.7
+  right_diag_avg: throttle=0.000 Q_prop=-0.000007 thrust=0.0003 rpm=-28.8
+  release-window slopes: {'u': -1.082581925952033e-05, 'v': -0.000402887207534518, 'w': 1.1969908022334116e-06, 'p': -0.42813000164846754, 'q': 0.00010691510388798796, 'r': 4.263498953651934e-05}
+Measured Mx=-0.311849 N*m, Expected Mx=-0.314917 N*m, sign_ok=True, mag_err=+0.97%
+PROP_REACTION_TORQUE_SIGN_TEST: PASS
+==============================================================================
+TEST 11: COUNTER_ROTATION_CANCELLATION_TEST (regression re-check)
+==============================================================================
+[COUNTER_ROTATION_CANCELLATION_REGRESSION] settle=5000 release=150 left_throttle=0.6 right_throttle=0.6
+  inertia={'mass': 5.9348, 'ixx': 0.7284, 'iyy': 0.2507, 'izz': 0.9523, 'ixy': 0.0, 'ixz': 0.01485, 'iyz': 0.0}  cg=(0.168309, 0.0, 0.1)
+  left_diag_avg: throttle=0.600 Q_prop=0.314943 thrust=17.8725 rpm=6978.6
+  right_diag_avg: throttle=0.600 Q_prop=0.314943 thrust=17.8725 rpm=6978.6
+  release-window slopes: {'u': 5.68211896795363e-18, 'v': 0.0, 'w': 5.242491695388717e-18, 'p': 0.0, 'q': 7.190574164455558e-17, 'r': 0.0}
+Measured Mx=0.000000 N*m, Expected Mx=0.000000 N*m, cancel_tol=0.047241 N*m
+COUNTER_ROTATION_CANCELLATION_TEST: PASS
+==============================================================================
+SUMMARY: PROP_REACTION_TORQUE_SIGN_TEST=PASS, COUNTER_ROTATION_CANCELLATION_TEST=PASS

@@ -1,0 +1,71 @@
+FALCON V2 - PROPULSION static/operating-point live-Gazebo tests (gazebo-testing, 2026-08-23)
+World: /home/emirhan/Desktop/FalconV2/tests/gazebo/worlds/falcon_v2_zero_g_world.sdf
+
+==============================================================================
+STATIC RPM SWEEP (task spec section 28) / TEST 8: STATIC_THRUST_RUNTIME_TEST
+==============================================================================
+[SWEEP_5000RPM] left_throttle=0.42088326804722787 right_throttle=0.0 n_samples=210 any_nan=False
+  RPM target=5000: throttle=0.42088 -> live_rpm=4999.90 live_Ct=0.0901(APC 0.0901, err -0.046%) live_Cp=0.0309(APC 0.0309, err +0.036%) live_thrust=9.1073N hand_thrust=9.1115N (err -0.046%) live_current=16.095A
+[SWEEP_6000RPM] left_throttle=0.510433991648906 right_throttle=0.0 n_samples=210 any_nan=False
+  RPM target=6000: throttle=0.51043 -> live_rpm=5999.87 live_Ct=0.0904(APC 0.0904, err -0.055%) live_Cp=0.0306(APC 0.0306, err +0.033%) live_thrust=13.1569N hand_thrust=13.1642N (err -0.055%) live_current=22.397A
+[SWEEP_9000RPM] left_throttle=0.7912814674736275 right_throttle=0.0 n_samples=210 any_nan=False
+  RPM target=9000: throttle=0.79128 -> live_rpm=8999.58 live_Ct=0.0918(APC 0.0919, err -0.082%) live_Cp=0.0303(APC 0.0303, err +0.049%) live_thrust=30.0848N hand_thrust=30.1094N (err -0.082%) live_current=48.308A
+[SWEEP_10000RPM] left_throttle=0.889396272268723 right_throttle=0.0 n_samples=210 any_nan=False
+  RPM target=10000: throttle=0.88940 -> live_rpm=9999.43 live_Ct=0.0924(APC 0.0925, err -0.092%) live_Cp=0.0304(APC 0.0304, err +0.056%) live_thrust=37.3796N hand_thrust=37.4140N (err -0.092%) live_current=59.528A
+
+NOTE (documented, non-bug, PROVENANCE.md): a ~1.5-2% systematic difference between this project's mandated D=0.3302m/rho=1.225 T/P reconstruction and APC's OWN tabulated Thrust(N)/PWR(W) columns is expected and already reported by `propulsion` - NOT evaluated as a test failure here. This test instead validates: (a) the live Ct/Cp interpolation reproduces the raw APC table's tabulated values essentially exactly at these 4 non-interpolated points, and (b) the live thrust/power computation correctly implements T=Ct*rho*n^2*D^4/P=Cp*rho*n^3*D^5 (hand-reconstructed independently, same formula, near-exact match expected).
+STATIC_THRUST_RUNTIME_TEST (Ct/Cp match APC table + thrust formula self-consistent, live per-motor thrust/RPM falls in the validated reference band): PASS
+
+==============================================================================
+TEST 9: CURRENT_POWER_RUNTIME_TEST
+==============================================================================
+[CURRENT_POWER] left_throttle=0.6 right_throttle=0.0 n_samples=210 any_nan=False
+At throttle=0.6 (static): current=29.6605 A (limit=65.0 A), electrical power=V*I=438.976 W, Q_motor(diag)=0.314911 N*m, Q_motor(hand=Kt*(I-I0))=0.314911 N*m (err -0.000%)
+Shaft power (Cp*rho*n^3*D^5, diag-consistent) vs electrical power: shaft implied by Q_prop*omega should be < electrical power (motor inefficiency exists only implicitly via I0 offset in this V1 model, not a separate efficiency curve - DATA_REQUIRED per PROPULSION.md).
+CURRENT_POWER_RUNTIME_TEST: PASS (current_plausible=True, power_plausible=True, Q_motor_hand_check_ok=True)
+
+==============================================================================
+TEST 16: ZERO_RPM_NUMERICAL_SAFETY_TEST
+==============================================================================
+[ZERO_RPM_SAFETY] left_throttle=0.0 right_throttle=0.0 n_samples=7 any_nan=False
+First diagnostics sample at true throttle=0/RPM~0/V=0 (matching the pure-math self-test's ZERO_RPM_NUMERICAL_TEST condition): {'left': {'throttle': 0.0, 'current_A': 0.7519096766163518, 'Q_motor_Nm': -0.006085903550744864, 'omega_rad_s': -1.7693232316927712, 'rpm': -16.895792295073882, 'J': 0.0, 'Ct': 0.0889, 'Cp': 0.0376, 'thrust_N': 0.00010009474717786073, 'Q_prop_Nm': -2.2248184197105915e-06, 'interpClamped': 1.0, 'rpmCapActive': 0.0, 'negativeCurrentClamped': 0.0, 'currentLimited': 0.0}, 'right': {'throttle': 0.0, 'current_A': 0.7519096766163518, 'Q_motor_Nm': -0.006085903550744864, 'omega_rad_s': -1.7693232316927712, 'rpm': -16.895792295073882, 'J': 0.0, 'Ct': 0.0889, 'Cp': 0.0376, 'thrust_N': 0.00010009474717786073, 'Q_prop_Nm': -2.2248184197105915e-06, 'interpClamped': 1.0, 'rpmCapActive': 0.0, 'negativeCurrentClamped': 0.0, 'currentLimited': 0.0}}
+ZERO_RPM_NUMERICAL_SAFETY_TEST: PASS (all_finite=True, matches plugins/propulsion/build/propulsion_model_selftest's already-passing ZERO_RPM_NUMERICAL_TEST)
+
+==============================================================================
+COUPLED MOTOR+PROP STATIC BENCH COMPARISON (task spec section 29)
+==============================================================================
+Nominal V_battery=14.8 V (config value, matches SunnySky bench's stated 4S). 'High throttle' = 1.0 (maximum) - the natural static (V=0) torque-balance equilibrium, NOT tuned to hit any specific target RPM.
+[BENCH_HIGH_THROTTLE] left_throttle=1.0 right_throttle=0.0 n_samples=210 any_nan=False
+Live @ throttle=1.0 static: RPM=10450.4 current=65.00A thrust=40.97N electrical_power=962.0W
+SunnySky bench reference: RPM=9230.0 current=63.2A thrust=32.85N power=935.0W
+Errors (reported SEPARATELY, not tuned to close): RPM=+13.2% current=+2.8% thrust=+24.7% power=+2.9%
+Diagnosis of the gap (informational, matches propulsion's own §1.6/§29 framing - NOT tuned to close):
+  - RPM gap: live natural equilibrium (throttle=1.0, V=0 static) settles ABOVE the bench's 9230 RPM point since the bench figure is itself one specific operating condition, not necessarily at throttle=1.0/14.8V exactly - the two are DIFFERENT operating points by construction, not a like-for-like comparison at the same RPM.
+  - Current/power gap: follows mechanically from the RPM gap (higher RPM -> lower back-EMF-limited current margin dynamics differ) plus the already-documented idealized-ESC/motor-equivalent-circuit simplification (no thermal/efficiency curve, fixed-voltage no-sag model) and the independently-documented ~4.7-5% APC-vs-bench thrust discrepancy at the SAME RPM (PROPULSION.md sec 1.6).
+  - Unmodeled: motor mechanical/core losses beyond the I0 offset, voltage sag under load (V1 uses fixed 14.8V per propulsion_v1_config.yaml, battery.v1_operating_voltage_V comment), true motor-rotor inertia contribution (DATA_REQUIRED, affects transient only, not this static comparison).
+No parameter was retuned to close this gap (per task instruction).
+
+==============================================================================
+18 m/s CRUISE NATURAL OPERATING POINT (task spec section 30)
+==============================================================================
+Aerodynamics plugin left ACTIVE (both plugins additive - confirmed by source inspection: AerodynamicsSystem.cc uses AddWorldForce+AddWorldWrench(zero-force) at CG; PropulsionSystem.cc uses AddWorldWrench(force,torque,hub-offset) per motor - separate calls, no shared internal state, gz-sim's per-tick external-wrench accumulator sums all Systems' contributions by design).
+[CRUISE_18ms_thr0.4] left_throttle=0.4 right_throttle=0.4 n_samples=210 any_nan=False
+  throttle=0.4: RPM=4976.9 J=0.6570 Ct=0.0000 Cp=0.0081 thrust/motor=0.000N current=5.150A power=76.22W any_nan=False
+[CRUISE_18ms_thr0.5] left_throttle=0.5 right_throttle=0.5 n_samples=210 any_nan=False
+  throttle=0.5: RPM=6071.6 J=0.5387 Ct=0.0191 Cp=0.0168 thrust/motor=2.849N current=13.180A power=195.06W any_nan=False
+[CRUISE_18ms_thr0.6] left_throttle=0.6 right_throttle=0.6 n_samples=210 any_nan=False
+  throttle=0.6: RPM=7125.0 J=0.4593 Ct=0.0338 Cp=0.0224 thrust/motor=6.943N current=23.065A power=341.36W any_nan=False
+
+V1_VALIDATION_ESTIMATES reference (PROPULSION.md sec 6.1, comparison target ONLY, never looked up as an input): throttle~53.6% RPM~6021 thrust/motor~2.59 N
+Closest naturally-observed row: throttle=0.5 -> RPM=6071.6 (vs 6021, +0.8%) thrust=2.849N (vs 2.59, +10.0%)
+Differences from the validation estimate are EXPECTED (not forced to match) - same reasoning category as the static-bench comparison above: the validation estimate is itself a first-cut physics-model estimate (PROPULSION.md sec 6.1, master dataset sec 61/62), not measured flight-test data, and this live run's throttle values were chosen independently (0.4/0.5/0.6), not solved-for to hit the reference RPM.
+Numerical stability across the sweep: any_nan=False
+
+==============================================================================
+SUMMARY (tests 8/9/16 + sweep/bench/cruise sections)
+==============================================================================
+  STATIC_THRUST_RUNTIME_TEST: PASS
+  CURRENT_POWER_RUNTIME_TEST: PASS
+  ZERO_RPM_NUMERICAL_SAFETY_TEST: PASS
+  BENCH_COMPARISON_SECTION_29: reported (not a PASS/FAIL test per task spec)
+  CRUISE_18MS_OPERATING_POINT_SECTION_30: reported (not a PASS/FAIL test per task spec)

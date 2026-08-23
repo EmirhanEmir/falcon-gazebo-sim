@@ -1,0 +1,25 @@
+==============================================================================
+PRIORITY CHECK: duplicated reaction-torque test (SetVelocity constraint
+torque vs explicit AddWorldWrench reaction torque)
+==============================================================================
+Config (fresh load, propulsion_v1_config.yaml): rotation.left_sign=1.0 rotation.right_sign=-1.0 i_rotor_kg_m2=0.00027349 thrust_axis_body=(1.0, 0.0, 0.0)
+Command: left_throttle=0.6, right_throttle=0.0
+Phase 1 (settle, all 6 DOF held at 0): 5000 steps (5.000 s)
+Phase 2 (release ROLL ONLY, pitch/yaw/linear still held at 0): 150 steps (0.150 s)
+
+Diagnostics messages received total: 103
+base_link inertia (queried live): {'mass': 5.9348, 'ixx': 0.7284, 'iyy': 0.2507, 'izz': 0.9523, 'ixy': 0.0, 'ixz': 0.01485, 'iyz': 0.0}
+Ixz cross-coupling correction estimate: Ixz^2/(Ixx*Izz) = 0.0318% (negligible for this test's purpose)
+Left motor omega over final 500 diag samples of settle phase: min=730.806912 max=730.806912 span=0.000000 rad/s (near-zero span -> settled)
+
+Q_prop (signed, own-frame) during release window: left avg=0.314911 N*m (n=160), right avg=-0.000007 N*m (n=160)
+Analytically expected (SINGLE reaction-torque source) Mx = left_sign*(-Qprop_left) + right_sign*(-Qprop_right) = 1.0*(-0.314911) + -1.0*(0.000007) = -0.314917 N*m
+
+Release-window p(t) samples: n=160
+p(t=0)=-0.00330772 rad/s, p(t=0.159)=-0.07132893 rad/s
+Linear-regression slope dp/dt = -0.427800 rad/s^2 (endpoint-difference cross-check: -0.427806 rad/s^2)
+Measured Mx = Ixx * dp/dt = 0.7284 * -0.427800 = -0.311610 N*m
+
+RATIO measured/expected_single = 0.9895
+
+VERDICT: NO_DUPLICATION (ratio=0.9895; ~1.0 => single reaction-torque source only, ~2.0 => joint-constraint torque duplicates the explicit AddWorldWrench reaction torque)

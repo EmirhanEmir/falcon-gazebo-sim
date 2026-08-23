@@ -1085,5 +1085,73 @@
       <diagnostics_rate_hz>20.0</diagnostics_rate_hz>
     </plugin>
 
+    <!-- ============================================================
+         PROPULSION PLUGIN
+         Author (this addition): propulsion specialist agent, 2026-08-23,
+         task PROPULSION_V1_IMPLEMENTATION. This is an ADDITIVE change only:
+         no link, joint, mass, CG, inertia, collision, visual, or
+         hinge-geometry element above was modified to add this block
+         (geometry-structure's structural content is unchanged, including
+         left_prop/right_prop's mass/placeholder inertia and
+         left_prop_joint/right_prop_joint's axis/limits - this plugin drives
+         those existing joints' angular VELOCITY each tick, it does not
+         redefine them). Scope: motor/ESC/propeller physics only - no
+         aerodynamic-coefficient physics (plugins/aerodynamics/ untouched),
+         no control-surface actuation, no ArduPilot/SITL.
+
+         Required chain implemented (never bypassed, never collapsed into
+         throttle*maximum_thrust - see CLAUDE.md/PROPULSION.md): throttle ->
+         ESC/motor electrical -> motor torque -> rotor angular dynamics
+         (explicit-Euler state, plugin-owned, integrated every tick) -> RPM
+         -> advance ratio J -> real APC Ct(J,RPM)/Cp(J,RPM) -> thrust +
+         propeller aerodynamic torque -> reaction torque -> force/moment
+         applied to base_link at the real hub (left_hub/right_hub, never at
+         CG). The same omega state also drives left_prop_joint/
+         right_prop_joint's angular velocity, so the visual spin can never
+         diverge from the physics RPM actually producing forces/torques.
+
+         Build: plugins/propulsion/ (see plugins/propulsion/README.md). Full
+         architecture/provenance record:
+         docs/source_of_truth/propulsion/PROPULSION.md and
+         docs/source_of_truth/propulsion/propulsion_v1_config.yaml (the
+         structured dataset this plugin loads at Configure() time - no
+         coefficient is hardcoded in this SDF block or in the plugin's C++
+         source). Real APC 13x6.5E Ct(J)/Cp(J) data:
+         docs/source_of_truth/propulsion/data/apc_13x65e_parsed.csv
+         (mechanically parsed from the official APC performance-data file
+         PER3_13x65E.dat - see data/PROVENANCE.md).
+
+         V1 throttle test interface (no ArduPilot/SITL exists yet): each
+         motor is commanded independently via a gz.msgs.Double topic,
+         clamped to [0,1], defaulting to 0 if never commanded.
+
+         config_path is an absolute path, matching this repository's
+         existing convention (see the aerodynamics plugin block above) - a
+         documented, known V1 portability limitation, not a silent one.
+         ============================================================ -->
+    <plugin filename="FalconV2Propulsion" name="falcon_v2_propulsion::PropulsionSystem">
+      <config_path>/home/emirhan/Desktop/FalconV2/docs/source_of_truth/propulsion/propulsion_v1_config.yaml</config_path>
+      <!-- Optional override of the YAML rho_kg_m3 value (kg/m^3). ISA
+           sea-level default 1.225, CONFIRMED provenance - see
+           propulsion_v1_config.yaml "physics" block. -->
+      <air_density>1.225</air_density>
+      <!-- gz.msgs.Vector3d topic, WORLD frame, m/s - same topic the
+           aerodynamics plugin subscribes to (read-only here), used for
+           relative-airflow V_axial at each motor's hub. Zero until a
+           publisher exists. -->
+      <wind_topic>/model/falcon_v2/wind</wind_topic>
+      <!-- Per-motor throttle command topics, gz.msgs.Double, value clamped
+           to [0,1] by the plugin, default 0 if never published. -->
+      <left_throttle_topic>/model/falcon_v2/propulsion/left/throttle_cmd</left_throttle_topic>
+      <right_throttle_topic>/model/falcon_v2/propulsion/right/throttle_cmd</right_throttle_topic>
+      <!-- Throttled gz.msgs.Double_V diagnostics publish rate (Hz) on
+           /model/falcon_v2/propulsion/diagnostics. Field order (14 fields
+           per motor, left then right): throttle, current_A, Q_motor_Nm,
+           omega_ownframe_rad_s, rpm, J, Ct, Cp, thrust_N, Q_prop_Nm,
+           interpClamped, rpmCapActive, negativeCurrentClamped,
+           currentLimited. -->
+      <diagnostics_rate_hz>20.0</diagnostics_rate_hz>
+    </plugin>
+
   </model>
 </sdf>

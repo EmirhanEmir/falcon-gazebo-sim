@@ -1,0 +1,99 @@
+FALCON V2 - PROPULSION reaction-torque / hub-force / differential-thrust / engine-out live-Gazebo tests (gazebo-testing, 2026-08-23)
+Gating: priority-check verdict = NO_DUPLICATION (see tests/gazebo/results/propulsion_priority_check_result.json) -> tests below reported as normal PASS/FAIL, not provisional.
+
+==============================================================================
+TEST 10: PROP_REACTION_TORQUE_SIGN_TEST
+==============================================================================
+Reuses tests/gazebo/scripts/test_propulsion_priority_check.py's own measurement (same technique: single motor, roll released, measured vs single-source-analytical Mx) as the primary evidence - see that script's result file. Cross-verified independently below with a FRESH run using this script's own measure_full_release() helper.
+[REACTION_TORQUE_SIGN] settle=5000 release=150 left_throttle=0.6 right_throttle=0.0
+  inertia={'mass': 5.9348, 'ixx': 0.7284, 'iyy': 0.2507, 'izz': 0.9523, 'ixy': 0.0, 'ixz': 0.01485, 'iyz': 0.0}  cg=(0.1683090016705872, 1.9757737952455143e-07, 0.09999999998459927)
+  left_diag_avg: throttle=0.600 Q_prop=0.314911 thrust=17.8762 rpm=6978.7
+  right_diag_avg: throttle=0.000 Q_prop=-0.000007 thrust=0.0003 rpm=-28.8
+  release-window slopes: {'u': -1.0839108948872062e-05, 'v': -0.0004024850288730495, 'w': 1.2368561593613054e-06, 'p': -0.42780449863756115, 'q': 0.00010601935092949162, 'r': 4.244128968703208e-05}
+Measured Mx=-0.311612 N*m, Expected Mx=-0.314917 N*m (reaction component -0.314917, thrust component 0.00e+00 ~0 as analytically expected)
+Sign match: True, magnitude error: +1.05%
+PROP_REACTION_TORQUE_SIGN_TEST: PASS
+
+==============================================================================
+TEST 11: COUNTER_ROTATION_CANCELLATION_TEST
+==============================================================================
+[COUNTER_ROTATION_CANCELLATION] settle=5000 release=150 left_throttle=0.6 right_throttle=0.6
+  inertia={'mass': 5.9348, 'ixx': 0.7284, 'iyy': 0.2507, 'izz': 0.9523, 'ixy': 0.0, 'ixz': 0.01485, 'iyz': 0.0}  cg=(0.168309, 0.0, 0.1)
+  left_diag_avg: throttle=0.600 Q_prop=0.314943 thrust=17.8725 rpm=6978.6
+  right_diag_avg: throttle=0.600 Q_prop=0.314943 thrust=17.8725 rpm=6978.6
+  release-window slopes: {'u': 4.675804517457404e-18, 'v': -1.3870099247956204e-22, 'w': 4.998536677086576e-18, 'p': -9.159182544371608e-20, 'q': 7.121961815558139e-17, 'r': -6.565408552281078e-21}
+Left Q_prop=0.314943, Right Q_prop=0.314943 (near-equal magnitude expected by symmetry)
+Measured Mx=-0.000000 N*m, Expected Mx=0.000000 N*m, cancellation tolerance (15% of single-motor |Q_prop|)=0.047241 N*m
+COUNTER_ROTATION_CANCELLATION_TEST: PASS (measured_near_zero=True, expected_near_zero=True, never manually zeroed - natural consequence of rotation_left_sign=+1/right_sign=-1 config)
+
+==============================================================================
+TEST 12: HUB_FORCE_APPLICATION_TEST
+==============================================================================
+Single-motor (left) asymmetric thrust: releasing PITCH+YAW (roll held) isolates the r x F moment-arm effect of applying force AT THE REAL HUB (0.2951,+0.3000,0.1271 relative to base_link origin, i.e. offset from CG in both Y and Z) rather than through the CG (which would give My=Mz=0 for a pure +X force, trivially falsifiable if the hub offset were being ignored).
+[HUB_FORCE_APPLICATION] settle=5000 release=150 left_throttle=0.6 right_throttle=0.0
+  inertia={'mass': 5.9348, 'ixx': 0.7284, 'iyy': 0.2507, 'izz': 0.9523, 'ixy': 0.0, 'ixz': 0.01485, 'iyz': 0.0}  cg=(0.1683090016705872, 1.9757737952455143e-07, 0.09999999998459927)
+  left_diag_avg: throttle=0.600 Q_prop=0.315268 thrust=17.8399 rpm=6978.3
+  right_diag_avg: throttle=0.000 Q_prop=-0.000007 thrust=0.0003 rpm=-28.8
+  release-window slopes: {'u': 0.0007985332636133963, 'v': 0.010536848396111912, 'w': 0.008530500148355623, 'p': 0.013400841483051977, 'q': 2.2595713083448388, 'r': -5.522599776416992}
+CG (queried live) = (0.1683090016705872, 1.9757737952455143e-07, 0.09999999998459927), left hub relative to CG = (0.12679099832941276, 0.2999998024226205, 0.02710000001540072)
+Measured My=0.566475 N*m, Expected My (=rz*T)=0.483468 N*m, err=+17.17%
+Measured Mz=-5.258973 N*m, Expected Mz (=-ry*T)=-5.351865 N*m, err=+1.74%
+Not a pure force-through-CG response: both My and Mz are non-zero and match the hub-offset r x F prediction, confirming force IS applied at the real hub, not the CG.
+HUB_FORCE_APPLICATION_TEST: PASS
+
+==============================================================================
+TEST 13: DIFFERENTIAL_THRUST_MOMENT_TEST
+==============================================================================
+[DIFFERENTIAL_THRUST] settle=5000 release=30 left_throttle=0.7 right_throttle=0.4
+  inertia={'mass': 5.9348, 'ixx': 0.7284, 'iyy': 0.2507, 'izz': 0.9523, 'ixy': 0.0, 'ixz': 0.01485, 'iyz': 0.0}  cg=(0.168309, 0.0, 0.1)
+  left_diag_avg: throttle=0.700 Q_prop=0.417302 thrust=23.9028 rpm=8046.9
+  right_diag_avg: throttle=0.400 Q_prop=0.149803 thrust=8.2551 rpm=4763.0
+  release-window slopes: {'u': -0.04075806004772683, 'v': 0.0950684697927988, 'w': 0.07101139388928275, 'p': -0.2566354565214366, 'q': 3.4739417363577068, 'r': -4.862700603975536}
+Left throttle=0.7 (thrust=23.9028 N), Right throttle=0.4 (thrust=8.2551 N)
+Hand-calc r_left x F_left + r_right x F_right (about live CG): Mx=-0.267500 My=0.871481 Mz=-4.694305 N*m (Mz driven primarily by the +/-0.300 m Y hub offsets)
+Measured (from live base_link angular-acceleration response): Mx=-0.259144 My=0.870917 Mz=-4.634561 N*m
+Errors: Mx=+3.12% My=-0.06% Mz=+1.27%
+Confirmed (by direct inspection of PropulsionSystem.cc/PropulsionModel.hh): no artificial yaw coefficient exists anywhere in the plugin - Mz arises PURELY from r x F using the real hub Y-offsets and the reaction-torque rotation-sign mapping, both already-existing, independently-sourced config values.
+DIFFERENTIAL_THRUST_MOMENT_TEST: PASS
+
+==============================================================================
+TEST: LEFT_ENGINE_OUT_TEST
+==============================================================================
+[LEFT_ENGINE_OUT_TEST] settle=5000 release=30 left_throttle=0.6 right_throttle=0.0
+  inertia={'mass': 5.9348, 'ixx': 0.7284, 'iyy': 0.2507, 'izz': 0.9523, 'ixy': 0.0, 'ixz': 0.01485, 'iyz': 0.0}  cg=(0.1683090016705872, 1.9757737952455143e-07, 0.09999999998459927)
+  left_diag_avg: throttle=0.600 Q_prop=0.314911 thrust=17.8762 rpm=6978.7
+  right_diag_avg: throttle=0.000 Q_prop=-0.000007 thrust=0.0003 rpm=-28.8
+  release-window slopes: {'u': 2.774389489247685, 'v': 0.9226514105121904, 'w': 0.34392275972798747, 'p': -0.3104286126628939, 'q': 2.001810597777531, 'r': -5.556250686798036}
+Active motor (left): thrust=17.8762 N, Q_prop=0.314911 N*m
+Net Fx: measured=16.4654 N (mass*du/dt), expected(=active thrust)=17.8762 N, err=-7.89%
+Yaw moment Mz (from surviving motor's off-CG-Y thrust): measured=-5.295827 N*m expected=-5.362773 N*m err=+1.25%
+Pitch moment My (from hub Z-offset from CG, dz~0.0271m): measured=0.501854 N*m expected=0.484453 N*m err=+3.59%
+Roll moment Mx (ONLY the active motor's reaction torque now present, no longer canceled): measured=-0.308627 N*m expected=-0.314917 N*m err=+2.00%
+FLU sign check: thrust force is along the shared +X axis regardless of which motor - expected_fx > 0 confirmed by construction (thrust_N is a magnitude along +X always).
+LEFT_ENGINE_OUT_TEST: PASS
+
+==============================================================================
+TEST: RIGHT_ENGINE_OUT_TEST
+==============================================================================
+[RIGHT_ENGINE_OUT_TEST] settle=5000 release=30 left_throttle=0.0 right_throttle=0.6
+  inertia={'mass': 5.9348, 'ixx': 0.7284, 'iyy': 0.2507, 'izz': 0.9523, 'ixy': 0.0, 'ixz': 0.01485, 'iyz': 0.0}  cg=(0.1683090016705872, -1.9757737952455164e-07, 0.09999999998459927)
+  left_diag_avg: throttle=0.000 Q_prop=-0.000007 thrust=0.0003 rpm=-28.8
+  right_diag_avg: throttle=0.600 Q_prop=0.314911 thrust=17.8762 rpm=6978.7
+  release-window slopes: {'u': 2.7743894892476844, 'v': -0.9226514105121904, 'w': 0.3439227597279875, 'p': 0.31042861266289395, 'q': 2.001810597777531, 'r': 5.556250686798036}
+Active motor (right): thrust=17.8762 N, Q_prop=0.314911 N*m
+Net Fx: measured=16.4654 N (mass*du/dt), expected(=active thrust)=17.8762 N, err=-7.89%
+Yaw moment Mz (from surviving motor's off-CG-Y thrust): measured=5.295827 N*m expected=5.362773 N*m err=-1.25%
+Pitch moment My (from hub Z-offset from CG, dz~0.0271m): measured=0.501854 N*m expected=0.484453 N*m err=+3.59%
+Roll moment Mx (ONLY the active motor's reaction torque now present, no longer canceled): measured=0.308627 N*m expected=0.314917 N*m err=-2.00%
+FLU sign check: thrust force is along the shared +X axis regardless of which motor - expected_fx > 0 confirmed by construction (thrust_N is a magnitude along +X always).
+RIGHT_ENGINE_OUT_TEST: PASS
+
+==============================================================================
+SUMMARY (tests 10-15)
+==============================================================================
+  PROP_REACTION_TORQUE_SIGN_TEST: PASS
+  COUNTER_ROTATION_CANCELLATION_TEST: PASS
+  HUB_FORCE_APPLICATION_TEST: PASS
+  DIFFERENTIAL_THRUST_MOMENT_TEST: PASS
+  LEFT_ENGINE_OUT_TEST: PASS
+  RIGHT_ENGINE_OUT_TEST: PASS

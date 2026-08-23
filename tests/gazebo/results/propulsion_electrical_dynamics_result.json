@@ -1,0 +1,111 @@
+{
+  "MOTOR_ZERO_THROTTLE_TEST": {
+    "pass_": true,
+    "detail": {
+      "left_rpm_final": -28.831121510676937,
+      "right_rpm_final": -28.831121510676937,
+      "left_span": 1.9507137025698285e-06,
+      "right_span": 1.9507137025698285e-06,
+      "any_nan": false
+    }
+  },
+  "MOTOR_SPINUP_TEST": {
+    "pass_": true
+  },
+  "MOTOR_SPINDOWN_TEST": {
+    "pass_": true
+  },
+  "RPM_STATE_CONTINUITY_TEST": {
+    "pass_": true,
+    "detail": {
+      "spinup_ok": true,
+      "spindown_ok": true,
+      "continuity_ok": true,
+      "max_delta_rad_s": 2.5862767183768565,
+      "continuity_bound_rad_s": 2.586252430883592,
+      "continuity_margin_multiplier": 10.0,
+      "continuity_pass_threshold_rad_s": 25.86252430883592,
+      "up_start_rpm": -28.826944820715315,
+      "up_end_rpm": 6978.692071372919,
+      "down_start_rpm": 6978.692071372919,
+      "down_end_rpm": -26.70639885615117,
+      "any_nan": false
+    }
+  },
+  "LEFT_PROP_VISUAL_OMEGA_TEST": {
+    "pass_": true,
+    "detail": {
+      "left_ok": true,
+      "right_ok": true,
+      "left_max_err": 2.586284442443693,
+      "right_max_err": 3.035100385417877e-05,
+      "left_mean_err": 0.16851282214422972,
+      "right_mean_err": 1.2036016463699156e-05,
+      "any_nan": false,
+      "method": "theta_position_differencing"
+    }
+  },
+  "RIGHT_PROP_VISUAL_OMEGA_TEST": {
+    "pass_": true,
+    "detail": {
+      "left_ok": true,
+      "right_ok": true,
+      "left_max_err": 2.586284442443693,
+      "right_max_err": 3.035100385417877e-05,
+      "left_mean_err": 0.16851282214422972,
+      "right_mean_err": 1.2036016463699156e-05,
+      "any_nan": false,
+      "method": "theta_position_differencing"
+    }
+  },
+  "CLI_ONESHOT_DISCOVERY_INVESTIGATION": {
+    "left_trials": [
+      {
+        "val_first": 0.5,
+        "took_effect_first": true,
+        "val_after_republish": null
+      },
+      {
+        "val_first": 0.5,
+        "took_effect_first": true,
+        "val_after_republish": null
+      },
+      {
+        "val_first": 0.5,
+        "took_effect_first": true,
+        "val_after_republish": null
+      }
+    ],
+    "right_trials": [
+      {
+        "val_first": 0.5,
+        "took_effect_first": true,
+        "val_after_republish": null
+      },
+      {
+        "val_first": 0.0,
+        "took_effect_first": false,
+        "val_after_republish": 0.5
+      },
+      {
+        "val_first": 0.5,
+        "took_effect_first": true,
+        "val_after_republish": null
+      }
+    ],
+    "left_failures": 0,
+    "right_failures": 1,
+    "republish_always_recovers": true,
+    "conclusion": "INCONCLUSIVE"
+  },
+  "RPM_SAFETY_LIMIT_TEST": {
+    "pass_": true,
+    "detail": {
+      "tail_max_rpm": 11500.000000000005,
+      "tail_span_rpm": 7.275957614183426e-12,
+      "rpm_cap_v1": 11500.0,
+      "cap_ever_active": true,
+      "any_nan": false
+    }
+  }
+}

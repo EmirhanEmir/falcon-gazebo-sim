@@ -1,0 +1,55 @@
+==============================================================================
+TRANSIENT REACTION-TORQUE ISOLATION TEST (post ResetPosition fix)
+==============================================================================
+Config: rotation.left_sign=1.0 rotation.right_sign=-1.0 i_rotor_kg_m2=0.00027349 thrust_axis_body=(1.0, 0.0, 0.0)
+Command: throttle STEP at t=0 of the release window: left 0->0.6, right stays 0.0. Warmup(all 6 DOF held)=500 ticks, release(roll only)=600 ticks, sub-window=30 ticks.
+
+base_link inertia (queried live): {'mass': 5.9348, 'ixx': 0.7284, 'iyy': 0.2507, 'izz': 0.9523, 'ixy': 0.0, 'ixz': 0.01485, 'iyz': 0.0}
+Diagnostics events captured (state changes only): 22
+
+FINDING (visual-sync mechanism change): Joint.velocity(left_prop_joint) over the final 100 samples of this run: max|v|=0.168141 rad/s, while the reconstructed theta-derived omega (below) reaches several hundred rad/s over the same span. CONFIRMS Joint.velocity() is NO LONGER a valid proxy for omega post-fix (expected, since Joint::SetVelocity() is no longer called) - Joint.position() (theta) is now the only ECM-visible channel that tracks the plugin's internal rotor state.
+theta read warm-up offset (ticks before position() becomes valid): 1
+
+Reconstruction-vs-diagnostics cross-check (12 diag events matched): max |omega_diag - omega_reconstructed| = 2.5466 rad/s, max |Qprop_diag - Qprop_reconstructed| = 0.002428 N*m
+  t=0.050s diag_omega=123.083 recon_omega=125.630 diag_Qprop=0.010437 recon_Qprop=0.011284
+  t=0.100s diag_omega=248.056 recon_omega=250.497 diag_Qprop=0.039118 recon_Qprop=0.040595
+  t=0.150s diag_omega=366.399 recon_omega=368.681 diag_Qprop=0.082182 recon_Qprop=0.084140
+  t=0.500s diag_omega=729.713 recon_omega=729.736 diag_Qprop=0.313971 recon_Qprop=0.313890
+  t=0.550s diag_omega=730.420 recon_omega=730.428 diag_Qprop=0.314578 recon_Qprop=0.314472
+  t=0.600s diag_omega=730.670 recon_omega=730.673 diag_Qprop=0.314793 recon_Qprop=0.314678
+
+LEFT_PROP_VISUAL_OMEGA_TEST_REGRESSION (primary: synchronous tick-aligned pure-Python replica, n=1109 matched ticks): max_err=2.5863e+00 rad/s, mean_err=6.6878e-01 rad/s, tolerance=3.6536 rad/s (0.5% of peak 730.72 rad/s) -> PASS
+RIGHT_PROP_VISUAL_OMEGA_TEST_REGRESSION (primary, same method, idle-creep/near-static): max_err=1.0464e-01 rad/s, mean_err=2.3875e-04 rad/s -> PASS
+(Cross-check note: the async-diagnostics-topic-based comparison above gave a max err of 2.5466 rad/s for LEFT - within ~1-2 ticks' worth of alignment jitter (theoretical per-tick bound ~2.6 rad/s at this transient's peak domega/dt) of the tick-aligned synchronous result above; this is the SAME async-arrival-timing artifact test_propulsion_electrical_dynamics.py's own report already root-caused and worked around for exactly this reason - not a physics mismatch. The synchronous replica result is the one used for this test's PASS/FAIL.)
+
+Release-window samples captured: 610 (roll rate p(t))
+
+t_center    domega/dt    Qprop_L  expected_Mx  measured_Mx   residual  I_j*domega/dt
+   0.015      2582.08    0.00123    -0.001236    -0.000559   0.000676       0.706173
+   0.045      2553.15    0.00926    -0.009271    -0.008675   0.000596       0.698262
+   0.075      2500.01    0.02389    -0.023896    -0.022915   0.000981       0.683728
+   0.105      2426.13    0.04418    -0.044189    -0.042193   0.001996       0.663522
+   0.135      2334.01    0.06945    -0.069455    -0.066871   0.002584       0.638329
+   0.165      2226.24    0.09897    -0.098977    -0.095858   0.003119       0.608855
+   0.195      2106.44    0.13176    -0.131770    -0.128144   0.003626       0.576091
+   0.225      1978.13    0.16687    -0.166879    -0.162745   0.004134       0.540998
+   0.255      1842.88    0.20386    -0.203871    -0.199301   0.004570       0.504009
+   0.285      1675.86    0.24144    -0.241443    -0.236478   0.004964       0.458330
+   0.315      1053.27    0.27328    -0.273288    -0.268913   0.004375       0.288058
+   0.345       567.59    0.29212    -0.292122    -0.288271   0.003852       0.155229
+   0.375       305.19    0.30251    -0.302517    -0.298934   0.003583       0.083465
+   0.405       163.90    0.30817    -0.308177    -0.304704   0.003473       0.044825
+   0.435        87.97    0.31123    -0.311237    -0.307784   0.003453       0.024058
+   0.465        47.20    0.31288    -0.312885    -0.309403   0.003482       0.012908
+   0.495        25.32    0.31376    -0.313771    -0.310233   0.003538       0.006924
+   0.525        13.58    0.31424    -0.314247    -0.310639   0.003608       0.003714
+   0.555         7.28    0.31450    -0.314502    -0.310817   0.003685       0.001992
+   0.585         3.91    0.31463    -0.314639    -0.310872   0.003767       0.001068
+
+Global least-squares-through-origin slope (measured_Mx vs expected_Mx_single, 20 sub-window pairs spanning the WHOLE transient): slope=0.9862, correlation r=1.0000
+
+SAME-INSTANT smoking-gun check (the ONE sub-window with the largest |domega/dt| across the whole transient, t_center=0.015s, domega/dt=2582.08 rad/s^2 - where a hidden joint-constraint torque, proportional to I_joint*domega/dt, would be most visible relative to the real reaction torque): |residual|=0.000676 N*m vs THAT SAME WINDOW'S hypothesized extra-term scale I_joint*domega/dt = 0.706173 N*m -> residual/hypothesized = 0.000958 (0.0958%) (near 0 => no evidence of the duplication; near 1 => duplication-scale residual present)
+For context, the SAME per-window ratio computed independently at every one of the 20 sub-windows ranges 0.0854% to 352.5586% - the ratio grows large only late in the transient where domega/dt (and therefore the hypothesized-extra-torque denominator) itself approaches zero, making the ratio numerically unstable/uninformative there (NOT evidence of duplication - the numerator (residual) stays small in absolute terms throughout, see the table above); the peak-|domega/dt| instant above, where the denominator is largest and the check is most discriminating, is the meaningful single-number summary.
+
+VERDICT (TRANSIENT_REACTION_TORQUE_ISOLATION_TEST): NO_DUPLICATION_TRANSIENT_CONFIRMED
+  global_slope=0.9862 (target ~1.0), correlation r=1.0000, same-instant (peak |domega/dt|) residual/hypothesized-extra-term=0.000958 (0.0958%) (target << 1.0)

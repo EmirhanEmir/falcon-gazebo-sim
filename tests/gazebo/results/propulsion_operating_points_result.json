@@ -1,0 +1,255 @@
+{
+  "STATIC_THRUST_RUNTIME_TEST": {
+    "pass_": true,
+    "sweep": [
+      {
+        "target_rpm": 5000,
+        "throttle": 0.42088326804722787,
+        "live_rpm": 4999.896082870205,
+        "live_Ct": 0.09005868940970323,
+        "live_Cp": 0.03091106990834391,
+        "live_thrust_N": 9.107295799285623,
+        "live_Q_prop_Nm": 0.1642763548859784,
+        "live_current_A": 16.09456250382607,
+        "apc_Ct": 0.0901,
+        "apc_Cp": 0.0309,
+        "hand_thrust_N": 9.111473383569116,
+        "hand_power_W": 85.98230747847273,
+        "ct_err_pct": -0.04584971176112378,
+        "cp_err_pct": 0.035824946096794416,
+        "thrust_vs_hand_err_pct": -0.04584971176041113
+      },
+      {
+        "target_rpm": 6000,
+        "throttle": 0.510433991648906,
+        "live_rpm": 5999.867976688988,
+        "live_Ct": 0.09035026009621913,
+        "live_Cp": 0.03060998010379085,
+        "live_thrust_N": 13.156932875327625,
+        "live_Q_prop_Nm": 0.23425318246634627,
+        "live_current_A": 22.396604877335353,
+        "apc_Ct": 0.0904,
+        "apc_Cp": 0.0306,
+        "hand_thrust_N": 13.164176070583425,
+        "hand_power_W": 147.13438930133177,
+        "ct_err_pct": -0.05502201745670651,
+        "cp_err_pct": 0.03261471827075368,
+        "thrust_vs_hand_err_pct": -0.05502201745831594
+      },
+      {
+        "target_rpm": 9000,
+        "throttle": 0.7912814674736275,
+        "live_rpm": 8999.582232309802,
+        "live_Ct": 0.09182497132953324,
+        "live_Cp": 0.03031495560197056,
+        "live_thrust_N": 30.084816319822497,
+        "live_Q_prop_Nm": 0.5219641794820798,
+        "live_current_A": 48.30756650867512,
+        "apc_Ct": 0.0919,
+        "apc_Cp": 0.0303,
+        "hand_thrust_N": 30.10939812733083,
+        "hand_power_W": 491.67413174918613,
+        "ct_err_pct": -0.08164164359821145,
+        "cp_err_pct": 0.04935842234508491,
+        "thrust_vs_hand_err_pct": -0.08164164359705403
+      },
+      {
+        "target_rpm": 10000,
+        "throttle": 0.889396272268723,
+        "live_rpm": 9999.429697263462,
+        "live_Ct": 0.09241490026139913,
+        "live_Cp": 0.03041689448111823,
+        "live_thrust_N": 37.37957209856791,
+        "live_Q_prop_Nm": 0.646553397389849,
+        "live_current_A": 59.52794556394852,
+        "apc_Ct": 0.0925,
+        "apc_Cp": 0.0304,
+        "hand_thrust_N": 37.413992866275656,
+        "hand_power_W": 676.6544773984504,
+        "ct_err_pct": -0.0919997174063418,
+        "cp_err_pct": 0.05557395104680436,
+        "thrust_vs_hand_err_pct": -0.09199971740725325
+      }
+    ],
+    "any_nan": false
+  },
+  "STATIC_RPM_SWEEP_VS_APC": [
+    {
+      "target_rpm": 5000,
+      "throttle": 0.42088326804722787,
+      "live_rpm": 4999.896082870205,
+      "live_Ct": 0.09005868940970323,
+      "live_Cp": 0.03091106990834391,
+      "live_thrust_N": 9.107295799285623,
+      "live_Q_prop_Nm": 0.1642763548859784,
+      "live_current_A": 16.09456250382607,
+      "apc_Ct": 0.0901,
+      "apc_Cp": 0.0309,
+      "hand_thrust_N": 9.111473383569116,
+      "hand_power_W": 85.98230747847273,
+      "ct_err_pct": -0.04584971176112378,
+      "cp_err_pct": 0.035824946096794416,
+      "thrust_vs_hand_err_pct": -0.04584971176041113
+    },
+    {
+      "target_rpm": 6000,
+      "throttle": 0.510433991648906,
+      "live_rpm": 5999.867976688988,
+      "live_Ct": 0.09035026009621913,
+      "live_Cp": 0.03060998010379085,
+      "live_thrust_N": 13.156932875327625,
+      "live_Q_prop_Nm": 0.23425318246634627,
+      "live_current_A": 22.396604877335353,
+      "apc_Ct": 0.0904,
+      "apc_Cp": 0.0306,
+      "hand_thrust_N": 13.164176070583425,
+      "hand_power_W": 147.13438930133177,
+      "ct_err_pct": -0.05502201745670651,
+      "cp_err_pct": 0.03261471827075368,
+      "thrust_vs_hand_err_pct": -0.05502201745831594
+    },
+    {
+      "target_rpm": 9000,
+      "throttle": 0.7912814674736275,
+      "live_rpm": 8999.582232309802,
+      "live_Ct": 0.09182497132953324,
+      "live_Cp": 0.03031495560197056,
+      "live_thrust_N": 30.084816319822497,
+      "live_Q_prop_Nm": 0.5219641794820798,
+      "live_current_A": 48.30756650867512,
+      "apc_Ct": 0.0919,
+      "apc_Cp": 0.0303,
+      "hand_thrust_N": 30.10939812733083,
+      "hand_power_W": 491.67413174918613,
+      "ct_err_pct": -0.08164164359821145,
+      "cp_err_pct": 0.04935842234508491,
+      "thrust_vs_hand_err_pct": -0.08164164359705403
+    },
+    {
+      "target_rpm": 10000,
+      "throttle": 0.889396272268723,
+      "live_rpm": 9999.429697263462,
+      "live_Ct": 0.09241490026139913,
+      "live_Cp": 0.03041689448111823,
+      "live_thrust_N": 37.37957209856791,
+      "live_Q_prop_Nm": 0.646553397389849,
+      "live_current_A": 59.52794556394852,
+      "apc_Ct": 0.0925,
+      "apc_Cp": 0.0304,
+      "hand_thrust_N": 37.413992866275656,
+      "hand_power_W": 676.6544773984504,
+      "ct_err_pct": -0.0919997174063418,
+      "cp_err_pct": 0.05557395104680436,
+      "thrust_vs_hand_err_pct": -0.09199971740725325
+    }
+  ],
+  "CURRENT_POWER_RUNTIME_TEST": {
+    "pass_": true,
+    "current_A": 29.660539569912782,
+    "power_W": 438.9759856347092,
+    "q_motor_diag": 0.31491070195150556,
+    "q_motor_hand": 0.31491070195150567,
+    "q_motor_err_pct": -3.525516972732556e-14
+  },
+  "ZERO_RPM_NUMERICAL_SAFETY_TEST": {
+    "pass_": true,
+    "all_finite": true,
+    "first_sample": {
+      "left": {
+        "throttle": 0.0,
+        "current_A": 0.7519096766163518,
+        "Q_motor_Nm": -0.006085903550744864,
+        "omega_rad_s": -1.7693232316927712,
+        "rpm": -16.895792295073882,
+        "J": 0.0,
+        "Ct": 0.0889,
+        "Cp": 0.0376,
+        "thrust_N": 0.00010009474717786073,
+        "Q_prop_Nm": -2.2248184197105915e-06,
+        "interpClamped": 1.0,
+        "rpmCapActive": 0.0,
+        "negativeCurrentClamped": 0.0,
+        "currentLimited": 0.0
+      },
+      "right": {
+        "throttle": 0.0,
+        "current_A": 0.7519096766163518,
+        "Q_motor_Nm": -0.006085903550744864,
+        "omega_rad_s": -1.7693232316927712,
+        "rpm": -16.895792295073882,
+        "J": 0.0,
+        "Ct": 0.0889,
+        "Cp": 0.0376,
+        "thrust_N": 0.00010009474717786073,
+        "Q_prop_Nm": -2.2248184197105915e-06,
+        "interpClamped": 1.0,
+        "rpmCapActive": 0.0,
+        "negativeCurrentClamped": 0.0,
+        "currentLimited": 0.0
+      }
+    }
+  },
+  "BENCH_COMPARISON_SECTION_29": {
+    "live": {
+      "rpm": 10450.392413997432,
+      "current_A": 65.0,
+      "thrust_N": 40.96593827545915,
+      "power_W": 962.0
+    },
+    "bench_reference": {
+      "rpm": 9230.0,
+      "current_A": 63.2,
+      "thrust_N": 32.85,
+      "power_W": 935.0
+    },
+    "errors_pct": {
+      "rpm": 13.222019653276615,
+      "current": 2.84810126582278,
+      "thrust": 24.70605258891674,
+      "power": 2.8877005347593583
+    }
+  },
+  "CRUISE_18MS_OPERATING_POINT_SECTION_30": {
+    "rows": [
+      {
+        "throttle": 0.4,
+        "rpm": 4976.9313883123705,
+        "J": 0.6569794343698164,
+        "Ct": 0.0,
+        "Cp": 0.008118454889350086,
+        "thrust_N": 0.0,
+        "current_A": 5.1500185545167785,
+        "power_W": 76.22027460684832,
+        "any_nan": false
+      },
+      {
+        "throttle": 0.5,
+        "rpm": 6071.561222669275,
+        "J": 0.5387402411572604,
+        "Ct": 0.01910608869336717,
+        "Cp": 0.016832595781078655,
+        "thrust_N": 2.849144069586921,
+        "current_A": 13.180042244940235,
+        "power_W": 195.0646252251155,
+        "any_nan": false
+      },
+      {
+        "throttle": 0.6,
+        "rpm": 7125.035339484159,
+        "J": 0.459337269826109,
+        "Ct": 0.03380702062171535,
+        "Cp": 0.02239324801478512,
+        "thrust_N": 6.94261060957647,
+        "current_A": 23.064929714974532,
+        "power_W": 341.3609597816231,
+        "any_nan": false
+      }
+    ],
+    "validation_reference": {
+      "throttle_pct": 53.6,
+      "rpm": 6021,
+      "thrust_N": 2.59
+    },
+    "any_nan": false
+  }
+}
