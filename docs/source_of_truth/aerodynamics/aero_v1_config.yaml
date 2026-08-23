@@ -27,6 +27,11 @@
 #                        number was required for V1, explicitly NOT validated.
 #   TEMPORARY         - a placeholder/engineering-safety value, not a physical
 #                        constant.
+#   VERIFIED_BY_GAZEBO_GEOMETRY_SIGN_TEST - was ASSUMPTION, now confirmed by
+#                        controls-integration's geometric determination plus
+#                        gazebo-testing's independent live kinematic/aero-
+#                        moment measurements in a running Gazebo instance
+#                        (task CONTROL_SURFACE_SIGN_MAPPING, 2026-08-22).
 #
 # Do not edit numeric values here without updating AERODYNAMICS.md's
 # provenance record. Do not add new coefficients not present in CLAUDE.md /
@@ -133,13 +138,50 @@ high_alpha_limiter:
 
 control_mapping:
   # Explicit joint-position -> aerodynamic-deflection-sign mapping layer.
-  # ALL THREE sign parameters below are ASSUMPTION: joint-sign-to-deflection-
-  # sign identity (1:1), pending controls-integration's ELEVATOR_TEST /
-  # AILERON_TEST / RUDDER_TEST (CONTROLS.md sec 4). Flip to -1.0 post-test if
-  # the physical direction is found reversed - no code change needed.
-  elevator_sign: 1.0            # ASSUMPTION, pending ELEVATOR_SIGN_TEST
-  aileron_sign: 1.0             # ASSUMPTION, pending AILERON_SIGN_TEST (per-side handling: see aileron_differential_convention below)
-  rudder_sign: 1.0              # ASSUMPTION, pending RUDDER_SIGN_TEST
+  #
+  # STATUS UPDATE (2026-08-22, task CONTROL_SURFACE_SIGN_MAPPING): all three
+  # sign parameters below are now VERIFIED_BY_GAZEBO_GEOMETRY_SIGN_TEST, no
+  # longer ASSUMPTION. Provenance: `controls-integration` performed a full
+  # geometric determination of the physical TE-direction produced by a
+  # positive joint angle on all 5 control-surface joints; `gazebo-testing`
+  # independently confirmed every part of it with live kinematic AND live
+  # aero-moment measurements in a running Gazebo Sim Harmonic instance
+  # (9/9 CONFIRMS-HYPOTHESIS, no refutations). Full records:
+  # `docs/test_results/2026-08-22_control_surface_sign_mapping_test_report.md`,
+  # `tests/gazebo/results/control_surface_sign_mapping_*`. See
+  # AERODYNAMICS.md sec 19.13 for this document's own summary of the change.
+  #
+  # elevator_sign CHANGED this pass: 1.0 -> -1.0 (was backward). Live
+  # kinematic measurement: a positive left_elevator_joint/right_elevator_joint
+  # angle moves the trailing edge UP on BOTH sides (world-Z of the TE
+  # reference point rises monotonically with +angle, bit-identical between
+  # the two joints - i.e. the two joints share the same sign sense, not a
+  # true mirror, matching the already-documented +Y-dominant-axis finding).
+  # XFLR5 convention is +delta_e = TE-DOWN (CONTROLS.md sec 4.1), so a
+  # physical TE-up joint motion is XFLR5-NEGATIVE - hence sign=-1.0.
+  # Independently cross-confirmed by aero-moment evidence gathered under the
+  # PRE-FIX sign (elevator_sign=+1.0): commanding
+  # theta_left=theta_right=+8deg (a physical TE-up motion, per the kinematic
+  # finding above) measured My=+1.128 N*m (nose-down, using this plugin's own
+  # already-resolved My sign convention, sec 19.12) - backward from the
+  # textbook TE-up -> nose-up relationship, confirming the pre-fix sign was
+  # wrong in exactly the direction now corrected.
+  elevator_sign: -1.0           # VERIFIED_BY_GAZEBO_GEOMETRY_SIGN_TEST (CHANGED from +1.0 this pass - was backward, see note above)
+  # aileron_sign CONFIRMED CORRECT at +1.0 (no change). Live kinematic test:
+  # both aileron joints share the same TE-up-for-positive-angle direction
+  # (common-mode, not naturally differential - matching the already-
+  # documented aileron_differential_convention below). Live aero-moment
+  # test: theta_left=-8deg/theta_right=+8deg measured Mx=+4.877 N*m
+  # (reproduced twice, matching to 4 sig figs); common-mode command
+  # (theta_left=theta_right=+8deg) measured Mx=0.0 exactly, confirming
+  # delta_a=0.5*aileron_sign*(theta_right-theta_left) correctly rejects
+  # common-mode input as intended.
+  aileron_sign: 1.0             # VERIFIED_BY_GAZEBO_GEOMETRY_SIGN_TEST (unchanged value, status upgraded from ASSUMPTION)
+  # rudder_sign CONFIRMED CORRECT at +1.0 (no change). Live kinematic test:
+  # a positive rudder_joint angle moves the TE toward -Y (right). Live
+  # aero-moment test: theta_rudder=+8deg measured Mz=-0.446 N*m (nose-right,
+  # reproduced twice).
+  rudder_sign: 1.0              # VERIFIED_BY_GAZEBO_GEOMETRY_SIGN_TEST (unchanged value, status upgraded from ASSUMPTION)
   aileron_differential_convention: >
     delta_a (the single scalar fed into CY/Cl/Cn) is extracted as
     0.5*aileron_sign*(theta_right_aileron_joint - theta_left_aileron_joint).
@@ -151,14 +193,28 @@ control_mapping:
     differential roll) - so the DIFFERENCE of the two joint angles, not
     their sum, is what isolates the differential (roll-producing) component
     that XFLR5's WF1-WF6 sweep represents as a single delta_a parameter.
-    This is ASSUMPTION-tagged like the sign parameters above pending
-    AILERON_TEST (run independently per side per CONTROLS.md sec 4.3).
+    VERIFIED_BY_GAZEBO_GEOMETRY_SIGN_TEST this pass (2026-08-22) - see the
+    aileron_sign note above for the confirming live evidence (common-mode
+    Mx=0.0 exactly).
   elevator_symmetric_convention: >
     delta_e = 0.5*elevator_sign*(theta_left_elevator_joint + theta_right_elevator_joint).
     Rationale: unlike the ailerons, the elevator's two joints are intended to
     move together (same physical direction) for pure pitch, so the SUM (not
-    difference) of the two joint angles is used. ASSUMPTION-tagged pending
-    ELEVATOR_SIGN_TEST.
+    difference) of the two joint angles is used.
+    VERIFIED_BY_GAZEBO_GEOMETRY_SIGN_TEST this pass (2026-08-22) - the
+    common-sign/common-mode kinematic finding in the elevator_sign note
+    above directly confirms this SUM convention (both joints move the same
+    physical direction together).
+    KNOWN_V1_LIMITATION: this SUM formula is correct for normal symmetric
+    elevator actuation, but it means an asymmetric left/right elevator
+    command is NOT modeled as a separate aerodynamic degree of freedom -
+    the formula only ever sees (theta_left + theta_right), never their
+    difference, so any asymmetry is silently invisible to the aero model.
+    The SDF's shared-sign hinge geometry makes such asymmetry physically
+    meaningful (e.g. a jammed/failed actuator, or a future differential-
+    elevator design), so this is a real modeling gap, not just a
+    theoretical one. No fix or new coefficient is proposed here - logged
+    as a candidate item for a future dedicated review.
   rudder_convention: >
     delta_r = rudder_sign*theta_rudder_joint (single joint, no combination needed).
   # Aero-derivative validated linear range - CONTROLS.md sec 3, AERODYNAMICS.md

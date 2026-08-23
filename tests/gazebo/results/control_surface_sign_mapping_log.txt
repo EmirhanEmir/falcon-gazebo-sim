@@ -1,0 +1,123 @@
+FALCON V2 - CONTROL_SURFACE_SIGN_MAPPING test pass (gazebo-testing, 2026-08-22)
+Verifying controls-integration's geometric TE-direction/aero-moment-sign hypotheses.
+No aircraft physics parameter modified by this script.
+
+==============================================================================
+PART A - KINEMATIC TE-DIRECTION TESTS (tests 1, 2, 5, 6, 7)
+==============================================================================
+
+--- LEFT_AILERON_JOINT_SIGN_TEST ---
+joint=left_aileron_joint link=left_aileron local_TE_point=(-0.025962, 0.236107, 0.007807) check_axis=z hypothesis: TE-up for +angle (Z higher at +5deg)
+  angle=-5.0deg (readback=-5.0000deg): world_TE_point=(0.006691, 0.55009, 0.115863) link_world_pos=(0.032943, 0.31395, 0.110356)
+  angle=+0.0deg (readback=0.0000deg): world_TE_point=(0.006981, 0.550057, 0.118163) link_world_pos=(0.032943, 0.31395, 0.110356)
+  angle=+5.0deg (readback=5.0000deg): world_TE_point=(0.00747, 0.550024, 0.120429) link_world_pos=(0.032943, 0.31395, 0.110356)
+  readback fidelity ok: True
+  Z(-5)=0.11586304039623908, Z(0)=0.11816299999999999, Z(+5)=0.12042896937207473
+  delta at +5deg = 0.0022659693720747387, delta at -5deg = -0.0022999596037609066
+  observed direction: TE-up-for-positive-angle
+  LEFT_AILERON_JOINT_SIGN_TEST: CONFIRMS-HYPOTHESIS
+
+--- RIGHT_AILERON_JOINT_SIGN_TEST ---
+joint=right_aileron_joint link=right_aileron local_TE_point=(-0.025962, -0.236107, 0.007807) check_axis=z hypothesis: SAME sign as left (TE-up for +angle, not mirrored)
+  angle=-5.0deg (readback=-5.0000deg): world_TE_point=(0.006691, -0.55009, 0.115863) link_world_pos=(0.032943, -0.31395, 0.110356)
+  angle=+0.0deg (readback=0.0000deg): world_TE_point=(0.006981, -0.550057, 0.118163) link_world_pos=(0.032943, -0.31395, 0.110356)
+  angle=+5.0deg (readback=5.0000deg): world_TE_point=(0.00747, -0.550024, 0.120429) link_world_pos=(0.032943, -0.31395, 0.110356)
+  readback fidelity ok: True
+  Z(-5)=0.11586304039623908, Z(0)=0.11816299999999999, Z(+5)=0.12042896937207473
+  delta at +5deg = 0.0022659693720747387, delta at -5deg = -0.0022999596037609066
+  observed direction: TE-up-for-positive-angle
+  RIGHT_AILERON_JOINT_SIGN_TEST: CONFIRMS-HYPOTHESIS
+
+--- LEFT_ELEVATOR_JOINT_SIGN_TEST ---
+joint=left_elevator_joint link=left_elevator local_TE_point=(-0.020211, 0.0947, -0.004031) check_axis=z hypothesis: TE-up for +angle (Z higher at +5deg)
+  angle=-5.0deg (readback=-5.0000deg): world_TE_point=(-0.494758, 0.145295, 0.081316) link_world_pos=(-0.474959, 0.0506, 0.087119)
+  angle=+0.0deg (readback=0.0000deg): world_TE_point=(-0.49517, 0.1453, 0.083088) link_world_pos=(-0.474959, 0.0506, 0.087119)
+  angle=+5.0deg (readback=5.0000deg): world_TE_point=(-0.495426, 0.145304, 0.084889) link_world_pos=(-0.474959, 0.0506, 0.087119)
+  readback fidelity ok: True
+  Z(-5)=0.08131647917322549, Z(0)=0.083088, Z(+5)=0.08488870665850796
+  delta at +5deg = 0.0018007066585079695, delta at -5deg = -0.0017715208267745086
+  observed direction: TE-up-for-positive-angle
+  LEFT_ELEVATOR_JOINT_SIGN_TEST: CONFIRMS-HYPOTHESIS
+
+--- RIGHT_ELEVATOR_JOINT_SIGN_TEST ---
+joint=right_elevator_joint link=right_elevator local_TE_point=(-0.020211, -0.0947, -0.004031) check_axis=z hypothesis: SAME direction as left (TE-up for +angle, not mirrored)
+  angle=-5.0deg (readback=-5.0000deg): world_TE_point=(-0.494758, -0.145295, 0.081316) link_world_pos=(-0.474959, -0.0506, 0.087119)
+  angle=+0.0deg (readback=0.0000deg): world_TE_point=(-0.49517, -0.1453, 0.083088) link_world_pos=(-0.474959, -0.0506, 0.087119)
+  angle=+5.0deg (readback=5.0000deg): world_TE_point=(-0.495426, -0.145304, 0.084889) link_world_pos=(-0.474959, -0.0506, 0.087119)
+  readback fidelity ok: True
+  Z(-5)=0.08131647917322549, Z(0)=0.083088, Z(+5)=0.08488870665850796
+  delta at +5deg = 0.0018007066585079695, delta at -5deg = -0.0017715208267745086
+  observed direction: TE-up-for-positive-angle
+  RIGHT_ELEVATOR_JOINT_SIGN_TEST: CONFIRMS-HYPOTHESIS
+
+--- RUDDER_JOINT_SIGN_TEST ---
+joint=rudder_joint link=rudder local_TE_point=(-0.019247, 0.0, 0.0845) check_axis=y hypothesis: TE toward -Y (right in FLU) for +angle (Y lower at +5deg)
+  angle=-5.0deg (readback=-5.0000deg): world_TE_point=(-0.495264, 0.001754, 0.214999) link_world_pos=(-0.476094, 0.0, 0.1305)
+  angle=+0.0deg (readback=0.0000deg): world_TE_point=(-0.495341, 0.0, 0.215) link_world_pos=(-0.476094, 0.0, 0.1305)
+  angle=+5.0deg (readback=5.0000deg): world_TE_point=(-0.495264, -0.001754, 0.214999) link_world_pos=(-0.476094, 0.0, 0.1305)
+  readback fidelity ok: True
+  Y(-5)=0.0017538266985776209, Y(0)=0.0, Y(+5)=-0.0017538266985776209
+  delta at +5deg = -0.0017538266985776209, delta at -5deg = 0.0017538266985776209
+  observed direction: TE-right(-Y)-for-positive-angle
+  RUDDER_JOINT_SIGN_TEST: CONFIRMS-HYPOTHESIS
+
+==============================================================================
+PART B - DYNAMIC AERO-MOMENT SIGN TESTS (tests 3, 4, 8, 9)
+==============================================================================
+Total steps run: 1260 (expected 1260)
+Any NaN/Inf observed anywhere: False
+base_link inertia (queried at runtime): {'mass': 5.9348, 'ixx': 0.7284, 'iyy': 0.2507, 'izz': 0.9523, 'ixy': 0.0, 'ixz': 0.01485, 'iyz': 0.0}
+
+--- AILERON_DIFFERENTIAL_SIGN_TEST ---
+Hypothesis: aileron_sign=+1 confirmed if measured Mx > 0
+Commanded joint positions: {'left_aileron_joint': -0.13962634015954636, 'right_aileron_joint': 0.13962634015954636}
+Hold-end state (converged): u=14.9968 v=0.0003 w=0.0295 p=0.07003 q=-0.00253 r=-0.00015
+delta_a=8.00deg delta_e=0.00deg delta_r=0.00deg (aileron_sign=1.0 elevator_sign=1.0 rudder_sign=1.0, aero_v1_config.yaml, UNMODIFIED)
+Released axis: x (p). p(t) over release window: [0.07719, 0.0843, 0.09136, 0.09838, 0.10535, 0.11227, 0.11915, 0.12598, 0.13276, 0.1395, 0.14619, 0.15284, 0.15944, 0.166, 0.17251, 0.17898, 0.18541, 0.19179, 0.19813, 0.20443]
+Measured slope dp/dt = 6.69530 rad/s^2 over 20 free steps -> moment_measured = I_xx*slope = 0.7284*6.69530 = 4.87685 N*m
+Independent replica (from hold-end state + same delta mapping): Cl (Clda)-driven Mx_expected = 5.25221 N*m (qbar=137.755, ref_len=2.093)
+Nonzero: PASS; Finite: PASS; Sane magnitude (within 5x of formula replica): PASS; Same sign as replica (config unmodified, checks plumbing self-consistency): yes
+Measured moment_measured=4.87685 N*m
+
+--- AILERON_COMMON_MODE_REJECTION_TEST ---
+Hypothesis: |Mx| much smaller than AILERON_DIFFERENTIAL_SIGN_TEST's result (near-zero, bounded only by residual coupling)
+Commanded joint positions: {'left_aileron_joint': 0.13962634015954636, 'right_aileron_joint': 0.13962634015954636}
+Hold-end state (converged): u=14.9968 v=-0.0000 w=0.0295 p=0.00000 q=-0.00253 r=0.00000
+delta_a=0.00deg delta_e=0.00deg delta_r=0.00deg (aileron_sign=1.0 elevator_sign=1.0 rudder_sign=1.0, aero_v1_config.yaml, UNMODIFIED)
+Released axis: x (p). p(t) over release window: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+Measured slope dp/dt = 0.00000 rad/s^2 over 20 free steps -> moment_measured = I_xx*slope = 0.7284*0.00000 = 0.00000 N*m
+Independent replica (from hold-end state + same delta mapping): Cl (Clda)-driven Mx_expected = 0.00000 N*m (qbar=137.755, ref_len=2.093)
+Nonzero: FAIL; Finite: PASS; Sane magnitude (within 5x of formula replica): PASS; Same sign as replica (config unmodified, checks plumbing self-consistency): yes
+Measured moment_measured=0.00000 N*m
+
+--- RUDDER_AERO_MOMENT_SIGN_TEST ---
+Hypothesis: rudder_sign=+1 confirmed if measured Mz < 0 (nose-right)
+Commanded joint positions: {'rudder_joint': 0.13962634015954636}
+Hold-end state (converged): u=14.9968 v=0.0014 w=0.0295 p=0.00008 q=-0.00253 r=-0.00603
+delta_a=0.00deg delta_e=0.00deg delta_r=8.00deg (aileron_sign=1.0 elevator_sign=1.0 rudder_sign=1.0, aero_v1_config.yaml, UNMODIFIED)
+Released axis: z (r). r(t) over release window: [-0.0065, -0.00697, -0.00744, -0.00791, -0.00838, -0.00885, -0.00932, -0.00979, -0.01026, -0.01073, -0.0112, -0.01166, -0.01213, -0.0126, -0.01307, -0.01354, -0.014, -0.01447, -0.01494, -0.01541]
+Measured slope dr/dt = -0.46875 rad/s^2 over 20 free steps -> moment_measured = I_zz*slope = 0.9523*-0.46875 = -0.44639 N*m
+Independent replica (from hold-end state + same delta mapping): Cn (Cndr)-driven Mz_expected = -0.45268 N*m (qbar=137.755, ref_len=2.093)
+Nonzero: PASS; Finite: PASS; Sane magnitude (within 5x of formula replica): PASS; Same sign as replica (config unmodified, checks plumbing self-consistency): yes
+Measured moment_measured=-0.44639 N*m
+
+--- Interpretation against controls-integration's hypotheses ---
+AILERON_DIFFERENTIAL_SIGN_TEST: measured Mx=4.87685 N*m -> CONFIRMS-HYPOTHESIS (aileron_sign=+1 hypothesis needs Mx>0) -> PASS
+AILERON_AERO_MOMENT_SIGN_TEST (same measurement run as AILERON_DIFFERENTIAL_SIGN_TEST): measured Mx=4.87685 N*m -> CONFIRMS-HYPOTHESIS -> PASS
+AILERON_COMMON_MODE_REJECTION_TEST: measured Mx=0.00000 N*m vs differential Mx=4.87685 N*m, |ratio|=0.0000 (expect << 1, threshold 0.15) -> PASS
+RUDDER_AERO_MOMENT_SIGN_TEST: measured Mz=-0.44639 N*m -> CONFIRMS-HYPOTHESIS (rudder_sign=+1 hypothesis needs Mz<0) -> PASS
+
+==============================================================================
+SUMMARY - all 9 tests
+==============================================================================
+LEFT_AILERON_JOINT_SIGN_TEST: PASS (CONFIRMS-HYPOTHESIS)
+RIGHT_AILERON_JOINT_SIGN_TEST: PASS (CONFIRMS-HYPOTHESIS)
+AILERON_DIFFERENTIAL_SIGN_TEST: PASS (CONFIRMS-HYPOTHESIS)
+AILERON_COMMON_MODE_REJECTION_TEST: PASS (CONFIRMS-HYPOTHESIS)
+LEFT_ELEVATOR_JOINT_SIGN_TEST: PASS (CONFIRMS-HYPOTHESIS)
+RIGHT_ELEVATOR_JOINT_SIGN_TEST: PASS (CONFIRMS-HYPOTHESIS)
+RUDDER_JOINT_SIGN_TEST: PASS (CONFIRMS-HYPOTHESIS)
+AILERON_AERO_MOMENT_SIGN_TEST: PASS (CONFIRMS-HYPOTHESIS)
+RUDDER_AERO_MOMENT_SIGN_TEST: PASS (CONFIRMS-HYPOTHESIS)
+
+OVERALL: PASS

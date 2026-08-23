@@ -1,0 +1,50 @@
+FALCON V2 - CONTROL_SURFACE_SIGN_MAPPING follow-up pass (gazebo-testing, 2026-08-22)
+Post elevator_sign fix (+1.0 -> -1.0). No aircraft physics parameter modified by this script.
+
+==============================================================================
+ELEVATOR_SYMMETRIC_MAPPING_TEST / ELEVATOR_AERO_MOMENT_SIGN_TEST
+(same live measurement run, reported against both named tests, per
+ coordinator instruction)
+==============================================================================
+Config check: elevator_sign (loaded fresh from aero_v1_config.yaml this run) = -1.0
+Total steps run: 420 (expected 420)
+Any NaN/Inf observed: False
+base_link inertia (queried at runtime): {'mass': 5.9348, 'ixx': 0.7284, 'iyy': 0.2507, 'izz': 0.9523, 'ixy': 0.0, 'ixz': 0.01485, 'iyz': 0.0}
+Commanded joint positions: {'left_elevator_joint': 0.13962634015954636, 'right_elevator_joint': 0.13962634015954636} (same physical TE-up command as the pre-fix run)
+Hold-end state (converged): u=14.9968 v=0.0000 w=0.0276 p=0.00000 q=-0.02113 r=0.00000
+delta_e = 0.5*elevator_sign*(theta_left+theta_right) = 0.5*-1.0*(8.0+8.0)deg = -8.00deg (elevator_sign=-1.0, aero_v1_config.yaml, POST-FIX)
+Released axis: y (q). q(t) over release window: [-0.02739, -0.03362, -0.03982, -0.04598, -0.0521, -0.05819, -0.06424, -0.07026, -0.07625, -0.0822, -0.08812, -0.09401, -0.09987, -0.1057, -0.1115, -0.11726, -0.123, -0.1287, -0.13437, -0.14002]
+Measured slope dq/dt = -5.92580 rad/s^2 over 20 free steps -> My_measured = I_yy*slope = 0.2507*-5.92580 = -1.48560 N*m
+Independent replica (fresh aero_lib.compute_aero, mirrors AeroModel.hh + corrected elevator_sign): My_expected = -1.58668 N*m (cmStatic=0.11553, cmRate=0.00161, qbar=137.755, c_ref=0.224)
+Nonzero: PASS; Finite: PASS; Sane magnitude (within 5x of replica): PASS; Same sign as replica: yes
+Sign flip vs pre-fix measurement (My=+1.128 N*m, nose-down, elevator_sign=+1.0 pre-fix): YES, flipped as expected
+Physical interpretation: My_measured=-1.48560 N*m -> NOSE-UP (My<0) (this plugin's established FLU My convention, AeroModel.hh 'RESOLVED FINDING')
+
+ELEVATOR_SYMMETRIC_MAPPING_TEST (expects My to flip sign vs pre-fix +1.128 N*m): CONFIRMS-HYPOTHESIS -> PASS
+ELEVATOR_AERO_MOMENT_SIGN_TEST (expects textbook-correct nose-up My<0 for physical TE-up command): CONFIRMS-HYPOTHESIS -> PASS
+
+==============================================================================
+OPTIONAL REGRESSION CHECK: re-run test_aero_stability_derivatives.py
+(Cma_RESTORING_SIGN_TEST, Cmq_DAMPING_SIGN_TEST, etc. - should be
+ unaffected by an elevator_sign-only config change)
+==============================================================================
+  Cma_RESTORING_SIGN_TEST: HIGHEST PRIORITY. alpha=+8deg (nose up), q=0 held, then pitch-axis control released. Expected (textbook, statically-stable aircraft, AND per aerodynamics' scoped Cm-to-My fix applied this pass): restoring nose-down moment (q>0 per the FLU '+Y=nose down' convention documented in AeroModel.hh). The FIRST run of this test (pre-fix) found this came out DESTABILIZING instead, reported as TEST_FAILED - this run independently re-confirms whether the fix resolved it live.
+  Cma_RESTORING_SIGN_TEST, negative-alpha consistency check: alpha=-8deg (nose down), expect restoring nose-UP moment (q<0) post-fix, mirroring the positive-alpha case symmetrically.
+  Cmq_DAMPING_SIGN_TEST: alpha=beta=0, q=+0.4 rad/s held, then pitch-axis control released. Expected: moment opposes existing q (damping, q decays toward 0), REGARDLESS of the Cma finding above (rate/damping terms are self-referential and frame-independent per AeroModel.hh's own analysis).
+  Clp_DAMPING_SIGN_TEST: alpha=beta=0, p=+0.4 rad/s held, then roll-axis control released. Expected: moment opposes existing p (damping).
+  Cnr_DAMPING_SIGN_TEST: alpha=beta=0, r=+0.4 rad/s held, then yaw-axis control released. Expected: moment opposes existing r (damping).
+  === Cma_RESTORING_SIGN_TEST VERDICT (highest priority) ===
+  === Cmq_DAMPING_SIGN_TEST / Clp_DAMPING_SIGN_TEST / Cnr_DAMPING_SIGN_TEST verdicts ===
+  Damping tests overall: PASS
+  RATE_NORMALIZATION_TEST overall: PASS
+  === test_aero_stability_derivatives.py OVERALL (Cma finding reported separately, see verdict above): PASS ===
+test_aero_stability_derivatives.py re-run exit code: 0 -> PASS (script-level)
+
+==============================================================================
+SUMMARY
+==============================================================================
+ELEVATOR_SYMMETRIC_MAPPING_TEST: PASS (CONFIRMS-HYPOTHESIS)
+ELEVATOR_AERO_MOMENT_SIGN_TEST: PASS (CONFIRMS-HYPOTHESIS)
+Regression re-run (test_aero_stability_derivatives.py): PASS
+
+OVERALL (2 required tests only, regression check informational): PASS

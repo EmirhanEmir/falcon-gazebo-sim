@@ -1,0 +1,364 @@
+{
+  "part_a": {
+    "LEFT_AILERON_JOINT_SIGN_TEST": {
+      "per_angle": {
+        "-5.0": {
+          "readback_rad": -0.08726646259971647,
+          "readback_deg": -5.0,
+          "world_point": [
+            0.006691427745268954,
+            0.5500898263788403,
+            0.11586304039623908
+          ],
+          "link_world_pos": [
+            0.032943,
+            0.31395,
+            0.110356
+          ]
+        },
+        "0.0": {
+          "readback_rad": 0.0,
+          "readback_deg": 0.0,
+          "world_point": [
+            0.006981000000000001,
+            0.550057,
+            0.11816299999999999
+          ],
+          "link_world_pos": [
+            0.032943,
+            0.31395,
+            0.110356
+          ]
+        },
+        "5.0": {
+          "readback_rad": 0.08726646259971647,
+          "readback_deg": 5.0,
+          "world_point": [
+            0.007469945347777274,
+            0.5500244562986731,
+            0.12042896937207473
+          ],
+          "link_world_pos": [
+            0.032943,
+            0.31395,
+            0.110356
+          ]
+        }
+      },
+      "readback_ok": true,
+      "monotonic_ok": true,
+      "observed_direction": "TE-up-for-positive-angle",
+      "delta_at_plus5": 0.0022659693720747387,
+      "delta_at_minus5": -0.0022999596037609066,
+      "verdict": "CONFIRMS-HYPOTHESIS",
+      "pass_fail": "PASS"
+    },
+    "RIGHT_AILERON_JOINT_SIGN_TEST": {
+      "per_angle": {
+        "-5.0": {
+          "readback_rad": -0.08726646259971647,
+          "readback_deg": -5.0,
+          "world_point": [
+            0.006691427745268954,
+            -0.5500898263788403,
+            0.11586304039623908
+          ],
+          "link_world_pos": [
+            0.032943,
+            -0.31395,
+            0.110356
+          ]
+        },
+        "0.0": {
+          "readback_rad": 0.0,
+          "readback_deg": 0.0,
+          "world_point": [
+            0.006981000000000001,
+            -0.550057,
+            0.11816299999999999
+          ],
+          "link_world_pos": [
+            0.032943,
+            -0.31395,
+            0.110356
+          ]
+        },
+        "5.0": {
+          "readback_rad": 0.08726646259971647,
+          "readback_deg": 5.0,
+          "world_point": [
+            0.007469945347777274,
+            -0.5500244562986731,
+            0.12042896937207473
+          ],
+          "link_world_pos": [
+            0.032943,
+            -0.31395,
+            0.110356
+          ]
+        }
+      },
+      "readback_ok": true,
+      "monotonic_ok": true,
+      "observed_direction": "TE-up-for-positive-angle",
+      "delta_at_plus5": 0.0022659693720747387,
+      "delta_at_minus5": -0.0022999596037609066,
+      "verdict": "CONFIRMS-HYPOTHESIS",
+      "pass_fail": "PASS"
+    },
+    "LEFT_ELEVATOR_JOINT_SIGN_TEST": {
+      "per_angle": {
+        "-5.0": {
+          "readback_rad": -0.08726646259971647,
+          "readback_deg": -5.0,
+          "world_point": [
+            -0.49475779576476736,
+            0.14529509976931163,
+            0.08131647917322549
+          ],
+          "link_world_pos": [
+            -0.474959,
+            0.0506,
+            0.087119
+          ]
+        },
+        "0.0": {
+          "readback_rad": 0.0,
+          "readback_deg": 0.0,
+          "world_point": [
+            -0.49517,
+            0.1453,
+            0.083088
+          ],
+          "link_world_pos": [
+            -0.474959,
+            0.0506,
+            0.087119
+          ]
+        },
+        "5.0": {
+          "readback_rad": 0.08726646259971647,
+          "readback_deg": 5.0,
+          "world_point": [
+            -0.49542623759367654,
+            0.14530449545240653,
+            0.08488870665850796
+          ],
+          "link_world_pos": [
+            -0.474959,
+            0.0506,
+            0.087119
+          ]
+        }
+      },
+      "readback_ok": true,
+      "monotonic_ok": true,
+      "observed_direction": "TE-up-for-positive-angle",
+      "delta_at_plus5": 0.0018007066585079695,
+      "delta_at_minus5": -0.0017715208267745086,
+      "verdict": "CONFIRMS-HYPOTHESIS",
+      "pass_fail": "PASS"
+    },
+    "RIGHT_ELEVATOR_JOINT_SIGN_TEST": {
+      "per_angle": {
+        "-5.0": {
+          "readback_rad": -0.08726646259971647,
+          "readback_deg": -5.0,
+          "world_point": [
+            -0.49475779576476736,
+            -0.14529509976931163,
+            0.08131647917322549
+          ],
+          "link_world_pos": [
+            -0.474959,
+            -0.0506,
+            0.087119
+          ]
+        },
+        "0.0": {
+          "readback_rad": 0.0,
+          "readback_deg": 0.0,
+          "world_point": [
+            -0.49517,
+            -0.1453,
+            0.083088
+          ],
+          "link_world_pos": [
+            -0.474959,
+            -0.0506,
+            0.087119
+          ]
+        },
+        "5.0": {
+          "readback_rad": 0.08726646259971647,
+          "readback_deg": 5.0,
+          "world_point": [
+            -0.49542623759367654,
+            -0.14530449545240653,
+            0.08488870665850796
+          ],
+          "link_world_pos": [
+            -0.474959,
+            -0.0506,
+            0.087119
+          ]
+        }
+      },
+      "readback_ok": true,
+      "monotonic_ok": true,
+      "observed_direction": "TE-up-for-positive-angle",
+      "delta_at_plus5": 0.0018007066585079695,
+      "delta_at_minus5": -0.0017715208267745086,
+      "verdict": "CONFIRMS-HYPOTHESIS",
+      "pass_fail": "PASS"
+    },
+    "RUDDER_JOINT_SIGN_TEST": {
+      "per_angle": {
+        "-5.0": {
+          "readback_rad": -0.08726646259971647,
+          "readback_deg": -5.0,
+          "world_point": [
+            -0.49526443039635987,
+            0.0017538266985776209,
+            0.21499920531774058
+          ],
+          "link_world_pos": [
+            -0.476094,
+            0.0,
+            0.1305
+          ]
+        },
+        "0.0": {
+          "readback_rad": 0.0,
+          "readback_deg": 0.0,
+          "world_point": [
+            -0.49534100000000003,
+            0.0,
+            0.21500000000000002
+          ],
+          "link_world_pos": [
+            -0.476094,
+            0.0,
+            0.1305
+          ]
+        },
+        "5.0": {
+          "readback_rad": 0.08726646259971647,
+          "readback_deg": 5.0,
+          "world_point": [
+            -0.49526443039635987,
+            -0.0017538266985776209,
+            0.21499920531774058
+          ],
+          "link_world_pos": [
+            -0.476094,
+            0.0,
+            0.1305
+          ]
+        }
+      },
+      "readback_ok": true,
+      "monotonic_ok": true,
+      "observed_direction": "TE-right(-Y)-for-positive-angle",
+      "delta_at_plus5": -0.0017538266985776209,
+      "delta_at_minus5": 0.0017538266985776209,
+      "verdict": "CONFIRMS-HYPOTHESIS",
+      "pass_fail": "PASS"
+    }
+  },
+  "part_b": {
+    "AILERON_DIFFERENTIAL_SIGN_TEST": {
+      "moment_measured": 4.876854706905302,
+      "moment_expected_replica": 5.252207992799232,
+      "nonzero_ok": true,
+      "finite_ok": true,
+      "sane_ok": true,
+      "same_sign_as_replica": true,
+      "commanded": {
+        "left_aileron_joint": -0.13962634015954636,
+        "right_aileron_joint": 0.13962634015954636
+      },
+      "hold_last": {
+        "n": 399,
+        "t": 0.399,
+        "in_hold": true,
+        "u": 14.996820444989975,
+        "v": 0.000261034546248068,
+        "w": 0.029508052130271595,
+        "p": 0.07002940373600874,
+        "q": -0.002525396191530505,
+        "r": -0.00014882318258408625
+      },
+      "verdict": "CONFIRMS-HYPOTHESIS",
+      "pass_fail": "PASS"
+    },
+    "AILERON_COMMON_MODE_REJECTION_TEST": {
+      "moment_measured": 1.6206457254585313e-17,
+      "moment_expected_replica": 1.9214786699374565e-17,
+      "nonzero_ok": false,
+      "finite_ok": true,
+      "sane_ok": true,
+      "same_sign_as_replica": true,
+      "commanded": {
+        "left_aileron_joint": 0.13962634015954636,
+        "right_aileron_joint": 0.13962634015954636
+      },
+      "hold_last": {
+        "n": 819,
+        "t": 0.8190000000000001,
+        "in_hold": true,
+        "u": 14.996820452469684,
+        "v": -4.694595406862234e-17,
+        "w": 0.02950484178814212,
+        "p": 3.222695666506596e-18,
+        "q": -0.002526212463854355,
+        "r": 3.3443814128428716e-17
+      },
+      "ratio_to_differential": 3.323137191607953e-18,
+      "verdict": "CONFIRMS-HYPOTHESIS",
+      "pass_fail": "PASS"
+    },
+    "RUDDER_AERO_MOMENT_SIGN_TEST": {
+      "moment_measured": -0.44638841933066675,
+      "moment_expected_replica": -0.45268445856929446,
+      "nonzero_ok": true,
+      "finite_ok": true,
+      "sane_ok": true,
+      "same_sign_as_replica": true,
+      "commanded": {
+        "rudder_joint": 0.13962634015954636
+      },
+      "hold_last": {
+        "n": 1239,
+        "t": 1.239,
+        "in_hold": true,
+        "u": 14.996820361561916,
+        "v": 0.0014345074334643146,
+        "w": 0.02950484567752219,
+        "p": 8.352482855992997e-05,
+        "q": -0.002526203989597913,
+        "r": -0.006028693990608199
+      },
+      "verdict": "CONFIRMS-HYPOTHESIS",
+      "pass_fail": "PASS"
+    },
+    "AILERON_AERO_MOMENT_SIGN_TEST": {
+      "moment_measured": 4.876854706905302,
+      "moment_expected_replica": 5.252207992799232,
+      "note": "Same measurement run as AILERON_DIFFERENTIAL_SIGN_TEST, per task instruction ('same as test 3 essentially').",
+      "verdict": "CONFIRMS-HYPOTHESIS",
+      "pass_fail": "PASS"
+    }
+  },
+  "any_nan": false,
+  "inertia": {
+    "mass": 5.9348,
+    "ixx": 0.7284,
+    "iyy": 0.2507,
+    "izz": 0.9523,
+    "ixy": 0.0,
+    "ixz": 0.01485,
+    "iyz": 0.0
+  },
+  "overall": true
+}

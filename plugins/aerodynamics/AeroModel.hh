@@ -73,7 +73,11 @@ struct AeroConfig
   double CLmax = 1.42;           // manufacturer performance-calc input, MD sec 3
   double alphaTransition = 0.0;  // rad, DERIVED = midpoint of 9-9.5 deg XFLR5 reliability band
 
-  // Control-joint-to-deflection-sign mapping (ASSUMPTION, pending sign tests)
+  // Control-joint-to-deflection-sign mapping. Signs VERIFIED_BY_GAZEBO_GEOMETRY_SIGN_TEST,
+  // task CONTROL_SURFACE_SIGN_MAPPING, 2026-08-22 (see AERODYNAMICS.md 19.13).
+  // Literal defaults below are pre-load placeholders only, overwritten from
+  // aero_v1_config.yaml's control_mapping block (elevator_sign = -1.0,
+  // aileron_sign/rudder_sign = +1.0) at config-load time.
   double elevatorSign = 1.0, aileronSign = 1.0, rudderSign = 1.0;
   double controlDeflectionClamp = 0.0; // rad, V1_CONSERVATIVE_CLAMP (~10 deg)
 

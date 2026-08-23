@@ -1,0 +1,82 @@
+{
+  "checks": {
+    "PITCH_RATE_DAMPING_RESPONSE": {
+      "coefficient": "Cmq",
+      "table_condition": "q=+0.5 rad/s @ FULL neutral trim (u=21.24357, w=-0.135166, V=21.244)",
+      "live_measured_2026_08_22": -0.6660575093288739,
+      "live_replica_at_hold_state_2026_08_22": -0.6706207103421903,
+      "formula_at_table_condition": -0.7536516665814895,
+      "table_quoted_expected": -0.754,
+      "formula_matches_task_example": true,
+      "scale_factor": 1.1238120967020717,
+      "live_scaled_to_table": -0.7485234860830414,
+      "ratio_vs_table": 0.9927367189430257,
+      "same_sign": true,
+      "within_factor_2": true,
+      "check_pass": true
+    },
+    "ROLL_RATE_DAMPING_RESPONSE": {
+      "coefficient": "Clp",
+      "table_condition": "p=+0.5 rad/s @ V=18.162",
+      "live_measured_2026_08_22": -1.717595763250562,
+      "live_replica_at_hold_state_2026_08_22": -1.8496858112303356,
+      "formula_at_table_condition": -2.97996151075236,
+      "table_quoted_expected": -2.98,
+      "formula_matches_task_example": true,
+      "scale_factor": 1.6110636155932943,
+      "live_scaled_to_table": -2.7671560404701743,
+      "ratio_vs_table": 0.9285758525067699,
+      "same_sign": true,
+      "within_factor_2": true,
+      "check_pass": true
+    },
+    "YAW_RATE_DAMPING_RESPONSE": {
+      "coefficient": "Cnr",
+      "table_condition": "r=+0.5 rad/s @ V=18.162",
+      "live_measured_2026_08_22": -0.1291215818765108,
+      "live_replica_at_hold_state_2026_08_22": -0.09554532436223354,
+      "formula_at_table_condition": -0.1224717051035397,
+      "table_quoted_expected": -0.122,
+      "formula_matches_task_example": true,
+      "scale_factor": 1.2818178798495914,
+      "live_scaled_to_table": -0.16551035232377448,
+      "ratio_vs_table": 1.356642232162086,
+      "same_sign": true,
+      "within_factor_2": true,
+      "check_pass": true
+    },
+    "POSITIVE_ALPHA_RESTORING_PITCH_RESPONSE": {
+      "coefficient": "Cma (static group)",
+      "table_condition": "alpha=+8deg @ V=18.162",
+      "live_measured_2026_08_22": 2.766580404164428,
+      "live_replica_at_hold_state_2026_08_22": 2.9586774340708666,
+      "formula_at_table_condition": 4.514016997977979,
+      "table_quoted_expected": 4.514,
+      "formula_matches_task_example": true,
+      "scale_factor": 1.5256874392579893,
+      "live_scaled_to_table": 4.220936972330959,
+      "ratio_vs_table": 0.9350768658243152,
+      "same_sign": true,
+      "within_factor_2": true,
+      "check_pass": true
+    },
+    "POSITIVE_BETA_DIRECTIONAL_STABILITY_RESPONSE": {
+      "coefficient": "Cnb",
+      "table_condition": "beta=+5deg @ V=18.162",
+      "live_measured_2026_08_22": 0.6477964361794553,
+      "live_replica_at_hold_state_2026_08_22": 0.6569534498883283,
+      "formula_at_table_condition": 0.5920256725326376,
+      "table_quoted_expected": 0.592,
+      "formula_matches_task_example": true,
+      "scale_factor": 0.9011683744613452,
+      "live_scaled_to_table": 0.5837736613736922,
+      "ratio_vs_table": 0.9861041577258315,
+      "same_sign": true,
+      "within_factor_2": true,
+      "check_pass": true
+    }
+  },
+  "overall": true,
+  "cited_source_file": "/home/emirhan/Desktop/FalconV2/tests/gazebo/results/aero_stability_derivatives_result.json",
+  "cited_source_overall": true
+}

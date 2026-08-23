@@ -265,7 +265,8 @@ void AerodynamicsSystem::PreUpdate(
 
   // ---- Control-surface joint positions -> deflection mapping ----
   // See aero_v1_config.yaml control_mapping block for the full documented
-  // rationale (ASSUMPTION-tagged pending controls-integration sign tests).
+  // rationale (VERIFIED_BY_GAZEBO_GEOMETRY_SIGN_TEST, task
+  // CONTROL_SURFACE_SIGN_MAPPING, 2026-08-22 - see AERODYNAMICS.md 19.13).
   auto jointPos = [&_ecm](gz::sim::Entity e) -> double
   {
     if (e == gz::sim::kNullEntity)

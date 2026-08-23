@@ -95,7 +95,13 @@ AeroConfig MakeFalconV2Config()
   c.CLmax = 1.42;
   c.alphaTransition = 9.25 * M_PI / 180.0;
 
-  c.elevatorSign = 1.0; c.aileronSign = 1.0; c.rudderSign = 1.0;
+  // elevator_sign=-1.0 per task CONTROL_SURFACE_SIGN_MAPPING (2026-08-22):
+  // VERIFIED_BY_GAZEBO_GEOMETRY_SIGN_TEST, was ASSUMPTION=+1.0 (backward) -
+  // see aero_v1_config.yaml control_mapping. NOTE: these sign fields are not
+  // exercised by ComputeAero() itself (the joint-to-delta_e sign mapping
+  // happens upstream in AerodynamicsSystem.cc, not in this pure-math core) -
+  // kept here only so this struct stays a faithful mirror of the real YAML.
+  c.elevatorSign = -1.0; c.aileronSign = 1.0; c.rudderSign = 1.0;
   c.controlDeflectionClamp = 10.0 * M_PI / 180.0;
 
   c.Prepare();
@@ -274,34 +280,48 @@ int main()
   // -----------------------------------------------------------------------
   // AILERON_ROLL_SIGN_TEST / RUDDER_YAW_SIGN_TEST / ELEVATOR_PITCH_SIGN_TEST
   // -----------------------------------------------------------------------
-  // These can only be verified at the ALGEBRAIC level here (does a positive
+  // This self-test can only verify the ALGEBRAIC level here (does a positive
   // delta_x move the corresponding moment in the direction the given
-  // coefficient sign implies?) - the PHYSICAL joint-to-deflection mapping is
-  // explicitly ASSUMPTION-tagged (aero_v1_config.yaml control_mapping) and
-  // requires controls-integration's live AILERON_TEST/ELEVATOR_TEST/
-  // RUDDER_TEST before a physical direction can be asserted. Reported as
-  // INFO, not PASS/FAIL, to avoid implying a physical confirmation that
-  // hasn't happened.
+  // coefficient sign implies, using an already-abstract delta_x - not a real
+  // joint angle) - still reported as INFO, not PASS/FAIL, since this
+  // executable never re-derives the full joint->delta_x->moment chain
+  // itself. HOWEVER, as of task CONTROL_SURFACE_SIGN_MAPPING (2026-08-22),
+  // the full physical chain (joint sign -> delta_x -> real applied moment)
+  // HAS been independently confirmed for all three surfaces via live
+  // Gazebo kinematic + aero-moment measurements (controls-integration's
+  // geometric determination + gazebo-testing's confirming live tests,
+  // 9/9 CONFIRMS-HYPOTHESIS) - see aero_v1_config.yaml control_mapping and
+  // AERODYNAMICS.md sec 19.13. elevator_sign was corrected (+1.0 -> -1.0,
+  // was backward); aileron_sign/rudder_sign were confirmed correct
+  // unchanged. This INFO output is retained for algebraic-level diagnostic
+  // value only, not because the physical direction is still unconfirmed.
   {
     AeroState st; st.u = 21.244; st.deltaA = 5.0 * M_PI / 180.0;
     AeroOutput out = ComputeAero(cfg, st);
     Info("AILERON_ROLL_SIGN (algebraic only)",
          "delta_a=+5deg -> Mx=" + std::to_string(out.momentBody.X()) +
-         " (Clda=" + std::to_string(cfg.Clda) + "; PHYSICAL direction needs live AILERON_TEST)");
+         " (Clda=" + std::to_string(cfg.Clda) + "; physical joint->moment "
+         "chain CONFIRMED live this pass, aileron_sign=+1.0 correct - see "
+         "control_surface_sign_mapping test report)");
   }
   {
     AeroState st; st.u = 21.244; st.deltaR = 5.0 * M_PI / 180.0;
     AeroOutput out = ComputeAero(cfg, st);
     Info("RUDDER_YAW_SIGN (algebraic only)",
          "delta_r=+5deg -> Mz=" + std::to_string(out.momentBody.Z()) +
-         " (Cndr=" + std::to_string(cfg.Cndr) + "; PHYSICAL direction needs live RUDDER_TEST)");
+         " (Cndr=" + std::to_string(cfg.Cndr) + "; physical joint->moment "
+         "chain CONFIRMED live this pass, rudder_sign=+1.0 correct - see "
+         "control_surface_sign_mapping test report)");
   }
   {
     AeroState st; st.u = 21.244; st.deltaE = 5.0 * M_PI / 180.0;
     AeroOutput out = ComputeAero(cfg, st);
     Info("ELEVATOR_PITCH_SIGN (algebraic only)",
          "delta_e=+5deg -> My=" + std::to_string(out.momentBody.Y()) +
-         " (Cmde=" + std::to_string(cfg.Cmde) + "; Cmde is now part of the "
+         " (Cmde=" + std::to_string(cfg.Cmde) + "; physical joint->moment "
+         "chain CONFIRMED live this pass, elevator_sign CORRECTED to -1.0 "
+         "(was backward at +1.0) - see control_surface_sign_mapping test "
+         "report. Cmde is now part of the "
          "negated 'static' group in the Cm-to-My fix this pass, so this "
          "measured sign is FLIPPED relative to any pre-fix measurement - "
          "expected, not a regression. PHYSICAL direction still needs live "

@@ -1,40 +1,40 @@
 {
   "results": {
     "CMA_POS_8DEG": {
-      "rate0": 0.03940253618942184,
-      "slope": 11.023472815075165,
-      "moment_measured": 2.7635846347393436,
-      "moment_expected_replica": 2.958670931832963
+      "rate0": 0.03939727825442111,
+      "slope": 11.035422433842953,
+      "moment_measured": 2.766580404164428,
+      "moment_expected_replica": 2.9586774340708666
     },
     "CMA_NEG_8DEG": {
-      "rate0": -0.04458637993505818,
-      "slope": -12.480424734353441,
-      "moment_measured": -3.1288424809024074,
-      "moment_expected_replica": -3.3482473206338663
+      "rate0": -0.04458012199663018,
+      "slope": -12.493795353647414,
+      "moment_measured": -3.1321944951594065,
+      "moment_expected_replica": -3.3482550601897496
     },
     "CMQ_DAMPING": {
-      "rate0": 0.3905767711154784,
-      "slope": -2.6388705595142516,
-      "moment_measured": -0.6615648492702229,
-      "moment_expected_replica": -0.6706852178744053
+      "rate0": 0.3905240681595644,
+      "slope": -2.6567910224526283,
+      "moment_measured": -0.6660575093288739,
+      "moment_expected_replica": -0.6706207103421903
     },
     "CLP_DAMPING": {
-      "rate0": 0.3753365158595942,
-      "slope": -2.358039213448395,
-      "moment_measured": -1.7175957630758112,
-      "moment_expected_replica": -1.8496858118067765
+      "rate0": 0.37533651585638533,
+      "slope": -2.358039213688306,
+      "moment_measured": -1.717595763250562,
+      "moment_expected_replica": -1.8496858112303356
     },
     "CNR_DAMPING": {
-      "rate0": 0.3982561573336542,
-      "slope": -0.13558918781862217,
-      "moment_measured": -0.1291215835596739,
-      "moment_expected_replica": -0.09554532467133968
+      "rate0": 0.3982561573563166,
+      "slope": -0.13558918605115067,
+      "moment_measured": -0.1291215818765108,
+      "moment_expected_replica": -0.09554532436223354
     },
     "CNB_STABILITY": {
-      "rate0": 0.008749075761236869,
-      "slope": 0.6802440789252127,
-      "moment_measured": 0.64779643636048,
-      "moment_expected_replica": 0.6569534498799087
+      "rate0": 0.008749075758391466,
+      "slope": 0.6802440787351205,
+      "moment_measured": 0.6477964361794553,
+      "moment_expected_replica": 0.6569534498883283
     },
     "Cma_RESTORING_SIGN_TEST_measurement_clean": true,
     "Cma_RESTORING_SIGN_TEST_restoring_confirmed": true,

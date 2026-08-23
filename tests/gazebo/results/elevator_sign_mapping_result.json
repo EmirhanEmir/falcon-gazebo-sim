@@ -1,0 +1,85 @@
+{
+  "tests": {
+    "ELEVATOR_SYMMETRIC_MAPPING_TEST": {
+      "elevator_sign_used": -1.0,
+      "commanded": {
+        "left_elevator_joint": 0.13962634015954636,
+        "right_elevator_joint": 0.13962634015954636
+      },
+      "hold_last": {
+        "n": 399,
+        "t": 0.399,
+        "in_hold": true,
+        "u": 14.996830288942201,
+        "v": 0.0,
+        "w": 0.027583056995261146,
+        "p": 0.0,
+        "q": -0.02112675726744846,
+        "r": 0.0
+      },
+      "my_measured": -1.4855992065953323,
+      "my_expected_replica": -1.5866790143681975,
+      "pre_fix_my": 1.128,
+      "nonzero_ok": true,
+      "finite_ok": true,
+      "sane_ok": true,
+      "same_sign_as_replica": true,
+      "flipped_vs_pre_fix": true,
+      "nose_up_confirmed": true,
+      "any_nan": false,
+      "inertia": {
+        "mass": 5.9348,
+        "ixx": 0.7284,
+        "iyy": 0.2507,
+        "izz": 0.9523,
+        "ixy": 0.0,
+        "ixz": 0.01485,
+        "iyz": 0.0
+      },
+      "verdict": "CONFIRMS-HYPOTHESIS",
+      "pass_fail": "PASS"
+    },
+    "ELEVATOR_AERO_MOMENT_SIGN_TEST": {
+      "elevator_sign_used": -1.0,
+      "commanded": {
+        "left_elevator_joint": 0.13962634015954636,
+        "right_elevator_joint": 0.13962634015954636
+      },
+      "hold_last": {
+        "n": 399,
+        "t": 0.399,
+        "in_hold": true,
+        "u": 14.996830288942201,
+        "v": 0.0,
+        "w": 0.027583056995261146,
+        "p": 0.0,
+        "q": -0.02112675726744846,
+        "r": 0.0
+      },
+      "my_measured": -1.4855992065953323,
+      "my_expected_replica": -1.5866790143681975,
+      "pre_fix_my": 1.128,
+      "nonzero_ok": true,
+      "finite_ok": true,
+      "sane_ok": true,
+      "same_sign_as_replica": true,
+      "flipped_vs_pre_fix": true,
+      "nose_up_confirmed": true,
+      "any_nan": false,
+      "inertia": {
+        "mass": 5.9348,
+        "ixx": 0.7284,
+        "iyy": 0.2507,
+        "izz": 0.9523,
+        "ixy": 0.0,
+        "ixz": 0.01485,
+        "iyz": 0.0
+      },
+      "verdict": "CONFIRMS-HYPOTHESIS",
+      "pass_fail": "PASS"
+    }
+  },
+  "any_nan": false,
+  "regression_check_pass": true,
+  "overall": true
+}

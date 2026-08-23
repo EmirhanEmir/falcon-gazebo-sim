@@ -69,3 +69,4 @@ p_hat=p*b/(2V), q_hat=q*c_ref/(2V), r_hat=r*b/(2V) (b=2.093, c_ref=0.224) - refe
 RATE_NORMALIZATION_TEST overall: PASS
 
 === test_aero_stability_derivatives.py OVERALL (Cma finding reported separately, see verdict above): PASS ===
+

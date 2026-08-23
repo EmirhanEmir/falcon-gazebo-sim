@@ -1,0 +1,54 @@
+FALCON V2 - TRIM_AND_DYNAMIC_AERO_VALIDATION - Benchmark A + B (gazebo-testing, 2026-08-23)
+World: /home/emirhan/Desktop/FalconV2/tests/gazebo/worlds/falcon_v2_zero_g_world.sdf
+elevator_sign (loaded fresh from aero_v1_config.yaml) = -1.0 (expected -1.0, VERIFIED_BY_GAZEBO_GEOMETRY_SIGN_TEST per aero_v1_config.yaml)
+Sequencing: Benchmark A run and confirmed FIRST, then Benchmark B (hard requirement).
+
+==============================================================================
+BENCHMARK A (neutral trim, V=21.244 m/s)
+==============================================================================
+Commanded: u_target=21.243570 v_target=0.000000 w_target=-0.135166 m/s, p=q=r=0 target, elevator_joint(left=right)=0.0000 deg -> delta_e_aero=0.5*elevator_sign*(0.00+0.00)deg = -0.0000 deg (elevator_sign=-1.0)
+Feedforward (from aero_lib.compute_aero at exact target state): F=(-5.47095,0.00000,58.89225) N, M=(0.000000e+00,-1.407998e-05,0.000000e+00) N*m
+Total steps run: 400 (expected 400)
+Any NaN/Inf observed: False
+base_link inertia (queried at runtime, cross-check vs hardcoded controller-gain I_DIAG=(0.7284, 0.2507, 0.9523)): {'mass': 5.9348, 'ixx': 0.7284, 'iyy': 0.2507, 'izz': 0.9523, 'ixy': 0.0, 'ixz': 0.01485, 'iyz': 0.0}
+Convergence check - mid-hold (n=200): u=21.243570 v=0.000000 w=-0.135166
+Converged (final, n=399): u=21.24357000 v=0.00000000 w=-0.13516600 p=0.00000000 q=-0.00000000 r=0.00000000
+Residual vs commanded target: du=-1.066e-14 dv=0.000e+00 dw=-1.110e-16 m/s
+Diagnostics topic latest reading (8 messages received): {'V': 21.244000004529642, 'alpha': 0.006362592353303893, 'beta': 0.0, 'qbar': 276.425865917879, 'CL': 0.47168529620055183, 'CD': 0.04684731458481516, 'CY': 0.0, 'Cl': 0.0, 'Cm': 5.037486044899583e-07, 'Cn': 0.0}
+Cross-check (aero_lib.compute_aero, fed measured state): V=21.244000 alpha=0.364550deg beta=0.000000deg qbar=276.4259 CL=0.4716853 CD=0.0468473 Cm=0.0000005 Fx=-5.47095 Fy=0.00000 Fz=58.89225 My=-1.407998e-05
+Body-frame force from DIAGNOSTICS topic (method: wind_to_body_force(lift,drag,side,alpha,beta), lift=qbar*S*CL etc, all from the live diagnostics message): Lift=58.85625 N Drag=5.84554 N Fx=-5.47095 Fy=0.00000 Fz=58.89225 N
+--- Benchmark A verdict ---
+CL: diag=0.4716853 cross=0.4716853 expected=0.4716853 |diag-exp|=3.80e-09 |cross-exp|=3.80e-09 (tol 1e-4) -> PASS
+Cm: diag=0.0000005 cross=0.0000005 expected=0 (tol 1e-3) -> PASS
+Benchmark A OVERALL: PASS
+
+==============================================================================
+BENCHMARK B (18 m/s trim, elevator=-8deg XFLR5 convention)
+==============================================================================
+Commanded: u_target=18.145340 v_target=0.000000 w_target=-0.783350 m/s, p=q=r=0 target, elevator_joint(left=right)=8.0000 deg -> delta_e_aero=0.5*elevator_sign*(8.00+8.00)deg = -8.0000 deg (elevator_sign=-1.0)
+Feedforward (from aero_lib.compute_aero at exact target state): F=(-2.72739,0.00000,61.46242) N, M=(0.000000e+00,-8.364224e-01,0.000000e+00) N*m
+Total steps run: 400 (expected 400)
+Any NaN/Inf observed: False
+base_link inertia (queried at runtime, cross-check vs hardcoded controller-gain I_DIAG=(0.7284, 0.2507, 0.9523)): {'mass': 5.9348, 'ixx': 0.7284, 'iyy': 0.2507, 'izz': 0.9523, 'ixy': 0.0, 'ixz': 0.01485, 'iyz': 0.0}
+Convergence check - mid-hold (n=200): u=18.145340 v=0.000000 w=-0.783350
+Converged (final, n=399): u=18.14534000 v=0.00000000 w=-0.78335000 p=0.00000000 q=-0.00000000 r=0.00000000
+Residual vs commanded target: du=-7.105e-15 dv=0.000e+00 dw=0.000e+00 m/s
+Diagnostics topic latest reading (8 messages received): {'V': 18.162241076973398, 'alpha': 0.04314407413713703, 'beta': 0.0, 'qbar': 202.04353807458614, 'CL': 0.6719950391064, 'CD': 0.05894328316041472, 'CY': 0.0, 'Cl': 0.0, 'Cm': 0.04094219607691994, 'Cn': 0.0}
+Cross-check (aero_lib.compute_aero, fed measured state): V=18.162241 alpha=2.471973deg beta=0.000000deg qbar=202.0435 CL=0.6719950 CD=0.0589433 Cm=0.0409422 Fx=-2.72739 Fy=0.00000 Fz=61.46242 My=-8.364224e-01
+Body-frame force from DIAGNOSTICS topic (method: wind_to_body_force(lift,drag,side,alpha,beta), lift=qbar*S*CL etc, all from the live diagnostics message): Lift=61.28760 N Drag=5.37577 N Fx=-2.72739 Fy=0.00000 Fz=61.46242 N
+--- Benchmark B verdict (vs V1 desk-computed model values - the real PASS/FAIL target) ---
+CL: diag=0.6719950 cross=0.6719950 expected(V1 model)=0.6719960 |diag-exp|=9.61e-07 |cross-exp|=9.61e-07 (tol 1e-4) -> PASS
+CD: diag=0.0589433 cross=0.0589433 expected(V1 model)=0.0589430 |diag-exp|=2.83e-07 |cross-exp|=2.83e-07 (tol 1e-4) -> PASS
+Cm: diag=0.0409422 cross=0.0409422 expected(V1 model)=0.0409420 |diag-exp|=1.96e-07 |cross-exp|=1.96e-07 (tol 1e-3) -> PASS
+My (applied, from cross-check at measured state): -0.836422 N*m vs expected(V1 model) -0.836400 N*m, err=2.243e-05
+Benchmark B OVERALL (vs V1 model): PASS
+KNOWN_V1_LIMITATION (informational, NOT PASS/FAIL): XFLR5/6kg-level-flight reference CL~0.645-0.657, Drag~5.19 N. Live measured CL=0.67200 (+3.23% vs XFLR5 midpoint 0.651), Drag=5.3758 N (+3.58% vs XFLR5 5.19 N). Root cause: V1 model has no CL_delta_e term (elevator affects Cm only) - already root-caused by `aerodynamics`, expected ~+4% CL / ~+3.5% drag gap, matches this measurement.
+Lift vs W~58.86 N (weight-reference magnitude comparison only - this world has NO gravity, so this is NOT an at-rest force-balance check): Lift=61.2876 N (+4.12% vs 58.86 N)
+Drag vs ~5.19 N XFLR5 reference: Drag=5.3758 N (+3.58% vs 5.19 N) [KNOWN_V1_LIMITATION, not PASS/FAIL]
+
+==============================================================================
+SUMMARY
+==============================================================================
+Benchmark A (neutral trim, V=21.244 m/s): PASS
+Benchmark B (18 m/s, elevator=-8deg) vs V1 model desk-computed values: PASS
+Benchmark B vs XFLR5/6kg-level-flight reference: KNOWN_V1_LIMITATION (CL +3.23%, Drag +3.58% - NOT PASS/FAIL, expected/root-caused)

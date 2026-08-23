@@ -1,0 +1,79 @@
+FALCON V2 - TRIM_AND_DYNAMIC_AERO_VALIDATION - dynamic-derivative runtime
+response magnitude/direction sanity check (gazebo-testing, 2026-08-23)
+Not a re-run of the full unit sign-test suite - citing existing 2026-08-22
+live-measured results from /home/emirhan/Desktop/FalconV2/tests/gazebo/results/aero_stability_derivatives_result.json plus a pure-python formula
+cross-check at the task's exact example conditions (no new Gazebo instance launched).
+
+Existing result file overall=True any_nan=False
+Existing per-axis inertia used for moment conversion: {'mass': 5.9348, 'ixx': 0.7284, 'iyy': 0.2507, 'izz': 0.9523, 'ixy': 0.0, 'ixz': 0.01485, 'iyz': 0.0}
+
+==============================================================================
+PITCH_RATE_DAMPING_RESPONSE  (derivative: Cmq)
+==============================================================================
+Cited LIVE evidence (2026-08-22 run, CMQ_DAMPING, real Delta-rate/Delta-t measurement via live ECM state, NOT re-run this pass): moment_measured=-0.66606 N*m, formula-replica-at-that-run's-own-hold-state=-0.67062 N*m (internal cross-check ratio 0.993 - already validated in that run's own RATE_NORMALIZATION_TEST/verdict).
+Formula cross-check (aero_lib.compute_aero, NO simulation, exact table condition 'q=+0.5 rad/s @ FULL neutral trim (u=21.24357, w=-0.135166, V=21.244)', u=21.2436 v=0.0000 w=-0.1352 p=0.0000 q=0.5000 r=0.0000): My=-0.75365 N*m vs task-quoted example -0.75400 N*m (diff=0.00035)
+Formula reproduces task's quoted example magnitude within 5%: YES
+Condition-matched scale factor (table-condition formula / 2026-08-22-run's-own-hold-state formula) = 1.1238
+Live measurement scaled to the table condition: -0.66606 * 1.1238 = -0.74852 N*m, vs task example -0.75400 N*m -> ratio=0.993
+Sign match (live measured vs table expected): YES (opposing (damping))
+Order-of-magnitude check (condition-scaled live vs table): OK (within ~2x)
+VERDICT: PASS (criteria: correct sign from real live measurement AND formula reproduces the task's own quoted example; magnitude flag is informational engineering judgment, not a hard fail)
+
+==============================================================================
+ROLL_RATE_DAMPING_RESPONSE  (derivative: Clp)
+==============================================================================
+Cited LIVE evidence (2026-08-22 run, CLP_DAMPING, real Delta-rate/Delta-t measurement via live ECM state, NOT re-run this pass): moment_measured=-1.71760 N*m, formula-replica-at-that-run's-own-hold-state=-1.84969 N*m (internal cross-check ratio 0.929 - already validated in that run's own RATE_NORMALIZATION_TEST/verdict).
+Formula cross-check (aero_lib.compute_aero, NO simulation, exact table condition 'p=+0.5 rad/s @ V=18.162', u=18.1622 v=0.0000 w=0.0000 p=0.5000 q=0.0000 r=0.0000): Mx=-2.97996 N*m vs task-quoted example -2.98000 N*m (diff=0.00004)
+Formula reproduces task's quoted example magnitude within 5%: YES
+Condition-matched scale factor (table-condition formula / 2026-08-22-run's-own-hold-state formula) = 1.6111
+Live measurement scaled to the table condition: -1.71760 * 1.6111 = -2.76716 N*m, vs task example -2.98000 N*m -> ratio=0.929
+Sign match (live measured vs table expected): YES (opposing (damping))
+Order-of-magnitude check (condition-scaled live vs table): OK (within ~2x)
+VERDICT: PASS (criteria: correct sign from real live measurement AND formula reproduces the task's own quoted example; magnitude flag is informational engineering judgment, not a hard fail)
+
+==============================================================================
+YAW_RATE_DAMPING_RESPONSE  (derivative: Cnr)
+==============================================================================
+Cited LIVE evidence (2026-08-22 run, CNR_DAMPING, real Delta-rate/Delta-t measurement via live ECM state, NOT re-run this pass): moment_measured=-0.12912 N*m, formula-replica-at-that-run's-own-hold-state=-0.09555 N*m (internal cross-check ratio 1.351 - already validated in that run's own RATE_NORMALIZATION_TEST/verdict).
+Formula cross-check (aero_lib.compute_aero, NO simulation, exact table condition 'r=+0.5 rad/s @ V=18.162', u=18.1622 v=0.0000 w=0.0000 p=0.0000 q=0.0000 r=0.5000): Mz=-0.12247 N*m vs task-quoted example -0.12200 N*m (diff=-0.00047)
+Formula reproduces task's quoted example magnitude within 5%: YES
+Condition-matched scale factor (table-condition formula / 2026-08-22-run's-own-hold-state formula) = 1.2818
+Live measurement scaled to the table condition: -0.12912 * 1.2818 = -0.16551 N*m, vs task example -0.12200 N*m -> ratio=1.357
+Sign match (live measured vs table expected): YES (opposing (damping))
+Order-of-magnitude check (condition-scaled live vs table): OK (within ~2x)
+VERDICT: PASS (criteria: correct sign from real live measurement AND formula reproduces the task's own quoted example; magnitude flag is informational engineering judgment, not a hard fail)
+
+==============================================================================
+POSITIVE_ALPHA_RESTORING_PITCH_RESPONSE  (derivative: Cma (static group))
+==============================================================================
+Cited LIVE evidence (2026-08-22 run, CMA_POS_8DEG, real Delta-rate/Delta-t measurement via live ECM state, NOT re-run this pass): moment_measured=2.76658 N*m, formula-replica-at-that-run's-own-hold-state=2.95868 N*m (internal cross-check ratio 0.935 - already validated in that run's own RATE_NORMALIZATION_TEST/verdict).
+Formula cross-check (aero_lib.compute_aero, NO simulation, exact table condition 'alpha=+8deg @ V=18.162', u=17.9855 v=0.0000 w=-2.5277 p=0.0000 q=0.0000 r=0.0000): My=4.51402 N*m vs task-quoted example 4.51400 N*m (diff=0.00002)
+Formula reproduces task's quoted example magnitude within 5%: YES
+Condition-matched scale factor (table-condition formula / 2026-08-22-run's-own-hold-state formula) = 1.5257
+Live measurement scaled to the table condition: 2.76658 * 1.5257 = 4.22094 N*m, vs task example 4.51400 N*m -> ratio=0.935
+Sign match (live measured vs table expected): YES (restoring (nose-down, My>0))
+Order-of-magnitude check (condition-scaled live vs table): OK (within ~2x)
+VERDICT: PASS (criteria: correct sign from real live measurement AND formula reproduces the task's own quoted example; magnitude flag is informational engineering judgment, not a hard fail)
+
+==============================================================================
+POSITIVE_BETA_DIRECTIONAL_STABILITY_RESPONSE  (derivative: Cnb)
+==============================================================================
+Cited LIVE evidence (2026-08-22 run, CNB_STABILITY, real Delta-rate/Delta-t measurement via live ECM state, NOT re-run this pass): moment_measured=0.64780 N*m, formula-replica-at-that-run's-own-hold-state=0.65695 N*m (internal cross-check ratio 0.986 - already validated in that run's own RATE_NORMALIZATION_TEST/verdict).
+Formula cross-check (aero_lib.compute_aero, NO simulation, exact table condition 'beta=+5deg @ V=18.162', u=18.0931 v=1.5829 w=0.0000 p=0.0000 q=0.0000 r=0.0000): Mz=0.59203 N*m vs task-quoted example 0.59200 N*m (diff=0.00003)
+Formula reproduces task's quoted example magnitude within 5%: YES
+Condition-matched scale factor (table-condition formula / 2026-08-22-run's-own-hold-state formula) = 0.9012
+Live measurement scaled to the table condition: 0.64780 * 0.9012 = 0.58377 N*m, vs task example 0.59200 N*m -> ratio=0.986
+Sign match (live measured vs table expected): YES (restoring)
+Order-of-magnitude check (condition-scaled live vs table): OK (within ~2x)
+VERDICT: PASS (criteria: correct sign from real live measurement AND formula reproduces the task's own quoted example; magnitude flag is informational engineering judgment, not a hard fail)
+
+==============================================================================
+SUMMARY
+==============================================================================
+PITCH_RATE_DAMPING_RESPONSE (Cmq): PASS - live-measured=-0.6661 N*m (cited, 2026-08-22 run), table-condition-formula=-0.7537 N*m vs task-example=-0.7540 N*m, scaled-ratio=0.99, magnitude=OK
+ROLL_RATE_DAMPING_RESPONSE (Clp): PASS - live-measured=-1.7176 N*m (cited, 2026-08-22 run), table-condition-formula=-2.9800 N*m vs task-example=-2.9800 N*m, scaled-ratio=0.93, magnitude=OK
+YAW_RATE_DAMPING_RESPONSE (Cnr): PASS - live-measured=-0.1291 N*m (cited, 2026-08-22 run), table-condition-formula=-0.1225 N*m vs task-example=-0.1220 N*m, scaled-ratio=1.36, magnitude=OK
+POSITIVE_ALPHA_RESTORING_PITCH_RESPONSE (Cma (static group)): PASS - live-measured=2.7666 N*m (cited, 2026-08-22 run), table-condition-formula=4.5140 N*m vs task-example=4.5140 N*m, scaled-ratio=0.94, magnitude=OK
+POSITIVE_BETA_DIRECTIONAL_STABILITY_RESPONSE (Cnb): PASS - live-measured=0.6478 N*m (cited, 2026-08-22 run), table-condition-formula=0.5920 N*m vs task-example=0.5920 N*m, scaled-ratio=0.99, magnitude=OK
+
+OVERALL: PASS
