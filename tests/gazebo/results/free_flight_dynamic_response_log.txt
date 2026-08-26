@@ -1,0 +1,44 @@
+FALCON V2 - FREE_FLIGHT_DYNAMIC_RESPONSE_VALIDATION (gazebo-testing, 2026-08-23)
+World: /home/emirhan/Desktop/FalconV2/tests/gazebo/worlds/falcon_v2_freefall_world.sdf
+Base trim (reused, not re-searched): throttle=0.4915 elevator_theta=+5.50deg physical (delta_e_aero=-5.5deg) V=18.165 alpha=2.461deg -> u=18.14825 w=-0.77999 m/s, altitude=100.0m
+
+------------------------------------------------------------------------------
+[A_SHORT_PERIOD] total_steps=5900 (expected 5900) any_nan=False
+[A_SHORT_PERIOD] end-of-trim-hold check (n=799): V=18.167 roll=+0.000 pitch=-0.037 yaw=+0.000 p=+0.000 q=+0.002 r=+0.000 deg(/s)
+[A_SHORT_PERIOD] release-start (perturbed) state: V=18.168 alt=99.31 roll=+0.000 pitch=+0.453 yaw=+0.000 beta=+0.000 p=+0.000 q=+4.892 r=+0.000 deg(/s)
+[A] q0=4.892141008275463 q_end=0.9120061835199016 fd=1.9455252918287937 zeta_est=0.5586662427698608 t_settle=None -> PASS: q decayed and no divergence observed
+
+------------------------------------------------------------------------------
+[B_PHUGOID] total_steps=31000 (expected 31000) any_nan=False
+[B_PHUGOID] end-of-trim-hold check (n=799): V=18.167 roll=+0.000 pitch=-0.037 yaw=+0.000 p=+0.000 q=+0.002 r=+0.000 deg(/s)
+[B_PHUGOID] release-start (perturbed) state: V=19.662 alt=99.24 roll=+0.000 pitch=-0.064 yaw=+0.000 beta=+0.000 p=+0.000 q=-0.181 r=+0.000 deg(/s)
+[B] V range=[16.871,19.662] Td=8.616666666666667 zeta_est=0.2045520234204485 -> PASS: slow, bounded, damped oscillatory energy exchange observed (period~8.616666666666667s), matching the expected very-lightly-damped phugoid character (not required to decay visibly)
+
+------------------------------------------------------------------------------
+[C_ROLL_SUBSIDENCE] total_steps=2900 (expected 2900) any_nan=False
+[C_ROLL_SUBSIDENCE] end-of-trim-hold check (n=799): V=18.167 roll=+0.000 pitch=-0.037 yaw=+0.000 p=+0.000 q=+0.002 r=+0.000 deg(/s)
+[C_ROLL_SUBSIDENCE] release-start (perturbed) state: V=18.168 alt=99.31 roll=+0.780 pitch=-0.037 yaw=-0.002 beta=-0.006 p=+7.776 q=+0.003 r=-0.018 deg(/s)
+[C] p0=7.776044754987686 p_end=-0.1389281455476747 tau_est=0.11157959370099363 slope=-8.962212236403715 fit_window=[0,0.422] roll_end=1.4795166338033234 -> PASS: roll rate damped to near-zero (p0=7.78deg/s -> p_end=-0.139deg/s), tau_est=0.11157959370099363s
+
+------------------------------------------------------------------------------
+[D_DUTCH_ROLL] total_steps=15000 (expected 15000) any_nan=False
+[D_DUTCH_ROLL] end-of-trim-hold check (n=799): V=18.167 roll=+0.000 pitch=-0.037 yaw=+0.000 p=+0.000 q=+0.002 r=+0.000 deg(/s)
+[D_DUTCH_ROLL] release-start (perturbed) state: V=18.212 alt=99.24 roll=-0.003 pitch=-0.037 yaw=+0.013 beta=+3.984 p=-0.026 q=+0.002 r=+0.100 deg(/s)
+[D] beta range=[-2.737,3.984] fd=0.417298937784522 zeta_est=0.12236524658277777 n_extrema=12 -> PASS: coupled yaw-roll oscillation observed (fd=0.417298937784522, zeta_est=0.12236524658277777), non-explosive
+
+------------------------------------------------------------------------------
+[E_SPIRAL] total_steps=21450 (expected 21450) any_nan=False
+[E_SPIRAL] end-of-trim-hold check (n=799): V=18.167 roll=+0.000 pitch=-0.037 yaw=+0.000 p=+0.000 q=+0.002 r=+0.000 deg(/s)
+[E_SPIRAL] release-start (perturbed) state: V=18.168 alt=98.89 roll=+3.944 pitch=-0.036 yaw=-0.007 beta=-0.016 p=+0.000 q=+0.003 r=-0.001 deg(/s)
+[E] roll0=3.9444240435219293 p0(residual)=0.00030113479211041924 fit_slope=-0.07362396238780997 doubling/half=None/9.414695407302755 -> PASS: slow lateral trend measured (slope=-0.0736/s), order of magnitude consistent with a weakly-stable-or-unstable spiral mode (decay)
+
+==============================================================================
+OVERALL SUMMARY
+==============================================================================
+A_SHORT_PERIOD       verdict=PASS         q decayed and no divergence observed
+B_PHUGOID            verdict=PASS         slow, bounded, damped oscillatory energy exchange observed (period~8.616666666666667s), matching the expected very-lightly-damped phugoid character (not required to decay visibly)
+C_ROLL_SUBSIDENCE    verdict=PASS         roll rate damped to near-zero (p0=7.78deg/s -> p_end=-0.139deg/s), tau_est=0.11157959370099363s
+D_DUTCH_ROLL         verdict=PASS         coupled yaw-roll oscillation observed (fd=0.417298937784522, zeta_est=0.12236524658277777), non-explosive
+E_SPIRAL             verdict=PASS         slow lateral trend measured (slope=-0.0736/s), order of magnitude consistent with a weakly-stable-or-unstable spiral mode (decay)
+any_nan across all 5 tests: False
+hard FAILs: none

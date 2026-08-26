@@ -1,0 +1,116 @@
+FALCON V2 - ACTUATOR_SERVO_MODEL_V1 +/-45deg mechanical/mesh sanity check (gazebo-testing, 2026-08-24)
+Static/quasi-static check only - NOT an aerodynamic-correctness claim, NOT a powered free-flight test.
+self_collide=false at the model level (model/model.sdf, geometry-structure's own existing choice) - 
+no live Gazebo contact-event channel exists for these surfaces; this check is geometry-only (Python AABB).
+
+=== left_aileron (left_aileron_joint) ===
+  angle=-45.0deg (settled actual=-44.9976deg, residual=0.0024deg):
+    hinge pivot: expected(base-frame-fixed)=(0.032943, 0.31395, 0.110358) actual(link world pos)=(0.032942, 0.31395, 0.110358) |error|=0.000000 m
+    surface AABB: ((-0.01998967859810305, 0.04297819090311113), (0.31031643495370426, 0.7903492510363648), (0.06849747839057677, 0.12817551615668998))
+    reference 'left_wing_collision' AABB: ((-0.02751268587177435, 0.23899762873996896), (0.0800002723547216, 1.0520273519194154), (0.1035430108093892, 0.15049967689079183))
+    AABB overlap: True, extents(m)=(0.06297, 0.48003, 0.02463), overlap_volume=0.0007446 m^3
+  angle=+0.0deg (settled actual=-0.0001deg, residual=0.0001deg):
+    hinge pivot: expected(base-frame-fixed)=(0.032944, 0.31395, 0.110352) actual(link world pos)=(0.032944, 0.31395, 0.110351) |error|=0.000001 m
+    surface AABB: ((-0.023577938100825695, 0.03754244724295026), (0.3103739721646541, 0.7897400176675855), (0.10768154302527766, 0.12863760069553373))
+    reference 'left_wing_collision' AABB: ((-0.02751126653222861, 0.2389988092488916), (0.08000051000155355, 1.052027510907499), (0.10353684330454112, 0.15049326687943754))
+    AABB overlap: True, extents(m)=(0.06112, 0.47937, 0.02096), overlap_volume=0.0006140 m^3
+  angle=+45.0deg (settled actual=+44.9992deg, residual=0.0008deg):
+    hinge pivot: expected(base-frame-fixed)=(0.032944, 0.31395, 0.110354) actual(link world pos)=(0.032943, 0.31395, 0.110354) |error|=0.000000 m
+    surface AABB: ((-0.013532436494315118, 0.04915600088149854), (0.3097832393668564, 0.7898222125402949), (0.10519869083573714, 0.1655508696115671))
+    reference 'left_wing_collision' AABB: ((-0.027511486896816095, 0.23899859561307962), (0.08000055353900673, 1.052027568833779), (0.10353880952942891, 0.1504950218648281))
+    AABB overlap: True, extents(m)=(0.06269, 0.48004, 0.0453), overlap_volume=0.0013631 m^3
+
+left_aileron: hinge_pivot_ok(<1mm drift)=True (worst=0.000001 m), actuator_settled_ok(<1deg residual)=True, finite_ok=True
+  overlap volume vs 'left_wing_collision': -45deg=0.0007446 0deg=0.0006140 +45deg=0.0013631 m^3 -> no dramatic growth vs neutral baseline
+
+=== right_aileron (right_aileron_joint) ===
+  angle=-45.0deg (settled actual=-44.9976deg, residual=0.0024deg):
+    hinge pivot: expected(base-frame-fixed)=(0.032943, -0.31395, 0.110358) actual(link world pos)=(0.032942, -0.31395, 0.110358) |error|=0.000000 m
+    surface AABB: ((-0.01998967859810305, 0.04297819090311113), (-0.7903492510363648, -0.31031643495370426), (0.06849747839057677, 0.12817551615668998))
+    reference 'right_wing_collision' AABB: ((-0.02751268587177435, 0.23899762873996896), (-1.0520273519194154, -0.0800002723547216), (0.1035430108093892, 0.15049967689079183))
+    AABB overlap: True, extents(m)=(0.06297, 0.48003, 0.02463), overlap_volume=0.0007446 m^3
+  angle=+0.0deg (settled actual=-0.0001deg, residual=0.0001deg):
+    hinge pivot: expected(base-frame-fixed)=(0.032944, -0.31395, 0.110352) actual(link world pos)=(0.032944, -0.31395, 0.110351) |error|=0.000001 m
+    surface AABB: ((-0.023577938100825695, 0.03754244724295026), (-0.7897400176675855, -0.3103739721646541), (0.10768154302527766, 0.12863760069553373))
+    reference 'right_wing_collision' AABB: ((-0.02751126653222861, 0.2389988092488916), (-1.052027510907499, -0.08000051000155355), (0.10353684330454112, 0.15049326687943754))
+    AABB overlap: True, extents(m)=(0.06112, 0.47937, 0.02096), overlap_volume=0.0006140 m^3
+  angle=+45.0deg (settled actual=+44.9992deg, residual=0.0008deg):
+    hinge pivot: expected(base-frame-fixed)=(0.032944, -0.31395, 0.110354) actual(link world pos)=(0.032943, -0.31395, 0.110354) |error|=0.000000 m
+    surface AABB: ((-0.013532436494315118, 0.04915600088149854), (-0.7898222125402949, -0.3097832393668564), (0.10519869083573714, 0.1655508696115671))
+    reference 'right_wing_collision' AABB: ((-0.027511486896816095, 0.23899859561307962), (-1.052027568833779, -0.08000055353900673), (0.10353880952942891, 0.1504950218648281))
+    AABB overlap: True, extents(m)=(0.06269, 0.48004, 0.0453), overlap_volume=0.0013631 m^3
+
+right_aileron: hinge_pivot_ok(<1mm drift)=True (worst=0.000001 m), actuator_settled_ok(<1deg residual)=True, finite_ok=True
+  overlap volume vs 'right_wing_collision': -45deg=0.0007446 0deg=0.0006140 +45deg=0.0013631 m^3 -> no dramatic growth vs neutral baseline
+
+=== left_elevator (left_elevator_joint) ===
+  angle=-45.0deg (settled actual=-44.9980deg, residual=0.0020deg):
+    hinge pivot: expected(base-frame-fixed)=(-0.474959, 0.0506, 0.087119) actual(link world pos)=(-0.474959, 0.0506, 0.087119) |error|=0.000000 m
+    surface AABB: ((-0.5056175439148445, -0.4672939682084799), (0.05048727853061145, 0.24000535096024783), (0.05035757880163101, 0.08908295924174556))
+    reference 'fuselage_collision_tail' AABB: ((-0.5268796001471572, -0.47268352120770174), (-0.2799999942654843, 0.2800000082466041), (2.9727412494289542e-08, 0.3304800460582736))
+    AABB overlap: True, extents(m)=(0.03293, 0.18952, 0.03873), overlap_volume=0.0002417 m^3
+  angle=+0.0deg (settled actual=-0.0002deg, residual=0.0002deg):
+    hinge pivot: expected(base-frame-fixed)=(-0.474958, 0.0506, 0.087119) actual(link world pos)=(-0.474959, 0.0506, 0.08712) |error|=0.000001 m
+    surface AABB: ((-0.5176560688828828, -0.47268271008284163), (0.050599991704927745, 0.2399999964025153), (0.07855450482199532, 0.08762223232921741))
+    reference 'fuselage_collision_tail' AABB: ((-0.5268793930133494, -0.4726832504003169), (-0.2800000023273237, 0.2799999985242334), (2.1772727672217465e-07, 0.330480242539515))
+    AABB overlap: True, extents(m)=(0.04497, 0.1894, 0.00907), overlap_volume=0.0000772 m^3
+  angle=+45.0deg (settled actual=+44.9985deg, residual=0.0015deg):
+    hinge pivot: expected(base-frame-fixed)=(-0.474959, 0.0506, 0.087122) actual(link world pos)=(-0.474959, 0.0506, 0.087122) |error|=0.000000 m
+    surface AABB: ((-0.5112069073667498, -0.4725519682801392), (0.05059729733733922, 0.24004778876994715), (0.07945699253978271, 0.11795219701495235))
+    reference 'fuselage_collision_tail' AABB: ((-0.5268800719355246, -0.4726835403505464), (-0.2799999926109745, 0.2800000097132544), (3.2483247339141558e-06, 0.33048333850448103))
+    AABB overlap: True, extents(m)=(0.03852, 0.18945, 0.0385), overlap_volume=0.0002809 m^3
+
+left_elevator: hinge_pivot_ok(<1mm drift)=True (worst=0.000001 m), actuator_settled_ok(<1deg residual)=True, finite_ok=True
+  overlap volume vs 'fuselage_collision_tail': -45deg=0.0002417 0deg=0.0000772 +45deg=0.0002809 m^3 -> no dramatic growth vs neutral baseline
+
+=== right_elevator (right_elevator_joint) ===
+  angle=-45.0deg (settled actual=-44.9980deg, residual=0.0020deg):
+    hinge pivot: expected(base-frame-fixed)=(-0.474959, -0.0506, 0.087119) actual(link world pos)=(-0.474959, -0.0506, 0.087119) |error|=0.000000 m
+    surface AABB: ((-0.5056175439148445, -0.4672939682084799), (-0.24000535096024783, -0.05048727853061145), (0.05035757880163101, 0.08908295924174556))
+    reference 'fuselage_collision_tail' AABB: ((-0.5268796001471572, -0.47268352120770174), (-0.2800000082466041, 0.2799999942654843), (2.9727412494286604e-08, 0.3304800460582736))
+    AABB overlap: True, extents(m)=(0.03293, 0.18952, 0.03873), overlap_volume=0.0002417 m^3
+  angle=+0.0deg (settled actual=-0.0002deg, residual=0.0002deg):
+    hinge pivot: expected(base-frame-fixed)=(-0.474958, -0.0506, 0.087119) actual(link world pos)=(-0.474959, -0.0506, 0.08712) |error|=0.000001 m
+    surface AABB: ((-0.5176560688828828, -0.47268271008284163), (-0.2399999964025153, -0.050599991704927745), (0.07855450482199532, 0.08762223232921741))
+    reference 'fuselage_collision_tail' AABB: ((-0.5268793930133494, -0.4726832504003169), (-0.2799999985242334, 0.2800000023273237), (2.1772727672217465e-07, 0.330480242539515))
+    AABB overlap: True, extents(m)=(0.04497, 0.1894, 0.00907), overlap_volume=0.0000772 m^3
+  angle=+45.0deg (settled actual=+44.9985deg, residual=0.0015deg):
+    hinge pivot: expected(base-frame-fixed)=(-0.474959, -0.0506, 0.087122) actual(link world pos)=(-0.474959, -0.0506, 0.087122) |error|=0.000000 m
+    surface AABB: ((-0.5112069073667498, -0.4725519682801392), (-0.24004778876994715, -0.05059729733733922), (0.07945699253978271, 0.11795219701495235))
+    reference 'fuselage_collision_tail' AABB: ((-0.5268800719355246, -0.4726835403505464), (-0.2800000097132544, 0.2799999926109745), (3.2483247339141558e-06, 0.33048333850448103))
+    AABB overlap: True, extents(m)=(0.03852, 0.18945, 0.0385), overlap_volume=0.0002809 m^3
+
+right_elevator: hinge_pivot_ok(<1mm drift)=True (worst=0.000001 m), actuator_settled_ok(<1deg residual)=True, finite_ok=True
+  overlap volume vs 'fuselage_collision_tail': -45deg=0.0002417 0deg=0.0000772 +45deg=0.0002809 m^3 -> no dramatic growth vs neutral baseline
+
+=== rudder (rudder_joint) ===
+  angle=-45.0deg (settled actual=-44.9994deg, residual=0.0006deg):
+    hinge pivot: expected(base-frame-fixed)=(-0.476094, 0.0, 0.130497) actual(link world pos)=(-0.476094, 0.0, 0.130496) |error|=0.000000 m
+    surface AABB: ((-0.5088780450549435, -0.4700170535792125), (-0.005564119709807519, 0.034021596364647105), (0.1300862588065579, 0.2997840618759696))
+    reference 'fuselage_collision_tail' AABB: ((-0.5268799616101997, -0.47268360103638535), (-0.27999995122255933, 0.28000005260063204), (-3.3192947130143804e-06, 0.3304767393867617))
+    AABB overlap: True, extents(m)=(0.03619, 0.03959, 0.1697), overlap_volume=0.0002431 m^3
+  angle=+0.0deg (settled actual=+0.0000deg, residual=0.0000deg):
+    hinge pivot: expected(base-frame-fixed)=(-0.476094, 0.0, 0.130498) actual(link world pos)=(-0.476094, 0.0, 0.130498) |error|=0.000000 m
+    surface AABB: ((-0.5179993579432726, -0.4726832737653973), (-0.0044555, 0.0044555), (0.1302483304060345, 0.29974835291105695))
+    reference 'fuselage_collision_tail' AABB: ((-0.5268803732045477, -0.47268420908003467), (-0.28, 0.28), (-1.6740044730857375e-06, 0.3304783529105566))
+    AABB overlap: True, extents(m)=(0.04532, 0.00891, 0.1695), overlap_volume=0.0000684 m^3
+  angle=+45.0deg (settled actual=+44.9994deg, residual=0.0006deg):
+    hinge pivot: expected(base-frame-fixed)=(-0.476094, -0.0, 0.130497) actual(link world pos)=(-0.476094, -0.0, 0.130496) |error|=0.000000 m
+    surface AABB: ((-0.5088780450549435, -0.4700170535792125), (-0.034021596364647105, 0.005564119709807519), (0.1300862588065579, 0.2997840618759696))
+    reference 'fuselage_collision_tail' AABB: ((-0.5268799616101997, -0.47268360103638535), (-0.28000005260063204, 0.27999995122255933), (-3.3192947130143804e-06, 0.3304767393867617))
+    AABB overlap: True, extents(m)=(0.03619, 0.03959, 0.1697), overlap_volume=0.0002431 m^3
+
+rudder: hinge_pivot_ok(<1mm drift)=True (worst=0.000000 m), actuator_settled_ok(<1deg residual)=True, finite_ok=True
+  overlap volume vs 'fuselage_collision_tail': -45deg=0.0002431 0deg=0.0000684 +45deg=0.0002431 m^3 -> no dramatic growth vs neutral baseline
+
+==============================================================================
+SUMMARY - +/-45deg mechanical/mesh sanity check
+==============================================================================
+left_aileron: PASS (mechanical) | geometry: no dramatic overlap growth
+right_aileron: PASS (mechanical) | geometry: no dramatic overlap growth
+left_elevator: PASS (mechanical) | geometry: no dramatic overlap growth
+right_elevator: PASS (mechanical) | geometry: no dramatic overlap growth
+rudder: PASS (mechanical) | geometry: no dramatic overlap growth
+
+OVERALL (mechanical/hinge-integrity/settling): PASS
+Any surface flagged GEOMETRY_REVIEW_REQUIRED: False

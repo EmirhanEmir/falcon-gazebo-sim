@@ -1,0 +1,384 @@
+{
+  "ACTUAL_JOINT_STATE_FEEDS_AERO_TEST": {
+    "early": {
+      "label": "EARLY (before servo has caught up)",
+      "release_delay_ticks": 15,
+      "release_delay_ms": 15.0,
+      "theta_l_deg_at_release": 0.7417973897495489,
+      "theta_r_deg_at_release": 0.7417973897495489,
+      "fraction_of_target": 0.09272467371869361,
+      "my_measured": -0.48847796074842287,
+      "any_nan": false,
+      "inertia": {
+        "mass": 5.9348,
+        "ixx": 0.7284,
+        "iyy": 0.2507,
+        "izz": 0.9523,
+        "ixy": 0.0,
+        "ixz": 0.01485,
+        "iyz": 0.0
+      }
+    },
+    "late": {
+      "label": "LATE (after servo has settled)",
+      "release_delay_ticks": 350,
+      "release_delay_ms": 350.00000000000006,
+      "theta_l_deg_at_release": 7.799711283312772,
+      "theta_r_deg_at_release": 7.799711283312772,
+      "fraction_of_target": 0.9749639104140965,
+      "my_measured": -1.4750025922301262,
+      "any_nan": false,
+      "inertia": {
+        "mass": 5.9348,
+        "ixx": 0.7284,
+        "iyy": 0.2507,
+        "izz": 0.9523,
+        "ixy": 0.0,
+        "ixz": 0.01485,
+        "iyz": 0.0
+      }
+    },
+    "same_sign": true,
+    "partial_position_ok": true,
+    "settled_position_ok": true,
+    "magnitude_grew": true,
+    "any_nan": false,
+    "pass_fail": "PASS"
+  },
+  "LEFT_RIGHT_ELEVATOR_MAPPING_REGRESSION": {
+    "name": "ELEVATOR_LEFT_RIGHT_MAPPING_REGRESSION",
+    "commands_rad": {
+      "left_elevator": 0.08726646259971647,
+      "right_elevator": 0.08726646259971647
+    },
+    "tail_mean_deg": {
+      "left_elevator_joint": 4.861024818829276,
+      "right_elevator_joint": 4.861024818829276
+    },
+    "tail_noise_deg": {
+      "left_elevator_joint": 8.981091281782605e-12,
+      "right_elevator_joint": 8.981091281782605e-12
+    },
+    "settled_deg_formula_val": -4.861024818829276,
+    "expected_deg": -5.0,
+    "held_state": {
+      "u": 14.996833554478092,
+      "v": 7.691659959977986e-25,
+      "w": 0.026962775325792443,
+      "p": 2.305261872693565e-22,
+      "q": -0.02712476075417161,
+      "r": -5.521249980684652e-24
+    },
+    "compute_aero_replica": {
+      "V": 14.996857792616868,
+      "alpha": -0.0017978959475732268,
+      "beta": 5.128847700192691e-26,
+      "qbar": 137.75476798683363,
+      "CL": 0.4253224394283304,
+      "CD": 0.04465147657101083,
+      "CY": -7.752569530030467e-25,
+      "Cl": -8.757898329089877e-24,
+      "Cm": 0.07753692831704032,
+      "Cn": -9.351564066896411e-25,
+      "cmStatic": 0.07546484969597794,
+      "cmRate": 0.002072078621062374,
+      "pHat": 1.6086413454967194e-23,
+      "qHat": -0.0002025739822619943,
+      "rHat": -3.8527991561212647e-25,
+      "Fx": -2.824086087333839,
+      "Fy": -4.8349821775163946e-23,
+      "Fz": 26.442578881600312,
+      "Mx": -1.1398227524882989e-21,
+      "My": -1.0222791384765064,
+      "Mz": -1.2170871474261834e-22
+    },
+    "aero_diag_latest": {
+      "V": 14.99685779261687,
+      "alpha": -0.0017978959475732266,
+      "beta": 5.079983790514064e-26,
+      "qbar": 137.75476798683368,
+      "CL": 0.4253224394283304,
+      "CD": 0.04465147657101083,
+      "CY": -7.753612926704603e-25,
+      "Cl": -8.757678337015694e-24,
+      "Cm": 0.07753692831704485,
+      "Cn": -9.350993363554273e-25
+    },
+    "actuator_diag_latest": {
+      "left_aileron": {
+        "cmd_rad": 0.0,
+        "target_clamped_rad": 0.0,
+        "setpoint_rad": 0.0,
+        "actual_angle_rad": -9.416285853391833e-06,
+        "actual_rate_rad_s": -0.009416285853391833,
+        "target_clamp_active": 0.0,
+        "effort_clamp_active": 0.0
+      },
+      "right_aileron": {
+        "cmd_rad": 0.0,
+        "target_clamped_rad": 0.0,
+        "setpoint_rad": 0.0,
+        "actual_angle_rad": -9.416285853391833e-06,
+        "actual_rate_rad_s": -0.009416285853391833,
+        "target_clamp_active": 0.0,
+        "effort_clamp_active": 0.0
+      },
+      "left_elevator": {
+        "cmd_rad": 0.08726646259971647,
+        "target_clamped_rad": 0.08726646259971647,
+        "setpoint_rad": 0.08726646259971647,
+        "actual_angle_rad": 0.08484088810973793,
+        "actual_rate_rad_s": -1.3043113277492899e-14,
+        "target_clamp_active": 0.0,
+        "effort_clamp_active": 0.0
+      },
+      "right_elevator": {
+        "cmd_rad": 0.08726646259971647,
+        "target_clamped_rad": 0.08726646259971647,
+        "setpoint_rad": 0.08726646259971647,
+        "actual_angle_rad": 0.08484088810973793,
+        "actual_rate_rad_s": -1.3043113277492899e-14,
+        "target_clamp_active": 0.0,
+        "effort_clamp_active": 0.0
+      },
+      "rudder": {
+        "cmd_rad": 0.0,
+        "target_clamped_rad": 0.0,
+        "setpoint_rad": 0.0,
+        "actual_angle_rad": -2.5844240497377663e-27,
+        "actual_rate_rad_s": -2.584424049737766e-24,
+        "target_clamp_active": 0.0,
+        "effort_clamp_active": 0.0
+      }
+    },
+    "magnitude_ok": true,
+    "sign_ok": true,
+    "noise_ok": true,
+    "finite_ok": true,
+    "any_nan": false,
+    "pass_fail": "PASS"
+  },
+  "LEFT_RIGHT_AILERON_MAPPING_REGRESSION": {
+    "name": "AILERON_LEFT_RIGHT_MAPPING_REGRESSION",
+    "commands_rad": {
+      "left_aileron": -0.08726646259971647,
+      "right_aileron": 0.08726646259971647
+    },
+    "tail_mean_deg": {
+      "left_aileron_joint": -5.032352584054025,
+      "right_aileron_joint": 4.968608763730245
+    },
+    "tail_noise_deg": {
+      "left_aileron_joint": 7.258431399238273e-07,
+      "right_aileron_joint": 7.123578186646363e-07
+    },
+    "settled_deg_formula_val": 5.000480673892135,
+    "expected_deg": 5.0,
+    "held_state": {
+      "u": 14.996821684662917,
+      "v": 0.00015413148639081148,
+      "w": 0.0292546074283203,
+      "p": 0.030639459831921016,
+      "q": -0.0049524882908484925,
+      "r": -1.4057245062247005e-07
+    },
+    "compute_aero_replica": {
+      "V": 14.996850219208971,
+      "alpha": -0.00195071802118593,
+      "beta": 1.0277590570058704e-05,
+      "qbar": 137.75462885465026,
+      "CL": 0.42606070711362964,
+      "CD": 0.044684663940517566,
+      "CY": 0.0021177768031608933,
+      "Cl": 0.025722028044430318,
+      "Cm": 0.014162712099940484,
+      "Cn": 3.659898267295873e-07,
+      "cmStatic": 0.013784388015027332,
+      "cmRate": 0.0003783240849131528,
+      "pHat": 0.002138061942702833,
+      "qHat": -3.698634583044388e-05,
+      "rHat": -9.809331121276904e-09,
+      "Fx": -2.830278780744148,
+      "Fy": 0.13165997052830145,
+      "Fz": 26.488023453615135,
+      "Mx": 3.3476665395955094,
+      "My": -0.18673127397077421,
+      "Mz": 4.763278753365239e-05
+    },
+    "aero_diag_latest": {
+      "V": 14.996850219208975,
+      "alpha": -0.0019507180211854338,
+      "beta": 1.0277591076433153e-05,
+      "qbar": 137.75462885465032,
+      "CL": 0.42606070711363186,
+      "CD": 0.04468466394051767,
+      "CY": 0.0021177747704325405,
+      "Cl": 0.02572202940666448,
+      "Cm": 0.014161086823873154,
+      "Cn": 3.6662761331333926e-07
+    },
+    "actuator_diag_latest": {
+      "left_aileron": {
+        "cmd_rad": -0.08726646259971647,
+        "target_clamped_rad": -0.08726646259971647,
+        "setpoint_rad": -0.08726646259971647,
+        "actual_angle_rad": -0.08783112624881845,
+        "actual_rate_rad_s": 1.498729799567382e-08,
+        "target_clamp_active": 0.0,
+        "effort_clamp_active": 0.0
+      },
+      "right_aileron": {
+        "cmd_rad": 0.08726646259971647,
+        "target_clamped_rad": 0.08726646259971647,
+        "setpoint_rad": 0.08726646259971647,
+        "actual_angle_rad": 0.08671858659488924,
+        "actual_rate_rad_s": -1.446413984874899e-08,
+        "target_clamp_active": 0.0,
+        "effort_clamp_active": 0.0
+      },
+      "left_elevator": {
+        "cmd_rad": 0.0,
+        "target_clamped_rad": 0.0,
+        "setpoint_rad": 0.0,
+        "actual_angle_rad": -2.2264630093853917e-06,
+        "actual_rate_rad_s": -0.0022264630093853915,
+        "target_clamp_active": 0.0,
+        "effort_clamp_active": 0.0
+      },
+      "right_elevator": {
+        "cmd_rad": 0.0,
+        "target_clamped_rad": 0.0,
+        "setpoint_rad": 0.0,
+        "actual_angle_rad": -2.2263481332333573e-06,
+        "actual_rate_rad_s": -0.0022263481332333575,
+        "target_clamp_active": 0.0,
+        "effort_clamp_active": 0.0
+      },
+      "rudder": {
+        "cmd_rad": 0.0,
+        "target_clamped_rad": 0.0,
+        "setpoint_rad": 0.0,
+        "actual_angle_rad": -2.5252417399155827e-08,
+        "actual_rate_rad_s": -2.5252417399155825e-05,
+        "target_clamp_active": 0.0,
+        "effort_clamp_active": 0.0
+      }
+    },
+    "magnitude_ok": true,
+    "sign_ok": true,
+    "noise_ok": true,
+    "finite_ok": true,
+    "any_nan": false,
+    "pass_fail": "PASS"
+  },
+  "RUDDER_MAPPING_REGRESSION": {
+    "name": "RUDDER_MAPPING_REGRESSION",
+    "commands_rad": {
+      "rudder": 0.08726646259971647
+    },
+    "tail_mean_deg": {
+      "rudder_joint": 4.990229237577569
+    },
+    "tail_noise_deg": {
+      "rudder_joint": 9.780205645500314e-14
+    },
+    "settled_deg_formula_val": 4.990229237577569,
+    "expected_deg": 5.0,
+    "held_state": {
+      "u": 14.996821674315122,
+      "v": 0.0007156625917195516,
+      "w": 0.029254127335517122,
+      "p": 5.193454373990105e-05,
+      "q": -0.00495240027084651,
+      "r": -0.0019785969459422555
+    },
+    "compute_aero_replica": {
+      "V": 14.996850224208647,
+      "alpha": -0.0019506860096836823,
+      "beta": 4.772086013341132e-05,
+      "qbar": 137.7546289465,
+      "CL": 0.42606088768118766,
+      "CD": 0.044684672064616786,
+      "CY": 0.007384564858638758,
+      "Cl": 4.404522737036878e-05,
+      "Cm": 0.014162652299232826,
+      "Cn": -0.002172840489570231,
+      "cmStatic": 0.01378433493835603,
+      "cmRate": 0.0003783173608767945,
+      "pHat": 3.624061000227423e-06,
+      "qHat": -3.698568846406399e-05,
+      "rHat": -0.00013806910604375472,
+      "Fx": -2.830299018244829,
+      "Fy": 0.45905765980748703,
+      "Fz": 26.488034748903043,
+      "Mx": 0.0057323914638566335,
+      "My": -0.1867306284556181,
+      "Mz": -0.2827905091736202
+    },
+    "aero_diag_latest": {
+      "V": 14.996850224208647,
+      "alpha": -0.0019506860096836795,
+      "beta": 4.7720860133411365e-05,
+      "qbar": 137.75462894650002,
+      "CL": 0.42606088768118766,
+      "CD": 0.044684672064616786,
+      "CY": 0.0073845651117133175,
+      "Cl": 4.404829614800258e-05,
+      "Cm": 0.0141610254510358,
+      "Cn": -0.0021728404752227107
+    },
+    "actuator_diag_latest": {
+      "left_aileron": {
+        "cmd_rad": 0.0,
+        "target_clamped_rad": 0.0,
+        "setpoint_rad": 0.0,
+        "actual_angle_rad": -1.7294431744602786e-06,
+        "actual_rate_rad_s": -0.0017294431744602785,
+        "target_clamp_active": 0.0,
+        "effort_clamp_active": 0.0
+      },
+      "right_aileron": {
+        "cmd_rad": 0.0,
+        "target_clamped_rad": 0.0,
+        "setpoint_rad": 0.0,
+        "actual_angle_rad": -1.7095160469702052e-06,
+        "actual_rate_rad_s": -0.0017095160469702052,
+        "target_clamp_active": 0.0,
+        "effort_clamp_active": 0.0
+      },
+      "left_elevator": {
+        "cmd_rad": 0.0,
+        "target_clamped_rad": 0.0,
+        "setpoint_rad": 0.0,
+        "actual_angle_rad": -2.2262610470450423e-06,
+        "actual_rate_rad_s": -0.002226261047045042,
+        "target_clamp_active": 0.0,
+        "effort_clamp_active": 0.0
+      },
+      "right_elevator": {
+        "cmd_rad": 0.0,
+        "target_clamped_rad": 0.0,
+        "setpoint_rad": 0.0,
+        "actual_angle_rad": -2.2308573009546563e-06,
+        "actual_rate_rad_s": -0.0022308573009546563,
+        "target_clamp_active": 0.0,
+        "effort_clamp_active": 0.0
+      },
+      "rudder": {
+        "cmd_rad": 0.08726646259971647,
+        "target_clamped_rad": 0.08726646259971647,
+        "setpoint_rad": 0.08726646259971647,
+        "actual_angle_rad": 0.0870959306250154,
+        "actual_rate_rad_s": -1.2308578220132846e-14,
+        "target_clamp_active": 0.0,
+        "effort_clamp_active": 0.0
+      }
+    },
+    "magnitude_ok": true,
+    "sign_ok": true,
+    "noise_ok": true,
+    "finite_ok": true,
+    "any_nan": false,
+    "pass_fail": "PASS"
+  }
+}

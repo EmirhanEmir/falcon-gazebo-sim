@@ -1,0 +1,154 @@
+FALCON V2 - ACTUATOR_SERVO_MODEL_V1 live flight-load test (gazebo-testing, 2026-08-23)
+Trim flow region: V=18.165 m/s, alpha=2.461deg (u=18.14825, w=-0.77999), throttle(L=R)=0.4915 - reused read-only from POWERED_TRIM_AND_FREE_FLIGHT_VALIDATION.
+Actuator commands swept +/-5deg / +/-10deg from a neutral baseline (see module docstring for rationale).
+actuator_v1_config.yaml (read-only): max_rate_rad_s=5.236 (300.0 deg/s), max_effort_nm=0.2, min/max_angle_rad=-0.7854/0.7854
+
+--- ELEVATOR_SYMMETRIC_+5DEG ---
+Commanded (rad): {'left_elevator': 0.08726646259971647, 'right_elevator': 0.08726646259971647}; trim flow held: u=18.1482 w=-0.7800 (V=18.165, alpha=2.461deg), throttle(L=R)=0.4915
+  left_elevator_joint: tail_mean=+4.9988deg residual=0.0012deg tail_noise(pp)=0.00085deg tail_|rate|_max=0.000047 rad/s max_per_tick_jump=0.30000deg (limit 0.45000deg) overshoot=0.0000deg
+  right_elevator_joint: tail_mean=+4.9988deg residual=0.0012deg tail_noise(pp)=0.00085deg tail_|rate|_max=0.000047 rad/s max_per_tick_jump=0.30000deg (limit 0.45000deg) overshoot=0.0000deg
+delta_e_aero = -4.9988deg (commanded +5.0deg physical; expected sign = aero-convention -5.0deg)
+target_clamp_active ever set: False (expected False, well within +/-45deg mechanical limit)
+effort_clamp_active in tail (last 30 diag msgs): False (expected False once settled - zero opposing hinge load per actuator_v1_config.yaml's no_opposing_aero_torque_caveat)
+Live aero diagnostics (latest): CL=0.67010 CD=0.05881 CY=-0.00000 Cl=-0.00000 Cm=0.00315 Cn=-0.00000
+smooth_ok=True overshoot_ok=True settle_ok=True no_chatter_ok=True sign_ok=True finite_ok=True
+ELEVATOR_SYMMETRIC_+5DEG: PASS
+
+--- AILERON_DIFFERENTIAL_+5DEG ---
+Commanded (rad): {'left_aileron': -0.08726646259971647, 'right_aileron': 0.08726646259971647}; trim flow held: u=18.1482 w=-0.7800 (V=18.165, alpha=2.461deg), throttle(L=R)=0.4915
+  left_aileron_joint: tail_mean=-4.9661deg residual=0.0339deg tail_noise(pp)=0.00347deg tail_|rate|_max=0.000124 rad/s max_per_tick_jump=0.30000deg (limit 0.45000deg) overshoot=1.1054deg
+  right_aileron_joint: tail_mean=+5.0433deg residual=0.0433deg tail_noise(pp)=0.00366deg tail_|rate|_max=0.000139 rad/s max_per_tick_jump=0.30000deg (limit 0.45000deg) overshoot=0.0451deg
+delta_a_aero = +5.0047deg (commanded +5.0deg physical; expected sign = aero-convention +5.0deg)
+target_clamp_active ever set: False (expected False, well within +/-45deg mechanical limit)
+effort_clamp_active in tail (last 30 diag msgs): False (expected False once settled - zero opposing hinge load per actuator_v1_config.yaml's no_opposing_aero_torque_caveat)
+Live aero diagnostics (latest): CL=0.67005 CD=0.05881 CY=0.00220 Cl=0.02551 Cm=-0.06223 Cn=-0.00005
+smooth_ok=True overshoot_ok=False settle_ok=True no_chatter_ok=True sign_ok=True finite_ok=True
+AILERON_DIFFERENTIAL_+5DEG: FAIL
+
+--- RUDDER_+5DEG ---
+Commanded (rad): {'rudder': 0.08726646259971647}; trim flow held: u=18.1482 w=-0.7800 (V=18.165, alpha=2.461deg), throttle(L=R)=0.4915
+  rudder_joint: tail_mean=+5.0043deg residual=0.0043deg tail_noise(pp)=0.00012deg tail_|rate|_max=0.000009 rad/s max_per_tick_jump=0.11430deg (limit 0.45000deg) overshoot=0.0044deg
+delta_r_aero = +5.0043deg (commanded +5.0deg physical; expected sign = aero-convention +5.0deg)
+target_clamp_active ever set: False (expected False, well within +/-45deg mechanical limit)
+effort_clamp_active in tail (last 30 diag msgs): False (expected False once settled - zero opposing hinge load per actuator_v1_config.yaml's no_opposing_aero_torque_caveat)
+Live aero diagnostics (latest): CL=0.67040 CD=0.05883 CY=0.00740 Cl=0.00004 Cm=-0.06235 Cn=-0.00218
+smooth_ok=True overshoot_ok=True settle_ok=True no_chatter_ok=True sign_ok=True finite_ok=True
+RUDDER_+5DEG: PASS
+
+--- ELEVATOR_SYMMETRIC_-5DEG ---
+Commanded (rad): {'left_elevator': -0.08726646259971647, 'right_elevator': -0.08726646259971647}; trim flow held: u=18.1482 w=-0.7800 (V=18.165, alpha=2.461deg), throttle(L=R)=0.4915
+  left_elevator_joint: tail_mean=-5.0002deg residual=0.0002deg tail_noise(pp)=0.00412deg tail_|rate|_max=0.000146 rad/s max_per_tick_jump=0.30000deg (limit 0.45000deg) overshoot=0.5357deg
+  right_elevator_joint: tail_mean=-5.0002deg residual=0.0002deg tail_noise(pp)=0.00412deg tail_|rate|_max=0.000146 rad/s max_per_tick_jump=0.30000deg (limit 0.45000deg) overshoot=0.5357deg
+delta_e_aero = +5.0002deg (commanded -5.0deg physical; expected sign = aero-convention +5.0deg)
+target_clamp_active ever set: False (expected False, well within +/-45deg mechanical limit)
+effort_clamp_active in tail (last 30 diag msgs): False (expected False once settled - zero opposing hinge load per actuator_v1_config.yaml's no_opposing_aero_torque_caveat)
+Live aero diagnostics (latest): CL=0.67024 CD=0.05882 CY=0.00000 Cl=0.00000 Cm=-0.12727 Cn=0.00000
+smooth_ok=True overshoot_ok=True settle_ok=True no_chatter_ok=True sign_ok=True finite_ok=True
+raw_timeseries_decimated captured for ELEVATOR_SYMMETRIC_-5DEG: 481 samples (every 10 ticks = 10ms resolution), saved to result.json
+ELEVATOR_SYMMETRIC_-5DEG: PASS
+
+--- AILERON_DIFFERENTIAL_-5DEG ---
+Commanded (rad): {'left_aileron': 0.08726646259971647, 'right_aileron': -0.08726646259971647}; trim flow held: u=18.1482 w=-0.7800 (V=18.165, alpha=2.461deg), throttle(L=R)=0.4915
+  left_aileron_joint: tail_mean=+5.0433deg residual=0.0433deg tail_noise(pp)=0.00366deg tail_|rate|_max=0.000139 rad/s max_per_tick_jump=0.30000deg (limit 0.45000deg) overshoot=0.0451deg
+  right_aileron_joint: tail_mean=-4.9661deg residual=0.0339deg tail_noise(pp)=0.00347deg tail_|rate|_max=0.000124 rad/s max_per_tick_jump=0.30000deg (limit 0.45000deg) overshoot=1.1054deg
+delta_a_aero = -5.0047deg (commanded -5.0deg physical; expected sign = aero-convention -5.0deg)
+target_clamp_active ever set: False (expected False, well within +/-45deg mechanical limit)
+effort_clamp_active in tail (last 30 diag msgs): False (expected False once settled - zero opposing hinge load per actuator_v1_config.yaml's no_opposing_aero_torque_caveat)
+Live aero diagnostics (latest): CL=0.67005 CD=0.05881 CY=-0.00220 Cl=-0.02551 Cm=-0.06223 Cn=0.00005
+smooth_ok=True overshoot_ok=False settle_ok=True no_chatter_ok=True sign_ok=True finite_ok=True
+raw_timeseries_decimated captured for AILERON_DIFFERENTIAL_-5DEG: 481 samples (every 10 ticks = 10ms resolution), saved to result.json
+AILERON_DIFFERENTIAL_-5DEG: FAIL
+
+--- RUDDER_-5DEG ---
+Commanded (rad): {'rudder': -0.08726646259971647}; trim flow held: u=18.1482 w=-0.7800 (V=18.165, alpha=2.461deg), throttle(L=R)=0.4915
+  rudder_joint: tail_mean=-5.0043deg residual=0.0043deg tail_noise(pp)=0.00012deg tail_|rate|_max=0.000009 rad/s max_per_tick_jump=0.11430deg (limit 0.45000deg) overshoot=0.0044deg
+delta_r_aero = -5.0043deg (commanded -5.0deg physical; expected sign = aero-convention -5.0deg)
+target_clamp_active ever set: False (expected False, well within +/-45deg mechanical limit)
+effort_clamp_active in tail (last 30 diag msgs): False (expected False once settled - zero opposing hinge load per actuator_v1_config.yaml's no_opposing_aero_torque_caveat)
+Live aero diagnostics (latest): CL=0.67040 CD=0.05883 CY=-0.00740 Cl=-0.00004 Cm=-0.06235 Cn=0.00218
+smooth_ok=True overshoot_ok=True settle_ok=True no_chatter_ok=True sign_ok=True finite_ok=True
+RUDDER_-5DEG: PASS
+
+--- ELEVATOR_SYMMETRIC_+10DEG ---
+Commanded (rad): {'left_elevator': 0.17453292519943295, 'right_elevator': 0.17453292519943295}; trim flow held: u=18.1482 w=-0.7800 (V=18.165, alpha=2.461deg), throttle(L=R)=0.4915
+  left_elevator_joint: tail_mean=+10.0034deg residual=0.0034deg tail_noise(pp)=0.00197deg tail_|rate|_max=0.000094 rad/s max_per_tick_jump=0.30000deg (limit 0.45000deg) overshoot=0.0043deg
+  right_elevator_joint: tail_mean=+10.0034deg residual=0.0034deg tail_noise(pp)=0.00197deg tail_|rate|_max=0.000094 rad/s max_per_tick_jump=0.30000deg (limit 0.45000deg) overshoot=0.0043deg
+delta_e_aero = -10.0034deg (commanded +10.0deg physical; expected sign = aero-convention -10.0deg)
+target_clamp_active ever set: False (expected False, well within +/-45deg mechanical limit)
+effort_clamp_active in tail (last 30 diag msgs): False (expected False once settled - zero opposing hinge load per actuator_v1_config.yaml's no_opposing_aero_torque_caveat)
+Live aero diagnostics (latest): CL=0.66945 CD=0.05876 CY=-0.00000 Cl=0.00000 Cm=0.06857 Cn=0.00000
+smooth_ok=True overshoot_ok=True settle_ok=True no_chatter_ok=True sign_ok=True finite_ok=True
+ELEVATOR_SYMMETRIC_+10DEG: PASS
+
+--- AILERON_DIFFERENTIAL_+10DEG ---
+Commanded (rad): {'left_aileron': -0.17453292519943295, 'right_aileron': 0.17453292519943295}; trim flow held: u=18.1482 w=-0.7800 (V=18.165, alpha=2.461deg), throttle(L=R)=0.4915
+  left_aileron_joint: tail_mean=-9.9270deg residual=0.0730deg tail_noise(pp)=0.00908deg tail_|rate|_max=0.000318 rad/s max_per_tick_jump=0.30000deg (limit 0.45000deg) overshoot=0.2937deg
+  right_aileron_joint: tail_mean=+10.0884deg residual=0.0884deg tail_noise(pp)=0.00887deg tail_|rate|_max=0.000328 rad/s max_per_tick_jump=0.30000deg (limit 0.45000deg) overshoot=0.0927deg
+delta_a_aero = +10.0077deg (commanded +10.0deg physical; expected sign = aero-convention +10.0deg)
+target_clamp_active ever set: False (expected False, well within +/-45deg mechanical limit)
+effort_clamp_active in tail (last 30 diag msgs): False (expected False once settled - zero opposing hinge load per actuator_v1_config.yaml's no_opposing_aero_torque_caveat)
+Live aero diagnostics (latest): CL=0.66900 CD=0.05873 CY=0.00439 Cl=0.05098 Cm=-0.06189 Cn=-0.00010
+smooth_ok=True overshoot_ok=True settle_ok=True no_chatter_ok=True sign_ok=True finite_ok=True
+AILERON_DIFFERENTIAL_+10DEG: PASS
+
+--- RUDDER_+10DEG ---
+Commanded (rad): {'rudder': 0.17453292519943295}; trim flow held: u=18.1482 w=-0.7800 (V=18.165, alpha=2.461deg), throttle(L=R)=0.4915
+  rudder_joint: tail_mean=+10.0086deg residual=0.0086deg tail_noise(pp)=0.00025deg tail_|rate|_max=0.000018 rad/s max_per_tick_jump=0.19014deg (limit 0.45000deg) overshoot=0.0087deg
+delta_r_aero = +10.0086deg (commanded +10.0deg physical; expected sign = aero-convention +10.0deg)
+target_clamp_active ever set: False (expected False, well within +/-45deg mechanical limit)
+effort_clamp_active in tail (last 30 diag msgs): False (expected False once settled - zero opposing hinge load per actuator_v1_config.yaml's no_opposing_aero_torque_caveat)
+Live aero diagnostics (latest): CL=0.67041 CD=0.05883 CY=0.01479 Cl=0.00008 Cm=-0.06235 Cn=-0.00435
+smooth_ok=True overshoot_ok=True settle_ok=True no_chatter_ok=True sign_ok=True finite_ok=True
+RUDDER_+10DEG: PASS
+
+--- ELEVATOR_SYMMETRIC_-10DEG ---
+Commanded (rad): {'left_elevator': -0.17453292519943295, 'right_elevator': -0.17453292519943295}; trim flow held: u=18.1482 w=-0.7800 (V=18.165, alpha=2.461deg), throttle(L=R)=0.4915
+  left_elevator_joint: tail_mean=-9.9945deg residual=0.0055deg tail_noise(pp)=0.00835deg tail_|rate|_max=0.000298 rad/s max_per_tick_jump=0.30000deg (limit 0.45000deg) overshoot=0.0163deg
+  right_elevator_joint: tail_mean=-9.9945deg residual=0.0055deg tail_noise(pp)=0.00835deg tail_|rate|_max=0.000298 rad/s max_per_tick_jump=0.30000deg (limit 0.45000deg) overshoot=0.0163deg
+delta_e_aero = +9.9945deg (commanded -10.0deg physical; expected sign = aero-convention +10.0deg)
+target_clamp_active ever set: False (expected False, well within +/-45deg mechanical limit)
+effort_clamp_active in tail (last 30 diag msgs): False (expected False once settled - zero opposing hinge load per actuator_v1_config.yaml's no_opposing_aero_torque_caveat)
+Live aero diagnostics (latest): CL=0.66975 CD=0.05878 CY=-0.00000 Cl=0.00000 Cm=-0.19222 Cn=0.00000
+smooth_ok=True overshoot_ok=True settle_ok=True no_chatter_ok=True sign_ok=True finite_ok=True
+raw_timeseries_decimated captured for ELEVATOR_SYMMETRIC_-10DEG: 481 samples (every 10 ticks = 10ms resolution), saved to result.json
+ELEVATOR_SYMMETRIC_-10DEG: PASS
+
+--- AILERON_DIFFERENTIAL_-10DEG ---
+Commanded (rad): {'left_aileron': 0.17453292519943295, 'right_aileron': -0.17453292519943295}; trim flow held: u=18.1482 w=-0.7800 (V=18.165, alpha=2.461deg), throttle(L=R)=0.4915
+  left_aileron_joint: tail_mean=+10.0884deg residual=0.0884deg tail_noise(pp)=0.00887deg tail_|rate|_max=0.000328 rad/s max_per_tick_jump=0.30000deg (limit 0.45000deg) overshoot=0.0927deg
+  right_aileron_joint: tail_mean=-9.9270deg residual=0.0730deg tail_noise(pp)=0.00908deg tail_|rate|_max=0.000318 rad/s max_per_tick_jump=0.30000deg (limit 0.45000deg) overshoot=0.2937deg
+delta_a_aero = -10.0077deg (commanded -10.0deg physical; expected sign = aero-convention -10.0deg)
+target_clamp_active ever set: False (expected False, well within +/-45deg mechanical limit)
+effort_clamp_active in tail (last 30 diag msgs): False (expected False once settled - zero opposing hinge load per actuator_v1_config.yaml's no_opposing_aero_torque_caveat)
+Live aero diagnostics (latest): CL=0.66900 CD=0.05873 CY=-0.00439 Cl=-0.05098 Cm=-0.06189 Cn=0.00010
+smooth_ok=True overshoot_ok=True settle_ok=True no_chatter_ok=True sign_ok=True finite_ok=True
+raw_timeseries_decimated captured for AILERON_DIFFERENTIAL_-10DEG: 481 samples (every 10 ticks = 10ms resolution), saved to result.json
+AILERON_DIFFERENTIAL_-10DEG: PASS
+
+--- RUDDER_-10DEG ---
+Commanded (rad): {'rudder': -0.17453292519943295}; trim flow held: u=18.1482 w=-0.7800 (V=18.165, alpha=2.461deg), throttle(L=R)=0.4915
+  rudder_joint: tail_mean=-10.0086deg residual=0.0086deg tail_noise(pp)=0.00025deg tail_|rate|_max=0.000018 rad/s max_per_tick_jump=0.19014deg (limit 0.45000deg) overshoot=0.0087deg
+delta_r_aero = -10.0086deg (commanded -10.0deg physical; expected sign = aero-convention -10.0deg)
+target_clamp_active ever set: False (expected False, well within +/-45deg mechanical limit)
+effort_clamp_active in tail (last 30 diag msgs): False (expected False once settled - zero opposing hinge load per actuator_v1_config.yaml's no_opposing_aero_torque_caveat)
+Live aero diagnostics (latest): CL=0.67041 CD=0.05883 CY=-0.01479 Cl=-0.00008 Cm=-0.06235 Cn=0.00435
+smooth_ok=True overshoot_ok=True settle_ok=True no_chatter_ok=True sign_ok=True finite_ok=True
+RUDDER_-10DEG: PASS
+
+==============================================================================
+SUMMARY - flight-load test, all 12 cases (3 surface classes x 2 signs x 2 magnitudes)
+==============================================================================
+ELEVATOR_SYMMETRIC_+5DEG: PASS
+AILERON_DIFFERENTIAL_+5DEG: FAIL
+RUDDER_+5DEG: PASS
+ELEVATOR_SYMMETRIC_-5DEG: PASS
+AILERON_DIFFERENTIAL_-5DEG: FAIL
+RUDDER_-5DEG: PASS
+ELEVATOR_SYMMETRIC_+10DEG: PASS
+AILERON_DIFFERENTIAL_+10DEG: PASS
+RUDDER_+10DEG: PASS
+ELEVATOR_SYMMETRIC_-10DEG: PASS
+AILERON_DIFFERENTIAL_-10DEG: PASS
+RUDDER_-10DEG: PASS
+
+OVERALL: FAIL

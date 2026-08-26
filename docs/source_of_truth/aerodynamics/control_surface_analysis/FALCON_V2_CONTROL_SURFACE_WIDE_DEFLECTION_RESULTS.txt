@@ -1,0 +1,499 @@
+FALCON V2 — CONTROL SURFACE WIDE-DEFLECTION ANALYSIS RESULTS
+================================================================
+
+Purpose
+-------
+This file consolidates ALL results obtained in the current XFLR5 control-surface
+wide-deflection analysis for:
+1) Elevator
+2) Aileron
+3) Rudder
+
+All listed values below are from the analyses performed in this conversation.
+No points have been intentionally omitted.
+
+Common analysis method
+----------------------
+XFLR5
+Type 1 (Fixed speed)
+3D-Panels / VLM2
+Viscous = OFF
+Mass = 6.000 kg
+
+Primary operating point used for wide-deflection sweeps:
+V∞ = 18.162 m/s
+alpha = 2.472 deg (XFLR5 display: 2.47 deg)
+beta = 0 deg
+
+Only the tested control surface was deflected.
+Other control surfaces were held at 0 deg.
+
+Confidence convention
+---------------------
+|delta| <= 10 deg:
+  HIGH_CONFIDENCE_SMALL_SIGNAL
+
+10 deg < |delta| <= ~25 deg:
+  MEDIUM_CONFIDENCE_NONLINEAR_REFERENCE
+
+|delta| > ~25 deg:
+  LOW_CONFIDENCE_HIGH_DEFLECTION_REFERENCE
+
+Important:
+Large-deflection XFLR5 / VLM results are not treated as direct real-flight truth,
+because separated flow / stall / hinge-region nonlinearities are not fully modeled.
+
+================================================================
+1) ELEVATOR
+================================================================
+
+Elevator sign convention
+------------------------
+XFLR5 positive elevator deflection:
++delta_e = trailing edge DOWN
+
+Therefore, in the fixed-condition results:
++delta_e -> CL increases
++delta_e -> Cm becomes more negative
++delta_e -> nose-down pitching moment
+
+Primary operating point
+-----------------------
+V∞ = 18.162 m/s
+alpha = 2.472 deg
+beta = 0 deg
+VLM2
+Viscous OFF
+
+Primary elevator wide-deflection sweep
+--------------------------------------
+delta_e [deg]    CL        CD        Cm
+-45              0.34636   0.04905   +0.71208
+-35              0.41561   0.03393   +0.54701
+-25              0.48722   0.02339   +0.37555
+-15              0.55971   0.01707   +0.20137
+-10              0.59594   0.01544   +0.11412
+ -5              0.63209   0.01479   +0.02697
+ -2              0.65374   0.01487   -0.02530
+  0              0.66817   0.01513   -0.06013
+ +2              0.68259   0.01554   -0.09498
+ +5              0.70422   0.01646   -0.14727
++10              0.74028   0.01879   -0.23453
++15              0.77638   0.02214   -0.32197
++25              0.84870   0.03186   -0.49745
++35              0.92074   0.04573   -0.67262
++45              0.99126   0.06359   -0.84442
+
+Primary elevator zero-deflection baseline
+-----------------------------------------
+delta_e = 0 deg
+CL0 = 0.66817
+CD0 = 0.01513
+Cm0 = -0.06013
+
+Primary elevator baseline-difference table
+------------------------------------------
+delta_e [deg]    DeltaCL     DeltaCD     DeltaCm
+-45              -0.32181    +0.03392    +0.77221
+-35              -0.25256    +0.01880    +0.60714
+-25              -0.18095    +0.00826    +0.43568
+-15              -0.10846    +0.00194    +0.26150
+-10              -0.07223    +0.00031    +0.17425
+ -5              -0.03608    -0.00034    +0.08710
+ -2              -0.01443    -0.00026    +0.03483
+  0               0.00000     0.00000     0.00000
+ +2              +0.01442    +0.00041    -0.03485
+ +5              +0.03605    +0.00133    -0.08714
++10              +0.07211    +0.00366    -0.17440
++15              +0.10821    +0.00701    -0.26184
++25              +0.18053    +0.01673    -0.43732
++35              +0.25257    +0.03060    -0.61249
++45              +0.32309    +0.04846    -0.78429
+
+Primary elevator central small-signal derivatives
+-------------------------------------------------
+Around +/-2 deg:
+CL_delta_e = +0.4132 /rad
+Cm_delta_e = -0.9981 /rad
+
+Around +/-5 deg:
+CL_delta_e = +0.4133 /rad
+Cm_delta_e = -0.9983 /rad
+
+Around +/-10 deg:
+CL_delta_e = +0.4135 /rad
+Cm_delta_e = -0.9988 /rad
+
+Approximate central CD slopes reported during the analysis:
++/-2 deg  -> ~ +0.0096 /rad
++/-5 deg  -> ~ +0.00957 /rad
++/-10 deg -> ~ +0.00960 /rad
+Note: CD is clearly nonlinear and asymmetric enough that a single signed CD_delta_e
+is NOT recommended as the wide-deflection model.
+
+Additional primary central slopes used to inspect XFLR5/VLM linearity
+----------------------------------------------------------------------
++/-15 deg: CL_delta_e ~ +0.4138 /rad, Cm_delta_e ~ -0.9995 /rad
++/-25 deg: CL_delta_e ~ +0.4142 /rad, Cm_delta_e ~ -1.0004 /rad
++/-35 deg: CL_delta_e ~ +0.41345 /rad, Cm_delta_e ~ -0.9983 /rad
++/-45 deg: CL_delta_e ~ +0.4106 /rad, Cm_delta_e ~ -0.9909 /rad
+
+Primary elevator consolidated small-signal values
+-------------------------------------------------
+CL_delta_e ~ +0.413 /rad
+Cm_delta_e ~ -0.999 /rad
+
+Secondary elevator consistency check
+------------------------------------
+Operating point:
+V∞ = 21.244 m/s
+alpha = 0.3646 deg (XFLR5 displayed ~0.36 deg)
+beta = 0 deg
+VLM2
+Viscous OFF
+
+Secondary sweep:
+delta_e [deg]    CL        CD        Cm
+-10              0.39656   0.01011   +0.17621
+ -5              0.43268   0.00864   +0.08893
+  0              0.46880   0.00815   +0.00163
+ +5              0.50495   0.00866   -0.08577
++10              0.54117   0.01018   -0.17335
+
+Secondary central derivatives
+-----------------------------
+Around +/-5 deg:
+CL_delta_e = +0.4141 /rad
+Cm_delta_e = -1.0010 /rad
+
+Around +/-10 deg:
+CL_delta_e = +0.4143 /rad
+Cm_delta_e = -1.0014 /rad
+
+Recommended consolidated elevator small-signal values
+-----------------------------------------------------
+CL_delta_e = +0.414 /rad
+Cm_delta_e = -1.000 /rad
+
+Elevator conclusions
+--------------------
+- Small-angle CL and Cm effectiveness are extremely consistent across +/-2, +/-5, +/-10 deg.
+- Secondary operating point gives nearly identical derivatives.
+- Positive XFLR5 elevator deflection increases CL and drives Cm negative.
+- CD is nonlinear with deflection and is better represented by lookup/interpolation.
+- >25 deg is low-confidence high-deflection reference.
+- Old trim-sweep Cm_delta_e ~ -0.73 /rad is not the pure fixed-condition control-effectiveness result.
+- New fixed-condition value is approximately Cm_delta_e = -1.000 /rad.
+- Previously unresolved CL_delta_e is now approximately +0.414 /rad.
+
+================================================================
+2) AILERON
+================================================================
+
+Aileron sign / differential convention
+--------------------------------------
+delta_a > 0:
+  Left aileron  = +delta
+  Right aileron = -delta
+
+delta_a < 0:
+  Left aileron  = -delta
+  Right aileron = +delta
+
+Mapping validation:
+delta_a = -10 deg -> Cl = -0.07230
+delta_a = +10 deg -> Cl = +0.07231
+
+Aileron operating point
+-----------------------
+V∞ = 18.162 m/s
+alpha = 2.472 deg
+beta = 0 deg
+VLM2
+Viscous OFF
+Elevator = 0 deg
+Rudder = 0 deg
+
+Full aileron wide-deflection sweep
+----------------------------------
+delta_a [deg]    CL        CD        CY         Cl         Cm         Cn
+-45              0.62116   0.18174   -0.00486   -0.31890   -0.07619   -0.00123
+-35              0.64137   0.11664   -0.00354   -0.25052   -0.07310   -0.00099
+-25              0.65493   0.06757   -0.00228   -0.18001   -0.06746   -0.00072
+-15              0.66353   0.03407   -0.00126   -0.10836   -0.06297   -0.00044
+-10              0.66613   0.02355   -0.00082   -0.07230   -0.06142   -0.00029
+ -5              0.66766   0.01723   -0.00041   -0.03617   -0.06046   -0.00014
+ -2              0.66809   0.01546   -0.00018   -0.01447   -0.06019   -0.00005
+  0              0.66817   0.01513   -0.00002    0.00000   -0.06013   +0.00001
+ +2              0.66809   0.01546   +0.00014   +0.01447   -0.06019   +0.00007
+ +5              0.66766   0.01723   +0.00037   +0.03617   -0.06046   +0.00016
++10              0.66613   0.02355   +0.00078   +0.07231   -0.06142   +0.00030
++15              0.66353   0.03407   +0.00122   +0.10836   -0.06296   +0.00045
++25              0.65492   0.06757   +0.00224   +0.18001   -0.06745   +0.00073
++35              0.64136   0.11664   +0.00350   +0.25052   -0.07308   +0.00101
++45              0.62115   0.18174   +0.00482   +0.31890   -0.07617   +0.00124
+
+Aileron zero-deflection baseline
+--------------------------------
+CL0 = 0.66817
+CD0 = 0.01513
+CY0 = -0.00002
+Cl0 = 0.00000
+Cm0 = -0.06013
+Cn0 = +0.00001
+
+Aileron small-signal central derivatives
+----------------------------------------
+Around +/-2 deg:
+Cl_delta_a = +0.4145 /rad
+Cn_delta_a = +0.00172 /rad
+CY_delta_a = +0.00458 /rad
+
+Around +/-5 deg:
+Cl_delta_a = +0.4145 /rad
+Cn_delta_a = +0.00172 /rad
+CY_delta_a = +0.00447 /rad
+
+Around +/-10 deg:
+Cl_delta_a = +0.4143 /rad
+Cn_delta_a = +0.00169 /rad
+CY_delta_a = +0.00458 /rad
+
+Recommended consolidated aileron small-signal values
+-----------------------------------------------------
+Cl_delta_a = +0.414 /rad
+Cn_delta_a = +0.0017 /rad
+CY_delta_a = +0.0045 /rad
+
+Aileron first-order symmetric couplings around zero
+---------------------------------------------------
+CL_delta_a ~ 0
+CD_delta_a ~ 0  (signed first-order derivative only)
+Cm_delta_a ~ 0
+
+Important: CD_delta_a ~ 0 does NOT mean aileron produces no drag.
+Drag increases strongly with |delta_a|.
+
+Aileron roll authority trend
+----------------------------
+|delta_a| = 2 deg  -> |Cl| = 0.01447
+|delta_a| = 5 deg  -> |Cl| = 0.03617
+|delta_a| = 10 deg -> |Cl| ~ 0.07230
+|delta_a| = 15 deg -> |Cl| = 0.10836
+|delta_a| = 25 deg -> |Cl| = 0.18001
+|delta_a| = 35 deg -> |Cl| = 0.25052
+|delta_a| = 45 deg -> |Cl| = 0.31890
+
+Aileron total-lift trend
+------------------------
+CL(0)       = 0.66817
+CL(+/-10)   = 0.66613
+CL(+/-15)   = 0.66353
+CL(+/-25)   ~ 0.65493
+CL(+/-35)   ~ 0.64137
+CL(+/-45)   ~ 0.62116
+
+Aileron drag trend
+------------------
+CD(0)       = 0.01513
+CD(+/-2)    = 0.01546
+CD(+/-5)    = 0.01723
+CD(+/-10)   = 0.02355
+CD(+/-15)   = 0.03407
+CD(+/-25)   = 0.06757
+CD(+/-35)   = 0.11664
+CD(+/-45)   = 0.18174
+CD(45)/CD(0) ~ 12
+
+Aileron pitch-moment trend
+--------------------------
+Cm(0)       = -0.06013
+Cm(+/-5)    ~ -0.06046
+Cm(+/-10)   = -0.06142
+Cm(+/-15)   ~ -0.06297
+Cm(+/-25)   ~ -0.06746
+Cm(+/-35)   ~ -0.07309
+Cm(+/-45)   ~ -0.07618
+
+Aileron symmetry observations
+-----------------------------
+Approximately odd / antisymmetric:
+Cl(+delta) ~ -Cl(-delta)
+Cn(+delta) ~ -Cn(-delta)
+CY(+delta) ~ -CY(-delta)
+
+Approximately even / symmetric:
+CL(+delta) ~ CL(-delta)
+CD(+delta) ~ CD(-delta)
+Cm(+delta) ~ Cm(-delta)
+
+Aileron conclusions
+-------------------
+- Strong, highly linear small-signal roll authority.
+- Very small yaw coupling relative to roll.
+- Small side-force coupling.
+- Total CL decreases gradually with |delta_a|.
+- Cm becomes slightly more negative as |delta_a| increases.
+- CD grows very strongly and nonlinearly with |delta_a|.
+- >25 deg remains low-confidence high-deflection reference.
+
+================================================================
+3) RUDDER
+================================================================
+
+Rudder operating point
+----------------------
+V∞ = 18.162 m/s
+alpha = 2.472 deg
+beta = 0 deg
+VLM2
+Viscous OFF
+Aileron = 0 deg
+Elevator = 0 deg
+
+Rudder zero-deflection baseline
+-------------------------------
+CL = 0.66817
+CD = 0.01513
+CY = -0.00002
+Cl = 0.00000
+Cm = -0.06013
+Cn = +0.00001
+
+Full rudder wide-deflection sweep
+---------------------------------
+delta_r [deg]    CL        CD        CY         Cl         Cm         Cn
+-45              0.67406   0.02974   -0.07094   +0.00054   -0.05936   +0.02115
+-35              0.67249   0.02390   -0.05601   +0.00042   -0.06099   +0.01666
+-25              0.67053   0.01932   -0.04023   +0.00030   -0.06072   +0.01195
+-15              0.66890   0.01682   -0.02411   +0.00018   -0.06005   +0.00715
+-10              0.66846   0.01584   -0.01604   +0.00012   -0.06001   +0.00475
+ -5              0.66823   0.01528   -0.00801   +0.00006   -0.06009   +0.00238
+ -2              0.66818   0.01516   -0.00321   +0.00002   -0.06013   +0.00095
+  0              0.66817   0.01513   -0.00002    0.00000   -0.06013   +0.00001
+ +2              0.66818   0.01516   +0.00317   -0.00002   -0.06012   -0.00094
+ +5              0.66823   0.01528   +0.00797   -0.00006   -0.06007   -0.00236
++10              0.66845   0.01583   +0.01600   -0.00012   -0.05998   -0.00474
++15              0.66889   0.01682   +0.02407   -0.00018   -0.06001   -0.00713
++25              0.67052   0.01932   +0.04020   -0.00030   -0.06065   -0.01194
++35              0.67247   0.02390   +0.05598   -0.00042   -0.06089   -0.01665
++45              0.67404   0.02974   +0.07093   -0.00054   -0.05923   -0.02114
+
+Rudder small-signal central derivatives
+---------------------------------------
+Around +/-2 deg:
+CY_delta_r = +0.0914 /rad
+Cn_delta_r = -0.0271 /rad
+Cl_delta_r = -0.00057 /rad
+
+Around +/-5 deg:
+CY_delta_r = +0.0916 /rad
+Cn_delta_r = -0.0272 /rad
+Cl_delta_r = -0.00069 /rad
+
+Around +/-10 deg:
+CY_delta_r = +0.0918 /rad
+Cn_delta_r = -0.0272 /rad
+Cl_delta_r = -0.00069 /rad
+
+Recommended consolidated rudder small-signal values
+----------------------------------------------------
+CY_delta_r = +0.0916 /rad
+Cn_delta_r = -0.0272 /rad
+Cl_delta_r = -0.00065 /rad
+
+Rudder nonlinear/high-deflection observations
+---------------------------------------------
+CD(0) = 0.01513
+CD(+/-2) = 0.01516
+CD(+/-5) = 0.01528
+CD(-10) = 0.01584
+CD(+10) = 0.01583
+CD(+/-15) = 0.01682
+CD(+/-25) = 0.01932
+CD(+/-35) = 0.02390
+CD(+/-45) = 0.02974
+
+CL(0) = 0.66817
+CL(+/-45) ~ 0.67405
+
+Cm0 = -0.06013
+Cm remains close to this baseline across the sweep.
+
+Rudder symmetry observations
+----------------------------
+Approximately odd / antisymmetric:
+CY(+delta) ~ -CY(-delta)
+Cn(+delta) ~ -Cn(-delta)
+Cl(+delta) ~ -Cl(-delta)
+
+Approximately even / nearly symmetric:
+CL(+delta) ~ CL(-delta)
+CD(+delta) ~ CD(-delta)
+
+Rudder conclusions
+------------------
+- Strong side-force and yaw response.
+- Very small roll coupling.
+- Small-signal effectiveness is highly consistent across +/-2, +/-5, +/-10 deg.
+- High-deflection CD should be modeled nonlinearly.
+- >25 deg remains low-confidence high-deflection reference.
+
+================================================================
+4) CONSOLIDATED SMALL-SIGNAL CONTROL DERIVATIVES
+================================================================
+
+Elevator
+--------
+CL_delta_e = +0.414 /rad
+Cm_delta_e = -1.000 /rad
+
+Aileron
+-------
+Cl_delta_a = +0.414 /rad
+Cn_delta_a = +0.0017 /rad
+CY_delta_a = +0.0045 /rad
+
+Rudder
+------
+CY_delta_r = +0.0916 /rad
+Cn_delta_r = -0.0272 /rad
+Cl_delta_r = -0.00065 /rad
+
+================================================================
+5) MODELING GUIDANCE DERIVED FROM THESE RESULTS
+================================================================
+
+Elevator
+--------
+Small signal (approximately |delta_e| <= 10 deg):
+  CL correction: CL_delta_e = +0.414 /rad
+  Cm correction: Cm_delta_e = -1.000 /rad
+Wide deflection:
+  delta_e -> CL/Cm can use lookup if desired.
+  delta_e -> CD should use nonlinear lookup/interpolation.
+
+Aileron
+-------
+Small signal (approximately |delta_a| <= 10 deg):
+  Cl_delta_a = +0.414 /rad
+  Cn_delta_a = +0.0017 /rad
+  CY_delta_a = +0.0045 /rad
+Wide deflection:
+  delta_a -> Cl/Cn/CY
+  |delta_a| -> CD
+  |delta_a| -> CL correction
+  |delta_a| -> Cm correction
+
+Rudder
+------
+Small signal (approximately |delta_r| <= 10 deg):
+  CY_delta_r = +0.0916 /rad
+  Cn_delta_r = -0.0272 /rad
+  Cl_delta_r = -0.00065 /rad
+Wide deflection:
+  delta_r -> CY/Cn/Cl
+  |delta_r| -> CD
+  small CL/Cm correction may be retained if desired
+
+END OF FILE

@@ -267,6 +267,60 @@
     once tested).
 
     ============================================================================
+    CONTROL-SURFACE JOINT LIMIT UPDATE (task ACTUATOR_SERVO_MODEL_V1,
+    controls-integration specialist agent, 2026-08-23) - cross-referenced
+    from each of the 5 <joint> blocks below, read this once here rather than
+    repeated five times.
+    ============================================================================
+    All 5 control-surface joints' <limit><lower>/<upper> below were widened
+    from +/-0.5236 rad (+/-30 deg, the prior MECHANICAL_INITIAL_LIMIT value)
+    to +/-0.7853981634 rad (+/-45 deg exactly, pi/4) and retagged
+    MECHANICAL_ACTUATOR_LIMIT_V1. This is geometry-structure's original
+    ownership of the joint <limit> element, updated here by
+    controls-integration per this task's explicit instruction (the same
+    joint-limit review precedent already covered by CONTROLS.md's existing
+    +/-30 deg discussion) - no other joint/link/mass/inertia/mesh/collision
+    element in this file was touched by this update.
+
+    TWO DISTINCT CONCEPTS - DO NOT CONFLATE (this exact warning already
+    existed for the prior +/-30 deg value, CONTROLS.md section 3, and
+    applies identically, unchanged, to the new +/-45 deg value):
+      (1) MECHANICAL travel capability = +/-45 deg = +/-0.7853981634 rad,
+          tag USER_CONFIRMED_MECHANICAL_CAPABILITY (stated directly by the
+          project owner for task ACTUATOR_SERVO_MODEL_V1, not re-derived
+          here) - this is what the <limit> element below now encodes, i.e.
+          what the SERVO/JOINT can physically be commanded to reach.
+      (2) AERODYNAMIC-DERIVATIVE VALIDATED LINEAR RANGE = only
+          approximately +/-10 deg (master dataset section 65/72; the actual
+          XFLR5 Type 7 sweep ranges run for elevator/rudder/aileron were all
+          -10 to +10 deg - CONTROLS.md section 3). Beyond +/-10 deg, the
+          linear extrapolation used by plugins/aerodynamics/AeroModel.hh is
+          NOT_YET_VALIDATED. Widening the MECHANICAL limit to +/-45 deg does
+          NOT change, extend, or imply anything about this separate
+          aerodynamic-validity range - plugins/aerodynamics/ and
+          docs/source_of_truth/aerodynamics/aero_v1_config.yaml are
+          UNCHANGED by this task (no aerodynamic coefficient/control
+          derivative/control-sign-mapping value was touched). A commanded
+          deflection between +/-10 deg and +/-45 deg will physically move
+          the real joint (the actuator has no aerodynamic-validity
+          awareness and must not be given one - that would incorrectly
+          conflate a mechanical/servo concern with a separate aerodynamic-
+          model concern, exactly what CONTROLS.md section 3 already warns
+          against), but the resulting aerodynamic force/moment beyond
+          +/-10 deg should not be trusted as validated until a future
+          HIGH_DEFLECTION_CONTROL_AERO_VALIDATION stage (XFLR5 wide-sweep
+          data, aerodynamics-owned, not this task) updates the high-
+          deflection derivatives.
+
+    Full actuator architecture (rate-limited/effort-bounded servo dynamics
+    now driving these 5 joints via genuine gz::sim::Joint::SetForce()
+    torque, replacing the previous test-script-only direct position
+    injection) is documented in plugins/actuators/README.md and
+    docs/source_of_truth/controls/actuator_v1_config.yaml (the
+    +/-45 deg/max_rate/max_effort dataset the new FalconV2Actuators plugin
+    below loads at Configure() time) - not repeated here.
+
+    ============================================================================
     PROPELLER LINKS/JOINTS
     ============================================================================
     Hub positions (master dataset section 46, CONFIRMED, GEOMETRY.md
@@ -617,22 +671,27 @@
       </collision>
     </link>
 
-    <!-- Mechanical limit +/-30 deg (0.5236 rad), tagged
-         MECHANICAL_INITIAL_LIMIT (master dataset section 3/65
-         manufacturer manual starting recommendation: NOT a claim that
-         the aerodynamic model is linear that far; the aero-validated
-         linear range is only approx +/-10 deg, a separate fact,
-         CONTROLS.md section 3). Joint rotation sign: SIGN_TEST_REQUIRED,
-         not asserted here (AILERON_SIGN_TEST_REQUIRED, CONTROLS.md
-         section 4.3). -->
+    <!-- Mechanical limit +/-45 deg (0.7853981634 rad), tagged
+         MECHANICAL_ACTUATOR_LIMIT_V1 (widened from the prior +/-30 deg
+         MECHANICAL_INITIAL_LIMIT, task ACTUATOR_SERVO_MODEL_V1,
+         controls-integration, 2026-08-23 - see the file-header
+         "CONTROL-SURFACE JOINT LIMIT UPDATE" section above for the full
+         MECHANICAL-vs-AERODYNAMIC-validity distinction, not repeated per
+         joint). +/-45 deg is USER_CONFIRMED_MECHANICAL_CAPABILITY for this
+         task, NOT a claim that the aerodynamic model is linear that far;
+         the aero-validated linear range is still only approx +/-10 deg, a
+         separate fact, CONTROLS.md section 3, UNCHANGED by this task. Joint
+         rotation sign: SIGN_TEST_REQUIRED historically, now
+         VERIFIED_BY_GAZEBO_GEOMETRY_SIGN_TEST (CONTROLS.md section 10) -
+         unaffected by this limit change. -->
     <joint name="left_aileron_joint" type="revolute">
       <parent>base_link</parent>
       <child>left_aileron</child>
       <axis>
         <xyz>0.000994 0.999899 0.014146</xyz>
         <limit>
-          <lower>-0.5236</lower>
-          <upper>0.5236</upper>
+          <lower>-0.7853981634</lower>
+          <upper>0.7853981634</upper>
         </limit>
       </axis>
     </joint>
@@ -679,14 +738,18 @@
       </collision>
     </link>
 
+    <!-- Mechanical limit +/-45 deg, MECHANICAL_ACTUATOR_LIMIT_V1, mirror of
+         left_aileron_joint - see that joint's comment above and the
+         file-header "CONTROL-SURFACE JOINT LIMIT UPDATE" section for the
+         full MECHANICAL-vs-AERODYNAMIC-validity distinction. -->
     <joint name="right_aileron_joint" type="revolute">
       <parent>base_link</parent>
       <child>right_aileron</child>
       <axis>
         <xyz>-0.000994 0.999899 -0.014146</xyz>
         <limit>
-          <lower>-0.5236</lower>
-          <upper>0.5236</upper>
+          <lower>-0.7853981634</lower>
+          <upper>0.7853981634</upper>
         </limit>
       </axis>
     </joint>
@@ -757,18 +820,25 @@
       </collision>
     </link>
 
-    <!-- Mechanical limit +/-30 deg (0.5236 rad), MECHANICAL_INITIAL_LIMIT.
-         ELEVATOR_SIGN_TEST_REQUIRED (CONTROLS.md section 4.1): XFLR5
-         convention (+ = trailing-edge-down) recorded in CONTROLS.md, NOT
-         asserted as this joint's positive-rotation direction. -->
+    <!-- Mechanical limit +/-45 deg (0.7853981634 rad), tagged
+         MECHANICAL_ACTUATOR_LIMIT_V1 (widened from the prior +/-30 deg
+         MECHANICAL_INITIAL_LIMIT, task ACTUATOR_SERVO_MODEL_V1,
+         controls-integration, 2026-08-23 - see the file-header
+         "CONTROL-SURFACE JOINT LIMIT UPDATE" section for the full
+         MECHANICAL-vs-AERODYNAMIC-validity distinction, not repeated per
+         joint; the aero-validated linear range is still only approx
+         +/-10 deg, UNCHANGED by this task). Joint rotation sign:
+         historically ELEVATOR_SIGN_TEST_REQUIRED, now
+         VERIFIED_BY_GAZEBO_GEOMETRY_SIGN_TEST (CONTROLS.md section 10) -
+         unaffected by this limit change. -->
     <joint name="left_elevator_joint" type="revolute">
       <parent>base_link</parent>
       <child>left_elevator</child>
       <axis>
         <xyz>0.002983 0.999993 -0.002072</xyz>
         <limit>
-          <lower>-0.5236</lower>
-          <upper>0.5236</upper>
+          <lower>-0.7853981634</lower>
+          <upper>0.7853981634</upper>
         </limit>
       </axis>
     </joint>
@@ -812,14 +882,18 @@
       </collision>
     </link>
 
+    <!-- Mechanical limit +/-45 deg, MECHANICAL_ACTUATOR_LIMIT_V1, mirror of
+         left_elevator_joint - see that joint's comment above and the
+         file-header "CONTROL-SURFACE JOINT LIMIT UPDATE" section for the
+         full MECHANICAL-vs-AERODYNAMIC-validity distinction. -->
     <joint name="right_elevator_joint" type="revolute">
       <parent>base_link</parent>
       <child>right_elevator</child>
       <axis>
         <xyz>-0.002983 0.999993 0.002072</xyz>
         <limit>
-          <lower>-0.5236</lower>
-          <upper>0.5236</upper>
+          <lower>-0.7853981634</lower>
+          <upper>0.7853981634</upper>
         </limit>
       </axis>
     </joint>
@@ -891,19 +965,25 @@
       </collision>
     </link>
 
-    <!-- Mechanical limit +/-30 deg (0.5236 rad), MECHANICAL_INITIAL_LIMIT.
-         RUDDER_SIGN_TEST_REQUIRED (CONTROLS.md section 4.2): the master
-         dataset does not even state which physical trailing-edge
-         direction XFLR5's "+" rudder deflection corresponds to; NOT
-         asserted here. -->
+    <!-- Mechanical limit +/-45 deg (0.7853981634 rad), tagged
+         MECHANICAL_ACTUATOR_LIMIT_V1 (widened from the prior +/-30 deg
+         MECHANICAL_INITIAL_LIMIT, task ACTUATOR_SERVO_MODEL_V1,
+         controls-integration, 2026-08-23 - see the file-header
+         "CONTROL-SURFACE JOINT LIMIT UPDATE" section for the full
+         MECHANICAL-vs-AERODYNAMIC-validity distinction, not repeated per
+         joint; the aero-validated linear range is still only approx
+         +/-10 deg, UNCHANGED by this task). Joint rotation sign:
+         historically RUDDER_SIGN_TEST_REQUIRED, now
+         VERIFIED_BY_GAZEBO_GEOMETRY_SIGN_TEST (CONTROLS.md section 10) -
+         unaffected by this limit change. -->
     <joint name="rudder_joint" type="revolute">
       <parent>base_link</parent>
       <child>rudder</child>
       <axis>
         <xyz>0.010378 0.000000 0.999946</xyz>
         <limit>
-          <lower>-0.5236</lower>
-          <upper>0.5236</upper>
+          <lower>-0.7853981634</lower>
+          <upper>0.7853981634</upper>
         </limit>
       </axis>
     </joint>
@@ -1150,6 +1230,72 @@
            omega_ownframe_rad_s, rpm, J, Ct, Cp, thrust_N, Q_prop_Nm,
            interpClamped, rpmCapActive, negativeCurrentClamped,
            currentLimited. -->
+      <diagnostics_rate_hz>20.0</diagnostics_rate_hz>
+    </plugin>
+
+    <!-- ============================================================
+         ACTUATOR/SERVO PLUGIN
+         Author (this addition): controls-integration specialist agent,
+         2026-08-23, task ACTUATOR_SERVO_MODEL_V1. This is an ADDITIVE
+         change only: no link, joint, mass, CG, inertia, collision, visual,
+         or hinge-geometry element was modified to add this block beyond
+         the 5 control-surface joints' own <limit> values (widened to
+         +/-45 deg above, see the file-header "CONTROL-SURFACE JOINT LIMIT
+         UPDATE" section) - this plugin drives those existing 5 joints'
+         real physical motion, it does not redefine their link/geometry.
+         Scope: the physical actuator/servo command chain only (actuator
+         command -> rate-limited/effort-bounded servo dynamics -> real
+         Gazebo joint motion via genuine gz::sim::Joint::SetForce() torque -
+         replaces the previous test-script-only direct position injection
+         as the actuation mechanism for these 5 joints). No aerodynamic-
+         coefficient physics (plugins/aerodynamics/ untouched, no control-
+         sign-mapping value changed), no motor/propulsion physics
+         (plugins/propulsion/ untouched), no ArduPlane/MAVLink/SITL/TECS -
+         this plugin ends at the physical actuator interface.
+         plugins/aerodynamics/AerodynamicsSystem.cc continues to read these
+         same 5 joints' ACTUAL positions from the ECM every tick exactly as
+         before (gz::sim::Joint(e).Position(_ecm)), regardless of what now
+         drives them - unmodified, confirmed by direct reading of that file
+         for this task.
+
+         Build: plugins/actuators/ (see plugins/actuators/README.md). Full
+         architecture/provenance record:
+         docs/source_of_truth/controls/actuator_v1_config.yaml (the
+         structured per-surface travel/rate/effort/control-law dataset this
+         plugin loads at Configure() time - no coefficient is hardcoded in
+         this SDF block or in the plugin's C++ source) and
+         docs/source_of_truth/controls/CONTROLS.md.
+
+         V1 command interface (no ArduPilot/SITL exists yet): each of the 5
+         surfaces is commanded independently via its own gz.msgs.Double
+         topic (physical-angle-radians, hold-last-valid-command failsafe,
+         defaulting to 0 rad/neutral if never commanded - no startup kick).
+
+         config_path is an absolute path, matching this repository's
+         existing convention (see the aerodynamics/propulsion plugin blocks
+         above) - a documented, known V1 portability limitation, not a
+         silent one.
+         ============================================================ -->
+    <plugin filename="FalconV2Actuators" name="falcon_v2_actuators::ActuatorSystem">
+      <config_path>/home/emirhan/Desktop/FalconV2/docs/source_of_truth/controls/actuator_v1_config.yaml</config_path>
+      <!-- Per-surface command topics, gz.msgs.Double, physical-angle-radians,
+           clamped to +/-45 deg by the plugin, rate-limited internally,
+           hold-last-valid-command failsafe, default 0 rad (neutral) if
+           never published. Values below match this plugin's own built-in
+           defaults - listed explicitly here for documentation/
+           discoverability/override, same convention as the propulsion
+           plugin block above's left_throttle_topic/right_throttle_topic. -->
+      <left_aileron_cmd_topic>/model/falcon_v2/actuators/left_aileron/cmd_rad</left_aileron_cmd_topic>
+      <right_aileron_cmd_topic>/model/falcon_v2/actuators/right_aileron/cmd_rad</right_aileron_cmd_topic>
+      <left_elevator_cmd_topic>/model/falcon_v2/actuators/left_elevator/cmd_rad</left_elevator_cmd_topic>
+      <right_elevator_cmd_topic>/model/falcon_v2/actuators/right_elevator/cmd_rad</right_elevator_cmd_topic>
+      <rudder_cmd_topic>/model/falcon_v2/actuators/rudder/cmd_rad</rudder_cmd_topic>
+      <!-- gz.msgs.Double_V diagnostics on
+           /model/falcon_v2/actuators/diagnostics. Field order (7 fields per
+           surface, left_aileron/right_aileron/left_elevator/
+           right_elevator/rudder): cmd_rad, target_clamped_rad, setpoint_rad,
+           actual_angle_rad, actual_rate_rad_s, target_clamp_active,
+           effort_clamp_active - 35 fields total. -->
       <diagnostics_rate_hz>20.0</diagnostics_rate_hz>
     </plugin>
 

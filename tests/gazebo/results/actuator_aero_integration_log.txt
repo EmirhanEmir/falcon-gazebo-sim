@@ -1,0 +1,72 @@
+FALCON V2 - ACTUATOR_SERVO_MODEL_V1 mapping/integration test pass (gazebo-testing, 2026-08-23)
+Verifying the NEW real actuator (FalconV2Actuators, controls-integration) correctly feeds the
+already-verified aerodynamics control-sign mapping, with the real joint position as the source
+(not test-script reset_position() injection). No aircraft physics parameter modified.
+
+==============================================================================
+TEST 1: ACTUAL_JOINT_STATE_FEEDS_AERO_TEST
+==============================================================================
+--- EARLY (before servo has caught up) (release_delay=15 ticks = 15 ms after command) ---
+  Command issued at n=300 (t=0.300s): left_elevator=right_elevator=+8.0deg (0.139626 rad)
+  Actual joint angle AT release-window start (n=315, 15 ms after command): theta_l=0.7418deg theta_r=0.7418deg (fraction of 8.0deg target = 9.27%)
+  q(t) over release window: [-0.00728, -0.00854, -0.00988, -0.01131, -0.01284, -0.01447, -0.01622, -0.01807, -0.02005, -0.02216, -0.02439, -0.02677, -0.02929, -0.03195, -0.03476]
+  Measured slope dq/dt = -1.94846 rad/s^2 -> My_measured = Iyy*slope = 0.2507*-1.94846 = -0.48848 N*m
+--- LATE (after servo has settled) (release_delay=350 ticks = 350 ms after command) ---
+  Command issued at n=300 (t=0.300s): left_elevator=right_elevator=+8.0deg (0.139626 rad)
+  Actual joint angle AT release-window start (n=650, 350 ms after command): theta_l=7.7997deg theta_r=7.7997deg (fraction of 8.0deg target = 97.50%)
+  q(t) over release window: [-0.04651, -0.0525, -0.05846, -0.0644, -0.07031, -0.07622, -0.08211, -0.08799, -0.09387, -0.09973, -0.10558, -0.11143, -0.11727, -0.12311, -0.12893]
+  Measured slope dq/dt = -5.88354 rad/s^2 -> My_measured = Iyy*slope = 0.2507*-5.88354 = -1.47500 N*m
+
+--- TEST 1 interpretation ---
+EARLY actual position: 9.27% of target reached at t=+15 ms -> PASS (clearly still in transit)
+LATE actual position: 97.50% of target reached at t=+350 ms -> PASS (settled)
+EARLY measured My=-0.48848 N*m vs LATE measured My=-1.47500 N*m (same sign: True, |early| < 0.85*|late|: True)
+-> CONFIRMS that the aerodynamics plugin's applied moment tracks the ACTUAL (servo-tracked) joint trajectory rather than jumping instantly to the commanded value.
+ACTUAL_JOINT_STATE_FEEDS_AERO_TEST: PASS
+==============================================================================
+TESTS 2-4: LEFT_RIGHT_ELEVATOR / LEFT_RIGHT_AILERON / RUDDER MAPPING REGRESSION
+==============================================================================
+--- ELEVATOR_LEFT_RIGHT_MAPPING_REGRESSION ---
+Commanded (rad): {'left_elevator': 0.08726646259971647, 'right_elevator': 0.08726646259971647}
+  Actual left_elevator_joint tail-window (last 100 steps): mean=+4.8610deg noise(max-min)=0.00000deg
+  Actual right_elevator_joint tail-window (last 100 steps): mean=+4.8610deg noise(max-min)=0.00000deg
+Computed deflection (formula given in task): -4.8610deg (expected -5.0deg)
+Held flight condition at end of run: u=14.9968 v=0.0000 w=0.0270 p=0.00000 q=-0.02712 r=-0.00000
+Independent aero_lib.compute_aero() replica @ this deflection: CL=0.42532 CD=0.04465 CY=-0.00000 Cl=-0.00000 Cm=0.07754 Cn=-0.00000
+Live FalconV2Aerodynamics diagnostics (latest message): {'V': 14.99685779261687, 'alpha': -0.0017978959475732266, 'beta': 5.079983790514064e-26, 'qbar': 137.75476798683368, 'CL': 0.4253224394283304, 'CD': 0.04465147657101083, 'CY': -7.753612926704603e-25, 'Cl': -8.757678337015694e-24, 'Cm': 0.07753692831704485, 'Cn': -9.350993363554273e-25}
+Live FalconV2Actuators diagnostics for 'left_elevator' (latest message): {'cmd_rad': 0.08726646259971647, 'target_clamped_rad': 0.08726646259971647, 'setpoint_rad': 0.08726646259971647, 'actual_angle_rad': 0.08484088810973793, 'actual_rate_rad_s': -1.3043113277492899e-14, 'target_clamp_active': 0.0, 'effort_clamp_active': 0.0}
+magnitude_ok(within 1.0deg of -5.0deg): True, sign_ok: True, settled/no-chatter(tail noise<0.5deg): True, finite: True
+ELEVATOR_LEFT_RIGHT_MAPPING_REGRESSION: PASS
+
+--- AILERON_LEFT_RIGHT_MAPPING_REGRESSION ---
+Commanded (rad): {'left_aileron': -0.08726646259971647, 'right_aileron': 0.08726646259971647}
+  Actual left_aileron_joint tail-window (last 100 steps): mean=-5.0324deg noise(max-min)=0.00000deg
+  Actual right_aileron_joint tail-window (last 100 steps): mean=+4.9686deg noise(max-min)=0.00000deg
+Computed deflection (formula given in task): +5.0005deg (expected +5.0deg)
+Held flight condition at end of run: u=14.9968 v=0.0002 w=0.0293 p=0.03064 q=-0.00495 r=-0.00000
+Independent aero_lib.compute_aero() replica @ this deflection: CL=0.42606 CD=0.04468 CY=0.00212 Cl=0.02572 Cm=0.01416 Cn=0.00000
+Live FalconV2Aerodynamics diagnostics (latest message): {'V': 14.996850219208975, 'alpha': -0.0019507180211854338, 'beta': 1.0277591076433153e-05, 'qbar': 137.75462885465032, 'CL': 0.42606070711363186, 'CD': 0.04468466394051767, 'CY': 0.0021177747704325405, 'Cl': 0.02572202940666448, 'Cm': 0.014161086823873154, 'Cn': 3.6662761331333926e-07}
+Live FalconV2Actuators diagnostics for 'left_aileron' (latest message): {'cmd_rad': -0.08726646259971647, 'target_clamped_rad': -0.08726646259971647, 'setpoint_rad': -0.08726646259971647, 'actual_angle_rad': -0.08783112624881845, 'actual_rate_rad_s': 1.498729799567382e-08, 'target_clamp_active': 0.0, 'effort_clamp_active': 0.0}
+magnitude_ok(within 1.0deg of +5.0deg): True, sign_ok: True, settled/no-chatter(tail noise<0.5deg): True, finite: True
+AILERON_LEFT_RIGHT_MAPPING_REGRESSION: PASS
+
+--- RUDDER_MAPPING_REGRESSION ---
+Commanded (rad): {'rudder': 0.08726646259971647}
+  Actual rudder_joint tail-window (last 100 steps): mean=+4.9902deg noise(max-min)=0.00000deg
+Computed deflection (formula given in task): +4.9902deg (expected +5.0deg)
+Held flight condition at end of run: u=14.9968 v=0.0007 w=0.0293 p=0.00005 q=-0.00495 r=-0.00198
+Independent aero_lib.compute_aero() replica @ this deflection: CL=0.42606 CD=0.04468 CY=0.00738 Cl=0.00004 Cm=0.01416 Cn=-0.00217
+Live FalconV2Aerodynamics diagnostics (latest message): {'V': 14.996850224208647, 'alpha': -0.0019506860096836795, 'beta': 4.7720860133411365e-05, 'qbar': 137.75462894650002, 'CL': 0.42606088768118766, 'CD': 0.044684672064616786, 'CY': 0.0073845651117133175, 'Cl': 4.404829614800258e-05, 'Cm': 0.0141610254510358, 'Cn': -0.0021728404752227107}
+Live FalconV2Actuators diagnostics for 'rudder' (latest message): {'cmd_rad': 0.08726646259971647, 'target_clamped_rad': 0.08726646259971647, 'setpoint_rad': 0.08726646259971647, 'actual_angle_rad': 0.0870959306250154, 'actual_rate_rad_s': -1.2308578220132846e-14, 'target_clamp_active': 0.0, 'effort_clamp_active': 0.0}
+magnitude_ok(within 1.0deg of +5.0deg): True, sign_ok: True, settled/no-chatter(tail noise<0.5deg): True, finite: True
+RUDDER_MAPPING_REGRESSION: PASS
+
+==============================================================================
+SUMMARY - 4 mapping/integration tests
+==============================================================================
+ACTUAL_JOINT_STATE_FEEDS_AERO_TEST: PASS
+LEFT_RIGHT_ELEVATOR_MAPPING_REGRESSION: PASS
+LEFT_RIGHT_AILERON_MAPPING_REGRESSION: PASS
+RUDDER_MAPPING_REGRESSION: PASS
+
+OVERALL: PASS

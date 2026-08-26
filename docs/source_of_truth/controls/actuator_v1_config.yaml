@@ -1,0 +1,466 @@
+# =============================================================================
+# FALCON V2 - Actuator/Servo V1 config dataset (source of truth)
+# =============================================================================
+# Owner: controls-integration
+# Task:  ACTUATOR_SERVO_MODEL_V1 (2026-08-23)
+#
+# This file is the single structured-data source for every numeric parameter
+# consumed by plugins/actuators/ (the Gazebo Sim Harmonic System plugin
+# "FalconV2Actuators"). Per CLAUDE.md's source-of-truth policy, this dataset
+# lives here, not hardcoded inline in plugin source code. The plugin loads
+# this file at Configure() time from the path given by the <config_path> SDF
+# plugin parameter in model/model.sdf. Mirrors
+# docs/source_of_truth/aerodynamics/aero_v1_config.yaml and
+# docs/source_of_truth/propulsion/propulsion_v1_config.yaml's format/
+# conventions.
+#
+# SCOPE: this is the ACTUATOR/SERVO layer only - the physical mechanism that
+# turns a commanded angle into real joint motion. It does NOT define, and
+# must never be confused with, the AERODYNAMIC control-surface-sign mapping
+# or derivatives (Cmde, Clda, Cndr, CYdr, ...), which live in
+# docs/source_of_truth/aerodynamics/aero_v1_config.yaml and are UNCHANGED by
+# this file. plugins/aerodynamics/AerodynamicsSystem.cc reads the 5 joints'
+# ACTUAL positions from the ECM each tick, regardless of what drives them -
+# this file only governs how this project's own actuator plugin drives them.
+#
+# PROVENANCE RULE: every value below cites its exact source. Nothing here is
+# invented without an explicit tag.
+#
+# STATUS TAGS USED BELOW (consistent with aero_v1_config.yaml/
+# propulsion_v1_config.yaml's legend):
+#   USER_CONFIRMED_MECHANICAL_CAPABILITY - stated directly by the task
+#                 owner for this specific task (ACTUATOR_SERVO_MODEL_V1),
+#                 not re-derived here.
+#   V1_PROVISIONAL - an explicitly-flagged placeholder pending a real
+#                 servo datasheet/measurement, NOT manufacturer-confirmed.
+#                 See CONTROLS.md sec 5: no Emax ES08MAII datasheet has been
+#                 ingested into this repository (torque/speed/PWM specs are
+#                 DATA_REQUIRED there) - every V1_PROVISIONAL value below is
+#                 this agent's own conservative, documented choice, not a
+#                 manufacturer figure.
+#   DERIVED     - computed from a CONFIRMED/V1_PROVISIONAL value via a
+#                 documented method.
+#   DATA_REQUIRED - genuinely missing, not guessed.
+#
+# Do not edit numeric values here without updating this file's own
+# documentation. Do not add a per-surface value not present in the task
+# instruction or an authorized derivation.
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Mechanical travel limits (min/max_angle_rad) and V1_PROVISIONAL servo
+# rate/effort limits, per surface. All 5 surfaces share IDENTICAL numeric
+# values in V1 (no per-surface servo data exists to differentiate them - see
+# CONTROLS.md sec 5, SERVO_ALLOCATION_REQUIRES_CONFIRMATION) - structured as
+# a per-surface map anyway so a future real per-surface datasheet can update
+# one surface at a time without restructuring this file.
+# -----------------------------------------------------------------------------
+surfaces:
+  left_aileron:   &servo_v1_defaults
+    min_angle_rad: -0.7853981634   # -45 deg, USER_CONFIRMED_MECHANICAL_CAPABILITY (this task's instruction; matches model/model.sdf's MECHANICAL_ACTUATOR_LIMIT_V1 joint <limit>)
+    max_angle_rad: 0.7853981634    # +45 deg, USER_CONFIRMED_MECHANICAL_CAPABILITY
+    max_rate_rad_s: 5.2360         # V1_PROVISIONAL = 300 deg/s. Reasoning: no Emax ES08MAII datasheet exists in-repo (CONTROLS.md sec 5, DATA_REQUIRED). 300 deg/s (~0.20 sec/60deg) is a conservative, middle-of-the-road order-of-magnitude figure for a "high torque micro servo" class part under some mechanical load (published no-load speeds for visually similar micro digital servos in the broader hobby market commonly range ~0.10-0.20 sec/60deg = ~300-600 deg/s; this V1 deliberately picks the SLOWER end of that range rather than the fastest advertised no-load figure, since (a) no-load bench speeds always exceed loaded/real speeds and (b) a slower assumed rate is the conservative choice for a flight-control actuator - it never overstates the actuator's real capability). NOT sourced from the ES08MAII's own datasheet - explicitly flagged V1_PROVISIONAL, to be replaced the moment a real datasheet is ingested.
+    max_effort_nm: 0.20            # V1_PROVISIONAL = 0.20 N*m (~2.04 kgf*cm). Reasoning: same no-datasheet caveat as max_rate_rad_s. "High torque" micro digital servos in this general weight/size class are commonly advertised in the ~2-4 kgf*cm range at typical operating voltage; V1 picks a conservative value near the LOW end of that range (2.04 kgf*cm) rather than the high end, so this V1 model does not overstate the actuator's real torque capability. NOT sourced from the ES08MAII's own datasheet - explicitly flagged V1_PROVISIONAL.
+  right_aileron:  *servo_v1_defaults
+  left_elevator:  *servo_v1_defaults
+  right_elevator: *servo_v1_defaults
+  rudder:         *servo_v1_defaults
+
+# -----------------------------------------------------------------------------
+# Control law (PID gains used by ActuatorModel.hh's PidEffort() to drive the
+# REAL Gazebo joint toward the rate-limited setpoint via
+# gz::sim::Joint::SetForce()). Shared across all 5 surfaces (no per-surface
+# data exists to differentiate them). V1_PROVISIONAL - see PLACEHOLDER-
+# INERTIA NOTE below for why this project also relies on
+# gz::sim::Joint::SetVelocityLimits()/SetEffortLimits() (physics-engine-level
+# hard constraints) rather than trusting these gains alone.
+# -----------------------------------------------------------------------------
+control_law:
+  kp_nm_per_rad: 0.0034788             # V1_PROVISIONAL, DERIVED - see derivation_note below. NOT the same derivation basis as an earlier draft of this file (max_effort/reference-error) - that draft was found, by this task's OWN pure-math self-test, to produce a closed-loop natural frequency far too high for a 1 kHz per-tick torque update given the current placeholder joint inertia (see derivation_note).
+  kd_nm_per_rad_s: 6.9576e-05          # V1_PROVISIONAL, DERIVED - same basis as kp_nm_per_rad below.
+  ki_nm_per_rad_s: 6.9576e-03          # V1_PROVISIONAL, DERIVED - see integral_derivation_note below. Added 2026-08-24, ACTUATOR_SERVO_MODEL_V1_GRAVITY_DROOP_FIX.
+  sp_weight_b: 0.7                     # V1_PROVISIONAL, DERIVED - see sp_weight_derivation_note below. Added 2026-08-24, ACTUATOR_SERVO_MODEL_V1_GRAVITY_DROOP_FIX round 2 ("OVERSHOOT_AFTER_STEP" fix). Dimensionless, standard PID setpoint-weighting parameter in [0,1] applied to the P-term ONLY (ActuatorModel.hh PidEffort()); does NOT change kp/kd/ki.
+  sp_weight_derivation_note: >
+    FINDING (validation, same-day round-2 review of the 2026-08-24
+    gravity-droop/integral-action fix above): `gazebo-testing`'s live
+    re-measurement of the fix found the original steady-state droop bug
+    fully resolved (all 12 flight-load residuals sub-0.1 deg), but a NEW
+    transient OVERSHOOT of 1.96-3.46 deg on 6/12 cases, peaking ~50-150 ms
+    after a step command before settling cleanly - exceeding the live
+    test's own <1 deg acceptance bar. `validation` confirmed the overshoot
+    is DIRECTIONAL: it only appears on commands that move WITH gravity's
+    pull, never on commands opposing it. Root cause: the live test's own
+    warm-up procedure holds each surface at its neutral commanded position
+    for a period BEFORE the step is issued; under gravity, the integral
+    term (correctly, per the round-1 fix above) charges up during that hold
+    to whatever value cancels the gravity disturbance torque AT THAT
+    HOLDING POINT. When the setpoint then steps to a new target, the
+    P-term's full-strength reaction to the new (now large) tracking error
+    is added ON TOP of that already-nonzero, correctly-pre-charged integral
+    contribution - for a step in the disturbance's own direction, the
+    combined transient authority briefly exceeds what critical damping
+    (zeta=1.0, derivation_note above) alone would produce, causing the
+    overshoot; for a step opposing the disturbance, the same pre-charged
+    integral instead partially cancels the disturbance's own pull as the
+    surface travels, so no equivalent overshoot appears - consistent with
+    the reported directionality.
+
+    CHOICE: setpoint weighting on the proportional term only (`validation`'s
+    suggested technique 1), NOT integral pre-charge bounding/reset-on-step
+    (`validation`'s suggested technique 2). Reasoning: technique 2 requires
+    detecting a "genuine setpoint step" (vs. a setpoint already being
+    continuously tracked, e.g. mid-ramp under the Stage-2 rate limiter) and
+    then deciding how much of the CORRECTLY pre-charged integral to discard
+    - for this project's disturbance model (a constant torque, independent
+    of the commanded target - see integral_derivation_note above), the
+    integral value required at the OLD setpoint and at the NEW setpoint are
+    IDENTICAL (ki*I_ss = -T_disturbance regardless of target angle, since
+    the disturbance is modeled as constant, not target-dependent) - so
+    discarding/bounding the pre-charged integral at a step would actively
+    fight a value that is already correct for the new target too, and would
+    have to be re-earned via the slow (Ti=0.5s) integral path, undoing part
+    of the round-1 fix's own responsiveness for no benefit in this specific
+    disturbance model. Setpoint weighting has no such failure mode: it only
+    reshapes the P-term's reaction to a setpoint CHANGE (whether a fresh
+    step or a rate-limited ramp step), never touches the I-term or its
+    accumulated state, and is provably neutral to steady-state tracking (at
+    true convergence, error=setpoint-actual->0 via the same I-term dynamics
+    as before, regardless of spWeightB - see PidEffort()'s own doc comment).
+    It is also provably neutral to the existing pole-placement/Routh-Hurwitz
+    analysis above: setpoint weighting changes only the NUMERATOR (a zero)
+    of the closed-loop reference-tracking transfer function, never the
+    DENOMINATOR (the poles) - the characteristic polynomial
+    I_ref*s^3 + kd*s^2 + kp*s + ki = 0 and its three real roots
+    (-113.29, -84.63, -2.09 rad/s) are completely unaffected by spWeightB,
+    because spWeightB never appears in the equations governing how the
+    STATE (theta, omega, integral) responds to a DISTURBANCE - only in how
+    the P-term reacts to the setpoint input itself.
+
+    DERIVATION/VALIDATION (this task's own pure-math self-test,
+    ACTUATOR_SETPOINT_STEP_OVERSHOOT_TEST in
+    plugins/actuators/test/actuator_model_selftest.cc): reproduced the
+    reported mechanism at reduced scale against the SAME I_ref=3.4788e-07
+    kg*m^2 reference inertia and a representative constant disturbance
+    (2.0e-4 N*m, same order-of-magnitude basis as
+    ACTUATOR_INTEGRAL_DISTURBANCE_REJECTION_INFO above) - NOT a
+    reproduction of the live 1.96-3.46 deg magnitude itself (this reduced-
+    order model's overshoot before the fix was ~0.69 deg, smaller in scale
+    since it uses a different, smaller-order-of-magnitude disturbance/
+    inertia pairing than the real Gazebo joint/link, exactly like the
+    existing disturbance-rejection self-test's own documented "not a
+    re-derivation of the real gravity torque" caveat) but a faithful,
+    order-of-magnitude analogue of the SAME confirmed mechanism (neutral-
+    hold pre-charge, then a step in the disturbance's own direction). A
+    sweep of spWeightB in {1.0 (pre-fix baseline), 0.9, 0.8, 0.7, 0.6, 0.5}
+    against this scenario found the overshoot fully eliminated (down to
+    numerical noise, <0.001 deg) at spWeightB<=0.9 already; spWeightB=0.7
+    was chosen (not the bare-minimum 0.9) for margin against the live
+    system's larger, not-fully-characterized directional asymmetry (this
+    reduced-order model does not include the likely angle-dependent real
+    hinge-moment behavior - a true pendulum-like sin(theta) gravity moment,
+    not this model's simplified constant-torque abstraction - that
+    plausibly explains why the live magnitude and directionality are larger
+    than this model reproduces), while remaining within the standard
+    0.5-1.0 setpoint-weighting range and not degrading disturbance-free
+    step-response settling time so much as to be impractical (fresh-start,
+    no-disturbance step-to-target 99%-settling time grows from ~0.09 s at
+    spWeightB=1.0 to ~1.6 s at spWeightB=0.7 in this same reduced-order
+    model, dominated by the intentionally slow Ti=0.5s integral tail once
+    the weighted P-term's own authority approaches zero near the target -
+    an expected, accepted consequence of setpoint weighting, not a defect;
+    90%-settling time only grows from ~0.08s to ~0.53s, i.e. the bulk of
+    the physical motion is not materially slower, only the final trim-in).
+    Steady-state droop-rejection (ACTUATOR_INTEGRAL_DISTURBANCE_REJECTION_
+    INFO's own check) re-confirmed unaffected by this change (residual
+    stays <0.05 deg with spWeightB=0.7, matching the round-1 fix exactly)
+    because that check's I-term dynamics are untouched by spWeightB.
+
+    `gazebo-testing`'s live re-measurement remains the authoritative check
+    of the actual overshoot magnitude/timing on the real joint; this note
+    documents the expected mechanism, the chosen value's derivation, and
+    this task's own reduced-order confirmation, not a live result.
+
+    Once real per-surface component mass/inertia data replaces the
+    TEMPORARY_NUMERICAL_MASS placeholder (geometry-structure-owned),
+    spWeightB here should be re-examined alongside kp/kd/ki per
+    placeholder_inertia_note below - a different real inertia changes the
+    disturbance-free settling-time tradeoff this value was chosen against,
+    even though spWeightB itself does not depend on I_ref algebraically the
+    way kp/kd/ki do.
+  integral_derivation_note: >
+    FINDING (surfaced live by gazebo-testing at the powered trim condition,
+    V=18.165 m/s, gravity ON, ACTUATOR_SERVO_MODEL_V1_GRAVITY_DROOP_FIX task,
+    2026-08-24): commanding small symmetric elevator / differential aileron
+    deflections settled 2.6-4.2 deg SHORT of target in a stable,
+    non-oscillating, non-effort-saturated equilibrium (rudder unaffected,
+    <=0.012 deg residual at all 4 tested angles). Root cause, confirmed by a
+    3-way zero-g / base-free / base-held diagnostic plus a first-principles
+    prediction (droop = T_gravity/kp, matching observed droop to within
+    ~5-9% for elevator, aileron, AND rudder - predicting exactly 0 deg for
+    rudder, whose hinge axis is Z-dominant/near-vertical so a vertical
+    gravity force produces zero moment about it by construction, unlike the
+    Y-dominant elevator/aileron axes): the pure-P(D) law in
+    ActuatorModel.hh's PdEffort() (now PidEffort()) cannot drive
+    steady-state error to zero under ANY nonzero constant disturbance
+    torque - gravity acting on the control surface's own
+    TEMPORARY_NUMERICAL_MASS placeholder weight about its hinge, in this
+    case - no matter how kp is tuned (kp only shrinks the droop
+    proportionally; it never eliminates it, and kp cannot simply be
+    increased given the placeholder-inertia dt-compatibility bandwidth
+    ceiling already established by kp_nm_per_rad's own derivation_note
+    above).
+
+    CHOICE: integral action (PID), not gravity feedforward. Integral action
+    rejects ANY constant disturbance torque generically (not gravity
+    specifically) and requires no new dependency on link mass/CoM/
+    orientation data in either ActuatorModel.hh (still fully Gazebo-
+    independent, zero new dependencies) or ActuatorSystem.cc (still touches
+    only joints, never link inertial properties) - a materially smaller,
+    more contained change for a SCOPED bug fix than feedforward would be.
+    Feedforward would also only ever cancel gravity specifically, whereas
+    integral action is future-proof against any other constant disturbance
+    (e.g. a future hinge-moment model) without further code changes.
+
+    DERIVATION: ki is chosen via the standard ISA form ki = kp / Ti, where
+    Ti is the integral time constant. Deriving Ti/ki by full closed-loop
+    pole placement (not by guessing, then checking it doesn't oscillate):
+    for a constant setpoint, the tracking-error dynamics of this augmented
+    PID loop against the SAME I_ref = 3.4788e-07 kg*m^2 reference inertia
+    used to derive kp/kd above satisfy the characteristic cubic
+      I_ref*s^3 + kd*s^2 + kp*s + ki = 0.
+    Ti = 0.5 s (i.e. an integral corner frequency omega_i = 1/Ti = 2 rad/s,
+    deliberately >>1 octave below the kp/kd pair's own omega_n=100 rad/s
+    design - "err toward slow-but-stable rather than aggressive", per this
+    task's own instruction) gives ki = kp/Ti = 0.0034788/0.5 = 6.9576e-03
+    N*m/(rad*s). Solving the cubic numerically at this ki gives three REAL,
+    negative roots (-113.29, -84.63, -2.09 rad/s) - i.e. no oscillatory
+    (complex-conjugate) mode is introduced at all, the slowest pole
+    (-2.09 rad/s, tau~0.48 s) is the new integral-driven mode and is far
+    slower than the ~100 rad/s PD dynamics, and Routh-Hurwitz
+    (a2*a1 > a3*a0, i.e. kd*kp > I_ref*ki) holds with a ~100x margin
+    (2.4207e-7 vs 2.4207e-9). A closed-loop simulation (this task's own
+    reference-inertia self-test pattern, PidEffort()+IntegrateJointStep()
+    against a constant 2.0e-4 N*m disturbance torque, order-of-magnitude
+    matched to the observed droop/kp) confirms the residual decays smoothly
+    (no overshoot/ringing) from ~3.3 deg to <0.06 deg by t=2 s and <0.01 deg
+    by t=3 s, fully consistent with the -2.09 rad/s dominant-pole estimate.
+    Anti-windup: integral accumulation is frozen whenever Stage 1's target
+    clamp is active OR whenever integrating would keep the effort output
+    saturated in the same direction it already is ("conditional
+    integration" - see ActuatorModel.hh's PidEffort() doc comment for the
+    exact same-tick mechanism); this is deliberately NOT a lagged
+    "freeze using last tick's effort_clamp_active flag" scheme.
+
+    EXPECTED RESULT AT THE FLIGHT CONDITION THAT SURFACED THIS BUG: the
+    disturbance driving the original 2.6-4.2 deg droop was small relative to
+    max_effort_nm (implied T_gravity ~1.6-2.5e-4 N*m from droop*kp, vs
+    max_effort_nm=0.20 N*m) - the integral term never needs to approach
+    saturation to cancel it, so no windup/clamping interaction is expected
+    in normal operation. Full elimination of the fixed offset is expected
+    (ideal linear theory: steady-state error -> 0 under a constant
+    disturbance with integral action), with the residual decaying on the
+    ~0.5 s Ti timescale above rather than remaining a fixed number of
+    degrees - gazebo-testing's live measurement is the authoritative check,
+    this note only documents the expected order of magnitude and settling
+    behavior.
+
+    Once real per-surface component mass/inertia data replaces the
+    TEMPORARY_NUMERICAL_MASS placeholder (geometry-structure-owned), ki here
+    MUST be re-derived alongside kp/kd against that real inertia, for the
+    same reason stated in placeholder_inertia_note below - reusing this
+    specific ki unmodified once real inertia data lands would be an error.
+  derivation_note: >
+    FINDING (surfaced by this task's own standalone self-test,
+    plugins/actuators/test/actuator_model_selftest.cc's
+    CLOSED_LOOP_TRACKING_INFO check, not silently tuned away): an earlier V1
+    draft derived kp directly from max_effort_nm / a reference tracking-error
+    angle (~2.29 N*m/rad), independent of any inertia. Against the CURRENT
+    placeholder joint inertia (model/model.sdf's control-surface links carry
+    TEMPORARY_NUMERICAL_MASS = 0.001 kg each, geometry-structure's own
+    documented near-massless numerical placeholder - NOT a physical claim),
+    that gain gives a closed-loop natural frequency omega_n = sqrt(kp/I) ~
+    2566 rad/s, corresponding to a period (~2.45 ms) shorter than the
+    physics engine's own per-tick torque-update interval
+    (tests/gazebo/worlds/*.sdf's <max_step_size> = 0.001 s = 1 kHz, i.e.
+    gz::sim::Joint::SetForce() can only be re-issued once per 1 ms). A
+    control loop that only updates its actuation once per tick cannot
+    stably control a plant whose own natural period is comparable to or
+    shorter than that tick - the self-test confirmed this directly
+    (oscillation growing to several radians even with a 1000x finer
+    REFERENCE-INTEGRATION substep - i.e. NOT merely an integration-accuracy
+    artifact, a genuine discrete-control undersampling problem). V1
+    therefore instead derives kp/kd from an explicitly chosen, dt-compatible
+    closed-loop bandwidth: omega_n = 100 rad/s (omega_n*dt = 0.1, comfortably
+    inside a stable margin for a once-per-tick torque update), zeta = 1.0
+    (critically damped, no overshoot), against I_ref = 3.4788e-07 kg*m^2
+    (the LARGEST of the three distinct placeholder inertia values among the
+    5 surfaces - model/model.sdf left_aileron/right_aileron
+    <inertial><inertia><iyy>, about the hinge-ish axis; elevator/rudder's own
+    placeholder inertia is smaller, ~1.75-1.78e-07 kg*m^2, so this shared
+    gain set is if anything mildly conservative/gentler for those three
+    surfaces, not under-damped):
+      kp = omega_n^2 * I_ref = 100^2 * 3.4788e-07 = 3.4788e-03 N*m/rad
+      kd = 2*zeta*omega_n*I_ref = 2*1.0*100*3.4788e-07 = 6.9576e-05 N*m/(rad/s)
+    Re-verified with the self-test's substepped closed-loop check: converges
+    smoothly to the commanded target with no overshoot (see
+    actuator_model_selftest.cc's own printed result). This gain set uses
+    only a small fraction of max_effort_nm under normal tracking against the
+    tiny placeholder inertia - expected and correct: a real servo is vastly
+    overpowered relative to a near-massless placeholder link, not a defect.
+  control_law_form: >
+    error_rad = setpoint_rad - actual_angle_rad
+    error_p_rad = sp_weight_b*setpoint_rad - actual_angle_rad   [setpoint-
+                                         weighted error, P-TERM ONLY - see
+                                         sp_weight_derivation_note above]
+    integral_rad_s += error_rad * dt   [TRUE (unweighted) error - UNLESS
+                                         anti-windup freeze active - see
+                                         integral_derivation_note above /
+                                         PidEffort()'s own doc comment]
+    torque_Nm = clamp(kp*error_p_rad + ki*integral_rad_s - kd*actual_rate_rad_s,
+                       -max_effort_nm, +max_effort_nm)
+    "Derivative on measurement" form (kd multiplies the ACTUAL joint's own
+    angular rate, not a derivative of the setpoint) - avoids derivative-kick
+    when the rate-limited setpoint itself steps, standard PID-controller
+    practice. Integral term added 2026-08-24 (see integral_derivation_note
+    above) - with ki=0 (e.g. a config predating this fix) this reduces
+    exactly to the original pure-P(D) law. Setpoint weighting on the P-term
+    added 2026-08-24, same day, round 2 (see sp_weight_derivation_note
+    above) - with sp_weight_b=1.0 (e.g. a config predating this round of the
+    fix), error_p_rad==error_rad exactly and this reduces exactly to the
+    round-1 PID law above; the I-term is never weighted, by design.
+  placeholder_inertia_note: >
+    model/model.sdf's 5 control-surface links currently carry
+    TEMPORARY_NUMERICAL_MASS = 0.001 kg each (geometry-structure's own
+    documented near-massless numerical placeholder, NOT a physical claim -
+    see model.sdf's "MASS DISTRIBUTION STRATEGY" header comment). Even with
+    kp/kd (and, as of 2026-08-24, ki) now derived against this placeholder inertia (see derivation_note
+    above, chosen for dt=0.001s compatibility), plugins/actuators/
+    ActuatorSystem.cc STILL ALSO calls gz::sim::Joint::SetVelocityLimits()
+    and SetEffortLimits() once at Configure() (genuine physics-engine-level
+    hard constraints, using these SAME max_rate_rad_s/max_effort_nm values)
+    as defense in depth - not relying on PD-gain tuning alone to bound the
+    REAL joint's velocity, consistent with this project's established
+    style. Once real per-surface component mass/inertia data exists
+    (geometry-structure-owned), kp/kd/ki here MUST be re-derived against that
+    real inertia (a heavier real surface will generally tolerate, and likely
+    need, a stiffer/faster gain set for adequate tracking authority, and a
+    real (non-placeholder) surface mass will also change the ACTUAL gravity
+    disturbance torque ki is compensating for) - reusing these specific
+    numbers unmodified once real inertia data lands would be an error, not a
+    convenience.
+
+# -----------------------------------------------------------------------------
+# Command interface
+# -----------------------------------------------------------------------------
+command_interface:
+  wire_format: >
+    Physical-angle-radians, gz.msgs.Double per surface (one topic per
+    surface - see topics block below). This is the ONLY implemented command
+    interface in V1.
+  topics:
+    left_aileron:   "/model/falcon_v2/actuators/left_aileron/cmd_rad"
+    right_aileron:  "/model/falcon_v2/actuators/right_aileron/cmd_rad"
+    left_elevator:  "/model/falcon_v2/actuators/left_elevator/cmd_rad"
+    right_elevator: "/model/falcon_v2/actuators/right_elevator/cmd_rad"
+    rudder:         "/model/falcon_v2/actuators/rudder/cmd_rad"
+  diagnostics_topic: "/model/falcon_v2/actuators/diagnostics"
+  diagnostics_rate_hz: 20.0
+  diagnostics_field_order_per_surface: >
+    cmd_rad (raw, pre-clamp, last received command), target_clamped_rad
+    (after the mechanical +/-45deg clamp), setpoint_rad (after the
+    rate-limiter - this is what actually drives the PID torque), actual_angle_rad
+    (read back from the real Gazebo joint), actual_rate_rad_s (read back from
+    the real Gazebo joint), target_clamp_active (1.0 if cmd_rad was outside
+    [min_angle_rad,max_angle_rad] this tick), effort_clamp_active (1.0 if the
+    PID torque saturated at +/-max_effort_nm this tick). Repeated for all 5
+    surfaces in the fixed order left_aileron, right_aileron, left_elevator,
+    right_elevator, rudder (35 fields total). UNCHANGED by the 2026-08-24
+    gravity-droop/integral-action fix - the internal integralRadS
+    accumulator (ActuatorModel.hh EffortResult::integralRadS) is
+    deliberately NOT added as a 36th field here, to avoid breaking
+    gazebo-testing's existing fixed-35-field harness
+    (tests/gazebo/scripts/actuator_lib.py) for a scoped fix; it can be
+    exposed in a future pass if gazebo-testing needs to observe it directly.
+  optional_normalized_mapping_NOT_IMPLEMENTED: >
+    An optional normalized [-1,+1] -> +/-45deg command interface was
+    considered per this task's instruction ("theta_cmd = normalized_cmd *
+    45deg, clamped to [-1,+1], no hidden nonlinearity"). It was NOT
+    implemented as a second live gz-transport topic per surface in V1 - doing
+    so would double the subscription/topic surface (10 topics instead of 5)
+    for no V1 benefit, since no upstream mixer/ArduPilot layer exists yet to
+    use it (this task explicitly ends at the physical actuator interface, no
+    ArduPlane/MAVLink/SITL). The formula is documented here so a FUTURE
+    mixer/ArduPilot-integration layer can implement it upstream of the
+    existing physical-angle-radians topics without this actuator plugin
+    itself needing to change:
+      theta_cmd_rad = clamp(normalized_cmd, -1.0, 1.0) * max_angle_rad
+    (max_angle_rad = 0.7853981634 rad = 45 deg, per-surface value above -
+    identical for all 5 surfaces in V1, so a single shared formula applies).
+  failsafe_policy: >
+    HOLD-LAST-VALID-COMMAND (chosen explicitly over return-to-neutral).
+    Rationale: a real servo that loses its command signal physically holds
+    its last commanded position (it has no "return to center" spring/motor
+    action of its own) - hold-last-valid is the more physically realistic V1
+    default for what this plugin actually models (the servo/actuator itself,
+    not an RC receiver or autopilot failsafe policy, which is a separate,
+    higher-level concern this task does not implement). Mechanism: each
+    per-surface command topic callback (ActuatorSystem::OnCommand())
+    unconditionally overwrites a persistent commandRad[] state only when a
+    new message arrives; with no new message, the state is simply left
+    unchanged - no timeout/watchdog logic exists or is needed for this
+    policy. A non-finite (NaN/Inf) incoming command is explicitly rejected
+    (logged, previous valid command retained) rather than propagated.
+  startup_behavior: >
+    All 5 surfaces default to commandRad=0.0 (neutral) and setpointRad=0.0
+    (neutral) until a real message is received on that surface's topic - no
+    startup kick, no NaN, no large transient (setpoint starts equal to
+    target, so RateLimitSetpoint()'s very first call produces zero motion).
+
+# -----------------------------------------------------------------------------
+# Aerodynamic-validity note (controls-integration does not own this data -
+# cited here only so nobody reading this actuator config mistakes the +/-45
+# deg MECHANICAL travel range for an aerodynamically-validated range)
+# -----------------------------------------------------------------------------
+aerodynamic_validity_note: >
+  The +/-45 deg mechanical limits above describe what the SERVO/JOINT can
+  physically travel to (USER_CONFIRMED_MECHANICAL_CAPABILITY for this task).
+  They are NOT a statement about aerodynamic-model validity. Per CLAUDE.md
+  and docs/source_of_truth/controls/CONTROLS.md sec 3, the aerodynamic
+  derivatives this project uses (Cmde, Clda, Cndr, CYdr, etc. -
+  docs/source_of_truth/aerodynamics/aero_v1_config.yaml, UNCHANGED by this
+  task) are only directly validated by XFLR5 swept data over approximately
+  +/-10 deg - beyond that, the linear extrapolation used by
+  plugins/aerodynamics/AeroModel.hh is NOT_YET_VALIDATED. A commanded
+  deflection between +/-10 deg and +/-45 deg will physically move the real
+  Gazebo joint (this plugin has no aerodynamic-validity awareness and does
+  not clamp to +/-10 deg - that would incorrectly conflate a servo/mechanical
+  concern with a separate aerodynamic-model concern, exactly the conflation
+  CONTROLS.md sec 3 warns against), but the resulting aerodynamic force/
+  moment beyond +/-10 deg should not be trusted as validated. A future
+  HIGH_DEFLECTION_CONTROL_AERO_VALIDATION stage will use XFLR5 wide-sweep
+  data to update CL_delta_e and the other high-deflection derivatives - this
+  is explicitly NOT part of this task (ACTUATOR_SERVO_MODEL_V1) or this
+  file's scope.
+
+# -----------------------------------------------------------------------------
+# No-load-holding-capability caveat (explicit, per this task's instruction -
+# do not let a future reader mistake actuator-dynamics validation for
+# validated load-holding capability)
+# -----------------------------------------------------------------------------
+no_opposing_aero_torque_caveat: >
+  plugins/aerodynamics/AerodynamicsSystem.cc applies its computed
+  force/moment to base_link ONLY - it does NOT apply any hinge-moment
+  reaction torque back onto these 5 individual control-surface joints
+  (docs/source_of_truth/controls/CONTROLS.md sec 7.4 and
+  docs/source_of_truth/propulsion/PROPULSION.md both list per-surface
+  hinge-moment data as DATA_REQUIRED, and no such torque exists anywhere in
+  AerodynamicsSystem.cc, unmodified by this task). This means there is
+  currently NO simulated aerodynamic load pushing back on these joints. Any
+  future test that commands a deflection and confirms the actuator "holds"
+  it within some tolerance (e.g. a +/-5deg or +/-10deg hold-under-load style
+  test) is validating ONLY this actuator's own rate-limit/effort-bound
+  dynamics against zero external load - it is NOT validating that this
+  actuator can hold a commanded deflection against a real aerodynamic hinge
+  moment, because no such moment is modeled yet. Do not cite a passing
+  "holds under load" test as evidence of real load-holding capability until
+  a hinge-moment model exists and is applied to these joints.
