@@ -3,6 +3,13 @@
 # =============================================================================
 # Owner: aerodynamics
 # Task:  AERODYNAMICS_V1_IMPLEMENTATION (2026-08-22)
+# UPDATED: HIGH_DEFLECTION_CONTROL_AERO_IMPLEMENTATION (2026-08-26) - added
+#   the control_surface_lookup block (wide-deflection piecewise-linear
+#   elevator/aileron/rudder tables, +/-45 deg domain), updated 6 small-signal
+#   control-derivative scalars per the new XFLR5 fixed-condition dataset,
+#   added CLde_per_rad, and RETIRED control_deflection_clamp_deg (see the
+#   control_mapping section below and AERODYNAMICS.md sec 20 for the full
+#   record, including the 1A CYda_per_rad and 1B Cldr_per_rad resolutions).
 #
 # This file is the single structured-data source for every numeric aerodynamic
 # parameter consumed by plugins/aerodynamics/ (the Gazebo Sim Harmonic System
@@ -13,9 +20,11 @@
 #
 # PROVENANCE RULE: every value below cites the exact source. Nothing here is
 # invented. Where a task-authorized derivation was required (CL0, Cm0, the
-# high-alpha saturation constants), the derivation is summarized inline and
-# the full arithmetic is recorded in docs/source_of_truth/aerodynamics/
-# AERODYNAMICS.md (new section, this pass, search "AERODYNAMICS_V1_IMPLEMENTATION").
+# high-alpha saturation constants, the aileron/rudder CD/CL/Cm baseline
+# differencing in AeroConfig::Prepare()), the derivation is summarized inline
+# and the full arithmetic is recorded in docs/source_of_truth/aerodynamics/
+# AERODYNAMICS.md (search "AERODYNAMICS_V1_IMPLEMENTATION" and
+# "HIGH_DEFLECTION_CONTROL_AERO_IMPLEMENTATION").
 #
 # STATUS TAGS USED BELOW (consistent with AERODYNAMICS.md's legend):
 #   CONFIRMED         - stated directly by CLAUDE.md / master dataset / AERODYNAMICS.md,
@@ -32,6 +41,16 @@
 #                        gazebo-testing's independent live kinematic/aero-
 #                        moment measurements in a running Gazebo instance
 #                        (task CONTROL_SURFACE_SIGN_MAPPING, 2026-08-22).
+#   SUPERSEDED_BY_LOOKUP - a scalar control derivative that is no longer read
+#                        by the force/moment formula in AeroModel.hh (its
+#                        role was taken over by a wide-deflection lookup
+#                        table); retained only as a documented small-signal
+#                        reference value, task HIGH_DEFLECTION_CONTROL_AERO_
+#                        IMPLEMENTATION (2026-08-26).
+#   RESOLVED_NEW_VALUE_VALID / UNRESOLVED_KEEP_CURRENT - the two possible
+#                        outcomes of a documented judgment call between two
+#                        disagreeing XFLR5 analysis sessions (see the
+#                        CYda_per_rad and Cldr_per_rad notes below).
 #
 # Do not edit numeric values here without updating AERODYNAMICS.md's
 # provenance record. Do not add new coefficients not present in CLAUDE.md /
@@ -67,40 +86,184 @@ longitudinal:
   Cma_per_rad: -1.65805       # CONFIRMED, AERODYNAMICS.md sec 6.2
   CLq: 9.48457                # CONFIRMED, AERODYNAMICS.md sec 6.2 (q_hat-normalized)
   Cmq: -10.22875               # CONFIRMED, AERODYNAMICS.md sec 6.2
-  Cmde_per_rad: -0.73         # CONFIRMED, AERODYNAMICS.md sec 7.1 (neutral-trim-point Cm_delta_e, rounded from -0.7282 - master dataset's own chosen V1 constant)
-  # CLde (elevator lift derivative): DELIBERATELY OMITTED.
-  # A finite-difference extraction attempt from the Type-7 elevator trim-sweep
-  # table (AERODYNAMICS.md sec 7.1) produced estimates ranging 0.080-0.508 /rad
-  # across adjacent row pairs (a >6x spread, with a discontinuity straddling
-  # delta_e=0) - i.e. NOT a stable, extractable constant, because each table
-  # row is a distinct trim SEARCH result (different V and alpha satisfying a
-  # separate 1g moment/lift balance for each delta_e), not a fixed-speed
-  # direct control sweep. Fabricating a CLde from this unstable extraction
-  # would violate the project's no-fabrication rule. See AERODYNAMICS.md
-  # (this pass) for the full arithmetic. CL's control contribution is
-  # therefore limited to what CLAUDE.md's V1 equation set allows: none for
-  # elevator (equation form: CL = CL0 + CLa*alpha + CLq*q_hat only).
+  # Cmde_per_rad: UPDATED this pass (2026-08-26, task
+  # HIGH_DEFLECTION_CONTROL_AERO_IMPLEMENTATION), -0.73 -> -1.000/rad, per
+  # the new XFLR5 Type-1 FIXED-CONDITION control-effectiveness sweep
+  # (control_surface_analysis/FALCON_V2_CONTROL_SURFACE_WIDE_DEFLECTION_
+  # RESULTS.txt, "Recommended consolidated elevator small-signal values",
+  # Cm_delta_e=-1.000/rad, consistent to <0.3% across two independent
+  # operating points and the +/-2/+/-5/+/-10/+/-15/+/-25 deg central-
+  # difference windows). This is unconditional per the task's Part 2 -
+  # SUPERSEDED_BY_LOOKUP for the actual Cm formula (see
+  # control_surface_lookup.elevator.dCm below, which fully replaces the old
+  # `Cmde*deltaE` term - not added on top). Retained here ONLY as the
+  # documented small-signal reference value, verified by the plugin's
+  # self-test (aero_model_selftest) to be closely reproduced by a finite
+  # difference of the lookup table near delta_e=0.
+  Cmde_per_rad: -1.000        # UPDATED (was -0.73), AERODYNAMICS.md sec 20 (this pass); SUPERSEDED_BY_LOOKUP, reference-only
+  # CLde_per_rad: NEW field this pass. Previously DELIBERATELY OMITTED - a
+  # finite-difference extraction attempt from the OLD Type-7 elevator
+  # trim-sweep table (AERODYNAMICS.md sec 7.1) produced estimates ranging
+  # 0.080-0.508 /rad across adjacent row pairs (a >6x spread, with a
+  # discontinuity straddling delta_e=0), because each row of that table is a
+  # distinct trim SEARCH result (different V/alpha per delta_e), not a
+  # fixed-speed direct control sweep - fabricating a CLde from that unstable
+  # extraction would have violated the project's no-fabrication rule. The
+  # NEW fixed-condition sweep does not have this problem (V and alpha are
+  # held fixed, only delta_e varies) and gives a stable +0.414/rad across
+  # +/-2/+/-5/+/-10/+/-15/+/-25/+/-35 deg windows and two independent
+  # operating points (primary V=18.162 m/s and secondary V=21.244 m/s
+  # sweeps) - "Recommended consolidated elevator small-signal values".
+  # SUPERSEDED_BY_LOOKUP for the actual CL formula (see
+  # control_surface_lookup.elevator.dCL below); applied EXCLUSIVELY via
+  # that lookup, never as CLde*deltaE (would double-count). Reference-only.
+  CLde_per_rad: 0.414          # NEW (2026-08-26), AERODYNAMICS.md sec 20; SUPERSEDED_BY_LOOKUP, reference-only
   CL0: 0.437035           # DERIVED, AERODYNAMICS.md (this pass): CL0 = CL_trim - CLa*alpha_trim(rad); CL_trim=0.471685, alpha_trim=0.36455 deg
   Cm0: 0.010550            # DERIVED, AERODYNAMICS.md (this pass): Cm0 = -Cma*alpha_trim(rad), from Cm_trim=0 at delta_e=0, q_hat=0
 
 lateral_directional:
-  CYb: -0.13216            # CONFIRMED, CLAUDE.md / AERODYNAMICS.md sec 6.2
-  CYp: -0.04567            # CONFIRMED
-  CYr: 0.08776             # CONFIRMED
-  CYda_per_rad: 0.0254     # CONFIRMED, AERODYNAMICS.md sec 7.3 (full +/-10 deg range value)
-  CYdr_per_rad: 0.085      # CONFIRMED, AERODYNAMICS.md sec 7.2
+  # NOTE (2026-08-26, task HIGH_DEFLECTION_CONTROL_AERO_IMPLEMENTATION): all
+  # five *da_per_rad/*dr_per_rad control-derivative scalars below are now
+  # SUPERSEDED_BY_LOOKUP for the actual CY/Cl/Cn formula (see
+  # control_surface_lookup below, which fully replaces each corresponding
+  # linear term - not added on top). They are retained ONLY as documented
+  # small-signal reference constants, each verified by the plugin's
+  # self-test to be closely reproduced by a finite difference of the
+  # relevant lookup table near delta=0 - EXCEPT Cldr_per_rad, which remains
+  # functionally used (see its own note below, 1B resolution).
+  CYb: -0.13216            # CONFIRMED, CLAUDE.md / AERODYNAMICS.md sec 6.2 (unchanged, beta term - not part of this pass)
+  CYp: -0.04567            # CONFIRMED (unchanged, rate term)
+  CYr: 0.08776             # CONFIRMED (unchanged, rate term)
+  # CYda_per_rad: 1A RESOLUTION = RESOLVED_NEW_VALUE_VALID (2026-08-26).
+  # Old value (0.0254, full +/-10 deg range) vs new XFLR5 fixed-condition
+  # value (0.0045) differ by ~5.7x. Verified directly against both source
+  # tables before deciding:
+  #   - OLD source (AERODYNAMICS.md sec 7.3, MD sec 33-36) is a Type-7
+  #     RE-TRIMMED sweep: alpha varies 0.421 deg (delta_a=0) -> 1.565 deg
+  #     (delta_a=+/-10 deg), V varies 21.19->20.59 m/s across the same
+  #     range - confirmed non-fixed-condition, real trim-path contamination
+  #     by construction (this is the SAME table Clda_per_rad/Cnda_per_rad
+  #     below are also drawn from).
+  #   - NEW source (control_surface_analysis/
+  #     FALCON_V2_CONTROL_SURFACE_WIDE_DEFLECTION_RESULTS.txt) is Type-1
+  #     FIXED SPEED, fixed alpha=2.472 deg, only the aileron deflected - a
+  #     true isolated control derivative, internally consistent to 2
+  #     significant figures across +/-2/+/-5/+/-10 deg windows (0.00458,
+  #     0.00447, 0.00458 /rad).
+  #   - Live mechanical/definitional bug RULED OUT: checked whether the two
+  #     sessions use a different delta_a normalization (differential
+  #     half-angle vs full WF gain). Both tables use the IDENTICAL
+  #     differential convention (new file's own "Mapping validation":
+  #     delta_a=-10deg -> Cl=-0.07230, delta_a=+10deg -> Cl=+0.07231,
+  #     directly comparable in scale/sign to the old table's Cl(+/-10)=
+  #     +/-0.0534) - the Clda ratio old:new is only ~1.34x and Cnda ratio is
+  #     only ~1.18x, NOT the ~2x/0.5x jump a definitional/factor-of-two bug
+  #     would produce uniformly across all three coefficients sharing the
+  #     same delta_a input. A universal bug would affect Cl/Cn/CY by a
+  #     similar factor; only CY is anomalously large, which points to a
+  #     coefficient-specific sensitivity, not a global mapping/sign error.
+  #   - Decision: RESOLVED_NEW_VALUE_VALID. The new value is adopted because
+  #     (a) its methodology (true fixed-condition, isolated-surface sweep)
+  #     is strictly superior to the old re-trimmed sweep for extracting a
+  #     small-signal control derivative, (b) no alternative bug explanation
+  #     survived the mapping/sign check above, (c) the new value is highly
+  #     internally self-consistent across 3 independent windows, and (d) a
+  #     physically plausible mechanism exists (CY_delta_a is a small,
+  #     tertiary sideforce term generated mostly through fuselage/vertical-
+  #     tail sidewash response to the aileron-deflected wing wake - a
+  #     coupling that is intrinsically more alpha-sensitive than the
+  #     direct, locally-dominated Cl/Cn effects, so it is plausible for the
+  #     old sweep's 0.4-1.1 deg alpha excursion to disproportionately
+  #     distort this specific small term). Honest counter-evidence noted:
+  #     within the OLD dataset alone, its own near-center-vs-full-range
+  #     window instability is NOT larger in relative terms for CYda (0.0254
+  #     vs 0.0268, ~5.5%) than for Clda (0.308 vs 0.330, ~7%) - so the
+  #     "smallness causes disproportionate contamination" argument is
+  #     suggestive, not proven, by itself. The decision rests primarily on
+  #     (a)/(b)/(c) above, not on this specific magnitude argument. See
+  #     AERODYNAMICS.md sec 20 for the full written record.
+  CYda_per_rad: 0.0045     # RESOLVED_NEW_VALUE_VALID (was 0.0254), AERODYNAMICS.md sec 20 (this pass); SUPERSEDED_BY_LOOKUP, reference-only
+  # CYdr_per_rad: UPDATED unconditionally (Part 2), 0.085 -> 0.0916/rad, new
+  # fixed-condition data (~7.3% higher than old, ACCEPTABLE_DIFFERENCE per
+  # the prior CONTROL_AUTHORITY_EFFECTIVENESS_VALIDATION pass - same
+  # older-sweep-vs-newer-fixed-condition pattern as Cmde/Clda/Cnda above).
+  CYdr_per_rad: 0.0916     # UPDATED (was 0.085), AERODYNAMICS.md sec 20 (this pass); SUPERSEDED_BY_LOOKUP, reference-only
 
-  Clb: -0.00717             # CONFIRMED
-  Clp: -0.54187             # CONFIRMED
-  Clr: 0.10586              # CONFIRMED
-  Clda_per_rad: 0.308      # CONFIRMED, AERODYNAMICS.md sec 7.3
-  Cldr_per_rad: 0.0007     # CONFIRMED, AERODYNAMICS.md sec 7.2
+  Clb: -0.00717             # CONFIRMED (unchanged, dihedral/beta term - not part of this pass)
+  Clp: -0.54187             # CONFIRMED (unchanged, rate term)
+  Clr: 0.10586              # CONFIRMED (unchanged, rate term)
+  # Clda_per_rad: UPDATED unconditionally (Part 2), 0.308 -> 0.414/rad, new
+  # fixed-condition data (~26% higher than old - KNOWN_IMPLEMENTATION_GAP
+  # per the prior validation pass, old-dataset-vintage gap, same direction/
+  # sign, not a defect).
+  Clda_per_rad: 0.414      # UPDATED (was 0.308), AERODYNAMICS.md sec 20 (this pass); SUPERSEDED_BY_LOOKUP, reference-only
+  # Cldr_per_rad: 1B RESOLUTION = UNRESOLVED_KEEP_CURRENT (2026-08-26).
+  # Old value +0.0007/rad (AERODYNAMICS.md sec 7.2, MD sec 29/32, Type-7
+  # sweep at the neutral-vertical-fin trim point V=21.244 m/s/alpha=0.364
+  # deg) vs new fixed-condition value -0.00065/rad (V=18.162 m/s/alpha=2.472
+  # deg) - OPPOSITE SIGN, comparable magnitude. Checked for a decisive
+  # geometric/methodological reason to prefer one session over the other:
+  #   - Both sessions: viscous OFF (checked directly, both explicitly state
+  #     this).
+  #   - Vertical-tail/rudder hinge geometry (MD sec 26-29): no stated
+  #     difference between the two sessions' aircraft definitions - both
+  #     appear to use the same underlying vertical-tail/rudder geometry
+  #     (same hinge x/c-vs-Z taper schedule, same "neutral fin" full-
+  #     aircraft configuration terminology used throughout the master
+  #     dataset for this aircraft's baseline vertical-fin rigging).
+  #   - Panel count / VLM mesh density: NOT stated in either source
+  #     document for either session - cannot be compared.
+  #   - Fin incidence/rigging/"toe-in": no evidence of a second, differently
+  #     -rigged fin configuration exists anywhere in the master dataset or
+  #     the new wide-deflection file - "neutral fin" appears to be this
+  #     aircraft's one documented vertical-fin configuration, not one of
+  #     several being compared.
+  #   - The ONLY identified difference between the two sessions is the
+  #     operating point itself (alpha 0.364 vs 2.472 deg, V 21.244 vs 18.162
+  #     m/s). Cl_delta_r is ~2 orders of magnitude smaller than
+  #     CY_delta_r/Cn_delta_r (a tertiary rudder-to-roll coupling, plausibly
+  #     from asymmetric vertical-tail/rudder loading interacting with
+  #     dihedral/wing effects at nonzero alpha) - it is PLAUSIBLE that this
+  #     specific alpha/V change flips the sign of such a small residual
+  #     term, but this is not provable from the documentation available
+  #     (no direct XFLR5 project-file rudder positive-TE-direction
+  #     comparison was performed or is possible from the text-only source
+  #     files in this repository).
+  #   - Decision: UNRESOLVED_KEEP_CURRENT. No decisive reason was found to
+  #     prefer either sign, so per the task's explicit instruction not to
+  #     force a resolution that cannot be defended, the OLD value is KEPT.
+  #     This does NOT mean the current implementation is "known correct" -
+  #     it means neither sign has been shown to be more correct than the
+  #     other with the evidence in this repository. Remains a flagged open
+  #     item for a future pass with direct access to both underlying XFLR5
+  #     project files.
+  #   - CONSISTENCY (wide-deflection lookup): per this UNRESOLVED_KEEP_
+  #     CURRENT decision, the new wide-deflection Cl(delta_r) TABLE (see
+  #     control_surface_lookup.rudder.Cl_NOT_LOADED_disputed_sign below) is
+  #     explicitly NOT loaded/used by the plugin - using it would silently
+  #     inject the disputed sign into the wide-deflection model even though
+  #     the small-signal constant here was kept at the OLD sign. Instead,
+  #     the plugin builds its wide-deflection Cl(delta_r) lookup as a
+  #     BOUNDED LINEAR EXTENSION of this exact Cldr_per_rad constant, out to
+  #     +/-45 deg (AeroConfig::Prepare() in AeroModel.hh:
+  #     ctrlRuddCl[i] = Cldr * ctrlBreakpointsRad[i]). The TRUE wide-
+  #     deflection Cl(delta_r) shape (linear vs. the new table's own
+  #     apparent nonlinearity, and its sign) remains DATA_REQUIRED /
+  #     unresolved for a future pass.
+  Cldr_per_rad: 0.0007     # UNRESOLVED_KEEP_CURRENT (unchanged), AERODYNAMICS.md sec 20 (this pass); FUNCTIONALLY USED to derive control_surface_lookup.rudder's Cl lookup (linear extension), see AeroModel.hh
 
-  Cnb: 0.03554              # CONFIRMED
-  Cnp: -0.05878             # CONFIRMED
-  Cnr: -0.02227             # CONFIRMED
-  Cnda_per_rad: 0.00144    # CONFIRMED, AERODYNAMICS.md sec 7.3
-  Cndr_per_rad: -0.025     # CONFIRMED, AERODYNAMICS.md sec 7.2
+  Cnb: 0.03554              # CONFIRMED (unchanged, directional-stability term - not part of this pass)
+  Cnp: -0.05878             # CONFIRMED (unchanged, rate term)
+  Cnr: -0.02227             # CONFIRMED (unchanged, rate term)
+  # Cnda_per_rad: UPDATED unconditionally (Part 2), 0.00144 -> 0.0017/rad,
+  # new fixed-condition data (~18% higher than old - measured effective
+  # Gazebo value was ~30% low vs new per the prior validation pass, same
+  # older-sweep-vs-newer-fixed-condition pattern).
+  Cnda_per_rad: 0.0017     # UPDATED (was 0.00144), AERODYNAMICS.md sec 20 (this pass); SUPERSEDED_BY_LOOKUP, reference-only
+  # Cndr_per_rad: UPDATED unconditionally (Part 2), -0.025 -> -0.0272/rad,
+  # new fixed-condition data (~8.2% larger magnitude than old,
+  # ACCEPTABLE_DIFFERENCE per the prior validation pass).
+  Cndr_per_rad: -0.0272    # UPDATED (was -0.025), AERODYNAMICS.md sec 20 (this pass); SUPERSEDED_BY_LOOKUP, reference-only
 
 drag_polar:
   # V1 full-aircraft calibrated drag model. NEVER the inviscid Type-7
@@ -217,11 +380,120 @@ control_mapping:
     as a candidate item for a future dedicated review.
   rudder_convention: >
     delta_r = rudder_sign*theta_rudder_joint (single joint, no combination needed).
-  # Aero-derivative validated linear range - CONTROLS.md sec 3, AERODYNAMICS.md
-  # sec 7.4/11/18: control derivatives are only directly swept to +/-10 deg,
-  # even though the mechanical joint limit is +/-30 deg (0.5236 rad). Per the
-  # "no silent extrapolation" rule, delta_a/delta_e/delta_r are CLAMPED to
-  # this range before being used in the linear coefficient formulas (the
-  # joint itself is free to move to its full mechanical +/-30 deg limit -
-  # only the AERODYNAMIC MODEL INPUT is bounded here). Tag: V1_CONSERVATIVE_CLAMP.
-  control_deflection_clamp_deg: 10.0
+  # control_deflection_clamp_deg: RETIRED this pass (2026-08-26, task
+  # HIGH_DEFLECTION_CONTROL_AERO_IMPLEMENTATION). This key USED TO clamp
+  # delta_a/delta_e/delta_r to +/-10 deg (V1_CONSERVATIVE_CLAMP) before the
+  # OLD linear coefficient formulas ran, because control derivatives were
+  # only directly swept to +/-10 deg at that time. A new XFLR5 Type-1
+  # fixed-condition WIDE-DEFLECTION sweep (control_surface_analysis/
+  # FALCON_V2_CONTROL_SURFACE_WIDE_DEFLECTION_RESULTS.txt) now covers the
+  # full +/-45 deg actuator mechanical range (docs/source_of_truth/
+  # controls/actuator_v1_config.yaml min/max_angle_rad) with real per-
+  # breakpoint data, so the generic +/-10 deg input clamp is no longer the
+  # correct "no silent extrapolation" boundary - it has been REPLACED by
+  # the wide-deflection lookup tables' OWN domain bound below
+  # (control_surface_lookup.domain_bound_deg = 45.0, enforced by
+  # InterpLinear() in AeroModel.hh, which clamps to the first/last
+  # breakpoint rather than extrapolating). This key is intentionally
+  # REMOVED (not just set to 45) so a stale reader cannot mistake it for a
+  # still-applied generic clamp - the loader (AerodynamicsSystem.cc) no
+  # longer reads this key. NOTE: this is unrelated to, and does not modify,
+  # the separate high_alpha_limiter block above (an angle-of-attack
+  # concept) or the actuator's own mechanical +/-45 deg joint limits
+  # (docs/source_of_truth/controls/actuator_v1_config.yaml, untouched by
+  # this or any aerodynamics-owned file).
+
+# =============================================================================
+# Wide-deflection control-surface lookup tables
+# (task HIGH_DEFLECTION_CONTROL_AERO_IMPLEMENTATION, 2026-08-26)
+# =============================================================================
+# Source (verified 1:1 against this file before transcription below):
+# docs/source_of_truth/aerodynamics/control_surface_analysis/
+# FALCON_V2_CONTROL_SURFACE_WIDE_DEFLECTION_RESULTS.txt
+#   XFLR5, Type 1 (Fixed speed), 3D-Panels/VLM2, Viscous=OFF, Mass=6.000 kg
+#   Primary operating point: V=18.162 m/s, alpha=2.472 deg, beta=0 deg
+#   Only the tested control surface was deflected per sweep; others held 0.
+#
+# ARCHITECTURE (see AeroModel.hh ComputeAero() for the implementation):
+#   - Each surface's contribution to CY/Cl/Cn (aileron/rudder) or CL/Cm
+#     (elevator) is a FULL LOOKUP that REPLACES the corresponding old
+#     linear coefficient*deflection term ENTIRELY - never added on top of
+#     it (no double-count).
+#   - Piecewise-LINEAR interpolation between breakpoints (method documented
+#     here and in AeroModel.hh's InterpLinear()); valid/non-extrapolated
+#     range is exactly [-45, +45] deg - inputs outside this range are
+#     CLAMPED to the nearest edge value, never extrapolated.
+#   - CD contributions (elevator/aileron/rudder) are ADDITIVE secondary
+#     corrections on top of the V1_CALIBRATED CD0+k*CL^2 polar (Part 4,
+#     documented V1_ADDITIVE_MULTI_SURFACE_DRAG_APPROXIMATION - NOT
+#     validated for simultaneous multi-surface deflection interaction).
+#
+# CONFIDENCE LABELING (per the source file's own convention; DOCS-ONLY
+# metadata - does not change any runtime computation):
+#   |delta| <= 10 deg   -> HIGH_CONFIDENCE_SMALL_SIGNAL
+#   10 < |delta| <= 25  -> MEDIUM_CONFIDENCE_NONLINEAR_REFERENCE
+#   |delta| > 25        -> LOW_CONFIDENCE_HIGH_DEFLECTION_REFERENCE
+# The +/-35/+/-45 deg points are XFLR5/VLM reference data ONLY - they are
+# explicitly NOT "REAL_FLIGHT_VALIDATED" (no wind-tunnel or flight-test
+# confirmation exists for this aircraft at these deflections; separated-
+# flow/stall/hinge-region nonlinearities are not fully modeled by VLM).
+control_surface_lookup:
+  domain_bound_deg: 45.0   # Matches the actuator mechanical range exactly (docs/source_of_truth/controls/actuator_v1_config.yaml +/-0.7853981634 rad)
+  breakpoints_deg: [-45, -35, -25, -15, -10, -5, -2, 0, 2, 5, 10, 15, 25, 35, 45]
+  confidence_bands:   # DOCS-ONLY metadata, not read by the plugin
+    - {max_abs_deg: 10.0, label: HIGH_CONFIDENCE_SMALL_SIGNAL}
+    - {max_abs_deg: 25.0, label: MEDIUM_CONFIDENCE_NONLINEAR_REFERENCE}
+    - {max_abs_deg: 45.0, label: LOW_CONFIDENCE_HIGH_DEFLECTION_REFERENCE}
+
+  elevator:
+    # Source: "Primary elevator baseline-difference table" - values ARE
+    # ALREADY baseline-differenced against delta_e=0 in the source file
+    # itself (delta_e=0 row is exactly 0). "Full lookup contribution"
+    # architecture - REPLACES `Cmde*deltaE` and adds a CL contribution that
+    # did not exist before (CLde was previously omitted entirely).
+    dCL: [-0.32181, -0.25256, -0.18095, -0.10846, -0.07223, -0.03608, -0.01443, 0, 0.01442, 0.03605, 0.07211, 0.10821, 0.18053, 0.25257, 0.32309]
+    dCD: [0.03392, 0.01880, 0.00826, 0.00194, 0.00031, -0.00034, -0.00026, 0, 0.00041, 0.00133, 0.00366, 0.00701, 0.01673, 0.03060, 0.04846]
+    dCm: [0.77221, 0.60714, 0.43568, 0.26150, 0.17425, 0.08710, 0.03483, 0, -0.03485, -0.08714, -0.17440, -0.26184, -0.43732, -0.61249, -0.78429]
+
+  aileron:
+    # Source: "Full aileron wide-deflection sweep" - Cl/Cn/CY are RAW (the
+    # source's own delta_a=0 baseline is CY0=-0.00002, Cl0=0.00000,
+    # Cn0=+0.00001 - a tiny numerical-solver residual, NOT zeroed out here,
+    # used exactly as given per the no-fabrication rule). REPLACE the old
+    # Clda/Cnda/CYda*deltaA static terms exactly.
+    Cl: [-0.31890, -0.25052, -0.18001, -0.10836, -0.07230, -0.03617, -0.01447, 0, 0.01447, 0.03617, 0.07231, 0.10836, 0.18001, 0.25052, 0.31890]
+    Cn: [-0.00123, -0.00099, -0.00072, -0.00044, -0.00029, -0.00014, -0.00005, 0.00001, 0.00007, 0.00016, 0.00030, 0.00045, 0.00073, 0.00101, 0.00124]
+    CY: [-0.00486, -0.00354, -0.00228, -0.00126, -0.00082, -0.00041, -0.00018, -0.00002, 0.00014, 0.00037, 0.00078, 0.00122, 0.00224, 0.00350, 0.00482]
+    # CD/CL/Cm below are FULL VALUES from the source sweep (delta_a sweep at
+    # fixed alpha=2.472 deg) - NOT baseline-differenced in the source file.
+    # The plugin (AeroConfig::Prepare()) subtracts the delta_a=0 row
+    # (index 7) to produce the even/symmetric secondary corrections
+    # dCD_a/dCL_a/dCm_a used in Part 4 drag and the optional small CL/Cm
+    # corrections (included per the task brief - the data gives them
+    # cleanly at no extra cost).
+    CD_full: [0.18174, 0.11664, 0.06757, 0.03407, 0.02355, 0.01723, 0.01546, 0.01513, 0.01546, 0.01723, 0.02355, 0.03407, 0.06757, 0.11664, 0.18174]
+    CL_full: [0.62116, 0.64137, 0.65493, 0.66353, 0.66613, 0.66766, 0.66809, 0.66817, 0.66809, 0.66766, 0.66613, 0.66353, 0.65492, 0.64136, 0.62115]
+    Cm_full: [-0.07619, -0.07310, -0.06746, -0.06297, -0.06142, -0.06046, -0.06019, -0.06013, -0.06019, -0.06046, -0.06142, -0.06296, -0.06745, -0.07308, -0.07617]
+
+  rudder:
+    # Source: "Full rudder wide-deflection sweep" - CY/Cn are RAW (baseline
+    # at delta_r=0 already ~0: CY0=-0.00002, Cn0=+0.00001 - same residual-
+    # noise note as aileron above). REPLACE the old CYdr/Cndr*deltaR static
+    # terms exactly.
+    CY: [-0.07094, -0.05601, -0.04023, -0.02411, -0.01604, -0.00801, -0.00321, -0.00002, 0.00317, 0.00797, 0.01600, 0.02407, 0.04020, 0.05598, 0.07093]
+    Cn: [0.02115, 0.01666, 0.01195, 0.00715, 0.00475, 0.00238, 0.00095, 0.00001, -0.00094, -0.00236, -0.00474, -0.00713, -0.01194, -0.01665, -0.02114]
+    # Cl: 1B UNRESOLVED_KEEP_CURRENT (see lateral_directional.Cldr_per_rad
+    # note above for the full resolution record). The new source table's
+    # raw Cl(delta_r) values are reproduced below FOR PROVENANCE/
+    # TRACEABILITY ONLY - the plugin does NOT load or use this array (no
+    # corresponding loader key exists in AerodynamicsSystem.cc). The
+    # plugin instead derives its rudder-roll lookup as a bounded linear
+    # extension of lateral_directional.Cldr_per_rad (+0.0007/rad, the OLD
+    # value) - see AeroModel.hh AeroConfig::Prepare(). This preserves the
+    # UNRESOLVED_KEEP_CURRENT decision consistently in the wide-deflection
+    # model instead of silently re-introducing the disputed new sign here.
+    Cl_NOT_LOADED_disputed_sign_reference_only: [0.00054, 0.00042, 0.00030, 0.00018, 0.00012, 0.00006, 0.00002, 0, -0.00002, -0.00006, -0.00012, -0.00018, -0.00030, -0.00042, -0.00054]
+    # CD below is a FULL VALUE table (same pattern as aileron CD_full
+    # above) - the plugin subtracts the delta_r=0 row (index 7) to produce
+    # dCD_r for Part 4 drag.
+    CD_full: [0.02974, 0.02390, 0.01932, 0.01682, 0.01584, 0.01528, 0.01516, 0.01513, 0.01516, 0.01528, 0.01583, 0.01682, 0.01932, 0.02390, 0.02974]

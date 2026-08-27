@@ -180,10 +180,21 @@ bool AerodynamicsSystem::LoadConfig(const std::string &_path)
     this->config.Cma = lon["Cma_per_rad"].as<double>();
     this->config.CLq = lon["CLq"].as<double>();
     this->config.Cmq = lon["Cmq"].as<double>();
+    // Cmde/CLde: SUPERSEDED_BY_LOOKUP (2026-08-26) - loaded for
+    // documentation/self-test cross-check only, NOT read by ComputeAero()
+    // itself (replaced by control_surface_lookup.elevator, loaded below).
     this->config.Cmde = lon["Cmde_per_rad"].as<double>();
+    this->config.CLde = lon["CLde_per_rad"].as<double>();
     this->config.CL0 = lon["CL0"].as<double>();
     this->config.Cm0 = lon["Cm0"].as<double>();
 
+    // CYda/CYdr/Clda/Cnda/Cndr: SUPERSEDED_BY_LOOKUP (2026-08-26) - loaded
+    // for documentation/self-test cross-check only, NOT read by
+    // ComputeAero() itself (replaced by control_surface_lookup.aileron/
+    // rudder, loaded below). Cldr is the ONE exception that IS still
+    // functionally used (see AeroConfig::Prepare(), 1B UNRESOLVED_KEEP_
+    // CURRENT resolution: the rudder-roll lookup is derived from this exact
+    // scalar, not loaded from the new wide-deflection table).
     auto lat = root["lateral_directional"];
     this->config.CYb = lat["CYb"].as<double>();
     this->config.CYp = lat["CYp"].as<double>();
@@ -214,8 +225,47 @@ bool AerodynamicsSystem::LoadConfig(const std::string &_path)
     this->config.elevatorSign = ctrl["elevator_sign"].as<double>();
     this->config.aileronSign = ctrl["aileron_sign"].as<double>();
     this->config.rudderSign = ctrl["rudder_sign"].as<double>();
-    this->config.controlDeflectionClamp =
-        ctrl["control_deflection_clamp_deg"].as<double>() * M_PI / 180.0;
+    // NOTE: control_deflection_clamp_deg was RETIRED this pass
+    // (HIGH_DEFLECTION_CONTROL_AERO_IMPLEMENTATION, 2026-08-26) - no longer
+    // present in the YAML, so it is intentionally not read here anymore.
+    // The wide-deflection lookup tables' own +/-45 deg domain bound
+    // (InterpLinear() in AeroModel.hh) is now the "no silent extrapolation"
+    // boundary for control-surface deflections.
+
+    // ---- Wide-deflection control-surface lookup tables (this pass) ----
+    auto loadArr = [](const YAML::Node &node, falcon_v2_aero::CtrlLookupArray &arr)
+    {
+      for (std::size_t i = 0; i < arr.size(); ++i)
+        arr[i] = node[i].as<double>();
+    };
+
+    auto csl = root["control_surface_lookup"];
+    loadArr(csl["breakpoints_deg"], this->config.ctrlBreakpointsRad);
+    for (auto &x : this->config.ctrlBreakpointsRad)
+      x *= M_PI / 180.0;  // deg -> rad, done once at load time
+
+    auto elev = csl["elevator"];
+    loadArr(elev["dCL"], this->config.ctrlElevDCL);
+    loadArr(elev["dCD"], this->config.ctrlElevDCD);
+    loadArr(elev["dCm"], this->config.ctrlElevDCm);
+
+    auto aile = csl["aileron"];
+    loadArr(aile["Cl"], this->config.ctrlAileCl);
+    loadArr(aile["Cn"], this->config.ctrlAileCn);
+    loadArr(aile["CY"], this->config.ctrlAileCY);
+    loadArr(aile["CD_full"], this->config.ctrlAileCDFull);
+    loadArr(aile["CL_full"], this->config.ctrlAileCLFull);
+    loadArr(aile["Cm_full"], this->config.ctrlAileCmFull);
+
+    // Rudder: Cl is intentionally NOT loaded from the YAML's
+    // Cl_NOT_LOADED_disputed_sign_reference_only array (task 1B,
+    // UNRESOLVED_KEEP_CURRENT - see aero_v1_config.yaml
+    // lateral_directional.Cldr_per_rad for the full record). AeroConfig::
+    // Prepare() derives ctrlRuddCl from the Cldr scalar instead.
+    auto rudd = csl["rudder"];
+    loadArr(rudd["CY"], this->config.ctrlRuddCY);
+    loadArr(rudd["Cn"], this->config.ctrlRuddCn);
+    loadArr(rudd["CD_full"], this->config.ctrlRuddCDFull);
   }
   catch (const std::exception &e)
   {

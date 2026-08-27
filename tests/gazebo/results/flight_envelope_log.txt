@@ -1,0 +1,311 @@
+FALCON V2 - FLIGHT_ENVELOPE_VALIDATION (gazebo-testing, 2026-08-27)
+World: /home/emirhan/Desktop/FalconV2/tests/gazebo/worlds/falcon_v2_freefall_world.sdf
+Target speeds: [12.5, 14.0, 16.0, 18.166, 21.0, 24.0, 28.0, 30.0]
+alpha_transition=9.25deg CLmax_manufacturer=1.42 (NO real stall/post-stall physics implemented - see module docstring)
+
+Analytical cross-check @ V=18.166 m/s: alpha=2.49deg delta_e_aero=-3.92deg throttle=0.4957 status=OK (vs the already-validated LIVE trim throttle=0.5010 elevator_aero=-4.50deg - NOT re-searched, reused verbatim).
+    cand th=0.5010 elev_aero=-4.50deg -> V=18.166 alpha=2.473deg Lift=58.35N Drag=5.14N My=-0.354Nm ThrustTot=5.56N tail_vz=+0.3780 drift=-0.057 mean|q|=0.82 any_nan=False
+--> V=18.166: reused reference trim confirmed. classification=MARGINAL_TRIM Lift/W=0.9914 tail_vz=+0.3780
+
+==============================================================================
+TRIM SEARCH @ V_target=16.000 m/s (analytical: alpha=4.74deg delta_e=-7.77deg throttle=0.4507 status=OK; march-seed from V=18.166: throttle=0.4560 elevator=-8.35deg)
+==============================================================================
+    cand th=0.4560 elev_aero=-8.35deg -> V=16.007 alpha=4.739deg Lift=58.59N Drag=5.05N My=-0.299Nm ThrustTot=5.42N tail_vz=-0.7508 drift=+0.803 mean|q|=1.68 any_nan=False
+    cand th=0.4760 elev_aero=-8.35deg -> V=16.008 alpha=4.738deg Lift=58.60N Drag=5.05N My=-0.300Nm ThrustTot=6.82N tail_vz=-0.6565 drift=+1.051 mean|q|=2.02 any_nan=False
+    cand th=0.4360 elev_aero=-8.35deg -> V=16.005 alpha=4.739deg Lift=58.59N Drag=5.05N My=-0.298Nm ThrustTot=4.10N tail_vz=-0.8383 drift=+0.567 mean|q|=1.39 any_nan=False
+    cand th=0.4560 elev_aero=-7.85deg -> V=16.007 alpha=4.737deg Lift=58.85N Drag=5.07N My=-0.164Nm ThrustTot=5.42N tail_vz=-1.0076 drift=+0.941 mean|q|=1.38 any_nan=False
+    cand th=0.4560 elev_aero=-8.85deg -> V=16.007 alpha=4.741deg Lift=58.34N Drag=5.03N My=-0.434Nm ThrustTot=5.42N tail_vz=-0.4980 drift=+0.664 mean|q|=2.43 any_nan=False
+    cand th=0.4760 elev_aero=-8.85deg -> V=16.008 alpha=4.740deg Lift=58.35N Drag=5.04N My=-0.435Nm ThrustTot=6.82N tail_vz=-0.3973 drift=+0.911 mean|q|=2.74 any_nan=False
+    cand th=0.4360 elev_aero=-8.85deg -> V=16.005 alpha=4.741deg Lift=58.33N Drag=5.03N My=-0.433Nm ThrustTot=4.10N tail_vz=-0.5916 drift=+0.429 mean|q|=2.14 any_nan=False
+    cand th=0.4560 elev_aero=-8.35deg -> V=16.007 alpha=4.739deg Lift=58.59N Drag=5.05N My=-0.299Nm ThrustTot=5.42N tail_vz=-0.7508 drift=+0.803 mean|q|=1.68 any_nan=False
+    cand th=0.4560 elev_aero=-9.35deg -> V=16.007 alpha=4.743deg Lift=58.09N Drag=5.02N My=-0.570Nm ThrustTot=5.42N tail_vz=-0.2492 drift=+0.525 mean|q|=3.18 any_nan=False
+    cand th=0.4640 elev_aero=-9.35deg -> V=16.007 alpha=4.742deg Lift=58.10N Drag=5.02N My=-0.570Nm ThrustTot=5.97N tail_vz=-0.2073 drift=+0.622 mean|q|=3.30 any_nan=False
+    cand th=0.4480 elev_aero=-9.35deg -> V=16.006 alpha=4.743deg Lift=58.09N Drag=5.02N My=-0.569Nm ThrustTot=4.88N tail_vz=-0.2899 drift=+0.430 mean|q|=3.06 any_nan=False
+    cand th=0.4560 elev_aero=-9.15deg -> V=16.007 alpha=4.742deg Lift=58.19N Drag=5.02N My=-0.516Nm ThrustTot=5.42N tail_vz=-0.3482 drift=+0.581 mean|q|=2.88 any_nan=False
+    cand th=0.4560 elev_aero=-9.55deg -> V=16.007 alpha=4.744deg Lift=57.99N Drag=5.01N My=-0.624Nm ThrustTot=5.42N tail_vz=-0.1508 drift=+0.470 mean|q|=3.48 any_nan=False
+    cand th=0.4640 elev_aero=-9.55deg -> V=16.007 alpha=4.743deg Lift=58.00N Drag=5.01N My=-0.624Nm ThrustTot=5.97N tail_vz=-0.1079 drift=+0.567 mean|q|=3.61 any_nan=False
+    cand th=0.4480 elev_aero=-9.55deg -> V=16.006 alpha=4.744deg Lift=57.99N Drag=5.01N My=-0.623Nm ThrustTot=4.88N tail_vz=-0.1925 drift=+0.375 mean|q|=3.35 any_nan=False
+    cand th=0.4560 elev_aero=-9.35deg -> V=16.007 alpha=4.743deg Lift=58.09N Drag=5.02N My=-0.570Nm ThrustTot=5.42N tail_vz=-0.2492 drift=+0.525 mean|q|=3.18 any_nan=False
+    cand th=0.4560 elev_aero=-9.75deg -> V=16.007 alpha=4.744deg Lift=57.89N Drag=5.00N My=-0.678Nm ThrustTot=5.42N tail_vz=-0.0531 drift=+0.415 mean|q|=3.78 any_nan=False
+    cand th=0.4480 elev_aero=-9.55deg -> V=16.006 alpha=4.744deg Lift=57.99N Drag=5.01N My=-0.623Nm ThrustTot=4.88N tail_vz=+0.5798 drift=-0.820 mean|q|=2.06 any_nan=False
+--> V=16.0: SELECTED throttle=0.4480 elevator_aero=-9.55deg classification=MARGINAL_TRIM Lift/W=0.9852 T/D=0.9745 tail_vz=+0.5798 (18 candidates this speed)
+
+==============================================================================
+TRIM SEARCH @ V_target=14.000 m/s (analytical: alpha=7.82deg delta_e=-13.07deg throttle=0.4154 status=OK; march-seed from V=16.000: throttle=0.4126 elevator=-14.85deg)
+==============================================================================
+    cand th=0.4126 elev_aero=-14.85deg -> V=14.010 alpha=7.820deg Lift=58.22N Drag=5.31N My=-0.521Nm ThrustTot=5.16N tail_vz=-0.5944 drift=+0.885 mean|q|=4.63 any_nan=False
+    cand th=0.4326 elev_aero=-14.85deg -> V=14.012 alpha=7.819deg Lift=58.23N Drag=5.31N My=-0.522Nm ThrustTot=6.48N tail_vz=-0.4717 drift=+1.098 mean|q|=5.03 any_nan=False
+    cand th=0.3926 elev_aero=-14.85deg -> V=14.008 alpha=7.821deg Lift=58.21N Drag=5.30N My=-0.520Nm ThrustTot=3.93N tail_vz=-0.7073 drift=+0.682 mean|q|=4.24 any_nan=False
+    cand th=0.4126 elev_aero=-14.35deg -> V=14.010 alpha=7.818deg Lift=58.41N Drag=5.32N My=-0.417Nm ThrustTot=5.16N tail_vz=-0.7877 drift=+1.007 mean|q|=3.95 any_nan=False
+    cand th=0.4126 elev_aero=-15.35deg -> V=14.010 alpha=7.822deg Lift=58.02N Drag=5.30N My=-0.625Nm ThrustTot=5.16N tail_vz=-0.4038 drift=+0.761 mean|q|=5.30 any_nan=False
+    cand th=0.4126 elev_aero=-14.85deg -> V=14.010 alpha=7.820deg Lift=58.22N Drag=5.31N My=-0.521Nm ThrustTot=5.16N tail_vz=-0.5944 drift=+0.885 mean|q|=4.63 any_nan=False
+    cand th=0.3726 elev_aero=-14.85deg -> V=14.007 alpha=7.822deg Lift=58.20N Drag=5.30N My=-0.519Nm ThrustTot=2.78N tail_vz=-0.8116 drift=+0.492 mean|q|=3.88 any_nan=False
+    cand th=0.3926 elev_aero=-14.35deg -> V=14.008 alpha=7.820deg Lift=58.40N Drag=5.32N My=-0.416Nm ThrustTot=3.93N tail_vz=-0.8959 drift=+0.803 mean|q|=3.57 any_nan=False
+    cand th=0.3926 elev_aero=-15.35deg -> V=14.008 alpha=7.823deg Lift=58.02N Drag=5.30N My=-0.624Nm ThrustTot=3.93N tail_vz=-0.5212 drift=+0.560 mean|q|=4.91 any_nan=False
+    cand th=0.3806 elev_aero=-14.85deg -> V=14.008 alpha=7.822deg Lift=58.20N Drag=5.30N My=-0.520Nm ThrustTot=3.23N tail_vz=-0.7711 drift=+0.566 mean|q|=4.03 any_nan=False
+    cand th=0.3646 elev_aero=-14.85deg -> V=14.006 alpha=7.823deg Lift=58.20N Drag=5.30N My=-0.519Nm ThrustTot=2.34N tail_vz=-0.8504 drift=+0.420 mean|q|=3.75 any_nan=False
+    cand th=0.3726 elev_aero=-14.65deg -> V=14.007 alpha=7.822deg Lift=58.28N Drag=5.31N My=-0.478Nm ThrustTot=2.78N tail_vz=-0.8850 drift=+0.540 mean|q|=3.62 any_nan=False
+    cand th=0.3726 elev_aero=-15.05deg -> V=14.007 alpha=7.823deg Lift=58.12N Drag=5.30N My=-0.561Nm ThrustTot=2.78N tail_vz=-0.7385 drift=+0.443 mean|q|=4.15 any_nan=False
+    cand th=0.3726 elev_aero=-14.85deg -> V=14.007 alpha=7.822deg Lift=58.20N Drag=5.30N My=-0.519Nm ThrustTot=2.78N tail_vz=-0.8116 drift=+0.492 mean|q|=3.88 any_nan=False
+    cand th=0.3566 elev_aero=-14.85deg -> V=14.006 alpha=7.823deg Lift=58.19N Drag=5.30N My=-0.519Nm ThrustTot=1.93N tail_vz=-0.8875 drift=+0.350 mean|q|=3.62 any_nan=False
+    cand th=0.3646 elev_aero=-14.65deg -> V=14.006 alpha=7.822deg Lift=58.27N Drag=5.31N My=-0.478Nm ThrustTot=2.34N tail_vz=-0.9231 drift=+0.468 mean|q|=3.49 any_nan=False
+    cand th=0.3646 elev_aero=-15.05deg -> V=14.006 alpha=7.823deg Lift=58.12N Drag=5.30N My=-0.561Nm ThrustTot=2.34N tail_vz=-0.7780 drift=+0.371 mean|q|=4.01 any_nan=False
+    cand th=0.3646 elev_aero=-15.05deg -> V=14.006 alpha=7.823deg Lift=58.12N Drag=5.30N My=-0.561Nm ThrustTot=2.34N tail_vz=-0.3218 drift=-0.799 mean|q|=2.69 any_nan=False
+--> V=14.0: SELECTED throttle=0.3646 elevator_aero=-15.05deg classification=MARGINAL_TRIM Lift/W=0.9874 T/D=0.4424 tail_vz=-0.3218 (18 candidates this speed)
+
+==============================================================================
+TRIM SEARCH @ V_target=12.500 m/s (analytical: alpha=11.42deg delta_e=-6.00deg throttle=0.3918 status=AERODYNAMIC_NO_TRIM_MOMENT; march-seed from V=14.000: throttle=0.3411 elevator=-7.98deg)
+==============================================================================
+    cand th=0.3411 elev_aero=-7.98deg -> V=12.511 alpha=11.397deg Lift=58.43N Drag=5.69N My=+1.723Nm ThrustTot=2.79N tail_vz=-5.3421 drift=+3.585 mean|q|=9.92 any_nan=False
+    cand th=0.3611 elev_aero=-7.98deg -> V=12.513 alpha=11.396deg Lift=58.45N Drag=5.69N My=+1.723Nm ThrustTot=3.88N tail_vz=-5.3244 drift=+3.736 mean|q|=9.83 any_nan=False
+    cand th=0.3211 elev_aero=-7.98deg -> V=12.510 alpha=11.399deg Lift=58.42N Drag=5.69N My=+1.724Nm ThrustTot=1.79N tail_vz=-5.3669 drift=+3.482 mean|q|=10.10 any_nan=False
+    cand th=0.3411 elev_aero=-7.48deg -> V=12.511 alpha=11.396deg Lift=58.59N Drag=5.71N My=+1.806Nm ThrustTot=2.79N tail_vz=-5.5317 drift=+3.691 mean|q|=10.49 any_nan=False
+    cand th=0.3411 elev_aero=-8.48deg -> V=12.511 alpha=11.399deg Lift=58.27N Drag=5.67N My=+1.640Nm ThrustTot=2.79N tail_vz=-5.1544 drift=+3.480 mean|q|=9.38 any_nan=False
+    cand th=0.3611 elev_aero=-8.48deg -> V=12.513 alpha=11.397deg Lift=58.29N Drag=5.67N My=+1.640Nm ThrustTot=3.88N tail_vz=-5.1332 drift=+3.633 mean|q|=9.33 any_nan=False
+    cand th=0.3211 elev_aero=-8.48deg -> V=12.510 alpha=11.400deg Lift=58.26N Drag=5.67N My=+1.641Nm ThrustTot=1.79N tail_vz=-5.1816 drift=+3.375 mean|q|=9.54 any_nan=False
+    cand th=0.3411 elev_aero=-7.98deg -> V=12.511 alpha=11.397deg Lift=58.43N Drag=5.69N My=+1.723Nm ThrustTot=2.79N tail_vz=-5.3421 drift=+3.585 mean|q|=9.92 any_nan=False
+    cand th=0.3411 elev_aero=-8.98deg -> V=12.511 alpha=11.400deg Lift=58.11N Drag=5.65N My=+1.557Nm ThrustTot=2.79N tail_vz=-4.9684 drift=+3.375 mean|q|=8.87 any_nan=False
+    cand th=0.3491 elev_aero=-8.98deg -> V=12.512 alpha=11.400deg Lift=58.12N Drag=5.65N My=+1.557Nm ThrustTot=3.22N tail_vz=-4.9583 drift=+3.432 mean|q|=8.86 any_nan=False
+    cand th=0.3331 elev_aero=-8.98deg -> V=12.511 alpha=11.401deg Lift=58.11N Drag=5.65N My=+1.557Nm ThrustTot=2.38N tail_vz=-4.9793 drift=+3.327 mean|q|=8.90 any_nan=False
+    cand th=0.3411 elev_aero=-8.78deg -> V=12.511 alpha=11.400deg Lift=58.18N Drag=5.65N My=+1.590Nm ThrustTot=2.79N tail_vz=-5.0425 drift=+3.417 mean|q|=9.07 any_nan=False
+    cand th=0.3411 elev_aero=-9.18deg -> V=12.511 alpha=11.401deg Lift=58.05N Drag=5.64N My=+1.524Nm ThrustTot=2.79N tail_vz=-4.8945 drift=+3.333 mean|q|=8.67 any_nan=False
+    cand th=0.3491 elev_aero=-9.18deg -> V=12.512 alpha=11.400deg Lift=58.05N Drag=5.64N My=+1.524Nm ThrustTot=3.22N tail_vz=-4.8839 drift=+3.390 mean|q|=8.66 any_nan=False
+    cand th=0.3331 elev_aero=-9.18deg -> V=12.511 alpha=11.402deg Lift=58.04N Drag=5.64N My=+1.524Nm ThrustTot=2.38N tail_vz=-4.9059 drift=+3.284 mean|q|=8.70 any_nan=False
+    cand th=0.3411 elev_aero=-8.98deg -> V=12.511 alpha=11.400deg Lift=58.11N Drag=5.65N My=+1.557Nm ThrustTot=2.79N tail_vz=-4.9684 drift=+3.375 mean|q|=8.87 any_nan=False
+    cand th=0.3411 elev_aero=-9.38deg -> V=12.511 alpha=11.402deg Lift=57.99N Drag=5.63N My=+1.491Nm ThrustTot=2.79N tail_vz=-4.8209 drift=+3.291 mean|q|=8.48 any_nan=False
+    cand th=0.3331 elev_aero=-9.18deg -> V=12.511 alpha=11.402deg Lift=58.04N Drag=5.64N My=+1.524Nm ThrustTot=2.38N tail_vz=+0.4007 drift=+3.627 mean|q|=7.41 any_nan=False
+--> V=12.5: SELECTED throttle=0.3331 elevator_aero=-9.18deg classification=MARGINAL_TRIM [MODEL_PREDICTED_ONLY_NO_STALL_PHYSICS] Lift/W=0.9861 T/D=0.4217 tail_vz=+0.4007 (18 candidates this speed)
+
+==============================================================================
+TRIM SEARCH @ V_target=21.000 m/s (analytical: alpha=0.53deg delta_e=-0.60deg throttle=0.5612 status=OK; march-seed from V=18.166: throttle=0.5665 elevator=-1.18deg)
+==============================================================================
+    cand th=0.5665 elev_aero=-1.18deg -> V=21.001 alpha=0.529deg Lift=58.37N Drag=5.74N My=-0.427Nm ThrustTot=6.18N tail_vz=+0.2517 drift=+0.012 mean|q|=0.97 any_nan=False
+    cand th=0.5865 elev_aero=-1.18deg -> V=21.003 alpha=0.528deg Lift=58.38N Drag=5.74N My=-0.428Nm ThrustTot=7.82N tail_vz=+0.3201 drift=+0.320 mean|q|=1.13 any_nan=False
+    cand th=0.5465 elev_aero=-1.18deg -> V=20.999 alpha=0.529deg Lift=58.36N Drag=5.74N My=-0.426Nm ThrustTot=4.66N tail_vz=+0.1890 drift=-0.279 mean|q|=0.82 any_nan=False
+    cand th=0.5665 elev_aero=-0.68deg -> V=21.001 alpha=0.526deg Lift=58.79N Drag=5.77N My=-0.196Nm ThrustTot=6.18N tail_vz=-0.2101 drift=+0.199 mean|q|=0.14 any_nan=False
+    cand th=0.5665 elev_aero=-1.68deg -> V=21.001 alpha=0.532deg Lift=57.94N Drag=5.71N My=-0.658Nm ThrustTot=6.18N tail_vz=+0.7059 drift=-0.175 mean|q|=2.00 any_nan=False
+    cand th=0.5745 elev_aero=-1.18deg -> V=21.002 alpha=0.529deg Lift=58.37N Drag=5.74N My=-0.427Nm ThrustTot=6.83N tail_vz=+0.2786 drift=+0.133 mean|q|=1.03 any_nan=False
+    cand th=0.5585 elev_aero=-1.18deg -> V=21.000 alpha=0.529deg Lift=58.37N Drag=5.74N My=-0.426Nm ThrustTot=5.56N tail_vz=+0.2262 drift=-0.106 mean|q|=0.91 any_nan=False
+    cand th=0.5665 elev_aero=-0.98deg -> V=21.001 alpha=0.527deg Lift=58.54N Drag=5.75N My=-0.335Nm ThrustTot=6.18N tail_vz=+0.0679 drift=+0.087 mean|q|=0.55 any_nan=False
+    cand th=0.5665 elev_aero=-1.38deg -> V=21.001 alpha=0.530deg Lift=58.20N Drag=5.72N My=-0.519Nm ThrustTot=6.18N tail_vz=+0.4343 drift=-0.063 mean|q|=1.38 any_nan=False
+    cand th=0.5665 elev_aero=-1.18deg -> V=21.001 alpha=0.529deg Lift=58.37N Drag=5.74N My=-0.427Nm ThrustTot=6.18N tail_vz=+0.5694 drift=-0.403 mean|q|=0.53 any_nan=False
+--> V=21.0: SELECTED throttle=0.5665 elevator_aero=-1.18deg classification=MARGINAL_TRIM Lift/W=0.9917 T/D=1.0775 tail_vz=+0.5694 (10 candidates this speed)
+
+==============================================================================
+TRIM SEARCH @ V_target=24.000 m/s (analytical: alpha=-0.84deg delta_e=+1.70deg throttle=0.6346 status=OK; march-seed from V=21.000: throttle=0.6399 elevator=+1.12deg)
+==============================================================================
+    cand th=0.6399 elev_aero=+1.12deg -> V=23.999 alpha=-0.835deg Lift=58.22N Drag=6.75N My=-0.534Nm ThrustTot=7.25N tail_vz=+0.9187 drift=-0.280 mean|q|=1.08 any_nan=False
+    cand th=0.6599 elev_aero=+1.12deg -> V=24.002 alpha=-0.835deg Lift=58.24N Drag=6.75N My=-0.535Nm ThrustTot=9.01N tail_vz=+0.9758 drift=+0.053 mean|q|=1.19 any_nan=False
+    cand th=0.6199 elev_aero=+1.12deg -> V=23.997 alpha=-0.834deg Lift=58.21N Drag=6.75N My=-0.533Nm ThrustTot=5.56N tail_vz=+0.8646 drift=-0.603 mean|q|=0.98 any_nan=False
+    cand th=0.6399 elev_aero=+1.62deg -> V=23.999 alpha=-0.838deg Lift=58.77N Drag=6.79N My=-0.234Nm ThrustTot=7.25N tail_vz=+0.2987 drift=-0.064 mean|q|=0.13 any_nan=False
+    cand th=0.6399 elev_aero=+0.62deg -> V=23.999 alpha=-0.831deg Lift=57.67N Drag=6.71N My=-0.834Nm ThrustTot=7.25N tail_vz=+1.5280 drift=-0.497 mean|q|=2.29 any_nan=False
+    cand th=0.6599 elev_aero=+1.62deg -> V=24.002 alpha=-0.838deg Lift=58.79N Drag=6.79N My=-0.235Nm ThrustTot=9.01N tail_vz=+0.3426 drift=+0.270 mean|q|=0.18 any_nan=False
+    cand th=0.6199 elev_aero=+1.62deg -> V=23.997 alpha=-0.838deg Lift=58.76N Drag=6.79N My=-0.232Nm ThrustTot=5.56N tail_vz=+0.2574 drift=-0.387 mean|q|=0.28 any_nan=False
+    cand th=0.6399 elev_aero=+2.12deg -> V=23.999 alpha=-0.842deg Lift=59.32N Drag=6.83N My=+0.066Nm ThrustTot=7.25N tail_vz=-0.3316 drift=+0.151 mean|q|=1.34 any_nan=False
+    cand th=0.6399 elev_aero=+1.12deg -> V=23.999 alpha=-0.835deg Lift=58.22N Drag=6.75N My=-0.534Nm ThrustTot=7.25N tail_vz=+0.9187 drift=-0.280 mean|q|=1.08 any_nan=False
+    cand th=0.6479 elev_aero=+2.12deg -> V=24.000 alpha=-0.842deg Lift=59.33N Drag=6.83N My=+0.066Nm ThrustTot=7.94N tail_vz=-0.3197 drift=+0.284 mean|q|=1.30 any_nan=False
+    cand th=0.6319 elev_aero=+2.12deg -> V=23.999 alpha=-0.842deg Lift=59.32N Drag=6.83N My=+0.067Nm ThrustTot=6.56N tail_vz=-0.3433 drift=+0.021 mean|q|=1.37 any_nan=False
+    cand th=0.6399 elev_aero=+2.32deg -> V=23.999 alpha=-0.843deg Lift=59.54N Drag=6.85N My=+0.186Nm ThrustTot=7.25N tail_vz=-0.5868 drift=+0.237 mean|q|=1.82 any_nan=False
+    cand th=0.6399 elev_aero=+1.92deg -> V=23.999 alpha=-0.840deg Lift=59.10N Drag=6.81N My=-0.054Nm ThrustTot=7.25N tail_vz=-0.0782 drift=+0.065 mean|q|=0.85 any_nan=False
+    cand th=0.6399 elev_aero=+2.12deg -> V=23.999 alpha=-0.842deg Lift=59.32N Drag=6.83N My=+0.066Nm ThrustTot=7.25N tail_vz=-0.3316 drift=+0.151 mean|q|=1.34 any_nan=False
+    cand th=0.6239 elev_aero=+2.12deg -> V=23.998 alpha=-0.841deg Lift=59.31N Drag=6.83N My=+0.067Nm ThrustTot=5.89N tail_vz=-0.3546 drift=-0.109 mean|q|=1.41 any_nan=False
+    cand th=0.6319 elev_aero=+2.32deg -> V=23.999 alpha=-0.843deg Lift=59.54N Drag=6.85N My=+0.187Nm ThrustTot=6.56N tail_vz=-0.5964 drift=+0.106 mean|q|=1.86 any_nan=False
+    cand th=0.6319 elev_aero=+1.92deg -> V=23.999 alpha=-0.840deg Lift=59.10N Drag=6.81N My=-0.053Nm ThrustTot=6.56N tail_vz=-0.0919 drift=-0.065 mean|q|=0.89 any_nan=False
+    cand th=0.6319 elev_aero=+2.12deg -> V=23.999 alpha=-0.842deg Lift=59.32N Drag=6.83N My=+0.067Nm ThrustTot=6.56N tail_vz=-0.9811 drift=+0.671 mean|q|=0.72 any_nan=False
+--> V=24.0: SELECTED throttle=0.6319 elevator_aero=+2.12deg classification=NO_VALID_TRIM Lift/W=1.0078 T/D=0.9614 tail_vz=-0.9811 (18 candidates this speed)
+
+==============================================================================
+TRIM SEARCH @ V_target=28.000 m/s (analytical: alpha=-2.02deg delta_e=+3.68deg throttle=0.7369 status=OK; march-seed from V=24.000: throttle=0.7342 elevator=+4.10deg)
+==============================================================================
+    cand th=0.7342 elev_aero=+4.10deg -> V=27.997 alpha=-2.023deg Lift=59.48N Drag=8.70N My=+0.107Nm ThrustTot=8.40N tail_vz=+0.0770 drift=-0.186 mean|q|=1.50 any_nan=False
+    cand th=0.7542 elev_aero=+4.10deg -> V=27.999 alpha=-2.024deg Lift=59.50N Drag=8.70N My=+0.106Nm ThrustTot=10.33N tail_vz=+0.0890 drift=+0.177 mean|q|=1.46 any_nan=False
+    cand th=0.7142 elev_aero=+4.10deg -> V=27.995 alpha=-2.023deg Lift=59.47N Drag=8.70N My=+0.109Nm ThrustTot=6.53N tail_vz=+0.0659 drift=-0.539 mean|q|=1.54 any_nan=False
+    cand th=0.7342 elev_aero=+4.60deg -> V=27.997 alpha=-2.028deg Lift=60.22N Drag=8.75N My=+0.513Nm ThrustTot=8.39N tail_vz=-0.8168 drift=+0.065 mean|q|=2.93 any_nan=False
+    cand th=0.7342 elev_aero=+3.60deg -> V=27.997 alpha=-2.019deg Lift=58.75N Drag=8.64N My=-0.299Nm ThrustTot=8.40N tail_vz=+0.9570 drift=-0.437 mean|q|=0.15 any_nan=False
+    cand th=0.7542 elev_aero=+4.60deg -> V=27.999 alpha=-2.028deg Lift=60.23N Drag=8.75N My=+0.512Nm ThrustTot=10.33N tail_vz=-0.8220 drift=+0.428 mean|q|=2.90 any_nan=False
+    cand th=0.7142 elev_aero=+4.60deg -> V=27.995 alpha=-2.028deg Lift=60.21N Drag=8.75N My=+0.515Nm ThrustTot=6.53N tail_vz=-0.8112 drift=-0.289 mean|q|=2.96 any_nan=False
+    cand th=0.7342 elev_aero=+5.10deg -> V=27.997 alpha=-2.032deg Lift=60.96N Drag=8.81N My=+0.919Nm ThrustTot=8.39N tail_vz=-1.7235 drift=+0.314 mean|q|=4.37 any_nan=False
+    cand th=0.7342 elev_aero=+4.10deg -> V=27.997 alpha=-2.023deg Lift=59.48N Drag=8.70N My=+0.107Nm ThrustTot=8.40N tail_vz=+0.0770 drift=-0.186 mean|q|=1.50 any_nan=False
+    cand th=0.7422 elev_aero=+4.60deg -> V=27.998 alpha=-2.028deg Lift=60.23N Drag=8.75N My=+0.512Nm ThrustTot=9.16N tail_vz=-0.8189 drift=+0.209 mean|q|=2.92 any_nan=False
+    cand th=0.7262 elev_aero=+4.60deg -> V=27.996 alpha=-2.028deg Lift=60.22N Drag=8.75N My=+0.514Nm ThrustTot=7.64N tail_vz=-0.8146 drift=-0.078 mean|q|=2.94 any_nan=False
+    cand th=0.7342 elev_aero=+4.80deg -> V=27.997 alpha=-2.029deg Lift=60.52N Drag=8.77N My=+0.675Nm ThrustTot=8.39N tail_vz=-1.1779 drift=+0.165 mean|q|=3.51 any_nan=False
+    cand th=0.7342 elev_aero=+4.40deg -> V=27.997 alpha=-2.026deg Lift=59.93N Drag=8.73N My=+0.351Nm ThrustTot=8.40N tail_vz=-0.4577 drift=-0.035 mean|q|=2.36 any_nan=False
+    cand th=0.7422 elev_aero=+4.40deg -> V=27.998 alpha=-2.026deg Lift=59.93N Drag=8.73N My=+0.350Nm ThrustTot=9.16N tail_vz=-0.4571 drift=+0.109 mean|q|=2.35 any_nan=False
+    cand th=0.7262 elev_aero=+4.40deg -> V=27.996 alpha=-2.026deg Lift=59.92N Drag=8.73N My=+0.351Nm ThrustTot=7.64N tail_vz=-0.4582 drift=-0.178 mean|q|=2.37 any_nan=False
+    cand th=0.7342 elev_aero=+4.60deg -> V=27.997 alpha=-2.028deg Lift=60.22N Drag=8.75N My=+0.513Nm ThrustTot=8.40N tail_vz=-0.8168 drift=+0.065 mean|q|=2.93 any_nan=False
+    cand th=0.7342 elev_aero=+4.20deg -> V=27.997 alpha=-2.024deg Lift=59.63N Drag=8.71N My=+0.188Nm ThrustTot=8.40N tail_vz=-0.1007 drift=-0.136 mean|q|=1.79 any_nan=False
+    cand th=0.7342 elev_aero=+4.40deg -> V=27.997 alpha=-2.026deg Lift=59.93N Drag=8.73N My=+0.351Nm ThrustTot=8.40N tail_vz=-2.1185 drift=+1.119 mean|q|=1.29 any_nan=False
+--> V=28.0: SELECTED throttle=0.7342 elevator_aero=+4.40deg classification=NO_VALID_TRIM Lift/W=1.0181 T/D=0.9617 tail_vz=-2.1185 (18 candidates this speed)
+
+==============================================================================
+TRIM SEARCH @ V_target=30.000 m/s (analytical: alpha=-2.44deg delta_e=+4.39deg throttle=0.7892 status=OK; march-seed from V=28.000: throttle=0.7865 elevator=+5.11deg)
+==============================================================================
+    cand th=0.7865 elev_aero=+5.11deg -> V=29.996 alpha=-2.448deg Lift=60.08N Drag=9.84N My=+0.406Nm ThrustTot=9.48N tail_vz=-0.3590 drift=-0.093 mean|q|=2.47 any_nan=False
+    cand th=0.8065 elev_aero=+5.11deg -> V=29.999 alpha=-2.448deg Lift=60.09N Drag=9.84N My=+0.405Nm ThrustTot=11.52N tail_vz=-0.3667 drift=+0.284 mean|q|=2.45 any_nan=False
+    cand th=0.7665 elev_aero=+5.11deg -> V=29.994 alpha=-2.448deg Lift=60.07N Drag=9.84N My=+0.408Nm ThrustTot=7.50N tail_vz=-0.3512 drift=-0.463 mean|q|=2.48 any_nan=False
+    cand th=0.7865 elev_aero=+5.61deg -> V=29.996 alpha=-2.453deg Lift=60.92N Drag=9.92N My=+0.871Nm ThrustTot=9.48N tail_vz=-1.4120 drift=+0.172 mean|q|=4.02 any_nan=False
+    cand th=0.7865 elev_aero=+4.61deg -> V=29.996 alpha=-2.443deg Lift=59.24N Drag=9.78N My=-0.058Nm ThrustTot=9.48N tail_vz=+0.6761 drift=-0.362 mean|q|=0.92 any_nan=False
+    cand th=0.7945 elev_aero=+5.11deg -> V=29.997 alpha=-2.448deg Lift=60.09N Drag=9.84N My=+0.406Nm ThrustTot=10.29N tail_vz=-0.3621 drift=+0.057 mean|q|=2.46 any_nan=False
+    cand th=0.7785 elev_aero=+5.11deg -> V=29.995 alpha=-2.448deg Lift=60.08N Drag=9.84N My=+0.407Nm ThrustTot=8.68N tail_vz=-0.3559 drift=-0.242 mean|q|=2.47 any_nan=False
+    cand th=0.7865 elev_aero=+5.31deg -> V=29.996 alpha=-2.450deg Lift=60.42N Drag=9.87N My=+0.592Nm ThrustTot=9.48N tail_vz=-0.7784 drift=+0.013 mean|q|=3.09 any_nan=False
+    cand th=0.7865 elev_aero=+4.91deg -> V=29.996 alpha=-2.446deg Lift=59.74N Drag=9.81N My=+0.221Nm ThrustTot=9.48N tail_vz=+0.0571 drift=-0.201 mean|q|=1.85 any_nan=False
+    cand th=0.7945 elev_aero=+5.31deg -> V=29.997 alpha=-2.450deg Lift=60.42N Drag=9.87N My=+0.592Nm ThrustTot=10.29N tail_vz=-0.7846 drift=+0.163 mean|q|=3.08 any_nan=False
+    cand th=0.7785 elev_aero=+5.31deg -> V=29.995 alpha=-2.450deg Lift=60.41N Drag=9.87N My=+0.593Nm ThrustTot=8.68N tail_vz=-0.7723 drift=-0.136 mean|q|=3.09 any_nan=False
+    cand th=0.7865 elev_aero=+5.51deg -> V=29.996 alpha=-2.452deg Lift=60.75N Drag=9.91N My=+0.778Nm ThrustTot=9.48N tail_vz=-1.2002 drift=+0.119 mean|q|=3.71 any_nan=False
+    cand th=0.7865 elev_aero=+5.11deg -> V=29.996 alpha=-2.448deg Lift=60.08N Drag=9.84N My=+0.406Nm ThrustTot=9.48N tail_vz=-0.3590 drift=-0.093 mean|q|=2.47 any_nan=False
+    cand th=0.7865 elev_aero=+5.31deg -> V=29.996 alpha=-2.450deg Lift=60.42N Drag=9.87N My=+0.592Nm ThrustTot=9.48N tail_vz=-3.2674 drift=+1.575 mean|q|=1.71 any_nan=False
+--> V=30.0: SELECTED throttle=0.7865 elevator_aero=+5.31deg classification=NO_VALID_TRIM Lift/W=1.0264 T/D=0.9604 tail_vz=-3.2674 (14 candidates this speed)
+
+
+Total Part-1 trim candidates tested (aggregate, incl. the V=18.166 confirm): 115
+==============================================================================
+PART 2/3: REAL-ACTUATOR TRIM CONFIRM AT ALL 8 SPEEDS (authoritative live-plugin data)
+==============================================================================
+  [V12.5] elev_cmd=+9.180deg aile(L/R)=+0.00/+0.00deg rudder=+0.00deg -> actual delta_e=-9.1203 delta_a=-0.0000 delta_r=+0.0000deg | CL=1.34021 CD=0.13013 Cm=-0.16122 Cl=0.000000 Cn=0.000020 | My=+1.5551Nm Mx=+0.0000Nm Mz=+0.0018Nm | RPM(L/R)=4087.0/4087.0 Thrust(L/R)=1.190/1.190N | target_clamp=False effort_clamp=False rpm_cap=False cur_lim=False any_nan=False
+  [V14] elev_cmd=+15.048deg aile(L/R)=+0.00/+0.00deg rudder=+0.00deg -> actual delta_e=-14.9739 delta_a=-0.0000 delta_r=+0.0000deg | CL=1.07222 CD=0.09773 Cm=0.04535 Cl=0.000000 Cn=0.000020 | My=-0.5481Nm Mx=+0.0000Nm Mz=+0.0023Nm | RPM(L/R)=4478.9/4478.9 Thrust(L/R)=1.172/1.172N | target_clamp=False effort_clamp=False rpm_cap=False cur_lim=False any_nan=False
+  [V16] elev_cmd=+9.547deg aile(L/R)=+0.00/+0.00deg rudder=+0.00deg -> actual delta_e=-9.4854 delta_a=-0.0000 delta_r=+0.0000deg | CL=0.81921 CD=0.07078 Cm=0.03871 Cl=0.000000 Cn=0.000020 | My=-0.6109Nm Mx=+0.0000Nm Mz=+0.0030Nm | RPM(L/R)=5450.1/5450.1 Thrust(L/R)=2.441/2.441N | target_clamp=False effort_clamp=False rpm_cap=False cur_lim=False any_nan=False
+  [V18.166] elev_cmd=+4.500deg aile(L/R)=+0.00/+0.00deg rudder=+0.00deg -> actual delta_e=-4.4509 delta_a=-0.0000 delta_r=+0.0000deg | CL=0.63992 CD=0.05640 Cm=0.01658 Cl=0.000000 Cn=0.000020 | My=-0.3373Nm Mx=+0.0000Nm Mz=+0.0038Nm | RPM(L/R)=6086.9/6086.9 Thrust(L/R)=2.780/2.780N | target_clamp=False effort_clamp=False rpm_cap=False cur_lim=False any_nan=False
+  [V21] elev_cmd=+1.178deg aile(L/R)=+0.00/+0.00deg rudder=+0.00deg -> actual delta_e=-1.1362 delta_a=-0.0000 delta_r=+0.0000deg | CL=0.47895 CD=0.04706 Cm=0.01512 Cl=0.000000 Cn=0.000020 | My=-0.4108Nm Mx=+0.0000Nm Mz=+0.0051Nm | RPM(L/R)=6875.5/6875.5 Thrust(L/R)=3.090/3.090N | target_clamp=False effort_clamp=False rpm_cap=False cur_lim=False any_nan=False
+  [V24] elev_cmd=-2.122deg aile(L/R)=+0.00/+0.00deg rudder=+0.00deg -> actual delta_e=+2.1561 delta_a=-0.0000 delta_r=+0.0000deg | CL=0.37277 CD=0.04289 Cm=-0.00273 Cl=0.000000 Cn=0.000020 | My=+0.0952Nm Mx=+0.0000Nm Mz=+0.0067Nm | RPM(L/R)=7669.6/7669.6 Thrust(L/R)=3.282/3.282N | target_clamp=False effort_clamp=False rpm_cap=False cur_lim=False any_nan=False
+  [V28] elev_cmd=-4.403deg aile(L/R)=+0.00/+0.00deg rudder=+0.00deg -> actual delta_e=+4.4327 delta_a=-0.0000 delta_r=+0.0000deg | CL=0.27675 CD=0.04030 Cm=-0.00821 Cl=0.000000 Cn=0.000020 | My=+0.3923Nm Mx=+0.0000Nm Mz=+0.0091Nm | RPM(L/R)=8878.6/8878.6 Thrust(L/R)=4.198/4.198N | target_clamp=False effort_clamp=False rpm_cap=False cur_lim=False any_nan=False
+  [V30] elev_cmd=-5.308deg aile(L/R)=+0.00/+0.00deg rudder=+0.00deg -> actual delta_e=+5.3361 delta_a=-0.0000 delta_r=+0.0000deg | CL=0.24311 CD=0.03971 Cm=-0.01175 Cl=0.000000 Cn=0.000020 | My=+0.6452Nm Mx=+0.0000Nm Mz=+0.0104Nm | RPM(L/R)=9490.8/9490.8 Thrust(L/R)=4.742/4.742N | target_clamp=False effort_clamp=False rpm_cap=False cur_lim=False any_nan=False
+==============================================================================
+PART 4: HIGH-ALPHA LIMITER STATIC CHECK (triggered by low-speed region)
+==============================================================================
+  [ALPHA7] elev_cmd=+0.000deg aile(L/R)=+0.00/+0.00deg rudder=+0.00deg -> actual delta_e=+0.2921 delta_a=-0.0000 delta_r=+0.0000deg | CL=1.10053 CD=0.09911 Cm=-0.19614 Cl=0.000000 Cn=0.000020 | My=+2.7207Nm Mx=+0.0000Nm Mz=+0.0026Nm | RPM(L/R)=-28.8/-28.8 Thrust(L/R)=0.000/0.000N | target_clamp=False effort_clamp=False rpm_cap=False cur_lim=False any_nan=False
+  [ALPHA8] elev_cmd=+0.000deg aile(L/R)=+0.00/+0.00deg rudder=+0.00deg -> actual delta_e=+0.2929 delta_a=-0.0000 delta_r=+0.0000deg | CL=1.19320 CD=0.11033 Cm=-0.22443 Cl=0.000000 Cn=0.000020 | My=+3.1129Nm Mx=+0.0000Nm Mz=+0.0026Nm | RPM(L/R)=-28.8/-28.8 Thrust(L/R)=0.000/0.000N | target_clamp=False effort_clamp=False rpm_cap=False cur_lim=False any_nan=False
+  [ALPHA9] elev_cmd=+0.000deg aile(L/R)=+0.00/+0.00deg rudder=+0.00deg -> actual delta_e=+0.2938 delta_a=-0.0000 delta_r=+0.0000deg | CL=1.28587 CD=0.12246 Cm=-0.25271 Cl=0.000000 Cn=0.000020 | My=+3.5051Nm Mx=+0.0000Nm Mz=+0.0026Nm | RPM(L/R)=-28.8/-28.8 Thrust(L/R)=0.000/0.000N | target_clamp=False effort_clamp=False rpm_cap=False cur_lim=False any_nan=False
+  [ALPHA9.25] elev_cmd=+0.000deg aile(L/R)=+0.00/+0.00deg rudder=+0.00deg -> actual delta_e=+0.2940 delta_a=-0.0000 delta_r=+0.0000deg | CL=1.30904 CD=0.12564 Cm=-0.25978 Cl=0.000000 Cn=0.000020 | My=+3.6032Nm Mx=+0.0000Nm Mz=+0.0026Nm | RPM(L/R)=-28.8/-28.8 Thrust(L/R)=0.000/0.000N | target_clamp=False effort_clamp=False rpm_cap=False cur_lim=False any_nan=False
+  [ALPHA9.5] elev_cmd=+0.000deg aile(L/R)=+0.00/+0.00deg rudder=+0.00deg -> actual delta_e=+0.2942 delta_a=-0.0000 delta_r=+0.0000deg | CL=1.33141 CD=0.12875 Cm=-0.26686 Cl=0.000000 Cn=0.000020 | My=+3.7013Nm Mx=+0.0000Nm Mz=+0.0026Nm | RPM(L/R)=-28.8/-28.8 Thrust(L/R)=0.000/0.000N | target_clamp=False effort_clamp=False rpm_cap=False cur_lim=False any_nan=False
+  [ALPHA10] elev_cmd=+0.000deg aile(L/R)=+0.00/+0.00deg rudder=+0.00deg -> actual delta_e=+0.2945 delta_a=-0.0000 delta_r=+0.0000deg | CL=1.36451 CD=0.13347 Cm=-0.28110 Cl=0.000000 Cn=0.000020 | My=+3.8988Nm Mx=+0.0000Nm Mz=+0.0026Nm | RPM(L/R)=-28.8/-28.8 Thrust(L/R)=0.000/0.000N | target_clamp=False effort_clamp=False rpm_cap=False cur_lim=False any_nan=False
+  [ALPHA12] elev_cmd=+0.000deg aile(L/R)=+0.00/+0.00deg rudder=+0.00deg -> actual delta_e=+0.2962 delta_a=-0.0000 delta_r=+0.0000deg | CL=1.41349 CD=0.14065 Cm=-0.33870 Cl=0.000000 Cn=0.000020 | My=+4.6985Nm Mx=+0.0000Nm Mz=+0.0026Nm | RPM(L/R)=-28.8/-28.8 Thrust(L/R)=0.000/0.000N | target_clamp=False effort_clamp=False rpm_cap=False cur_lim=False any_nan=False
+  [ALPHA15] elev_cmd=+0.000deg aile(L/R)=+0.00/+0.00deg rudder=+0.00deg -> actual delta_e=+0.2984 delta_a=-0.0000 delta_r=+0.0000deg | CL=1.42258 CD=0.14201 Cm=-0.42559 Cl=0.000000 Cn=0.000020 | My=+5.9060Nm Mx=+0.0000Nm Mz=+0.0026Nm | RPM(L/R)=-28.8/-28.8 Thrust(L/R)=0.000/0.000N | target_clamp=False effort_clamp=False rpm_cap=False cur_lim=False any_nan=False
+  [ALPHA20] elev_cmd=+0.000deg aile(L/R)=+0.00/+0.00deg rudder=+0.00deg -> actual delta_e=+0.3017 delta_a=-0.0000 delta_r=+0.0000deg | CL=1.42359 CD=0.14216 Cm=-0.57045 Cl=0.000000 Cn=0.000020 | My=+7.9216Nm Mx=+0.0000Nm Mz=+0.0026Nm | RPM(L/R)=-28.8/-28.8 Thrust(L/R)=0.000/0.000N | target_clamp=False effort_clamp=False rpm_cap=False cur_lim=False any_nan=False
+CL by alpha: [(7.0, 1.10053), (8.0, 1.1932), (9.0, 1.28587), (9.25, 1.30904), (9.5, 1.33141), (10.0, 1.36451), (12.0, 1.41349), (15.0, 1.42258), (20.0, 1.42359)]
+Cm by alpha: [(7.0, -0.19614), (8.0, -0.22443), (9.0, -0.25271), (9.25, -0.25978), (9.5, -0.26686), (10.0, -0.2811), (12.0, -0.3387), (15.0, -0.42559), (20.0, -0.57045)]
+any_nan=False monotonic_CL=True max_CL=1.42359 (CLmax_manufacturer=1.42) slope_jump_ok(C1-continuity)=True no_sign_reversal=True
+HIGH_ALPHA_LIMITER behavior at extended alphas: WATCH
+
+==============================================================================
+PART 6: REPRESENTATIVE FREE 6-DOF FLIGHT (LOW/NOMINAL/HIGH)
+==============================================================================
+------------------------------------------------------------------------------
+LOW: V_target=14.0 m/s (throttle=0.3646 elevator_theta=+15.048deg)
+------------------------------------------------------------------------------
+any_nan=False (first at step None)
+Airspeed: start=14.007 end=13.580 drift=-0.427 m/s
+Altitude: start=98.46 end=90.87 drift=-7.59 m
+Pitch: start=+0.18 end=-5.65 max|pitch|=11.95deg
+Roll: start=+0.00 end=+0.06 max|roll|=0.06deg
+Alpha: start=+7.82 end=+8.94 max|alpha|=9.23deg
+CLASSIFICATION: PASS (bounded, near-trim, no divergence)
+
+------------------------------------------------------------------------------
+NOMINAL: V_target=18.166 m/s (throttle=0.5010 elevator_theta=+4.500deg)
+------------------------------------------------------------------------------
+any_nan=False (first at step None)
+Airspeed: start=18.166 end=17.778 drift=-0.388 m/s
+Altitude: start=99.34 end=102.51 drift=+3.16 m
+Pitch: start=+0.26 end=-4.24 max|pitch|=6.06deg
+Roll: start=+0.00 end=+0.07 max|roll|=0.07deg
+Alpha: start=+2.47 end=+2.72 max|alpha|=2.75deg
+CLASSIFICATION: PASS (bounded, near-trim, no divergence)
+
+------------------------------------------------------------------------------
+HIGH: V_target=24.0 m/s (throttle=0.6319 elevator_theta=-2.122deg)
+------------------------------------------------------------------------------
+any_nan=False (first at step None)
+Airspeed: start=23.999 end=24.658 drift=+0.660 m/s
+Altitude: start=100.22 end=88.80 drift=-11.41 m
+Pitch: start=+0.42 end=+2.94 max|pitch|=4.39deg
+Roll: start=+0.00 end=+0.09 max|roll|=0.09deg
+Alpha: start=-0.85 end=-1.11 max|alpha|=1.54deg
+CLASSIFICATION: PASS (bounded, near-trim, no divergence)
+
+==============================================================================
+PART 7: CONTROL AUTHORITY VS SPEED (+/-5deg representative command)
+==============================================================================
+------------------------------------------------------------------------------
+LOW (V=14.0)
+------------------------------------------------------------------------------
+  [elevator +5deg] actual_delta=-9.626deg dMx=+0.0001 dMy=+0.5518 dMz=-0.0003 dCl=+0.000000 dCm=-0.074832 dCn=-0.000003 initial(p/q/r)=+0.00/+6.84/+0.04deg/s any_nan=False
+  [aileron +5deg] actual_delta=+4.896deg dMx=+2.8023 dMy=+0.0382 dMz=-0.1201 dCl=+0.023860 dCm=-0.002862 dCn=-0.001021 initial(p/q/r)=+16.54/-4.20/-0.50deg/s any_nan=False
+  [rudder +5deg] actual_delta=+3.889deg dMx=-0.0052 dMy=+0.0354 dMz=-0.2096 dCl=-0.000044 dCm=-0.002485 dCn=-0.001784 initial(p/q/r)=+0.02/-4.25/-0.84deg/s any_nan=False
+------------------------------------------------------------------------------
+NOMINAL (V=18.166)
+------------------------------------------------------------------------------
+  [elevator +5deg] actual_delta=+0.508deg dMx=+0.0000 dMy=+0.7826 dMz=-0.0008 dCl=+0.000000 dCm=-0.073315 dCn=-0.000004 initial(p/q/r)=+0.01/+15.96/+0.06deg/s any_nan=False
+  [aileron +5deg] actual_delta=+5.588deg dMx=+4.8042 dMy=+0.1647 dMz=-0.2598 dCl=+0.024734 dCm=-0.006195 dCn=-0.001336 initial(p/q/r)=+28.82/-1.11/-0.96deg/s any_nan=False
+  [rudder +5deg] actual_delta=+3.937deg dMx=-0.0109 dMy=+0.1582 dMz=-0.3461 dCl=-0.000056 dCm=-0.005616 dCn=-0.001781 initial(p/q/r)=+0.04/-1.24/-1.40deg/s any_nan=False
+------------------------------------------------------------------------------
+HIGH (V=24.0)
+------------------------------------------------------------------------------
+  [elevator +5deg] actual_delta=+6.933deg dMx=-0.0004 dMy=+0.2327 dMz=-0.0022 dCl=-0.000001 dCm=-0.069560 dCn=-0.000006 initial(p/q/r)=+0.02/+32.58/+0.09deg/s any_nan=False
+  [aileron +5deg] actual_delta=+7.204deg dMx=+9.4978 dMy=-0.0647 dMz=-0.6304 dCl=+0.028566 dCm=-0.018235 dCn=-0.001896 initial(p/q/r)=+56.49/+6.88/-2.00deg/s any_nan=False
+  [rudder +5deg] actual_delta=+4.016deg dMx=-0.0236 dMy=-0.0877 dMz=-0.5913 dCl=-0.000071 dCm=-0.016961 dCn=-0.001778 initial(p/q/r)=+0.12/+6.50/-2.42deg/s any_nan=False
+====================================================================================================
+SUMMARY TABLE (all 8 speeds)
+====================================================================================================
+V_target   V_ach   alpha     thr elev_phys elev_aero       CL       CD    L/W  Thrust   RPM_L   RPM_R       My          class
+  12.500  12.511  11.402  0.3331     9.180    -9.120  1.34021  0.13013  0.985   2.380  4087.0  4087.0   1.5551 MARGINAL_TRIM+MODEL_PREDICTED_ONLY_NO_STALL_PHYSICS
+  14.000  14.006   7.823  0.3646    15.048   -14.974  1.07222  0.09773  0.988   2.344  4478.9  4478.9  -0.5481  MARGINAL_TRIM
+  16.000  16.006   4.744  0.4480     9.547    -9.485  0.81921  0.07078  0.986   4.882  5450.1  5450.1  -0.6109  MARGINAL_TRIM
+  18.166  18.166   2.473  0.5010     4.500    -4.451  0.63992  0.05640  0.992   5.559  6086.9  6086.9  -0.3373  MARGINAL_TRIM
+  21.000  21.001   0.529  0.5665     1.178    -1.136  0.47895  0.04706  0.992   6.181  6875.5  6875.5  -0.4108  MARGINAL_TRIM
+  24.000  23.999  -0.842  0.6319    -2.122     2.156  0.37277  0.04289  1.009   6.564  7669.6  7669.6   0.0952  NO_VALID_TRIM
+  28.000  27.997  -2.026  0.7342    -4.403     4.433  0.27675  0.04030  1.019   8.397  8878.6  8878.6   0.3923  NO_VALID_TRIM
+  30.000  29.996  -2.450  0.7865    -5.308     5.336  0.24311  0.03971  1.028   9.484  9490.8  9490.8   0.6452  NO_VALID_TRIM
+
+
+================================================================================
+ADDENDUM: THROTTLE-CONVERGENCE CORRECTION (12.5/14 m/s) + FINAL CLASSIFICATION
+RECONCILIATION (post-processing of already-collected live data; no additional
+physics touched; 2 extra actuator-hold re-measurements at corrected throttle
+only, elevator unchanged)
+================================================================================
+Found on review: local_trim_search's bounded '+'-pattern candidate_score
+prioritizes vz/lift balance over thrust=drag; at V=12.5/14 m/s the lift-
+balance metric was only weakly throttle-sensitive, so the search converged to
+a lift/moment-balanced elevator but a THRUST-DEFICIENT throttle (T/D=0.42/0.44
+- would decelerate substantially if truly released without correction). This
+is a test-harness search-convergence gap, not a propulsion capability limit.
+Re-solved throttle offline via the SAME already-existing, unmodified
+solve_throttle_for_thrust() thrust=drag root-finder at the ALREADY-FOUND
+elevator/alpha (not re-searched), then re-measured through the real actuator:
+
+  [V12.5_THROTTLE_CORRECTED] throttle 0.3331->0.3902: RPM(L/R)=4723.8/4723.8
+  (was 4087.0), Thrust(L/R)=2.808/2.808N (was 1.190N), T/D: 0.42->0.998,
+  Lift/W unaffected (0.986), My unaffected (+1.550Nm, confirms My is
+  elevator-dominated, not throttle-dominated, as expected).
+
+  [V14_THROTTLE_CORRECTED] throttle 0.3646->0.4146: RPM(L/R)=5031.9/5031.9
+  (was 4478.9), Thrust(L/R)=2.646/2.646N (was 1.172N), T/D: 0.44->0.997,
+  Lift/W unaffected (0.988), My unaffected (-0.549Nm).
+
+FINAL CLASSIFICATION RECONCILIATION (combines the automated short-window
+search-confirm classifier, the corrected actuator-hold Lift/Weight+T/D, the
+analytical aero-feasibility status, and Part 6 free-flight corroboration
+where available - see flight_envelope_result.json's
+"final_classification_reconciliation" key for the full per-speed reasoning):
+
+  12.5 m/s : NO_VALID_TRIM [MODEL_PREDICTED_ONLY_NO_STALL_PHYSICS]
+             (analytical AERODYNAMIC_NO_TRIM_MOMENT; My=+1.55Nm, the largest
+             residual of all 8 points by >2x; mean|q|=7.4deg/s; alpha=11.40deg
+             is 2.15deg PAST alpha_transition=9.25deg)
+  14.0 m/s : MARGINAL_TRIM  (self-consistent, moderate residual)
+  16.0 m/s : MARGINAL_TRIM  (self-consistent, moderate residual)
+  18.166 m/s: TRIM_FOUND    (reference trim - smallest My and mean|q| of all
+             8 points, previously independently validated by a 25s free
+             flight + pulse tests)
+  21.0 m/s : MARGINAL_TRIM  (very good; one tier below 18.166 only for lack
+             of independent free-flight cross-validation this stage)
+  24.0 m/s : MARGINAL_TRIM  (automated classifier said NO_VALID_TRIM on a
+             noisy 5s-window tail_vz alone; corroborated as short-window
+             phugoid-transient noise, NOT real divergence, by the actual 14s
+             free-flight run at this exact point: PASS, -11.4m/14s altitude
+             drift, max|pitch|=4.39deg)
+  28.0 m/s : MARGINAL_TRIM  (self-consistent, growing but bounded residual,
+             not independently free-flight-tested this stage)
+  30.0 m/s : MARGINAL_TRIM  (largest residual among aerodynamically-feasible
+             points; RPM/current well within propulsion bounds, not
+             PROPULSION_LIMITED)

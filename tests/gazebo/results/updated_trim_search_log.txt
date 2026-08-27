@@ -1,0 +1,158 @@
+FALCON V2 - UPDATED_POWERED_TRIM_AND_HIGH_DEFLECTION_FLIGHT_VALIDATION (gazebo-testing, 2026-08-27)
+World: /home/emirhan/Desktop/FalconV2/tests/gazebo/worlds/falcon_v2_freefall_world.sdf
+elevator_sign=-1.0 aileron_sign=1.0 rudder_sign=1.0 (read fresh from aero_v1_config.yaml)
+
+==============================================================================
+PART 1: NEW TRIM SEARCH
+==============================================================================
+Analytical center estimate (documented in this file's header, offline solve of the unchanged Lift=Weight / aero+propulsion pitching-moment=0 equations against the NEW elevator lookup + real propulsion thrust curve): throttle~0.496, elevator_aero~-3.92deg. Used ONLY to center the grid below - the live search below is free to move away from it.
+------------------------------------------------------------------------------
+COARSE GRID
+------------------------------------------------------------------------------
+Candidate throttle=0.4600 elevator_aero=-6.00deg (theta=+6.00deg): V_rel=18.162 alpha_rel=2.481deg world_vz_rel=-0.6787 Lift=57.370N Drag=5.088N My=-0.8721Nm CL=0.62903 CD=0.05578 RPM(L/R)=5647.9/5647.9 ThrustTotal=2.781N window[mean_vz=+0.1530 drift=-0.8963 mean|q|=2.630 tail_mean_vz=+0.6157 tail_alt_rate=+0.6158] any_nan=False
+Candidate throttle=0.4600 elevator_aero=-4.50deg (theta=+4.50deg): V_rel=18.162 alpha_rel=2.474deg world_vz_rel=-0.7496 Lift=58.333N Drag=5.141N My=-0.3515Nm CL=0.63959 CD=0.05637 RPM(L/R)=5647.9/5647.9 ThrustTotal=2.779N window[mean_vz=-0.5582 drift=-0.1789 mean|q|=0.540 tail_mean_vz=-0.4587 tail_alt_rate=-0.4587] any_nan=False
+Candidate throttle=0.4600 elevator_aero=-3.00deg (theta=+3.00deg): V_rel=18.162 alpha_rel=2.467deg world_vz_rel=-0.8204 Lift=59.295N Drag=5.211N My=+0.1690Nm CL=0.65014 CD=0.05713 RPM(L/R)=5647.9/5647.9 ThrustTotal=2.778N window[mean_vz=-1.3089 drift=+0.5441 mean|q|=1.634 tail_mean_vz=-1.6262 tail_alt_rate=-1.6264] any_nan=False
+Candidate throttle=0.4600 elevator_aero=-1.50deg (theta=+1.50deg): V_rel=18.162 alpha_rel=2.459deg world_vz_rel=-0.8912 Lift=60.257N Drag=5.285N My=+0.6895Nm CL=0.66068 CD=0.05795 RPM(L/R)=5648.0/5648.0 ThrustTotal=2.777N window[mean_vz=-2.0968 drift=+1.2686 mean|q|=3.861 tail_mean_vz=-2.8832 tail_alt_rate=-2.8837] any_nan=False
+Candidate throttle=0.4900 elevator_aero=-6.00deg (theta=+6.00deg): V_rel=18.165 alpha_rel=2.481deg world_vz_rel=-0.6838 Lift=57.383N Drag=5.089N My=-0.8738Nm CL=0.62900 CD=0.05578 RPM(L/R)=5969.2/5969.2 ThrustTotal=4.777N window[mean_vz=+0.2601 drift=-0.4848 mean|q|=3.154 tail_mean_vz=+0.8816 tail_alt_rate=+0.8819] any_nan=False
+Candidate throttle=0.4900 elevator_aero=-4.50deg (theta=+4.50deg): V_rel=18.165 alpha_rel=2.473deg world_vz_rel=-0.7547 Lift=58.347N Drag=5.143N My=-0.3530Nm CL=0.63956 CD=0.05637 RPM(L/R)=5969.3/5969.3 ThrustTotal=4.775N window[mean_vz=-0.4749 drift=+0.2385 mean|q|=0.995 tail_mean_vz=-0.2382 tail_alt_rate=-0.2380] any_nan=False
+Candidate throttle=0.4900 elevator_aero=-3.00deg (theta=+3.00deg): V_rel=18.165 alpha_rel=2.466deg world_vz_rel=-0.8255 Lift=59.309N Drag=5.212N My=+0.1677Nm CL=0.65011 CD=0.05713 RPM(L/R)=5969.3/5969.3 ThrustTotal=4.774N window[mean_vz=-1.2504 drift=+0.9660 mean|q|=1.260 tail_mean_vz=-1.4539 tail_alt_rate=-1.4540] any_nan=False
+Candidate throttle=0.4900 elevator_aero=-1.50deg (theta=+1.50deg): V_rel=18.165 alpha_rel=2.459deg world_vz_rel=-0.8963 Lift=60.271N Drag=5.287N My=+0.6883Nm CL=0.66065 CD=0.05795 RPM(L/R)=5969.3/5969.3 ThrustTotal=4.773N window[mean_vz=-2.0640 drift=+1.6970 mean|q|=3.508 tail_mean_vz=-2.7617 tail_alt_rate=-2.7621] any_nan=False
+Candidate throttle=0.5200 elevator_aero=-6.00deg (theta=+6.00deg): V_rel=18.168 alpha_rel=2.480deg world_vz_rel=-0.6893 Lift=57.398N Drag=5.090N My=-0.8756Nm CL=0.62897 CD=0.05578 RPM(L/R)=6289.1/6289.1 ThrustTotal=6.975N window[mean_vz=+0.3797 drift=-0.0433 mean|q|=3.720 tail_mean_vz=+1.1791 tail_alt_rate=+1.1796] any_nan=False
+Candidate throttle=0.5200 elevator_aero=-4.50deg (theta=+4.50deg): V_rel=18.168 alpha_rel=2.472deg world_vz_rel=-0.7602 Lift=58.362N Drag=5.144N My=-0.3546Nm CL=0.63953 CD=0.05637 RPM(L/R)=6289.2/6289.2 ThrustTotal=6.974N window[mean_vz=-0.3812 drift=+0.6872 mean|q|=1.499 tail_mean_vz=+0.0100 tail_alt_rate=+0.0103] any_nan=False
+Candidate throttle=0.5200 elevator_aero=-3.00deg (theta=+3.00deg): V_rel=18.168 alpha_rel=2.465deg world_vz_rel=-0.8310 Lift=59.325N Drag=5.213N My=+0.1662Nm CL=0.65007 CD=0.05713 RPM(L/R)=6289.2/6289.2 ThrustTotal=6.972N window[mean_vz=-1.1839 drift=+1.4207 mean|q|=1.303 tail_mean_vz=-1.2586 tail_alt_rate=-1.2585] any_nan=False
+Candidate throttle=0.5200 elevator_aero=-1.50deg (theta=+1.50deg): V_rel=18.168 alpha_rel=2.458deg world_vz_rel=-0.9019 Lift=60.287N Drag=5.288N My=+0.6869Nm CL=0.66062 CD=0.05795 RPM(L/R)=6289.2/6289.2 ThrustTotal=6.971N window[mean_vz=-2.0259 drift=+2.1574 mean|q|=3.145 tail_mean_vz=-2.6223 tail_alt_rate=-2.6225] any_nan=False
+
+Coarse grid ranked (best first, priority: |mean window vz| > |airspeed drift| > |mean q| > |My|):
+  throttle=0.5200 elevator=-6.00deg -> mean_vz=+0.3797 drift=-0.0433 mean|q|=3.720 My=-0.8756 ThrustTotal=6.975 Drag=5.090 Lift=57.398
+  throttle=0.4900 elevator=-6.00deg -> mean_vz=+0.2601 drift=-0.4848 mean|q|=3.154 My=-0.8738 ThrustTotal=4.777 Drag=5.089 Lift=57.383
+  throttle=0.5200 elevator=-4.50deg -> mean_vz=-0.3812 drift=+0.6872 mean|q|=1.499 My=-0.3546 ThrustTotal=6.974 Drag=5.144 Lift=58.362
+  throttle=0.4600 elevator=-6.00deg -> mean_vz=+0.1530 drift=-0.8963 mean|q|=2.630 My=-0.8721 ThrustTotal=2.781 Drag=5.088 Lift=57.370
+  throttle=0.4600 elevator=-4.50deg -> mean_vz=-0.5582 drift=-0.1789 mean|q|=0.540 My=-0.3515 ThrustTotal=2.779 Drag=5.141 Lift=58.333
+
+Best coarse candidate: throttle=0.5200 elevator=-6.00deg
+
+------------------------------------------------------------------------------
+REFINEMENT ROUND 1 (+/-0.025 throttle, +/-1deg elevator)
+------------------------------------------------------------------------------
+Candidate throttle=0.4950 elevator_aero=-7.00deg (theta=+7.00deg): V_rel=18.165 alpha_rel=2.485deg world_vz_rel=-0.6374 Lift=56.743N Drag=5.058N My=-1.2213Nm CL=0.62195 CD=0.05544 RPM(L/R)=6022.8/6022.8 ThrustTotal=5.131N window[mean_vz=+0.7488 drift=-0.8928 mean|q|=4.658 tail_mean_vz=+1.6267 tail_alt_rate=+1.6271] any_nan=False
+Candidate throttle=0.4950 elevator_aero=-6.00deg (theta=+6.00deg): V_rel=18.165 alpha_rel=2.480deg world_vz_rel=-0.6847 Lift=57.386N Drag=5.089N My=-0.8741Nm CL=0.62899 CD=0.05578 RPM(L/R)=6022.8/6022.8 ThrustTotal=5.130N window[mean_vz=+0.2792 drift=-0.4132 mean|q|=3.246 tail_mean_vz=+0.9290 tail_alt_rate=+0.9293] any_nan=False
+Candidate throttle=0.4950 elevator_aero=-5.00deg (theta=+5.00deg): V_rel=18.165 alpha_rel=2.476deg world_vz_rel=-0.7319 Lift=58.029N Drag=5.120N My=-0.5268Nm CL=0.63604 CD=0.05612 RPM(L/R)=6022.8/6022.8 ThrustTotal=5.129N window[mean_vz=-0.2088 drift=+0.0695 mean|q|=1.807 tail_mean_vz=+0.1884 tail_alt_rate=+0.1887] any_nan=False
+Candidate throttle=0.5200 elevator_aero=-7.00deg (theta=+7.00deg): V_rel=18.168 alpha_rel=2.485deg world_vz_rel=-0.6420 Lift=56.755N Drag=5.060N My=-1.2229Nm CL=0.62192 CD=0.05544 RPM(L/R)=6289.1/6289.1 ThrustTotal=6.976N window[mean_vz=+0.8632 drift=-0.5273 mean|q|=5.168 tail_mean_vz=+1.9025 tail_alt_rate=+1.9031] any_nan=False
+Candidate throttle=0.5200 elevator_aero=-5.00deg (theta=+5.00deg): V_rel=18.168 alpha_rel=2.475deg world_vz_rel=-0.7365 Lift=58.041N Drag=5.121N My=-0.5282Nm CL=0.63601 CD=0.05612 RPM(L/R)=6289.2/6289.2 ThrustTotal=6.974N window[mean_vz=-0.1226 drift=+0.4437 mean|q|=2.247 tail_mean_vz=+0.4113 tail_alt_rate=+0.4117] any_nan=False
+Candidate throttle=0.5450 elevator_aero=-7.00deg (theta=+7.00deg): V_rel=18.170 alpha_rel=2.484deg world_vz_rel=-0.6468 Lift=56.769N Drag=5.061N My=-1.2246Nm CL=0.62190 CD=0.05544 RPM(L/R)=6553.2/6553.2 ThrustTotal=8.934N window[mean_vz=+0.9865 drift=-0.1450 mean|q|=5.701 tail_mean_vz=+2.2002 tail_alt_rate=+2.2009] any_nan=False
+Candidate throttle=0.5450 elevator_aero=-6.00deg (theta=+6.00deg): V_rel=18.170 alpha_rel=2.479deg world_vz_rel=-0.6940 Lift=57.412N Drag=5.091N My=-0.8772Nm CL=0.62894 CD=0.05578 RPM(L/R)=6553.2/6553.2 ThrustTotal=8.933N window[mean_vz=+0.4884 drift=+0.3443 mean|q|=4.217 tail_mean_vz=+1.4495 tail_alt_rate=+1.4502] any_nan=False
+Candidate throttle=0.5450 elevator_aero=-5.00deg (theta=+5.00deg): V_rel=18.170 alpha_rel=2.474deg world_vz_rel=-0.7413 Lift=58.055N Drag=5.122N My=-0.5297Nm CL=0.63598 CD=0.05612 RPM(L/R)=6553.2/6553.2 ThrustTotal=8.932N window[mean_vz=-0.0292 drift=+0.8367 mean|q|=2.707 tail_mean_vz=+0.6530 tail_alt_rate=+0.6536] any_nan=False
+
+Round-1 combined ranking (best first, priority: |mean window vz| > |airspeed drift| > |mean q| > |My|):
+  throttle=0.5200 elevator=-5.00deg -> mean_vz=-0.1226 drift=+0.4437 mean|q|=2.247 My=-0.5282 ThrustTotal=6.974 Drag=5.121 Lift=58.041
+  throttle=0.5450 elevator=-5.00deg -> mean_vz=-0.0292 drift=+0.8367 mean|q|=2.707 My=-0.5297 ThrustTotal=8.932 Drag=5.122 Lift=58.055
+  throttle=0.5200 elevator=-6.00deg -> mean_vz=+0.3797 drift=-0.0433 mean|q|=3.720 My=-0.8756 ThrustTotal=6.975 Drag=5.090 Lift=57.398
+  throttle=0.4950 elevator=-5.00deg -> mean_vz=-0.2088 drift=+0.0695 mean|q|=1.807 My=-0.5268 ThrustTotal=5.129 Drag=5.120 Lift=58.029
+  throttle=0.4950 elevator=-6.00deg -> mean_vz=+0.2792 drift=-0.4132 mean|q|=3.246 My=-0.8741 ThrustTotal=5.130 Drag=5.089 Lift=57.386
+
+Best after round 1: throttle=0.5200 elevator=-5.00deg
+
+------------------------------------------------------------------------------
+REFINEMENT ROUND 2 (+/-0.0125 throttle, +/-0.5deg elevator)
+------------------------------------------------------------------------------
+Candidate throttle=0.5075 elevator_aero=-5.50deg (theta=+5.50deg): V_rel=18.167 alpha_rel=2.478deg world_vz_rel=-0.7106 Lift=57.713N Drag=5.105N My=-0.7012Nm CL=0.63250 CD=0.05595 RPM(L/R)=6156.1/6156.1 ThrustTotal=6.036N window[mean_vz=+0.0832 drift=+0.0114 mean|q|=2.755 tail_mean_vz=+0.6799 tail_alt_rate=+0.6803] any_nan=False
+Candidate throttle=0.5075 elevator_aero=-5.00deg (theta=+5.00deg): V_rel=18.167 alpha_rel=2.475deg world_vz_rel=-0.7342 Lift=58.035N Drag=5.121N My=-0.5275Nm CL=0.63603 CD=0.05612 RPM(L/R)=6156.1/6156.1 ThrustTotal=6.036N window[mean_vz=-0.1667 drift=+0.2540 mean|q|=2.024 tail_mean_vz=+0.2974 tail_alt_rate=+0.2977] any_nan=False
+Candidate throttle=0.5075 elevator_aero=-4.50deg (theta=+4.50deg): V_rel=18.167 alpha_rel=2.473deg world_vz_rel=-0.7578 Lift=58.356N Drag=5.143N My=-0.3539Nm CL=0.63954 CD=0.05637 RPM(L/R)=6156.1/6156.1 ThrustTotal=6.035N window[mean_vz=-0.4215 drift=+0.4963 mean|q|=1.285 tail_mean_vz=-0.0968 tail_alt_rate=-0.0965] any_nan=False
+Candidate throttle=0.5200 elevator_aero=-5.50deg (theta=+5.50deg): V_rel=18.168 alpha_rel=2.477deg world_vz_rel=-0.7129 Lift=57.720N Drag=5.106N My=-0.7019Nm CL=0.63249 CD=0.05595 RPM(L/R)=6289.2/6289.2 ThrustTotal=6.975N window[mean_vz=+0.1310 drift=+0.2000 mean|q|=2.987 tail_mean_vz=+0.8008 tail_alt_rate=+0.8013] any_nan=False
+Candidate throttle=0.5325 elevator_aero=-5.50deg (theta=+5.50deg): V_rel=18.169 alpha_rel=2.477deg world_vz_rel=-0.7153 Lift=57.726N Drag=5.106N My=-0.7027Nm CL=0.63248 CD=0.05595 RPM(L/R)=6421.5/6421.5 ThrustTotal=7.941N window[mean_vz=+0.1806 drift=+0.3931 mean|q|=3.223 tail_mean_vz=+0.9266 tail_alt_rate=+0.9271] any_nan=False
+Candidate throttle=0.5325 elevator_aero=-5.00deg (theta=+5.00deg): V_rel=18.169 alpha_rel=2.474deg world_vz_rel=-0.7389 Lift=58.048N Drag=5.122N My=-0.5290Nm CL=0.63600 CD=0.05612 RPM(L/R)=6421.5/6421.5 ThrustTotal=7.941N window[mean_vz=-0.0768 drift=+0.6382 mean|q|=2.475 tail_mean_vz=+0.5299 tail_alt_rate=+0.5304] any_nan=False
+Candidate throttle=0.5325 elevator_aero=-4.50deg (theta=+4.50deg): V_rel=18.169 alpha_rel=2.472deg world_vz_rel=-0.7625 Lift=58.369N Drag=5.145N My=-0.3553Nm CL=0.63951 CD=0.05637 RPM(L/R)=6421.5/6421.5 ThrustTotal=7.940N window[mean_vz=-0.3392 drift=+0.8830 mean|q|=1.718 tail_mean_vz=+0.1212 tail_alt_rate=+0.1216] any_nan=False
+
+FULL RANKING (coarse + round 1 + round 2) (best first, priority: |mean window vz| > |airspeed drift| > |mean q| > |My|):
+  throttle=0.5075 elevator=-5.50deg -> mean_vz=+0.0832 drift=+0.0114 mean|q|=2.755 My=-0.7012 ThrustTotal=6.036 Drag=5.105 Lift=57.713
+  throttle=0.5200 elevator=-5.50deg -> mean_vz=+0.1310 drift=+0.2000 mean|q|=2.987 My=-0.7019 ThrustTotal=6.975 Drag=5.106 Lift=57.720
+  throttle=0.5200 elevator=-5.00deg -> mean_vz=-0.1226 drift=+0.4437 mean|q|=2.247 My=-0.5282 ThrustTotal=6.974 Drag=5.121 Lift=58.041
+  throttle=0.5325 elevator=-5.00deg -> mean_vz=-0.0768 drift=+0.6382 mean|q|=2.475 My=-0.5290 ThrustTotal=7.941 Drag=5.122 Lift=58.048
+  throttle=0.5450 elevator=-5.00deg -> mean_vz=-0.0292 drift=+0.8367 mean|q|=2.707 My=-0.5297 ThrustTotal=8.932 Drag=5.122 Lift=58.055
+  throttle=0.5200 elevator=-6.00deg -> mean_vz=+0.3797 drift=-0.0433 mean|q|=3.720 My=-0.8756 ThrustTotal=6.975 Drag=5.090 Lift=57.398
+  throttle=0.4950 elevator=-5.00deg -> mean_vz=-0.2088 drift=+0.0695 mean|q|=1.807 My=-0.5268 ThrustTotal=5.129 Drag=5.120 Lift=58.029
+  throttle=0.5075 elevator=-5.00deg -> mean_vz=-0.1667 drift=+0.2540 mean|q|=2.024 My=-0.5275 ThrustTotal=6.036 Drag=5.121 Lift=58.035
+  throttle=0.5325 elevator=-5.50deg -> mean_vz=+0.1806 drift=+0.3931 mean|q|=3.223 My=-0.7027 ThrustTotal=7.941 Drag=5.106 Lift=57.726
+  throttle=0.4950 elevator=-6.00deg -> mean_vz=+0.2792 drift=-0.4132 mean|q|=3.246 My=-0.8741 ThrustTotal=5.130 Drag=5.089 Lift=57.386
+
+------------------------------------------------------------------------------
+REFINEMENT ROUND 3 (settled/tail-window check, longer 12s release window)
+------------------------------------------------------------------------------
+Shortlist for round 3: [(0.49, -4.5), (0.5075, -5.5), (0.5075, -4.5), (0.52, -4.5), (0.5325, -4.5)]
+Candidate throttle=0.4900 elevator_aero=-4.50deg (theta=+4.50deg): V_rel=18.165 alpha_rel=2.473deg world_vz_rel=-0.7547 Lift=58.347N Drag=5.143N My=-0.3530Nm CL=0.63956 CD=0.05637 RPM(L/R)=5969.3/5969.3 ThrustTotal=4.775N window[mean_vz=-0.2173 drift=+0.1384 mean|q|=0.447 tail_mean_vz=-0.1982 tail_alt_rate=-0.1981] any_nan=False
+Candidate throttle=0.5075 elevator_aero=-5.50deg (theta=+5.50deg): V_rel=18.167 alpha_rel=2.478deg world_vz_rel=-0.7106 Lift=57.713N Drag=5.105N My=-0.7012Nm CL=0.63250 CD=0.05595 RPM(L/R)=6156.1/6156.1 ThrustTotal=6.036N window[mean_vz=+0.4767 drift=-0.4625 mean|q|=1.058 tail_mean_vz=+0.5085 tail_alt_rate=+0.5086] any_nan=False
+Candidate throttle=0.5075 elevator_aero=-4.50deg (theta=+4.50deg): V_rel=18.167 alpha_rel=2.473deg world_vz_rel=-0.7578 Lift=58.356N Drag=5.143N My=-0.3539Nm CL=0.63954 CD=0.05637 RPM(L/R)=6156.1/6156.1 ThrustTotal=6.035N window[mean_vz=+0.1085 drift=+0.2369 mean|q|=0.639 tail_mean_vz=+0.1059 tail_alt_rate=+0.1060] any_nan=False
+Candidate throttle=0.5200 elevator_aero=-4.50deg (theta=+4.50deg): V_rel=18.168 alpha_rel=2.472deg world_vz_rel=-0.7602 Lift=58.362N Drag=5.144N My=-0.3546Nm CL=0.63953 CD=0.05637 RPM(L/R)=6289.2/6289.2 ThrustTotal=6.974N window[mean_vz=+0.3533 drift=+0.3095 mean|q|=0.802 tail_mean_vz=+0.3337 tail_alt_rate=+0.3338] any_nan=False
+Candidate throttle=0.5325 elevator_aero=-4.50deg (theta=+4.50deg): V_rel=18.169 alpha_rel=2.472deg world_vz_rel=-0.7625 Lift=58.369N Drag=5.145N My=-0.3553Nm CL=0.63951 CD=0.05637 RPM(L/R)=6421.5/6421.5 ThrustTotal=7.940N window[mean_vz=+0.6071 drift=+0.3842 mean|q|=0.980 tail_mean_vz=+0.5684 tail_alt_rate=+0.5685] any_nan=False
+
+Round 3 ranked (best first, priority: |tail mean vz| > |tail alt drift rate| > |airspeed drift|):
+  throttle=0.5075 elevator=-4.50deg -> tail_mean_vz=+0.1059 tail_alt_rate=+0.1060 drift=+0.2369 net_My_est=+nan
+  throttle=0.4900 elevator=-4.50deg -> tail_mean_vz=-0.1982 tail_alt_rate=-0.1981 drift=+0.1384 net_My_est=+nan
+  throttle=0.5200 elevator=-4.50deg -> tail_mean_vz=+0.3337 tail_alt_rate=+0.3338 drift=+0.3095 net_My_est=+nan
+  throttle=0.5075 elevator=-5.50deg -> tail_mean_vz=+0.5085 tail_alt_rate=+0.5086 drift=-0.4625 net_My_est=+nan
+  throttle=0.5325 elevator=-4.50deg -> tail_mean_vz=+0.5684 tail_alt_rate=+0.5685 drift=+0.3842 net_My_est=+nan
+
+Best after round 3: throttle=0.5075 elevator_aero=-4.50deg
+
+------------------------------------------------------------------------------
+REFINEMENT ROUND 4 (directional extrapolation along throttle, same elevator)
+------------------------------------------------------------------------------
+Linear fit through round-3 same-elevator points: slope=+18.037 m/s per throttle unit, extrapolated zero-crossing throttle=0.5010
+Round 4 candidates: [(0.4885, -4.5), (0.501, -4.5), (0.5135, -4.5)]
+Candidate throttle=0.4885 elevator_aero=-4.50deg (theta=+4.50deg): V_rel=18.165 alpha_rel=2.473deg world_vz_rel=-0.7544 Lift=58.346N Drag=5.143N My=-0.3529Nm CL=0.63956 CD=0.05637 RPM(L/R)=5953.2/5953.2 ThrustTotal=4.670N window[mean_vz=-0.2443 drift=+0.1301 mean|q|=0.434 tail_mean_vz=-0.2233 tail_alt_rate=-0.2232] any_nan=False
+Candidate throttle=0.5010 elevator_aero=-4.50deg (theta=+4.50deg): V_rel=18.166 alpha_rel=2.473deg world_vz_rel=-0.7566 Lift=58.352N Drag=5.143N My=-0.3536Nm CL=0.63955 CD=0.05637 RPM(L/R)=6086.9/6086.9 ThrustTotal=5.560N window[mean_vz=-0.0149 drift=+0.1999 mean|q|=0.561 tail_mean_vz=-0.0092 tail_alt_rate=-0.0091] any_nan=False
+Candidate throttle=0.5135 elevator_aero=-4.50deg (theta=+4.50deg): V_rel=18.167 alpha_rel=2.473deg world_vz_rel=-0.7589 Lift=58.359N Drag=5.144N My=-0.3543Nm CL=0.63954 CD=0.05637 RPM(L/R)=6220.0/6220.0 ThrustTotal=6.482N window[mean_vz=+0.2248 drift=+0.2715 mean|q|=0.715 tail_mean_vz=+0.2143 tail_alt_rate=+0.2143] any_nan=False
+
+Round 3+4 combined ranking (best first):
+  throttle=0.5010 elevator=-4.50deg -> tail_mean_vz=-0.0092 tail_alt_rate=-0.0091 drift=+0.1999
+  throttle=0.5075 elevator=-4.50deg -> tail_mean_vz=+0.1059 tail_alt_rate=+0.1060 drift=+0.2369
+  throttle=0.4900 elevator=-4.50deg -> tail_mean_vz=-0.1982 tail_alt_rate=-0.1981 drift=+0.1384
+  throttle=0.5135 elevator=-4.50deg -> tail_mean_vz=+0.2143 tail_alt_rate=+0.2143 drift=+0.2715
+  throttle=0.4885 elevator=-4.50deg -> tail_mean_vz=-0.2233 tail_alt_rate=-0.2232 drift=+0.1301
+  throttle=0.5200 elevator=-4.50deg -> tail_mean_vz=+0.3337 tail_alt_rate=+0.3338 drift=+0.3095
+  throttle=0.5075 elevator=-5.50deg -> tail_mean_vz=+0.5085 tail_alt_rate=+0.5086 drift=-0.4625
+  throttle=0.5325 elevator=-4.50deg -> tail_mean_vz=+0.5684 tail_alt_rate=+0.5685 drift=+0.3842
+
+SELECTED NEW TRIM (final, after round 4): throttle=0.5010 elevator_aero=-4.50deg (elevator_theta=+4.50deg physical)
+
+Total trim candidates tested: 35
+any_nan across all candidates: False
+==============================================================================
+PART 2: NEW TRIM REPORT
+==============================================================================
+NEW TRIM: throttle=0.5010, elevator physical theta L=R=+4.500deg, elevator_aero=-4.50deg
+  V=18.166 m/s, alpha=2.473deg, altitude=100.0m
+  CL=0.63955 CD=0.05637 Cm(diag)=0.01745
+  Lift=58.352N Weight=58.860N Drag=5.143N
+  Thrust(L/R)=2.780/2.780N (total=5.560N)
+  RPM(L/R)=6086.9/6086.9
+  My(recomputed)=-0.3536Nm
+  vertical-accel tendency (tail_mean_vz, tail_alt_drift_rate over settled window): -0.0092 m/s, -0.0091 m/s
+  [live plugin diagnostic cross-check @release] CL=0.6400894880530535 CD=0.05640829202365336 Cm=0.016110039670287787
+
+OLD vs NEW comparison:
+  elevator_aero: OLD=-5.50deg -> NEW=-4.50deg (shift=+1.00deg)
+  throttle: OLD=0.4915 -> NEW=0.5010 (shift=+0.0095)
+  alpha: OLD=2.461deg -> NEW=2.473deg (shift=+0.012deg)
+  CL: OLD=0.67086 -> NEW=0.63955
+  Explanation: the new CL_delta_e=+0.414/rad lookup term (previously entirely absent) means the OLD elevator deflection (-5.4995deg aero) was needlessly LIFT-REDUCING under the new model (dCL(-5deg)=-0.03608 from aero_v1_config.yaml's control_surface_lookup.elevator.dCL) on top of the larger-magnitude Cm_delta_e now producing more nose-down tendency at that same deflection (dCm(-5deg)=+0.08710, feeding a larger cmStatic than before) - the new trim search finds a SMALLER-magnitude (less negative) elevator deflection restores both the lift balance and the moment balance simultaneously, consistent with these two documented lookup-table entries, not a speculative explanation.
+
+==============================================================================
+PART 3: CONTROLLED TRIM-HOLD CHECK (real actuator)
+==============================================================================
+  [TRIM] cmd_elev_theta=+4.500deg -> actual delta_e=-4.4702deg delta_a=-0.0000deg delta_r=+0.0000deg | CL=0.63979 CD=0.05639 Cm=0.01690 | My(recomputed)=-0.3441Nm | RPM(L/R)=6086.9/6086.9 Thrust(L/R)=2.780/2.780N | target_clamp=False effort_clamp=False any_nan=False
+
+Trim-hold balance: Lift=58.372N Weight=58.860N ratio=0.9917 | Thrust_total=5.559N Drag=5.145N T/D=1.0806 | My(recomputed)=-0.3441Nm | RPM_asym=0.0001 Thrust_asym=0.00000N
+
+Smoothness sweep around trim elevator (+/-1, +/-2 deg physical theta), same throttle/ailerons/rudder:
+  [TRIM-2] cmd_elev_theta=+2.500deg -> actual delta_e=-2.4728deg delta_a=-0.0000deg delta_r=+0.0000deg | CL=0.65381 CD=0.05740 Cm=-0.01787 | My(recomputed)=+0.3616Nm | RPM(L/R)=6086.9/6086.9 Thrust(L/R)=2.779/2.779N | target_clamp=False effort_clamp=False any_nan=False
+  [TRIM-1] cmd_elev_theta=+3.500deg -> actual delta_e=-3.4715deg delta_a=-0.0000deg delta_r=+0.0000deg | CL=0.64680 CD=0.05689 Cm=-0.00048 | My(recomputed)=+0.0087Nm | RPM(L/R)=6086.9/6086.9 Thrust(L/R)=2.779/2.779N | target_clamp=False effort_clamp=False any_nan=False
+  [TRIM+0] cmd_elev_theta=+4.500deg -> actual delta_e=-4.4702deg delta_a=-0.0000deg delta_r=+0.0000deg | CL=0.63979 CD=0.05639 Cm=0.01690 | My(recomputed)=-0.3441Nm | RPM(L/R)=6086.9/6086.9 Thrust(L/R)=2.780/2.780N | target_clamp=False effort_clamp=False any_nan=False
+  [TRIM+1] cmd_elev_theta=+5.500deg -> actual delta_e=-5.4688deg delta_a=-0.0000deg delta_r=+0.0000deg | CL=0.63277 CD=0.05596 Cm=0.03429 | My(recomputed)=-0.6969Nm | RPM(L/R)=6086.9/6086.9 Thrust(L/R)=2.780/2.780N | target_clamp=False effort_clamp=False any_nan=False
+  [TRIM+2] cmd_elev_theta=+6.500deg -> actual delta_e=-6.4673deg delta_a=-0.0000deg delta_r=+0.0000deg | CL=0.62575 CD=0.05563 Cm=0.05168 | My(recomputed)=-1.0499Nm | RPM(L/R)=6086.9/6086.9 Thrust(L/R)=2.780/2.780N | target_clamp=False effort_clamp=False any_nan=False
+  segment delta_e -6.467->-5.469deg: dCL=+0.007023 dCm=-0.017388 (slope_CL/deg=+0.00703 slope_Cm/deg=-0.01741)
+  segment delta_e -5.469->-4.470deg: dCL=+0.007016 dCm=-0.017386 (slope_CL/deg=+0.00703 slope_Cm/deg=-0.01741)
+  segment delta_e -4.470->-3.472deg: dCL=+0.007010 dCm=-0.017384 (slope_CL/deg=+0.00702 slope_Cm/deg=-0.01741)
+  segment delta_e -3.472->-2.473deg: dCL=+0.007011 dCm=-0.017385 (slope_CL/deg=+0.00702 slope_Cm/deg=-0.01741)
+No-discontinuity check (small per-degree steps, no outsized jump): PASS
+

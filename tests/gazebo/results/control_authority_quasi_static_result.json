@@ -1,0 +1,2031 @@
+{
+  "trim_condition": {
+    "V": 18.165,
+    "alpha_deg": 2.461,
+    "throttle": 0.4915,
+    "elevator_theta_deg": 5.5,
+    "elevator_aero_deg": -5.5
+  },
+  "settle_steps": 4500,
+  "tail_steps": 500,
+  "warm_steps": 300,
+  "channels": {
+    "elevator": {
+      "channel": "elevator",
+      "points": {
+        "ELEVATOR_DELTA_M10DEG": {
+          "case": "ELEVATOR_DELTA_M10DEG",
+          "channel": "elevator",
+          "delta_cmd_deg": -10.0,
+          "commanded_rad": {
+            "left_aileron": 0.0,
+            "right_aileron": 0.0,
+            "left_elevator": 0.27052603405912107,
+            "right_elevator": 0.27052603405912107,
+            "rudder": 0.0
+          },
+          "commanded_deg": {
+            "left_aileron": 0.0,
+            "right_aileron": 0.0,
+            "left_elevator": 15.5,
+            "right_elevator": 15.5,
+            "rudder": 0.0
+          },
+          "actual_tail_mean_rad": {
+            "left_aileron": -2.3772841711201554e-05,
+            "right_aileron": -2.3772841711187358e-05,
+            "left_elevator": 0.2705040550832173,
+            "right_elevator": 0.27050405508321723,
+            "rudder": -3.9307882976311576e-21
+          },
+          "actual_tail_mean_deg": {
+            "left_aileron": -0.001362083497084411,
+            "right_aileron": -0.0013620834970835974,
+            "left_elevator": 15.498740697442694,
+            "right_elevator": 15.49874069744269,
+            "rudder": -2.25217579613679e-19
+          },
+          "tracking_error_deg": {
+            "left_aileron": 0.001362083497084411,
+            "right_aileron": 0.0013620834970835974,
+            "left_elevator": 0.001259302557306441,
+            "right_elevator": 0.0012593025573099936,
+            "rudder": 2.25217579613679e-19
+          },
+          "tail_noise_deg": {
+            "left_aileron": 0.0003297815946717092,
+            "right_aileron": 0.0003297815946691811,
+            "left_elevator": 0.0009126686677962168,
+            "right_elevator": 0.0009126686677612307,
+            "rudder": 1.0185031889317383e-17
+          },
+          "tail_rate_absmax_rad_s": {
+            "left_aileron": 1.8445322092025164e-05,
+            "right_aileron": 1.8445322091855425e-05,
+            "left_elevator": 5.132375829544803e-05,
+            "right_elevator": 5.132375828417829e-05,
+            "rudder": 5.8279173526756965e-18
+          },
+          "max_jump_deg": {
+            "left_aileron": 0.3000007019142859,
+            "right_aileron": 0.30000070191428585,
+            "left_elevator": 0.30000070246697624,
+            "right_elevator": 0.30000070246697624,
+            "rudder": 1.3866909748751506e-18
+          },
+          "max_step_allowed_deg": 0.45000105229574855,
+          "smooth_ok": true,
+          "any_target_clamp": false,
+          "any_effort_clamp_tail": false,
+          "actuator_limited_response": false,
+          "any_nan": false,
+          "actual_delta_a_deg": 4.0669324082434497e-16,
+          "actual_delta_e_deg": -15.498740697442694,
+          "actual_delta_r_deg": -2.25217579613679e-19,
+          "aero_tail_avg": {
+            "V": 18.166440779413715,
+            "alpha": 0.0428183084906323,
+            "beta": 1.275096655188013e-21,
+            "qbar": 202.1369869881076,
+            "CL": 0.6700374285643222,
+            "CD": 0.0588045682197559,
+            "CY": 1.40145869937169e-19,
+            "Cl": 1.702765200119431e-18,
+            "Cm": 0.06716204800334283,
+            "Cn": 7.032874322596464e-21
+          },
+          "aero_tail_n_msgs": 10,
+          "prop_tail_max_abs_rpm_diff": 0.0,
+          "prop_tail_max_abs_thrust_diff_N": 0.0,
+          "delta_vs_baseline": {
+            "CL": -5.351647554496797e-05,
+            "CD": -3.786760413605761e-06,
+            "CY": -3.512881236346587e-20,
+            "Cl": -4.081155686362225e-19,
+            "Cm": 0.05749692693312558,
+            "Cn": -1.3338829943702217e-21
+          }
+        },
+        "ELEVATOR_DELTA_M5DEG": {
+          "case": "ELEVATOR_DELTA_M5DEG",
+          "channel": "elevator",
+          "delta_cmd_deg": -5.0,
+          "commanded_rad": {
+            "left_aileron": 0.0,
+            "right_aileron": 0.0,
+            "left_elevator": 0.1832595714594046,
+            "right_elevator": 0.1832595714594046,
+            "rudder": 0.0
+          },
+          "commanded_deg": {
+            "left_aileron": 0.0,
+            "right_aileron": 0.0,
+            "left_elevator": 10.5,
+            "right_elevator": 10.5,
+            "rudder": 0.0
+          },
+          "actual_tail_mean_rad": {
+            "left_aileron": -2.3950186839631297e-05,
+            "right_aileron": -2.3950186839640052e-05,
+            "left_elevator": 0.18324863940587005,
+            "right_elevator": 0.18324863940587005,
+            "rudder": 3.629209371267125e-21
+          },
+          "actual_tail_mean_deg": {
+            "left_aileron": -0.0013722446244606406,
+            "right_aileron": -0.0013722446244611424,
+            "left_elevator": 10.49937363947106,
+            "right_elevator": 10.49937363947106,
+            "rudder": 2.079383799429333e-19
+          },
+          "tracking_error_deg": {
+            "left_aileron": 0.0013722446244606406,
+            "right_aileron": 0.0013722446244611424,
+            "left_elevator": 0.000626360528940495,
+            "right_elevator": 0.000626360528940495,
+            "rudder": 2.079383799429333e-19
+          },
+          "tail_noise_deg": {
+            "left_aileron": 0.00033441977523198687,
+            "right_aileron": 0.0003344197752309768,
+            "left_elevator": 0.0007241611618721512,
+            "right_elevator": 0.0007241611618689707,
+            "rudder": 2.0576589190547314e-17
+          },
+          "tail_rate_absmax_rad_s": {
+            "left_aileron": 1.870850398965634e-05,
+            "right_aileron": 1.8708503993388196e-05,
+            "left_elevator": 4.058889541530446e-05,
+            "right_elevator": 4.058889541570854e-05,
+            "rudder": 1.2266914865177257e-17
+          },
+          "max_jump_deg": {
+            "left_aileron": 0.3000007019142859,
+            "right_aileron": 0.30000070191428585,
+            "left_elevator": 0.30000070246697624,
+            "right_elevator": 0.30000070246697624,
+            "rudder": 1.3866909748751506e-18
+          },
+          "max_step_allowed_deg": 0.45000105229574855,
+          "smooth_ok": true,
+          "any_target_clamp": false,
+          "any_effort_clamp_tail": false,
+          "actuator_limited_response": false,
+          "any_nan": false,
+          "actual_delta_a_deg": -2.508103423126748e-16,
+          "actual_delta_e_deg": -10.49937363947106,
+          "actual_delta_r_deg": 2.079383799429333e-19,
+          "aero_tail_avg": {
+            "V": 18.166498072456157,
+            "alpha": 0.0428181918472535,
+            "beta": -2.8634945629052322e-21,
+            "qbar": 202.1382619831798,
+            "CL": 0.6700367938652032,
+            "CD": 0.058804523311036735,
+            "CY": -8.526247016903395e-20,
+            "Cl": -1.0413877485653967e-18,
+            "Cm": 0.06716224082829678,
+            "Cn": -4.416162320385777e-21
+          },
+          "aero_tail_n_msgs": 10,
+          "prop_tail_max_abs_rpm_diff": 0.0,
+          "prop_tail_max_abs_thrust_diff_N": 0.0,
+          "delta_vs_baseline": {
+            "CL": -5.415117466400776e-05,
+            "CD": -3.831669132772775e-06,
+            "CY": -2.605371524696688e-19,
+            "Cl": -3.1522685173210502e-18,
+            "Cm": 0.05749711975807953,
+            "Cn": -1.2782919637352463e-20
+          }
+        },
+        "ELEVATOR_DELTA_M2DEG": {
+          "case": "ELEVATOR_DELTA_M2DEG",
+          "channel": "elevator",
+          "delta_cmd_deg": -2.0,
+          "commanded_rad": {
+            "left_aileron": 0.0,
+            "right_aileron": 0.0,
+            "left_elevator": 0.1308996938995747,
+            "right_elevator": 0.1308996938995747,
+            "rudder": 0.0
+          },
+          "commanded_deg": {
+            "left_aileron": 0.0,
+            "right_aileron": 0.0,
+            "left_elevator": 7.499999999999999,
+            "right_elevator": 7.499999999999999,
+            "rudder": 0.0
+          },
+          "actual_tail_mean_rad": {
+            "left_aileron": -1.4386682758237341e-05,
+            "right_aileron": -1.4386682758242525e-05,
+            "left_elevator": 0.13089181298881367,
+            "right_elevator": 0.13089181298881367,
+            "rudder": 1.2564395306837764e-20
+          },
+          "actual_tail_mean_deg": {
+            "left_aileron": -0.0008242962032406297,
+            "right_aileron": -0.0008242962032409268,
+            "left_elevator": 7.499548457074673,
+            "right_elevator": 7.499548457074673,
+            "rudder": 7.198868232157828e-19
+          },
+          "tracking_error_deg": {
+            "left_aileron": 0.0008242962032406297,
+            "right_aileron": 0.0008242962032409268,
+            "left_elevator": 0.0004515429253260095,
+            "right_elevator": 0.0004515429253260095,
+            "rudder": 7.198868232157828e-19
+          },
+          "tail_noise_deg": {
+            "left_aileron": 0.00034019941029813955,
+            "right_aileron": 0.00034019941030239976,
+            "left_elevator": 0.0006081855292920191,
+            "right_elevator": 0.0006081855292999705,
+            "rudder": 1.6884898881594398e-17
+          },
+          "tail_rate_absmax_rad_s": {
+            "left_aileron": 1.913370883418945e-05,
+            "right_aileron": 1.91337088356847e-05,
+            "left_elevator": 3.4083422092350023e-05,
+            "right_elevator": 3.4083422095057676e-05,
+            "rudder": 8.76884687177991e-18
+          },
+          "max_jump_deg": {
+            "left_aileron": 0.3000007019142859,
+            "right_aileron": 0.30000070191428585,
+            "left_elevator": 0.30000070246697624,
+            "right_elevator": 0.30000070246697624,
+            "rudder": 1.3866909748751506e-18
+          },
+          "max_step_allowed_deg": 0.45000105229574855,
+          "smooth_ok": true,
+          "any_target_clamp": false,
+          "any_effort_clamp_tail": false,
+          "actuator_limited_response": false,
+          "any_nan": false,
+          "actual_delta_a_deg": -1.4850612373776798e-16,
+          "actual_delta_e_deg": -7.499548457074673,
+          "actual_delta_r_deg": 7.198868232157828e-19,
+          "aero_tail_avg": {
+            "V": 18.166994402915563,
+            "alpha": 0.042805245934023725,
+            "beta": -5.1260300981757284e-21,
+            "qbar": 202.14930745189363,
+            "CL": 0.6700671138272286,
+            "CD": 0.05880666867533095,
+            "CY": -2.102425393847425e-19,
+            "Cl": -2.5726121133414375e-18,
+            "Cm": 0.03521724562576428,
+            "Cn": -1.1146179470157711e-20
+          },
+          "aero_tail_n_msgs": 10,
+          "prop_tail_max_abs_rpm_diff": 0.0,
+          "prop_tail_max_abs_thrust_diff_N": 0.0,
+          "delta_vs_baseline": {
+            "CL": -2.3831212638603105e-05,
+            "CD": -1.6863048385579171e-06,
+            "CY": -3.8551722168537734e-19,
+            "Cl": -4.683492882097091e-18,
+            "Cm": 0.025552124555547034,
+            "Cn": -1.95129367871244e-20
+          }
+        },
+        "ELEVATOR_DELTA_P0DEG": {
+          "case": "ELEVATOR_DELTA_P0DEG",
+          "channel": "elevator",
+          "delta_cmd_deg": 0.0,
+          "commanded_rad": {
+            "left_aileron": 0.0,
+            "right_aileron": 0.0,
+            "left_elevator": 0.09599310885968812,
+            "right_elevator": 0.09599310885968812,
+            "rudder": 0.0
+          },
+          "commanded_deg": {
+            "left_aileron": 0.0,
+            "right_aileron": 0.0,
+            "left_elevator": 5.5,
+            "right_elevator": 5.5,
+            "rudder": 0.0
+          },
+          "actual_tail_mean_rad": {
+            "left_aileron": -5.7877452719850325e-06,
+            "right_aileron": -5.787745271969192e-06,
+            "left_elevator": 0.09598441019785124,
+            "right_elevator": 0.09598441019785124,
+            "rudder": 1.0679774992255639e-20
+          },
+          "actual_tail_mean_deg": {
+            "left_aileron": -0.0003316133769815391,
+            "right_aileron": -0.0003316133769806315,
+            "left_elevator": 5.499501603389335,
+            "right_elevator": 5.499501603389335,
+            "rudder": 6.119060332056096e-19
+          },
+          "tracking_error_deg": {
+            "left_aileron": 0.0003316133769815391,
+            "right_aileron": 0.0003316133769806315,
+            "left_elevator": 0.000498396610664642,
+            "right_elevator": 0.000498396610664642,
+            "rudder": 6.119060332056096e-19
+          },
+          "tail_noise_deg": {
+            "left_aileron": 0.00033276721596492203,
+            "right_aileron": 0.0003327672159685451,
+            "left_elevator": 0.0005178749691782371,
+            "right_elevator": 0.0005178749691559732,
+            "rudder": 1.6375082457433348e-17
+          },
+          "tail_rate_absmax_rad_s": {
+            "left_aileron": 1.87737285583461e-05,
+            "right_aileron": 1.8773728558665262e-05,
+            "left_elevator": 2.9028282253725706e-05,
+            "right_elevator": 2.9028282260323652e-05,
+            "rudder": 1.1267443481121178e-17
+          },
+          "max_jump_deg": {
+            "left_aileron": 0.3000007019142859,
+            "right_aileron": 0.30000070191428585,
+            "left_elevator": 0.30000070246697624,
+            "right_elevator": 0.30000070246697624,
+            "rudder": 1.3866909748751506e-18
+          },
+          "max_step_allowed_deg": 0.45000105229574855,
+          "smooth_ok": true,
+          "any_target_clamp": false,
+          "any_effort_clamp_tail": false,
+          "actuator_limited_response": false,
+          "any_nan": false,
+          "actual_delta_a_deg": 4.537929771274508e-16,
+          "actual_delta_e_deg": -5.499501603389335,
+          "actual_delta_r_deg": 6.119060332056096e-19,
+          "aero_tail_avg": {
+            "V": 18.167366833723637,
+            "alpha": 0.04279481292569134,
+            "beta": -2.6389115768030137e-21,
+            "qbar": 202.15759582353763,
+            "CL": 0.6700909450398672,
+            "CD": 0.05880835498016951,
+            "CY": 1.7527468230063487e-19,
+            "Cl": 2.1108807687556536e-18,
+            "Cm": 0.009665121070217247,
+            "Cn": 8.366757316966686e-21
+          },
+          "aero_tail_n_msgs": 10,
+          "prop_tail_max_abs_rpm_diff": 0.0,
+          "prop_tail_max_abs_thrust_diff_N": 0.0,
+          "delta_vs_baseline": {
+            "CL": 0.0,
+            "CD": 0.0,
+            "CY": 0.0,
+            "Cl": 0.0,
+            "Cm": 0.0,
+            "Cn": 0.0
+          }
+        },
+        "ELEVATOR_DELTA_P2DEG": {
+          "case": "ELEVATOR_DELTA_P2DEG",
+          "channel": "elevator",
+          "delta_cmd_deg": 2.0,
+          "commanded_rad": {
+            "left_aileron": 0.0,
+            "right_aileron": 0.0,
+            "left_elevator": 0.061086523819801536,
+            "right_elevator": 0.061086523819801536,
+            "rudder": 0.0
+          },
+          "commanded_deg": {
+            "left_aileron": 0.0,
+            "right_aileron": 0.0,
+            "left_elevator": 3.5,
+            "right_elevator": 3.5,
+            "rudder": 0.0
+          },
+          "actual_tail_mean_rad": {
+            "left_aileron": 3.321776981889457e-06,
+            "right_aileron": 3.3217769818798508e-06,
+            "left_elevator": 0.061074652114667685,
+            "right_elevator": 0.06107465211466769,
+            "rudder": -1.1372191737804293e-21
+          },
+          "actual_tail_mean_deg": {
+            "left_aileron": 0.00019032380154597039,
+            "right_aileron": 0.00019032380154542,
+            "left_elevator": 3.499319801400207,
+            "right_elevator": 3.499319801400207,
+            "rudder": -6.515785903897313e-20
+          },
+          "tracking_error_deg": {
+            "left_aileron": 0.00019032380154597039,
+            "right_aileron": 0.00019032380154542,
+            "left_elevator": 0.0006801985997930693,
+            "right_elevator": 0.0006801985997930693,
+            "rudder": 6.515785903897313e-20
+          },
+          "tail_noise_deg": {
+            "left_aileron": 0.0003293023939159105,
+            "right_aileron": 0.00032930239392107616,
+            "left_elevator": 0.0004273373756746862,
+            "right_elevator": 0.0004273373756730959,
+            "rudder": 2.013015202863756e-17
+          },
+          "tail_rate_absmax_rad_s": {
+            "left_aileron": 1.8551748315125427e-05,
+            "right_aileron": 1.8551748312524056e-05,
+            "left_elevator": 2.3902143092980704e-05,
+            "right_elevator": 2.3902143094580187e-05,
+            "rudder": 1.2208077598333142e-17
+          },
+          "max_jump_deg": {
+            "left_aileron": 0.3000007019142859,
+            "right_aileron": 0.30000070191428585,
+            "left_elevator": 0.30000070246697624,
+            "right_elevator": 0.30000070246697624,
+            "rudder": 1.4784256418077951e-18
+          },
+          "max_step_allowed_deg": 0.45000105229574855,
+          "smooth_ok": true,
+          "any_target_clamp": false,
+          "any_effort_clamp_tail": false,
+          "actuator_limited_response": false,
+          "any_nan": false,
+          "actual_delta_a_deg": -2.7519737733823963e-16,
+          "actual_delta_e_deg": -3.499319801400207,
+          "actual_delta_r_deg": -6.515785903897313e-20,
+          "aero_tail_avg": {
+            "V": 18.16773911511158,
+            "alpha": 0.04278426526739981,
+            "beta": -6.220327687291765e-21,
+            "qbar": 202.16588103988678,
+            "CL": 0.6701141597995024,
+            "CD": 0.058809997722250706,
+            "CY": -6.571683972438375e-20,
+            "Cl": -8.054737728914785e-19,
+            "Cm": -0.0158885413952747,
+            "Cn": -3.5153743724679135e-21
+          },
+          "aero_tail_n_msgs": 10,
+          "prop_tail_max_abs_rpm_diff": 0.0,
+          "prop_tail_max_abs_thrust_diff_N": 0.0,
+          "delta_vs_baseline": {
+            "CL": 2.3214759635181714e-05,
+            "CD": 1.6427420811981897e-06,
+            "CY": -2.4099152202501864e-19,
+            "Cl": -2.916354541647132e-18,
+            "Cm": -0.02555366246549195,
+            "Cn": -1.1882131689434599e-20
+          }
+        },
+        "ELEVATOR_DELTA_P5DEG": {
+          "case": "ELEVATOR_DELTA_P5DEG",
+          "channel": "elevator",
+          "delta_cmd_deg": 5.0,
+          "commanded_rad": {
+            "left_aileron": 0.0,
+            "right_aileron": 0.0,
+            "left_elevator": 0.008726646259971648,
+            "right_elevator": 0.008726646259971648,
+            "rudder": 0.0
+          },
+          "commanded_deg": {
+            "left_aileron": 0.0,
+            "right_aileron": 0.0,
+            "left_elevator": 0.5,
+            "right_elevator": 0.5,
+            "rudder": 0.0
+          },
+          "actual_tail_mean_rad": {
+            "left_aileron": 1.794221112194873e-05,
+            "right_aileron": 1.794221112199062e-05,
+            "left_elevator": 0.008705667513216817,
+            "right_elevator": 0.008705667513216832,
+            "rudder": 3.102441843337117e-20
+          },
+          "actual_tail_mean_deg": {
+            "left_aileron": 0.0010280129724203478,
+            "right_aileron": 0.001028012972422748,
+            "left_elevator": 0.4987980063514744,
+            "right_elevator": 0.4987980063514753,
+            "rudder": 1.7775682380800415e-18
+          },
+          "tracking_error_deg": {
+            "left_aileron": 0.0010280129724203478,
+            "right_aileron": 0.001028012972422748,
+            "left_elevator": 0.0012019936485255789,
+            "right_elevator": 0.0012019936485246907,
+            "rudder": 1.7775682380800415e-18
+          },
+          "tail_noise_deg": {
+            "left_aileron": 0.00033140771405319334,
+            "right_aileron": 0.00033140771404792943,
+            "left_elevator": 0.0002883460716759883,
+            "right_elevator": 0.0002883460716716151,
+            "rudder": 2.0154646950462973e-17
+          },
+          "tail_rate_absmax_rad_s": {
+            "left_aileron": 1.847057469140062e-05,
+            "right_aileron": 1.8470574691769742e-05,
+            "left_elevator": 1.59276104092488e-05,
+            "right_elevator": 1.5927610404503373e-05,
+            "rudder": 1.0912019199917921e-17
+          },
+          "max_jump_deg": {
+            "left_aileron": 0.3000007019142859,
+            "right_aileron": 0.30000070191428585,
+            "left_elevator": 0.30000070246697624,
+            "right_elevator": 0.30000070246697624,
+            "rudder": 1.3866909748751506e-18
+          },
+          "max_step_allowed_deg": 0.45000105229574855,
+          "smooth_ok": true,
+          "any_target_clamp": false,
+          "any_effort_clamp_tail": false,
+          "actuator_limited_response": false,
+          "any_nan": false,
+          "actual_delta_a_deg": 1.200084780322721e-15,
+          "actual_delta_e_deg": -0.4987980063514748,
+          "actual_delta_r_deg": 1.7775682380800415e-18,
+          "aero_tail_avg": {
+            "V": 18.16829610489582,
+            "alpha": 0.04276823300794869,
+            "beta": 5.7456553946652454e-21,
+            "qbar": 202.17827730568177,
+            "CL": 0.6701478487600274,
+            "CD": 0.05881238174965854,
+            "CY": 5.220425595045641e-19,
+            "Cl": 6.307784455333957e-18,
+            "Cm": -0.05422187657988977,
+            "Cn": 2.532733273158465e-20
+          },
+          "aero_tail_n_msgs": 10,
+          "prop_tail_max_abs_rpm_diff": 0.0,
+          "prop_tail_max_abs_thrust_diff_N": 0.0,
+          "delta_vs_baseline": {
+            "CL": 5.6903720160206284e-05,
+            "CD": 4.026769489032245e-06,
+            "CY": 3.467678772039292e-19,
+            "Cl": 4.196903686578303e-18,
+            "Cm": -0.06388699765010702,
+            "Cn": 1.6960575414617965e-20
+          }
+        },
+        "ELEVATOR_DELTA_P10DEG": {
+          "case": "ELEVATOR_DELTA_P10DEG",
+          "channel": "elevator",
+          "delta_cmd_deg": 10.0,
+          "commanded_rad": {
+            "left_aileron": 0.0,
+            "right_aileron": 0.0,
+            "left_elevator": -0.07853981633974483,
+            "right_elevator": -0.07853981633974483,
+            "rudder": 0.0
+          },
+          "commanded_deg": {
+            "left_aileron": 0.0,
+            "right_aileron": 0.0,
+            "left_elevator": -4.5,
+            "right_elevator": -4.5,
+            "rudder": 0.0
+          },
+          "actual_tail_mean_rad": {
+            "left_aileron": 4.484279879763033e-05,
+            "right_aileron": 4.484279879763364e-05,
+            "left_elevator": -0.07858741358440122,
+            "right_elevator": -0.07858741358440129,
+            "rudder": 1.3388673327311518e-20
+          },
+          "actual_tail_mean_deg": {
+            "left_aileron": 0.0025693031126585407,
+            "right_aileron": 0.00256930311265873,
+            "left_elevator": -4.502727121235263,
+            "right_elevator": -4.502727121235266,
+            "rudder": 7.67114474934327e-19
+          },
+          "tracking_error_deg": {
+            "left_aileron": 0.0025693031126585407,
+            "right_aileron": 0.00256930311265873,
+            "left_elevator": 0.0027271212352628638,
+            "right_elevator": 0.0027271212352664165,
+            "rudder": 7.67114474934327e-19
+          },
+          "tail_noise_deg": {
+            "left_aileron": 0.0003543107702944004,
+            "right_aileron": 0.0003543107702941783,
+            "left_elevator": 4.694197937267602e-05,
+            "right_elevator": 4.694197936631491e-05,
+            "rudder": 1.4913982262181175e-17
+          },
+          "tail_rate_absmax_rad_s": {
+            "left_aileron": 1.900407709254468e-05,
+            "right_aileron": 1.9004077098402315e-05,
+            "left_elevator": 1.8192826100309098e-06,
+            "right_elevator": 1.819282593962409e-06,
+            "rudder": 9.621536816598514e-18
+          },
+          "max_jump_deg": {
+            "left_aileron": 0.3000007019142859,
+            "right_aileron": 0.30000070191428585,
+            "left_elevator": 0.30000070246697624,
+            "right_elevator": 0.30000070246697624,
+            "rudder": 1.3866909748751506e-18
+          },
+          "max_step_allowed_deg": 0.45000105229574855,
+          "smooth_ok": true,
+          "any_target_clamp": false,
+          "any_effort_clamp_tail": false,
+          "actuator_limited_response": false,
+          "any_nan": false,
+          "actual_delta_a_deg": 9.473331814905982e-17,
+          "actual_delta_e_deg": 4.502727121235265,
+          "actual_delta_r_deg": 7.67114474934327e-19,
+          "aero_tail_avg": {
+            "V": 18.169220506736956,
+            "alpha": 0.042740955926053134,
+            "beta": -6.418742461801403e-21,
+            "qbar": 202.19885146881504,
+            "CL": 0.6702010042697575,
+            "CD": 0.058816143587478206,
+            "CY": -1.6908183671668993e-20,
+            "Cl": -2.2662594072934277e-19,
+            "Cm": -0.1181182431565269,
+            "Cn": -1.3646488821994967e-21
+          },
+          "aero_tail_n_msgs": 10,
+          "prop_tail_max_abs_rpm_diff": 0.0,
+          "prop_tail_max_abs_thrust_diff_N": 0.0,
+          "delta_vs_baseline": {
+            "CL": 0.00011005922989026917,
+            "CD": 7.788607308698015e-06,
+            "CY": -1.9218286597230385e-19,
+            "Cl": -2.3375067094849963e-18,
+            "Cm": -0.12778336422674413,
+            "Cn": -9.731406199166182e-21
+          }
+        }
+      },
+      "central_diff": {
+        "CL_delta_e_GZ_per_rad": {
+          "w2": 0.00067384539395108,
+          "w5": 0.0006362610514762784,
+          "w10": 0.0004685754884230154
+        },
+        "Cm_delta_e_GZ_per_rad": {
+          "w2": -0.7319946325683947,
+          "w5": -0.6954397309267758,
+          "w10": -0.53074998328384
+        }
+      }
+    },
+    "aileron": {
+      "channel": "aileron",
+      "points": {
+        "AILERON_DELTA_M10DEG": {
+          "case": "AILERON_DELTA_M10DEG",
+          "channel": "aileron",
+          "delta_cmd_deg": -10.0,
+          "commanded_rad": {
+            "left_aileron": 0.17453292519943295,
+            "right_aileron": -0.17453292519943295,
+            "left_elevator": 0.09599310885968812,
+            "right_elevator": 0.09599310885968812,
+            "rudder": 0.0
+          },
+          "commanded_deg": {
+            "left_aileron": 10.0,
+            "right_aileron": -10.0,
+            "left_elevator": 5.5,
+            "right_elevator": 5.5,
+            "rudder": 0.0
+          },
+          "actual_tail_mean_rad": {
+            "left_aileron": 0.17452812193661704,
+            "right_aileron": -0.17451499311170587,
+            "left_elevator": 0.09599421677954005,
+            "right_elevator": 0.09599295459096267,
+            "rudder": -0.00026489909834097173
+          },
+          "actual_tail_mean_deg": {
+            "left_aileron": 9.999724793312756,
+            "right_aileron": -9.99897256705538,
+            "left_elevator": 5.500063479131554,
+            "right_elevator": 5.499991161053121,
+            "rudder": -0.015177600331758627
+          },
+          "tracking_error_deg": {
+            "left_aileron": 0.00027520668724356767,
+            "right_aileron": 0.0010274329446193775,
+            "left_elevator": 6.347913155391183e-05,
+            "right_elevator": 8.838946879308196e-06,
+            "rudder": 0.015177600331758627
+          },
+          "tail_noise_deg": {
+            "left_aileron": 0.0007371506574467665,
+            "right_aileron": 2.1080177682534083e-05,
+            "left_elevator": 0.000591420536778021,
+            "right_elevator": 0.0005905301573025865,
+            "rudder": 3.6181195470000436e-06
+          },
+          "tail_rate_absmax_rad_s": {
+            "left_aileron": 4.000043977822992e-05,
+            "right_aileron": 1.7815965146586086e-06,
+            "left_elevator": 3.160966536084978e-05,
+            "right_elevator": 3.156152088245488e-05,
+            "rudder": 2.4670633007049807e-07
+          },
+          "max_jump_deg": {
+            "left_aileron": 0.3000007019142859,
+            "right_aileron": 0.30000070191428585,
+            "left_elevator": 0.30000070246697624,
+            "right_elevator": 0.30000070246697624,
+            "rudder": 0.0002671915355805379
+          },
+          "max_step_allowed_deg": 0.45000105229574855,
+          "smooth_ok": true,
+          "any_target_clamp": false,
+          "any_effort_clamp_tail": false,
+          "actuator_limited_response": false,
+          "any_nan": false,
+          "actual_delta_a_deg": -9.999348680184069,
+          "actual_delta_e_deg": -5.500027320092338,
+          "actual_delta_r_deg": -0.015177600331758627,
+          "aero_tail_avg": {
+            "V": 18.16736463478373,
+            "alpha": 0.04279220787459638,
+            "beta": 0.000117401113327379,
+            "qbar": 202.15754688607936,
+            "CL": 0.6700767185326464,
+            "CD": 0.05880734830044008,
+            "CY": -0.004446432275145408,
+            "Cl": -0.053462172318549696,
+            "Cm": 0.009676215669301422,
+            "Cn": -0.00020883695045569064
+          },
+          "aero_tail_n_msgs": 10,
+          "prop_tail_max_abs_rpm_diff": 0.0005044730369263561,
+          "prop_tail_max_abs_thrust_diff_N": 1.1319489811700834e-05,
+          "delta_vs_baseline": {
+            "CL": -1.4226507220826967e-05,
+            "CD": -1.0066797294303043e-06,
+            "CY": -0.004446432275145408,
+            "Cl": -0.053462172318549696,
+            "Cm": 1.1094599084174317e-05,
+            "Cn": -0.00020883695045569064
+          }
+        },
+        "AILERON_DELTA_M5DEG": {
+          "case": "AILERON_DELTA_M5DEG",
+          "channel": "aileron",
+          "delta_cmd_deg": -5.0,
+          "commanded_rad": {
+            "left_aileron": 0.08726646259971647,
+            "right_aileron": -0.08726646259971647,
+            "left_elevator": 0.09599310885968812,
+            "right_elevator": 0.09599310885968812,
+            "rudder": 0.0
+          },
+          "commanded_deg": {
+            "left_aileron": 5.0,
+            "right_aileron": -5.0,
+            "left_elevator": 5.5,
+            "right_elevator": 5.5,
+            "rudder": 0.0
+          },
+          "actual_tail_mean_rad": {
+            "left_aileron": 0.08725829100653339,
+            "right_aileron": -0.08726361620726333,
+            "left_elevator": 0.0959870255143192,
+            "right_elevator": 0.09598639399728401,
+            "rudder": -0.00013250780332515105
+          },
+          "actual_tail_mean_deg": {
+            "left_aileron": 4.999531802198711,
+            "right_aileron": -4.999836913725597,
+            "left_elevator": 5.49965144998504,
+            "right_elevator": 5.499615266724233,
+            "rudder": -0.0075921378830807315
+          },
+          "tracking_error_deg": {
+            "left_aileron": 0.0004681978012888166,
+            "right_aileron": 0.00016308627440331236,
+            "left_elevator": 0.00034855001495959215,
+            "right_elevator": 0.00038473327576671323,
+            "rudder": 0.0075921378830807315
+          },
+          "tail_noise_deg": {
+            "left_aileron": 0.0005208040864086141,
+            "right_aileron": 0.0001677892021741529,
+            "left_elevator": 0.0005363790240753482,
+            "right_elevator": 0.0005359366386223568,
+            "rudder": 2.6509200479753257e-06
+          },
+          "tail_rate_absmax_rad_s": {
+            "left_aileron": 2.9021453767120696e-05,
+            "right_aileron": 8.901198959317046e-06,
+            "left_elevator": 2.9679760358600974e-05,
+            "right_elevator": 2.9655927526184316e-05,
+            "rudder": 1.4965237371138861e-07
+          },
+          "max_jump_deg": {
+            "left_aileron": 0.3000007019142859,
+            "right_aileron": 0.30000070191428585,
+            "left_elevator": 0.30000070246697624,
+            "right_elevator": 0.30000070246697624,
+            "rudder": 0.00014669013692208583
+          },
+          "max_step_allowed_deg": 0.45000105229574855,
+          "smooth_ok": true,
+          "any_target_clamp": false,
+          "any_effort_clamp_tail": false,
+          "actuator_limited_response": false,
+          "any_nan": false,
+          "actual_delta_a_deg": -4.999684357962154,
+          "actual_delta_e_deg": -5.499633358354637,
+          "actual_delta_r_deg": -0.0075921378830807315,
+          "aero_tail_avg": {
+            "V": 18.16736628104153,
+            "alpha": 0.04279415895980522,
+            "beta": 5.885536912758968e-05,
+            "qbar": 202.15758352358392,
+            "CL": 0.6700873736592422,
+            "CD": 0.05880810226422534,
+            "CY": -0.002223245939723565,
+            "Cl": -0.026731140126111365,
+            "Cm": 0.009667903391821905,
+            "Cn": -0.00010441171907607497
+          },
+          "aero_tail_n_msgs": 10,
+          "prop_tail_max_abs_rpm_diff": 0.0002521929736758466,
+          "prop_tail_max_abs_thrust_diff_N": 5.65876147540223e-06,
+          "delta_vs_baseline": {
+            "CL": -3.5713806250115e-06,
+            "CD": -2.5271594417120014e-07,
+            "CY": -0.002223245939723565,
+            "Cl": -0.02673114012611137,
+            "Cm": 2.78232160465762e-06,
+            "Cn": -0.00010441171907607498
+          }
+        },
+        "AILERON_DELTA_M2DEG": {
+          "case": "AILERON_DELTA_M2DEG",
+          "channel": "aileron",
+          "delta_cmd_deg": -2.0,
+          "commanded_rad": {
+            "left_aileron": 0.03490658503988659,
+            "right_aileron": -0.03490658503988659,
+            "left_elevator": 0.09599310885968812,
+            "right_elevator": 0.09599310885968812,
+            "rudder": 0.0
+          },
+          "commanded_deg": {
+            "left_aileron": 2.0,
+            "right_aileron": -2.0,
+            "left_elevator": 5.5,
+            "right_elevator": 5.5,
+            "rudder": 0.0
+          },
+          "actual_tail_mean_rad": {
+            "left_aileron": 0.034899122305642225,
+            "right_aileron": -0.034909694069884256,
+            "left_elevator": 0.09598490498933357,
+            "right_elevator": 0.09598465231884182,
+            "rudder": -5.30097935238535e-05
+          },
+          "actual_tail_mean_deg": {
+            "left_aileron": 1.9995724168241702,
+            "right_aileron": -2.000178134297246,
+            "left_elevator": 5.4995299528530115,
+            "right_elevator": 5.4995154759002265,
+            "rudder": -0.0030372374417767293
+          },
+          "tracking_error_deg": {
+            "left_aileron": 0.0004275831758298043,
+            "right_aileron": 0.00017813429724578,
+            "left_elevator": 0.0004700471469885059,
+            "right_elevator": 0.00048452409977350896,
+            "rudder": 0.0030372374417767293
+          },
+          "tail_noise_deg": {
+            "left_aileron": 0.00040442447499139915,
+            "right_aileron": 0.00026485753204673036,
+            "left_elevator": 0.0005208884620230334,
+            "right_elevator": 0.0005207126834381401,
+            "rudder": 1.1490047721125627e-06
+          },
+          "tail_rate_absmax_rad_s": {
+            "left_aileron": 2.2780877364252066e-05,
+            "right_aileron": 1.4829252250914462e-05,
+            "left_elevator": 2.9135352566417777e-05,
+            "right_elevator": 2.9125892396624946e-05,
+            "rudder": 6.249406021239287e-08
+          },
+          "max_jump_deg": {
+            "left_aileron": 0.3000007019142859,
+            "right_aileron": 0.30000070191428585,
+            "left_elevator": 0.30000070246697624,
+            "right_elevator": 0.30000070246697624,
+            "rudder": 6.2790718407795e-05
+          },
+          "max_step_allowed_deg": 0.45000105229574855,
+          "smooth_ok": true,
+          "any_target_clamp": false,
+          "any_effort_clamp_tail": false,
+          "actuator_limited_response": false,
+          "any_nan": false,
+          "actual_delta_a_deg": -1.9998752755607079,
+          "actual_delta_e_deg": -5.499522714376619,
+          "actual_delta_r_deg": -0.0030372374417767293,
+          "aero_tail_avg": {
+            "V": 18.16736674480632,
+            "alpha": 0.04279470803564173,
+            "beta": 2.3577562738656486e-05,
+            "qbar": 202.1575938446804,
+            "CL": 0.6700903722243635,
+            "CD": 0.05880831444684318,
+            "CY": -0.0008893042872997626,
+            "Cl": -0.010692464329821478,
+            "Cm": 0.009665567053534805,
+            "Cn": -4.176329358576526e-05
+          },
+          "aero_tail_n_msgs": 10,
+          "prop_tail_max_abs_rpm_diff": 0.00010086727252200944,
+          "prop_tail_max_abs_thrust_diff_N": 2.2632813014844544e-06,
+          "delta_vs_baseline": {
+            "CL": -5.728155036965887e-07,
+            "CD": -4.053332632730777e-08,
+            "CY": -0.0008893042872997628,
+            "Cl": -0.01069246432982148,
+            "Cm": 4.459833175575467e-07,
+            "Cn": -4.176329358576527e-05
+          }
+        },
+        "AILERON_DELTA_P0DEG": {
+          "case": "AILERON_DELTA_P0DEG",
+          "channel": "aileron",
+          "delta_cmd_deg": 0.0,
+          "commanded_rad": {
+            "left_aileron": -0.0,
+            "right_aileron": 0.0,
+            "left_elevator": 0.09599310885968812,
+            "right_elevator": 0.09599310885968812,
+            "rudder": 0.0
+          },
+          "commanded_deg": {
+            "left_aileron": -0.0,
+            "right_aileron": 0.0,
+            "left_elevator": 5.5,
+            "right_elevator": 5.5,
+            "rudder": 0.0
+          },
+          "actual_tail_mean_rad": {
+            "left_aileron": -5.7877452719850325e-06,
+            "right_aileron": -5.787745271969192e-06,
+            "left_elevator": 0.09598441019785124,
+            "right_elevator": 0.09598441019785124,
+            "rudder": 1.0679774992255639e-20
+          },
+          "actual_tail_mean_deg": {
+            "left_aileron": -0.0003316133769815391,
+            "right_aileron": -0.0003316133769806315,
+            "left_elevator": 5.499501603389335,
+            "right_elevator": 5.499501603389335,
+            "rudder": 6.119060332056096e-19
+          },
+          "tracking_error_deg": {
+            "left_aileron": 0.0003316133769815391,
+            "right_aileron": 0.0003316133769806315,
+            "left_elevator": 0.000498396610664642,
+            "right_elevator": 0.000498396610664642,
+            "rudder": 6.119060332056096e-19
+          },
+          "tail_noise_deg": {
+            "left_aileron": 0.00033276721596492203,
+            "right_aileron": 0.0003327672159685451,
+            "left_elevator": 0.0005178749691782371,
+            "right_elevator": 0.0005178749691559732,
+            "rudder": 1.6375082457433348e-17
+          },
+          "tail_rate_absmax_rad_s": {
+            "left_aileron": 1.87737285583461e-05,
+            "right_aileron": 1.8773728558665262e-05,
+            "left_elevator": 2.9028282253725706e-05,
+            "right_elevator": 2.9028282260323652e-05,
+            "rudder": 1.1267443481121178e-17
+          },
+          "max_jump_deg": {
+            "left_aileron": 0.3000007019142859,
+            "right_aileron": 0.30000070191428585,
+            "left_elevator": 0.30000070246697624,
+            "right_elevator": 0.30000070246697624,
+            "rudder": 1.3866909748751506e-18
+          },
+          "max_step_allowed_deg": 0.45000105229574855,
+          "smooth_ok": true,
+          "any_target_clamp": false,
+          "any_effort_clamp_tail": false,
+          "actuator_limited_response": false,
+          "any_nan": false,
+          "actual_delta_a_deg": 4.537929771274508e-16,
+          "actual_delta_e_deg": -5.499501603389335,
+          "actual_delta_r_deg": 6.119060332056096e-19,
+          "aero_tail_avg": {
+            "V": 18.167366833723637,
+            "alpha": 0.04279481292569134,
+            "beta": -2.6389115768030137e-21,
+            "qbar": 202.15759582353763,
+            "CL": 0.6700909450398672,
+            "CD": 0.05880835498016951,
+            "CY": 1.7527468230063487e-19,
+            "Cl": 2.1108807687556536e-18,
+            "Cm": 0.009665121070217247,
+            "Cn": 8.366757316966686e-21
+          },
+          "aero_tail_n_msgs": 10,
+          "prop_tail_max_abs_rpm_diff": 0.0,
+          "prop_tail_max_abs_thrust_diff_N": 0.0,
+          "delta_vs_baseline": {
+            "CL": 0.0,
+            "CD": 0.0,
+            "CY": 0.0,
+            "Cl": 0.0,
+            "Cm": 0.0,
+            "Cn": 0.0
+          }
+        },
+        "AILERON_DELTA_P2DEG": {
+          "case": "AILERON_DELTA_P2DEG",
+          "channel": "aileron",
+          "delta_cmd_deg": 2.0,
+          "commanded_rad": {
+            "left_aileron": -0.03490658503988659,
+            "right_aileron": 0.03490658503988659,
+            "left_elevator": 0.09599310885968812,
+            "right_elevator": 0.09599310885968812,
+            "rudder": 0.0
+          },
+          "commanded_deg": {
+            "left_aileron": -2.0,
+            "right_aileron": 2.0,
+            "left_elevator": 5.5,
+            "right_elevator": 5.5,
+            "rudder": 0.0
+          },
+          "actual_tail_mean_rad": {
+            "left_aileron": -0.034909694069884305,
+            "right_aileron": 0.03489912230564221,
+            "left_elevator": 0.09598465231884179,
+            "right_elevator": 0.0959849049893336,
+            "rudder": 5.300979352385485e-05
+          },
+          "actual_tail_mean_deg": {
+            "left_aileron": -2.0001781342972484,
+            "right_aileron": 1.9995724168241693,
+            "left_elevator": 5.499515475900225,
+            "right_elevator": 5.499529952853013,
+            "rudder": 0.0030372374417768065
+          },
+          "tracking_error_deg": {
+            "left_aileron": 0.00017813429724844454,
+            "right_aileron": 0.0004275831758306925,
+            "left_elevator": 0.0004845240997752853,
+            "right_elevator": 0.00047004714698672956,
+            "rudder": 0.0030372374417768065
+          },
+          "tail_noise_deg": {
+            "left_aileron": 0.00026485753204633284,
+            "right_aileron": 0.0004044244749997481,
+            "left_elevator": 0.000520712683454838,
+            "right_elevator": 0.0005208884620198528,
+            "rudder": 1.1490047721242103e-06
+          },
+          "tail_rate_absmax_rad_s": {
+            "left_aileron": 1.4829252242163138e-05,
+            "right_aileron": 2.2780877361840753e-05,
+            "left_elevator": 2.9125892382409118e-05,
+            "right_elevator": 2.913535254884933e-05,
+            "rudder": 6.249406022534835e-08
+          },
+          "max_jump_deg": {
+            "left_aileron": 0.3000007019142859,
+            "right_aileron": 0.30000070191428585,
+            "left_elevator": 0.30000070246697624,
+            "right_elevator": 0.30000070246697624,
+            "rudder": 6.279071840779326e-05
+          },
+          "max_step_allowed_deg": 0.45000105229574855,
+          "smooth_ok": true,
+          "any_target_clamp": false,
+          "any_effort_clamp_tail": false,
+          "actuator_limited_response": false,
+          "any_nan": false,
+          "actual_delta_a_deg": 1.9998752755607092,
+          "actual_delta_e_deg": -5.499522714376619,
+          "actual_delta_r_deg": 0.0030372374417768065,
+          "aero_tail_avg": {
+            "V": 18.16736674480632,
+            "alpha": 0.042794708035641726,
+            "beta": -2.357756273865681e-05,
+            "qbar": 202.1575938446804,
+            "CL": 0.6700903722243635,
+            "CD": 0.05880831444684318,
+            "CY": 0.0008893042872997631,
+            "Cl": 0.01069246432982148,
+            "Cm": 0.00966556705353482,
+            "Cn": 4.176329358576525e-05
+          },
+          "aero_tail_n_msgs": 10,
+          "prop_tail_max_abs_rpm_diff": 0.00010086727252200944,
+          "prop_tail_max_abs_thrust_diff_N": 2.2632813014844544e-06,
+          "delta_vs_baseline": {
+            "CL": -5.728155036965887e-07,
+            "CD": -4.053332632730777e-08,
+            "CY": 0.0008893042872997629,
+            "Cl": 0.010692464329821478,
+            "Cm": 4.4598331757315923e-07,
+            "Cn": 4.176329358576524e-05
+          }
+        },
+        "AILERON_DELTA_P5DEG": {
+          "case": "AILERON_DELTA_P5DEG",
+          "channel": "aileron",
+          "delta_cmd_deg": 5.0,
+          "commanded_rad": {
+            "left_aileron": -0.08726646259971647,
+            "right_aileron": 0.08726646259971647,
+            "left_elevator": 0.09599310885968812,
+            "right_elevator": 0.09599310885968812,
+            "rudder": 0.0
+          },
+          "commanded_deg": {
+            "left_aileron": -5.0,
+            "right_aileron": 5.0,
+            "left_elevator": 5.5,
+            "right_elevator": 5.5,
+            "rudder": 0.0
+          },
+          "actual_tail_mean_rad": {
+            "left_aileron": -0.08726361620726343,
+            "right_aileron": 0.0872582910065334,
+            "left_elevator": 0.09598639399728409,
+            "right_elevator": 0.09598702551431919,
+            "rudder": 0.00013250780332515127
+          },
+          "actual_tail_mean_deg": {
+            "left_aileron": -4.999836913725603,
+            "right_aileron": 4.999531802198712,
+            "left_elevator": 5.499615266724238,
+            "right_elevator": 5.4996514499850395,
+            "rudder": 0.007592137883080744
+          },
+          "tracking_error_deg": {
+            "left_aileron": 0.0001630862743970951,
+            "right_aileron": 0.00046819780128792843,
+            "left_elevator": 0.00038473327576227234,
+            "right_elevator": 0.0003485500149604803,
+            "rudder": 0.007592137883080744
+          },
+          "tail_noise_deg": {
+            "left_aileron": 0.00016778920222265637,
+            "right_aileron": 0.000520804086413385,
+            "left_elevator": 0.0005359366386167908,
+            "right_elevator": 0.000536379024073758,
+            "rudder": 2.6509200479116525e-06
+          },
+          "tail_rate_absmax_rad_s": {
+            "left_aileron": 8.901198965142896e-06,
+            "right_aileron": 2.902145377017364e-05,
+            "left_elevator": 2.9655927517972806e-05,
+            "right_elevator": 2.9679760357433806e-05,
+            "rudder": 1.4965237370513613e-07
+          },
+          "max_jump_deg": {
+            "left_aileron": 0.3000007019142859,
+            "right_aileron": 0.30000070191428585,
+            "left_elevator": 0.30000070246697624,
+            "right_elevator": 0.30000070246697624,
+            "rudder": 0.00014669013692208467
+          },
+          "max_step_allowed_deg": 0.45000105229574855,
+          "smooth_ok": true,
+          "any_target_clamp": false,
+          "any_effort_clamp_tail": false,
+          "actuator_limited_response": false,
+          "any_nan": false,
+          "actual_delta_a_deg": 4.999684357962158,
+          "actual_delta_e_deg": -5.4996333583546395,
+          "actual_delta_r_deg": 0.007592137883080744,
+          "aero_tail_avg": {
+            "V": 18.16736628104153,
+            "alpha": 0.04279415895980522,
+            "beta": -5.885536912758893e-05,
+            "qbar": 202.15758352358395,
+            "CL": 0.6700873736592422,
+            "CD": 0.05880810226422534,
+            "CY": 0.002223245939723566,
+            "Cl": 0.026731140126111375,
+            "Cm": 0.00966790339182191,
+            "Cn": 0.00010441171907607502
+          },
+          "aero_tail_n_msgs": 10,
+          "prop_tail_max_abs_rpm_diff": 0.0002521929736758466,
+          "prop_tail_max_abs_thrust_diff_N": 5.65876147540223e-06,
+          "delta_vs_baseline": {
+            "CL": -3.5713806250115e-06,
+            "CD": -2.5271594417120014e-07,
+            "CY": 0.002223245939723566,
+            "Cl": 0.026731140126111372,
+            "Cm": 2.782321604662824e-06,
+            "Cn": 0.00010441171907607501
+          }
+        },
+        "AILERON_DELTA_P10DEG": {
+          "case": "AILERON_DELTA_P10DEG",
+          "channel": "aileron",
+          "delta_cmd_deg": 10.0,
+          "commanded_rad": {
+            "left_aileron": -0.17453292519943295,
+            "right_aileron": 0.17453292519943295,
+            "left_elevator": 0.09599310885968812,
+            "right_elevator": 0.09599310885968812,
+            "rudder": 0.0
+          },
+          "commanded_deg": {
+            "left_aileron": -10.0,
+            "right_aileron": 10.0,
+            "left_elevator": 5.5,
+            "right_elevator": 5.5,
+            "rudder": 0.0
+          },
+          "actual_tail_mean_rad": {
+            "left_aileron": -0.1745149931117057,
+            "right_aileron": 0.17452812193661704,
+            "left_elevator": 0.09599295459096269,
+            "right_elevator": 0.09599421677954005,
+            "rudder": 0.00026489909834096815
+          },
+          "actual_tail_mean_deg": {
+            "left_aileron": -9.99897256705537,
+            "right_aileron": 9.999724793312756,
+            "left_elevator": 5.499991161053122,
+            "right_elevator": 5.500063479131554,
+            "rudder": 0.015177600331758422
+          },
+          "tracking_error_deg": {
+            "left_aileron": 0.0010274329446300356,
+            "right_aileron": 0.00027520668724356767,
+            "left_elevator": 8.838946878420018e-06,
+            "right_elevator": 6.347913155391183e-05,
+            "rudder": 0.015177600331758422
+          },
+          "tail_noise_deg": {
+            "left_aileron": 2.1080177739784067e-05,
+            "right_aileron": 0.0007371506574722109,
+            "left_elevator": 0.0005905301573153086,
+            "right_elevator": 0.0005914205367827918,
+            "rudder": 3.618119547083906e-06
+          },
+          "tail_rate_absmax_rad_s": {
+            "left_aileron": 1.7815965545548303e-06,
+            "right_aileron": 4.0000439768237935e-05,
+            "left_elevator": 3.156152087888888e-05,
+            "right_elevator": 3.1609665383331836e-05,
+            "rudder": 2.46706329997886e-07
+          },
+          "max_jump_deg": {
+            "left_aileron": 0.3000007019142859,
+            "right_aileron": 0.30000070191428585,
+            "left_elevator": 0.30000070246697624,
+            "right_elevator": 0.30000070246697624,
+            "rudder": 0.00026719153558053707
+          },
+          "max_step_allowed_deg": 0.45000105229574855,
+          "smooth_ok": true,
+          "any_target_clamp": false,
+          "any_effort_clamp_tail": false,
+          "actuator_limited_response": false,
+          "any_nan": false,
+          "actual_delta_a_deg": 9.999348680184063,
+          "actual_delta_e_deg": -5.500027320092339,
+          "actual_delta_r_deg": 0.015177600331758422,
+          "aero_tail_avg": {
+            "V": 18.16736463478373,
+            "alpha": 0.04279220787459638,
+            "beta": -0.00011740111332737878,
+            "qbar": 202.15754688607936,
+            "CL": 0.6700767185326464,
+            "CD": 0.05880734830044008,
+            "CY": 0.004446432275145405,
+            "Cl": 0.05346217231854966,
+            "Cm": 0.00967621566930142,
+            "Cn": 0.00020883695045569066
+          },
+          "aero_tail_n_msgs": 10,
+          "prop_tail_max_abs_rpm_diff": 0.0005044730369263561,
+          "prop_tail_max_abs_thrust_diff_N": 1.1319489811700834e-05,
+          "delta_vs_baseline": {
+            "CL": -1.4226507220826967e-05,
+            "CD": -1.0066797294303043e-06,
+            "CY": 0.004446432275145405,
+            "Cl": 0.05346217231854966,
+            "Cm": 1.1094599084172582e-05,
+            "Cn": 0.00020883695045569066
+          }
+        }
+      },
+      "central_diff": {
+        "Cl_delta_a_GZ_per_rad": {
+          "w2": 0.3063356431171359,
+          "w5": 0.3063356406409722,
+          "w10": 0.3063356359924084
+        },
+        "Cn_delta_a_GZ_per_rad": {
+          "w2": 0.0011965048472131548,
+          "w5": 0.0011965457029777492,
+          "w10": 0.0011966255253410656
+        },
+        "CY_delta_a_GZ_per_rad": {
+          "w2": 0.025478280064680604,
+          "w5": 0.02547813022694044,
+          "w10": 0.025477839747847918
+        }
+      }
+    },
+    "rudder": {
+      "channel": "rudder",
+      "points": {
+        "RUDDER_DELTA_M10DEG": {
+          "case": "RUDDER_DELTA_M10DEG",
+          "channel": "rudder",
+          "delta_cmd_deg": -10.0,
+          "commanded_rad": {
+            "left_aileron": 0.0,
+            "right_aileron": 0.0,
+            "left_elevator": 0.09599310885968812,
+            "right_elevator": 0.09599310885968812,
+            "rudder": -0.17453292519943295
+          },
+          "commanded_deg": {
+            "left_aileron": 0.0,
+            "right_aileron": 0.0,
+            "left_elevator": 5.5,
+            "right_elevator": 5.5,
+            "rudder": -10.0
+          },
+          "actual_tail_mean_rad": {
+            "left_aileron": -5.797455318673603e-06,
+            "right_aileron": -5.777307662188798e-06,
+            "left_elevator": 0.09598441140230365,
+            "right_elevator": 0.09598440882415976,
+            "rudder": -0.17452581646253174
+          },
+          "actual_tail_mean_deg": {
+            "left_aileron": -0.00033216972167566915,
+            "right_aileron": -0.0003310153459920105,
+            "left_elevator": 5.499501672399375,
+            "right_elevator": 5.499501524682611,
+            "rudder": -9.99959269937789
+          },
+          "tracking_error_deg": {
+            "left_aileron": 0.00033216972167566915,
+            "right_aileron": 0.0003310153459920105,
+            "left_elevator": 0.0004983276006251813,
+            "right_elevator": 0.0004984753173893353,
+            "rudder": 0.0004073006221094744
+          },
+          "tail_noise_deg": {
+            "left_aileron": 0.00033275051905583156,
+            "right_aileron": 0.00033278898165140745,
+            "left_elevator": 0.0005178776388436007,
+            "right_elevator": 0.0005178711478483359,
+            "rudder": 0.00044599751225905164
+          },
+          "tail_rate_absmax_rad_s": {
+            "left_aileron": 1.8772775193634838e-05,
+            "right_aileron": 1.8774860851234433e-05,
+            "left_elevator": 2.9028435076558064e-05,
+            "right_elevator": 2.9028087147944565e-05,
+            "rudder": 2.5118050675916784e-05
+          },
+          "max_jump_deg": {
+            "left_aileron": 0.3000007019142859,
+            "right_aileron": 0.30000070191428585,
+            "left_elevator": 0.30000070246697624,
+            "right_elevator": 0.30000070246697624,
+            "rudder": 0.18979181915743001
+          },
+          "max_step_allowed_deg": 0.45000105229574855,
+          "smooth_ok": true,
+          "any_target_clamp": false,
+          "any_effort_clamp_tail": false,
+          "actuator_limited_response": false,
+          "any_nan": false,
+          "actual_delta_a_deg": 5.771878418293408e-07,
+          "actual_delta_e_deg": -5.499501598540993,
+          "actual_delta_r_deg": -9.99959269937789,
+          "aero_tail_avg": {
+            "V": 18.16736677322414,
+            "alpha": 0.04279481288787044,
+            "beta": -8.721612743036139e-05,
+            "qbar": 202.15759447711972,
+            "CL": 0.6700909452983347,
+            "CD": 0.058808354998459066,
+            "CY": -0.014820191814708084,
+            "Cl": -0.00011734510083007797,
+            "Cm": 0.00966512057000356,
+            "Cn": 0.004359374828827489
+          },
+          "aero_tail_n_msgs": 10,
+          "prop_tail_max_abs_rpm_diff": 0.011031610728423402,
+          "prop_tail_max_abs_thrust_diff_N": 0.00024778278862758185,
+          "delta_vs_baseline": {
+            "CL": 2.584674696493039e-10,
+            "CD": 1.8289557368600384e-11,
+            "CY": -0.014820191814708084,
+            "Cl": -0.00011734510083008008,
+            "Cm": -5.002136881787633e-10,
+            "Cn": 0.004359374828827489
+          }
+        },
+        "RUDDER_DELTA_M5DEG": {
+          "case": "RUDDER_DELTA_M5DEG",
+          "channel": "rudder",
+          "delta_cmd_deg": -5.0,
+          "commanded_rad": {
+            "left_aileron": 0.0,
+            "right_aileron": 0.0,
+            "left_elevator": 0.09599310885968812,
+            "right_elevator": 0.09599310885968812,
+            "rudder": -0.08726646259971647
+          },
+          "commanded_deg": {
+            "left_aileron": 0.0,
+            "right_aileron": 0.0,
+            "left_elevator": 5.5,
+            "right_elevator": 5.5,
+            "rudder": -5.0
+          },
+          "actual_tail_mean_rad": {
+            "left_aileron": -5.792693556972003e-06,
+            "right_aileron": -5.782614670115765e-06,
+            "left_elevator": 0.09598441082183909,
+            "right_elevator": 0.09598440953144736,
+            "rudder": -0.08726297590199789
+          },
+          "actual_tail_mean_deg": {
+            "left_aileron": -0.00033189689282712043,
+            "right_aileron": -0.00033131941514806816,
+            "left_elevator": 5.499501639141205,
+            "right_elevator": 5.499501565207206,
+            "rudder": -4.999800226936287
+          },
+          "tracking_error_deg": {
+            "left_aileron": 0.00033189689282712043,
+            "right_aileron": 0.00033131941514806816,
+            "left_elevator": 0.000498360858794733,
+            "right_elevator": 0.0004984347927941002,
+            "rudder": 0.0001997730637128825
+          },
+          "tail_noise_deg": {
+            "left_aileron": 0.0003327583696045577,
+            "right_aileron": 0.00033277732921706705,
+            "left_elevator": 0.0005178764130045521,
+            "right_elevator": 0.0005178732378234178,
+            "rudder": 0.00021913089811494266
+          },
+          "tail_rate_absmax_rad_s": {
+            "left_aileron": 1.8773236905374744e-05,
+            "right_aileron": 1.8774265010581798e-05,
+            "left_elevator": 2.9028362062555773e-05,
+            "right_elevator": 2.9028191880836196e-05,
+            "rudder": 1.2341190089232626e-05
+          },
+          "max_jump_deg": {
+            "left_aileron": 0.3000007019142859,
+            "right_aileron": 0.30000070191428585,
+            "left_elevator": 0.30000070246697624,
+            "right_elevator": 0.30000070246697624,
+            "rudder": 0.1140819677175044
+          },
+          "max_step_allowed_deg": 0.45000105229574855,
+          "smooth_ok": true,
+          "any_target_clamp": false,
+          "any_effort_clamp_tail": false,
+          "actuator_limited_response": false,
+          "any_nan": false,
+          "actual_delta_a_deg": 2.887388395261474e-07,
+          "actual_delta_e_deg": -5.499501602174205,
+          "actual_delta_r_deg": -4.999800226936287,
+          "aero_tail_avg": {
+            "V": 18.167366818602357,
+            "alpha": 0.04279481291618807,
+            "beta": -4.3607791583904454e-05,
+            "qbar": 202.1575954870132,
+            "CL": 0.6700909451044439,
+            "CD": 0.058808354984739054,
+            "CY": -0.0074101014828324594,
+            "Cl": -5.867259373065776e-05,
+            "Cm": 0.009665120944965942,
+            "Cn": 0.002179689053707766
+          },
+          "aero_tail_n_msgs": 10,
+          "prop_tail_max_abs_rpm_diff": 0.0055158082950583776,
+          "prop_tail_max_abs_thrust_diff_N": 0.00012389145342606156,
+          "delta_vs_baseline": {
+            "CL": 6.457667733883454e-11,
+            "CD": 4.56954613037297e-12,
+            "CY": -0.0074101014828324594,
+            "Cl": -5.8672593730659875e-05,
+            "Cm": -1.2525130585472333e-10,
+            "Cn": 0.002179689053707766
+          }
+        },
+        "RUDDER_DELTA_M2DEG": {
+          "case": "RUDDER_DELTA_M2DEG",
+          "channel": "rudder",
+          "delta_cmd_deg": -2.0,
+          "commanded_rad": {
+            "left_aileron": 0.0,
+            "right_aileron": 0.0,
+            "left_elevator": 0.09599310885968812,
+            "right_elevator": 0.09599310885968812,
+            "rudder": -0.03490658503988659
+          },
+          "commanded_deg": {
+            "left_aileron": 0.0,
+            "right_aileron": 0.0,
+            "left_elevator": 5.5,
+            "right_elevator": 5.5,
+            "rudder": -2.0
+          },
+          "actual_tail_mean_rad": {
+            "left_aileron": -5.78974703641404e-06,
+            "right_aileron": -5.785714300596805e-06,
+            "left_elevator": 0.09598441045268755,
+            "right_elevator": 0.09598440993622125,
+            "rudder": -0.03490520596004226
+          },
+          "actual_tail_mean_deg": {
+            "left_aileron": -0.00033172806963490065,
+            "right_aileron": -0.00033149701089268187,
+            "left_elevator": 5.49950161799038,
+            "right_elevator": 5.499501588399041,
+            "rudder": -1.9999209845453085
+          },
+          "tracking_error_deg": {
+            "left_aileron": 0.00033172806963490065,
+            "right_aileron": 0.00033149701089268187,
+            "left_elevator": 0.0004983820096198244,
+            "right_elevator": 0.0004984116009589812,
+            "rudder": 7.901545469146676e-05
+          },
+          "tail_noise_deg": {
+            "left_aileron": 0.0003327635574161972,
+            "right_aileron": 0.00033277107718355397,
+            "left_elevator": 0.0005178755729349809,
+            "right_elevator": 0.000517874319449756,
+            "rudder": 8.67414938966375e-05
+          },
+          "tail_rate_absmax_rad_s": {
+            "left_aileron": 1.8773528280028407e-05,
+            "right_aileron": 1.8773936054869515e-05,
+            "left_elevator": 2.9028315008377283e-05,
+            "right_elevator": 2.9028247821932355e-05,
+            "rudder": 4.885178864545367e-06
+          },
+          "max_jump_deg": {
+            "left_aileron": 0.3000007019142859,
+            "right_aileron": 0.30000070191428585,
+            "left_elevator": 0.30000070246697624,
+            "right_elevator": 0.30000070246697624,
+            "rudder": 0.048285723255761075
+          },
+          "max_step_allowed_deg": 0.45000105229574855,
+          "smooth_ok": true,
+          "any_target_clamp": false,
+          "any_effort_clamp_tail": false,
+          "actuator_limited_response": false,
+          "any_nan": false,
+          "actual_delta_a_deg": 1.155293711093881e-07,
+          "actual_delta_e_deg": -5.49950160319471,
+          "actual_delta_r_deg": -1.9999209845453085,
+          "aero_tail_avg": {
+            "V": 18.16736683130856,
+            "alpha": 0.0427948129241565,
+            "beta": -1.744305119103086e-05,
+            "qbar": 202.15759576978988,
+            "CL": 0.6700909450501316,
+            "CD": 0.05880835498089583,
+            "CY": -0.002964041877700974,
+            "Cl": -2.3469047706716997e-05,
+            "Cm": 0.0096651210501874,
+            "Cn": 0.0008718759991315497
+          },
+          "aero_tail_n_msgs": 10,
+          "prop_tail_max_abs_rpm_diff": 0.0022063239812268876,
+          "prop_tail_max_abs_thrust_diff_N": 4.9556594689637024e-05,
+          "delta_vs_baseline": {
+            "CL": 1.026434492956696e-11,
+            "CD": 7.263217804975852e-13,
+            "CY": -0.002964041877700974,
+            "Cl": -2.3469047706719107e-05,
+            "Cm": -2.00298475722116e-11,
+            "Cn": 0.0008718759991315497
+          }
+        },
+        "RUDDER_DELTA_P0DEG": {
+          "case": "RUDDER_DELTA_P0DEG",
+          "channel": "rudder",
+          "delta_cmd_deg": 0.0,
+          "commanded_rad": {
+            "left_aileron": 0.0,
+            "right_aileron": 0.0,
+            "left_elevator": 0.09599310885968812,
+            "right_elevator": 0.09599310885968812,
+            "rudder": 0.0
+          },
+          "commanded_deg": {
+            "left_aileron": 0.0,
+            "right_aileron": 0.0,
+            "left_elevator": 5.5,
+            "right_elevator": 5.5,
+            "rudder": 0.0
+          },
+          "actual_tail_mean_rad": {
+            "left_aileron": -5.7877452719850325e-06,
+            "right_aileron": -5.787745271969192e-06,
+            "left_elevator": 0.09598441019785124,
+            "right_elevator": 0.09598441019785124,
+            "rudder": 1.0679774992255639e-20
+          },
+          "actual_tail_mean_deg": {
+            "left_aileron": -0.0003316133769815391,
+            "right_aileron": -0.0003316133769806315,
+            "left_elevator": 5.499501603389335,
+            "right_elevator": 5.499501603389335,
+            "rudder": 6.119060332056096e-19
+          },
+          "tracking_error_deg": {
+            "left_aileron": 0.0003316133769815391,
+            "right_aileron": 0.0003316133769806315,
+            "left_elevator": 0.000498396610664642,
+            "right_elevator": 0.000498396610664642,
+            "rudder": 6.119060332056096e-19
+          },
+          "tail_noise_deg": {
+            "left_aileron": 0.00033276721596492203,
+            "right_aileron": 0.0003327672159685451,
+            "left_elevator": 0.0005178749691782371,
+            "right_elevator": 0.0005178749691559732,
+            "rudder": 1.6375082457433348e-17
+          },
+          "tail_rate_absmax_rad_s": {
+            "left_aileron": 1.87737285583461e-05,
+            "right_aileron": 1.8773728558665262e-05,
+            "left_elevator": 2.9028282253725706e-05,
+            "right_elevator": 2.9028282260323652e-05,
+            "rudder": 1.1267443481121178e-17
+          },
+          "max_jump_deg": {
+            "left_aileron": 0.3000007019142859,
+            "right_aileron": 0.30000070191428585,
+            "left_elevator": 0.30000070246697624,
+            "right_elevator": 0.30000070246697624,
+            "rudder": 1.3866909748751506e-18
+          },
+          "max_step_allowed_deg": 0.45000105229574855,
+          "smooth_ok": true,
+          "any_target_clamp": false,
+          "any_effort_clamp_tail": false,
+          "actuator_limited_response": false,
+          "any_nan": false,
+          "actual_delta_a_deg": 4.537929771274508e-16,
+          "actual_delta_e_deg": -5.499501603389335,
+          "actual_delta_r_deg": 6.119060332056096e-19,
+          "aero_tail_avg": {
+            "V": 18.167366833723637,
+            "alpha": 0.04279481292569134,
+            "beta": -2.6389115768030137e-21,
+            "qbar": 202.15759582353763,
+            "CL": 0.6700909450398672,
+            "CD": 0.05880835498016951,
+            "CY": 1.7527468230063487e-19,
+            "Cl": 2.1108807687556536e-18,
+            "Cm": 0.009665121070217247,
+            "Cn": 8.366757316966686e-21
+          },
+          "aero_tail_n_msgs": 10,
+          "prop_tail_max_abs_rpm_diff": 0.0,
+          "prop_tail_max_abs_thrust_diff_N": 0.0,
+          "delta_vs_baseline": {
+            "CL": 0.0,
+            "CD": 0.0,
+            "CY": 0.0,
+            "Cl": 0.0,
+            "Cm": 0.0,
+            "Cn": 0.0
+          }
+        },
+        "RUDDER_DELTA_P2DEG": {
+          "case": "RUDDER_DELTA_P2DEG",
+          "channel": "rudder",
+          "delta_cmd_deg": 2.0,
+          "commanded_rad": {
+            "left_aileron": 0.0,
+            "right_aileron": 0.0,
+            "left_elevator": 0.09599310885968812,
+            "right_elevator": 0.09599310885968812,
+            "rudder": 0.03490658503988659
+          },
+          "commanded_deg": {
+            "left_aileron": 0.0,
+            "right_aileron": 0.0,
+            "left_elevator": 5.5,
+            "right_elevator": 5.5,
+            "rudder": 2.0
+          },
+          "actual_tail_mean_rad": {
+            "left_aileron": -5.785714300578141e-06,
+            "right_aileron": -5.7897470364151535e-06,
+            "left_elevator": 0.09598440993622122,
+            "right_elevator": 0.09598441045268753,
+            "rudder": 0.034905205960042256
+          },
+          "actual_tail_mean_deg": {
+            "left_aileron": -0.00033149701089161247,
+            "right_aileron": -0.00033172806963496445,
+            "left_elevator": 5.499501588399039,
+            "right_elevator": 5.499501617990379,
+            "rudder": 1.999920984545308
+          },
+          "tracking_error_deg": {
+            "left_aileron": 0.00033149701089161247,
+            "right_aileron": 0.00033172806963496445,
+            "left_elevator": 0.0004984116009607575,
+            "right_elevator": 0.0004983820096207126,
+            "rudder": 7.901545469191085e-05
+          },
+          "tail_noise_deg": {
+            "left_aileron": 0.0003327710771838778,
+            "right_aileron": 0.00033276355740718315,
+            "left_elevator": 0.0005178743194354435,
+            "right_elevator": 0.0005178755729222587,
+            "rudder": 8.674149389623993e-05
+          },
+          "tail_rate_absmax_rad_s": {
+            "left_aileron": 1.87739360577643e-05,
+            "right_aileron": 1.877352827839047e-05,
+            "left_elevator": 2.9028247818814956e-05,
+            "right_elevator": 2.9028314999684523e-05,
+            "rudder": 4.885178868810155e-06
+          },
+          "max_jump_deg": {
+            "left_aileron": 0.3000007019142859,
+            "right_aileron": 0.30000070191428585,
+            "left_elevator": 0.30000070246697624,
+            "right_elevator": 0.30000070246697624,
+            "rudder": 0.048285723255761075
+          },
+          "max_step_allowed_deg": 0.45000105229574855,
+          "smooth_ok": true,
+          "any_target_clamp": false,
+          "any_effort_clamp_tail": false,
+          "actuator_limited_response": false,
+          "any_nan": false,
+          "actual_delta_a_deg": -1.1552937167599234e-07,
+          "actual_delta_e_deg": -5.499501603194709,
+          "actual_delta_r_deg": 1.999920984545308,
+          "aero_tail_avg": {
+            "V": 18.16736683130856,
+            "alpha": 0.0427948129241565,
+            "beta": 1.7443051191030807e-05,
+            "qbar": 202.15759576978988,
+            "CL": 0.6700909450501314,
+            "CD": 0.05880835498089583,
+            "CY": 0.002964041877700973,
+            "Cl": 2.3469047706711423e-05,
+            "Cm": 0.0096651210501874,
+            "Cn": -0.0008718759991315495
+          },
+          "aero_tail_n_msgs": 10,
+          "prop_tail_max_abs_rpm_diff": 0.0022063239812268876,
+          "prop_tail_max_abs_thrust_diff_N": 4.9556594689637024e-05,
+          "delta_vs_baseline": {
+            "CL": 1.0264233907264497e-11,
+            "CD": 7.263217804975852e-13,
+            "CY": 0.002964041877700973,
+            "Cl": 2.3469047706709312e-05,
+            "Cm": -2.00298475722116e-11,
+            "Cn": -0.0008718759991315495
+          }
+        },
+        "RUDDER_DELTA_P5DEG": {
+          "case": "RUDDER_DELTA_P5DEG",
+          "channel": "rudder",
+          "delta_cmd_deg": 5.0,
+          "commanded_rad": {
+            "left_aileron": 0.0,
+            "right_aileron": 0.0,
+            "left_elevator": 0.09599310885968812,
+            "right_elevator": 0.09599310885968812,
+            "rudder": 0.08726646259971647
+          },
+          "commanded_deg": {
+            "left_aileron": 0.0,
+            "right_aileron": 0.0,
+            "left_elevator": 5.5,
+            "right_elevator": 5.5,
+            "rudder": 5.0
+          },
+          "actual_tail_mean_rad": {
+            "left_aileron": -5.782614670067042e-06,
+            "right_aileron": -5.792693556974819e-06,
+            "left_elevator": 0.09598440953144738,
+            "right_elevator": 0.09598441082183903,
+            "rudder": 0.08726297590199786
+          },
+          "actual_tail_mean_deg": {
+            "left_aileron": -0.00033131941514527656,
+            "right_aileron": -0.0003318968928272818,
+            "left_elevator": 5.499501565207207,
+            "right_elevator": 5.499501639141202,
+            "rudder": 4.999800226936285
+          },
+          "tracking_error_deg": {
+            "left_aileron": 0.00033131941514527656,
+            "right_aileron": 0.0003318968928272818,
+            "left_elevator": 0.000498434792793212,
+            "right_elevator": 0.0004983608587982857,
+            "rudder": 0.00019977306371465886
+          },
+          "tail_noise_deg": {
+            "left_aileron": 0.00033277732921378804,
+            "right_aileron": 0.00033275836960392803,
+            "left_elevator": 0.0005178732378099004,
+            "right_elevator": 0.0005178764129966008,
+            "rudder": 0.00021913089811573778
+          },
+          "tail_rate_absmax_rad_s": {
+            "left_aileron": 1.87742650120899e-05,
+            "right_aileron": 1.8773236898606832e-05,
+            "left_elevator": 2.9028191874078438e-05,
+            "right_elevator": 2.9028362071062755e-05,
+            "rudder": 1.2341190082176523e-05
+          },
+          "max_jump_deg": {
+            "left_aileron": 0.3000007019142859,
+            "right_aileron": 0.30000070191428585,
+            "left_elevator": 0.30000070246697624,
+            "right_elevator": 0.30000070246697624,
+            "rudder": 0.1140819677175044
+          },
+          "max_step_allowed_deg": 0.45000105229574855,
+          "smooth_ok": true,
+          "any_target_clamp": false,
+          "any_effort_clamp_tail": false,
+          "actuator_limited_response": false,
+          "any_nan": false,
+          "actual_delta_a_deg": -2.8873884100264286e-07,
+          "actual_delta_e_deg": -5.499501602174204,
+          "actual_delta_r_deg": 4.999800226936285,
+          "aero_tail_avg": {
+            "V": 18.167366818602357,
+            "alpha": 0.04279481291618807,
+            "beta": 4.3607791583904454e-05,
+            "qbar": 202.1575954870132,
+            "CL": 0.6700909451044439,
+            "CD": 0.058808354984739054,
+            "CY": 0.007410101482832461,
+            "Cl": 5.867259373064878e-05,
+            "Cm": 0.00966512094496592,
+            "Cn": -0.002179689053707767
+          },
+          "aero_tail_n_msgs": 10,
+          "prop_tail_max_abs_rpm_diff": 0.0055158082950583776,
+          "prop_tail_max_abs_thrust_diff_N": 0.00012389145342606156,
+          "delta_vs_baseline": {
+            "CL": 6.457667733883454e-11,
+            "CD": 4.56954613037297e-12,
+            "CY": 0.007410101482832461,
+            "Cl": 5.867259373064667e-05,
+            "Cm": -1.2525132667140504e-10,
+            "Cn": -0.002179689053707767
+          }
+        },
+        "RUDDER_DELTA_P10DEG": {
+          "case": "RUDDER_DELTA_P10DEG",
+          "channel": "rudder",
+          "delta_cmd_deg": 10.0,
+          "commanded_rad": {
+            "left_aileron": 0.0,
+            "right_aileron": 0.0,
+            "left_elevator": 0.09599310885968812,
+            "right_elevator": 0.09599310885968812,
+            "rudder": 0.17453292519943295
+          },
+          "commanded_deg": {
+            "left_aileron": 0.0,
+            "right_aileron": 0.0,
+            "left_elevator": 5.5,
+            "right_elevator": 5.5,
+            "rudder": 10.0
+          },
+          "actual_tail_mean_rad": {
+            "left_aileron": -5.777307662213007e-06,
+            "right_aileron": -5.797455318658182e-06,
+            "left_elevator": 0.09598440882415972,
+            "right_elevator": 0.09598441140230365,
+            "rudder": 0.17452581646253162
+          },
+          "actual_tail_mean_deg": {
+            "left_aileron": -0.00033101534599339755,
+            "right_aileron": -0.0003321697216747856,
+            "left_elevator": 5.499501524682609,
+            "right_elevator": 5.499501672399375,
+            "rudder": 9.999592699377885
+          },
+          "tracking_error_deg": {
+            "left_aileron": 0.00033101534599339755,
+            "right_aileron": 0.0003321697216747856,
+            "left_elevator": 0.0004984753173911116,
+            "right_elevator": 0.0004983276006251813,
+            "rudder": 0.00040730062211480345
+          },
+          "tail_noise_deg": {
+            "left_aileron": 0.0003327889816543805,
+            "right_aileron": 0.00033275051906384175,
+            "left_elevator": 0.000517871147837204,
+            "right_elevator": 0.0005178776388467813,
+            "rudder": 0.0004459975122701836
+          },
+          "tail_rate_absmax_rad_s": {
+            "left_aileron": 1.8774860841958857e-05,
+            "right_aileron": 1.8772775189407503e-05,
+            "left_elevator": 2.9028087164801995e-05,
+            "right_elevator": 2.9028435076145372e-05,
+            "rudder": 2.5118050701859573e-05
+          },
+          "max_jump_deg": {
+            "left_aileron": 0.3000007019142859,
+            "right_aileron": 0.30000070191428585,
+            "left_elevator": 0.30000070246697624,
+            "right_elevator": 0.30000070246697624,
+            "rudder": 0.18979181915743001
+          },
+          "max_step_allowed_deg": 0.45000105229574855,
+          "smooth_ok": true,
+          "any_target_clamp": false,
+          "any_effort_clamp_tail": false,
+          "actuator_limited_response": false,
+          "any_nan": false,
+          "actual_delta_a_deg": -5.771878406940212e-07,
+          "actual_delta_e_deg": -5.499501598540992,
+          "actual_delta_r_deg": 9.999592699377885,
+          "aero_tail_avg": {
+            "V": 18.16736677322414,
+            "alpha": 0.04279481288787044,
+            "beta": 8.721612743036143e-05,
+            "qbar": 202.15759447711974,
+            "CL": 0.6700909452983347,
+            "CD": 0.058808354998459066,
+            "CY": 0.014820191814708093,
+            "Cl": 0.00011734510083008484,
+            "Cm": 0.009665120570003526,
+            "Cn": -0.004359374828827491
+          },
+          "aero_tail_n_msgs": 10,
+          "prop_tail_max_abs_rpm_diff": 0.011031610728423402,
+          "prop_tail_max_abs_thrust_diff_N": 0.00024778278862713776,
+          "delta_vs_baseline": {
+            "CL": 2.584674696493039e-10,
+            "CD": 1.8289557368600384e-11,
+            "CY": 0.014820191814708093,
+            "Cl": 0.00011734510083008272,
+            "Cm": -5.002137211385094e-10,
+            "Cn": -0.004359374828827491
+          }
+        }
+      },
+      "central_diff": {
+        "CY_delta_r_GZ_per_rad": {
+          "w2": 0.08491689981987387,
+          "w5": 0.0849169009678801,
+          "w10": 0.08491690292644918
+        },
+        "Cn_delta_r_GZ_per_rad": {
+          "w2": -0.02497839434408809,
+          "w5": -0.02497839468775053,
+          "w10": -0.024978395272331463
+        },
+        "Cl_delta_r_GZ_per_rad": {
+          "w2": 0.0006723652550161258,
+          "w5": 0.0006723652628641327,
+          "w10": 0.0006723652878900802
+        }
+      }
+    }
+  },
+  "any_nan": false,
+  "actuator_limited_response_cases": [],
+  "smooth_ok_failures": []
+}

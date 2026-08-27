@@ -1,0 +1,215 @@
+==============================================================================
+PART 4: FREE 6-DOF POWERED FLIGHT (~25s) FROM NEW TRIM
+==============================================================================
+any_nan=False (first at step None)
+Airspeed: start=18.166 end=17.860 drift=-0.306 m/s
+Altitude: start=99.34 end=105.25 drift=+5.90 m
+Pitch: start=+0.26 end=-3.41 max|pitch|=6.06deg
+Roll: start=+0.00 end=+0.10 max|roll|=0.10deg
+Yaw drift: max|yaw-start|=0.75deg
+Alpha: start=+2.47 end=+2.70 max|alpha|=2.75deg
+CLASSIFICATION: PASS (bounded, near-trim, no divergence)
+
+==============================================================================
+
+FALCON V2 - UPDATED_POWERED_TRIM_AND_HIGH_DEFLECTION_FLIGHT_VALIDATION - TARGETED RE-RUN (gazebo-testing, 2026-08-27, `validation` MAJOR-gap fix: Parts 5/6/7 now cross-check the live aero diagnostics topic, not just this script's own Python mirror)
+Reusing already-confirmed-correct trim (NOT re-searched): throttle=0.5010 elevator_theta_deg=+4.500 (Part 1-4 results loaded read-only from the existing result JSON files, unchanged)
+
+==============================================================================
+
+FALCON V2 - UPDATED_POWERED_TRIM_AND_HIGH_DEFLECTION_FLIGHT_VALIDATION - TARGETED RE-RUN (gazebo-testing, 2026-08-27, `validation` MAJOR-gap fix: Parts 5/6/7 now cross-check the live aero diagnostics topic, not just this script's own Python mirror)
+Reusing already-confirmed-correct trim (NOT re-searched): throttle=0.5010 elevator_theta_deg=+4.500 (Part 1-4 results loaded read-only from the existing result JSON files, unchanged)
+
+==============================================================================
+PART 5/6/7: HIGH-DEFLECTION PULSE TESTS (+/-15deg, +/-25deg if stable)
+==============================================================================
+------------------------------------------------------------------------------
+CHANNEL: ELEVATOR
+------------------------------------------------------------------------------
+--- ELEVATOR_P15 (pulse=+15deg, channel=elevator) ---
+  any_nan=False EARLY(t~0.08-0.18s, near-static, achieved delta_e/a/r=+8.255/+0.000/+0.000deg): [MIRROR] CL=0.44594 CD=0.04958 CY=0.000010 Cl=0.000005 Cm=-0.15953 Cn=0.000006 Mx=+0.0009 My=+0.9057 Mz=+0.0011 (p/q/r=+0.01/+52.95/+0.07deg/s)
+  EARLY  [LIVE PLUGIN, window-avg - see staleness note below]  CL=0.53609 CD=0.05396 CY=0.000006 Cl=0.000004 Cm=-0.17410 Cn=0.000007 Mx=+0.0008 My=+1.2092 Mz=+0.0013
+  EARLY  [mirror-vs-live-window-avg rel.diff, INFORMATIONAL ONLY - see staleness note below] CL=16.82% CD=8.11% CY=41.80% Cl=12.28% Cm=8.37% Cn=16.87% Mx=12.28% My=25.10% Mz=16.95%
+  SETTLED (last 20% of pulse window, DYNAMIC steady state - includes rate-damping, see header): actual_delta_e/a/r=+9.092/-0.000/+0.001deg [MIRROR] CL=0.09737 CD=0.03884 CY=0.000078 Cl=-0.000002 Cm=-0.04161 Cn=-0.000013 Mx=-0.0005 My=-0.1385 Mz=-0.0029
+  SETTLED [LIVE PLUGIN, window-avg - see staleness note below]  CL=0.10115 CD=0.03886 CY=0.000079 Cl=-0.000002 Cm=-0.04235 Cn=-0.000013 Mx=-0.0004 My=-0.1242 Mz=-0.0029
+  SETTLED [mirror-vs-live-window-avg rel.diff, INFORMATIONAL ONLY - see staleness note below] CL=3.74% CD=0.06% CY=1.38% Cl=6.52% Cm=1.75% Cn=2.60% Mx=7.20% My=10.34% Mz=1.89%
+  NOTE: the two window-avg comparisons above can show a large apparent diff purely from 20Hz live-topic publish-rate staleness during fast dynamics (see paired_live_mirror_diff()'s docstring) - NOT used to determine pass/fail. The AUTHORITATIVE, timing-paired comparison over the full pulse-phase window (20 independent live-publish instants) is:
+  PAIRED [mirror-vs-live, tick-synchronized, mean |reldiff| (informational) over 20 pairs] CL=0.80% CD=0.18% CY=1.35% Cl=1.09% Cm=7.55% Cn=1.43% Mx=2.92% My=16.44% Mz=3.42%
+  PAIRED [fraction of the 20 pairs exceeding the floor-aware tolerance - THIS decides pass/fail, not the mean above] CL=0% CD=0% CY=0% Cl=0% Cm=0% Cn=0% Mx=0% My=5% Mz=0%
+  LIVE-CROSS-CHECK RESULT: CONFIRMS_MIRROR (all timing-paired live-vs-mirror diffs within tolerance)
+  dynamics: max|p|=0.019deg/s max|q|=61.307deg/s max|r|=0.074deg/s max|roll|=0.025deg early_p_trend=+0.026deg/s^2
+
+--- ELEVATOR_M15 (pulse=-15deg, channel=elevator) ---
+  any_nan=False EARLY(t~0.08-0.18s, near-static, achieved delta_e/a/r=-16.438/-0.000/+0.000deg): [MIRROR] CL=0.83143 CD=0.07572 CY=0.000009 Cl=0.000000 Cm=0.18398 Cn=0.000006 Mx=+0.0001 My=-1.3438 Mz=+0.0011 (p/q/r=+0.02/-55.67/+0.07deg/s)
+  EARLY  [LIVE PLUGIN, window-avg - see staleness note below]  CL=0.73998 CD=0.06780 CY=0.000005 Cl=0.000001 Cm=0.19824 Cn=0.000007 Mx=+0.0002 My=-1.6398 Mz=+0.0013
+  EARLY  [mirror-vs-live-window-avg rel.diff, INFORMATIONAL ONLY - see staleness note below] CL=11.00% CD=10.46% CY=43.43% Cl=71.84% Cm=7.19% Cn=17.92% Mx=71.90% My=18.05% Mz=17.58%
+  SETTLED (last 20% of pulse window, DYNAMIC steady state - includes rate-damping, see header): actual_delta_e/a/r=-18.235/-0.000/+0.001deg [MIRROR] CL=1.19725 CD=0.11477 CY=0.000083 Cl=-0.000002 Cm=0.07515 Cn=-0.000014 Mx=-0.0004 My=-0.2425 Mz=-0.0025
+  SETTLED [LIVE PLUGIN, window-avg - see staleness note below]  CL=1.19357 CD=0.11426 CY=0.000084 Cl=-0.000003 Cm=0.07598 Cn=-0.000014 Mx=-0.0004 My=-0.2645 Mz=-0.0025
+  SETTLED [mirror-vs-live-window-avg rel.diff, INFORMATIONAL ONLY - see staleness note below] CL=0.31% CD=0.44% CY=0.52% Cl=1.92% Cm=1.09% Cn=1.20% Mx=2.69% My=8.34% Mz=1.98%
+  NOTE: the two window-avg comparisons above can show a large apparent diff purely from 20Hz live-topic publish-rate staleness during fast dynamics (see paired_live_mirror_diff()'s docstring) - NOT used to determine pass/fail. The AUTHORITATIVE, timing-paired comparison over the full pulse-phase window (20 independent live-publish instants) is:
+  PAIRED [mirror-vs-live, tick-synchronized, mean |reldiff| (informational) over 20 pairs] CL=0.22% CD=0.21% CY=1.36% Cl=1.42% Cm=2.74% Cn=1.42% Mx=1.95% My=7.82% Mz=2.43%
+  PAIRED [fraction of the 20 pairs exceeding the floor-aware tolerance - THIS decides pass/fail, not the mean above] CL=0% CD=0% CY=0% Cl=0% Cm=0% Cn=0% Mx=0% My=5% Mz=0%
+  LIVE-CROSS-CHECK RESULT: CONFIRMS_MIRROR (all timing-paired live-vs-mirror diffs within tolerance)
+  dynamics: max|p|=0.023deg/s max|q|=64.616deg/s max|r|=0.071deg/s max|roll|=0.015deg early_p_trend=+0.041deg/s^2
+
+--- ELEVATOR_P25 (pulse=+25deg, channel=elevator) ---
+  any_nan=False EARLY(t~0.08-0.18s, near-static, achieved delta_e/a/r=+15.993/+0.000/+0.000deg): [MIRROR] CL=0.42311 CD=0.05484 CY=0.000010 Cl=0.000005 Cm=-0.28890 Cn=0.000006 Mx=+0.0010 My=+2.5399 Mz=+0.0011 (p/q/r=+0.01/+75.69/+0.07deg/s)
+  EARLY  [LIVE PLUGIN, window-avg - see staleness note below]  CL=0.53822 CD=0.05881 CY=0.000006 Cl=0.000004 Cm=-0.27911 Cn=0.000007 Mx=+0.0008 My=+2.3422 Mz=+0.0013
+  EARLY  [mirror-vs-live-window-avg rel.diff, INFORMATIONAL ONLY - see staleness note below] CL=21.39% CD=6.76% CY=41.75% Cl=16.38% Cm=3.39% Cn=16.76% Mx=16.28% My=7.78% Mz=16.97%
+  SETTLED (last 20% of pulse window, DYNAMIC steady state - includes rate-damping, see header): actual_delta_e/a/r=+17.810/-0.000/+0.001deg [MIRROR] CL=-0.26432 CD=0.04854 CY=0.000077 Cl=-0.000002 Cm=-0.07683 Cn=-0.000012 Mx=-0.0004 My=-0.0953 Mz=-0.0029
+  SETTLED [LIVE PLUGIN, window-avg - see staleness note below]  CL=-0.25787 CD=0.04831 CY=0.000078 Cl=-0.000002 Cm=-0.07821 Cn=-0.000013 Mx=-0.0004 My=-0.0710 Mz=-0.0030
+  SETTLED [mirror-vs-live-window-avg rel.diff, INFORMATIONAL ONLY - see staleness note below] CL=2.44% CD=0.48% CY=1.52% Cl=10.35% Cm=1.77% Cn=2.85% Mx=11.27% My=25.55% Mz=1.85%
+  NOTE: the two window-avg comparisons above can show a large apparent diff purely from 20Hz live-topic publish-rate staleness during fast dynamics (see paired_live_mirror_diff()'s docstring) - NOT used to determine pass/fail. The AUTHORITATIVE, timing-paired comparison over the full pulse-phase window (20 independent live-publish instants) is:
+  PAIRED [mirror-vs-live, tick-synchronized, mean |reldiff| (informational) over 20 pairs] CL=2.01% CD=0.16% CY=1.35% Cl=1.27% Cm=2.36% Cn=1.43% Mx=2.71% My=8.04% Mz=2.38%
+  PAIRED [fraction of the 20 pairs exceeding the floor-aware tolerance - THIS decides pass/fail, not the mean above] CL=5% CD=0% CY=0% Cl=0% Cm=0% Cn=0% Mx=0% My=5% Mz=0%
+  LIVE-CROSS-CHECK RESULT: CONFIRMS_MIRROR (all timing-paired live-vs-mirror diffs within tolerance)
+  dynamics: max|p|=0.018deg/s max|q|=96.989deg/s max|r|=0.074deg/s max|roll|=0.034deg early_p_trend=+0.018deg/s^2
+
+--- ELEVATOR_M25 (pulse=-25deg, channel=elevator) ---
+  any_nan=False EARLY(t~0.08-0.18s, near-static, achieved delta_e/a/r=-24.514/-0.000/+0.000deg): [MIRROR] CL=0.84374 CD=0.08288 CY=0.000009 Cl=-0.000000 Cm=0.31874 Cn=0.000006 Mx=-0.0001 My=-3.1102 Mz=+0.0011 (p/q/r=+0.02/-79.97/+0.07deg/s)
+  EARLY  [LIVE PLUGIN, window-avg - see staleness note below]  CL=0.73627 CD=0.07199 CY=0.000005 Cl=0.000001 Cm=0.30735 Cn=0.000007 Mx=+0.0002 My=-2.8550 Mz=+0.0013
+  EARLY  [mirror-vs-live-window-avg rel.diff, INFORMATIONAL ONLY - see staleness note below] CL=12.74% CD=13.14% CY=43.49% Cl=114.12% Cm=3.57% Cn=17.98% Mx=132.75% My=8.20% Mz=17.47%
+  SETTLED (last 20% of pulse window, DYNAMIC steady state - includes rate-damping, see header): actual_delta_e/a/r=-28.181/+0.000/+0.001deg [MIRROR] CL=1.18855 CD=0.12130 CY=0.000083 Cl=-0.000003 Cm=0.07868 Cn=-0.000014 Mx=-0.0004 My=-0.3498 Mz=-0.0024
+  SETTLED [LIVE PLUGIN, window-avg - see staleness note below]  CL=1.19003 CD=0.12133 CY=0.000084 Cl=-0.000003 Cm=0.07697 Cn=-0.000014 Mx=-0.0004 My=-0.3263 Mz=-0.0024
+  SETTLED [mirror-vs-live-window-avg rel.diff, INFORMATIONAL ONLY - see staleness note below] CL=0.12% CD=0.02% CY=0.45% Cl=2.14% Cm=2.17% Cn=1.09% Mx=3.01% My=6.73% Mz=1.96%
+  NOTE: the two window-avg comparisons above can show a large apparent diff purely from 20Hz live-topic publish-rate staleness during fast dynamics (see paired_live_mirror_diff()'s docstring) - NOT used to determine pass/fail. The AUTHORITATIVE, timing-paired comparison over the full pulse-phase window (20 independent live-publish instants) is:
+  PAIRED [mirror-vs-live, tick-synchronized, mean |reldiff| (informational) over 20 pairs] CL=0.20% CD=0.19% CY=1.36% Cl=1.58% Cm=2.71% Cn=1.42% Mx=1.61% My=9.99% Mz=2.17%
+  PAIRED [fraction of the 20 pairs exceeding the floor-aware tolerance - THIS decides pass/fail, not the mean above] CL=0% CD=0% CY=0% Cl=0% Cm=0% Cn=0% Mx=0% My=5% Mz=0%
+  LIVE-CROSS-CHECK RESULT: CONFIRMS_MIRROR (all timing-paired live-vs-mirror diffs within tolerance)
+  dynamics: max|p|=0.024deg/s max|q|=103.196deg/s max|r|=0.070deg/s max|roll|=0.013deg early_p_trend=+0.047deg/s^2
+
+  Control-drag check (elevator): CD_trim=0.05639
+    pulse=+15deg: CD_early=0.04958 (delta=-0.00680)
+    pulse=-15deg: CD_early=0.07572 (delta=+0.01933)
+    pulse=+25deg: CD_early=0.05484 (delta=-0.00155)
+    pulse=-25deg: CD_early=0.08288 (delta=+0.02649)
+  10-25deg-region smoothness (CL): +15->+25 growth=+0.022829, -15->-25 growth=+0.012308 -> smooth, non-flat (OK)
+
+------------------------------------------------------------------------------
+CHANNEL: AILERON
+------------------------------------------------------------------------------
+--- AILERON_P15 (pulse=+15deg, channel=aileron) ---
+  any_nan=False EARLY(t~0.08-0.18s, near-static, achieved delta_e/a/r=-3.934/+16.101/-0.458deg): [MIRROR] CL=0.62897 CD=0.07853 CY=-0.005134 Cl=0.062786 Cm=0.00645 Cn=-0.004710 Mx=+12.2501 My=-0.1626 Mz=-0.9192 (p/q/r=+98.31/+0.61/-3.90deg/s)
+  EARLY  [LIVE PLUGIN, window-avg - see staleness note below]  CL=0.63146 CD=0.07642 CY=-0.003785 Cl=0.066555 Cm=0.00609 Cn=-0.003340 Mx=+12.9828 My=-0.1550 Mz=-0.6517
+  EARLY  [mirror-vs-live-window-avg rel.diff, INFORMATIONAL ONLY - see staleness note below] CL=0.39% CD=2.69% CY=26.28% Cl=5.66% Cm=5.56% Cn=29.09% Mx=5.64% My=4.65% Mz=29.10%
+  SETTLED (last 20% of pulse window, DYNAMIC steady state - includes rate-damping, see header): actual_delta_e/a/r=-3.422/+14.142/-0.094deg [MIRROR] CL=0.63733 CD=0.07341 CY=-0.037626 Cl=0.003462 Cm=0.01525 Cn=-0.001032 Mx=+0.7420 My=+0.7664 Mz=-0.2150
+  SETTLED [LIVE PLUGIN, window-avg - see staleness note below]  CL=0.62913 CD=0.07275 CY=-0.035164 Cl=0.003393 Cm=0.01965 Cn=-0.001689 Mx=+0.7220 My=+0.6641 Mz=-0.3541
+  SETTLED [mirror-vs-live-window-avg rel.diff, INFORMATIONAL ONLY - see staleness note below] CL=1.29% CD=0.89% CY=6.54% Cl=1.98% Cm=22.37% Cn=38.93% Mx=2.69% My=13.35% Mz=39.27%
+  NOTE: the two window-avg comparisons above can show a large apparent diff purely from 20Hz live-topic publish-rate staleness during fast dynamics (see paired_live_mirror_diff()'s docstring) - NOT used to determine pass/fail. The AUTHORITATIVE, timing-paired comparison over the full pulse-phase window (20 independent live-publish instants) is:
+  PAIRED [mirror-vs-live, tick-synchronized, mean |reldiff| (informational) over 20 pairs] CL=0.04% CD=0.16% CY=1.70% Cl=1.26% Cm=1.25% Cn=2.49% Mx=1.27% My=1.75% Mz=2.48%
+  PAIRED [fraction of the 20 pairs exceeding the floor-aware tolerance - THIS decides pass/fail, not the mean above] CL=0% CD=0% CY=0% Cl=0% Cm=0% Cn=0% Mx=0% My=0% Mz=0%
+  LIVE-CROSS-CHECK RESULT: CONFIRMS_MIRROR (all timing-paired live-vs-mirror diffs within tolerance)
+  dynamics: max|p|=178.247deg/s max|q|=25.771deg/s max|r|=76.189deg/s max|roll|=145.758deg early_p_trend=+504.261deg/s^2
+
+--- AILERON_M15 (pulse=-15deg, channel=aileron) ---
+  any_nan=False EARLY(t~0.08-0.18s, near-static, achieved delta_e/a/r=-3.932/-16.100/+0.459deg): [MIRROR] CL=0.62921 CD=0.07855 CY=0.005152 Cl=-0.062783 Cm=0.00632 Cn=0.004710 Mx=-12.2497 My=-0.1604 Mz=+0.9191 (p/q/r=-98.28/+0.62/+4.03deg/s)
+  EARLY  [LIVE PLUGIN, window-avg - see staleness note below]  CL=0.63161 CD=0.07643 CY=0.003795 Cl=-0.066551 Cm=0.00601 Cn=0.003343 Mx=-12.9821 My=-0.1538 Mz=+0.6523
+  EARLY  [mirror-vs-live-window-avg rel.diff, INFORMATIONAL ONLY - see staleness note below] CL=0.38% CD=2.69% CY=26.34% Cl=5.66% Cm=4.92% Cn=29.02% Mx=5.64% My=4.10% Mz=29.03%
+  SETTLED (last 20% of pulse window, DYNAMIC steady state - includes rate-damping, see header): actual_delta_e/a/r=-3.425/-14.141/+0.094deg [MIRROR] CL=0.63764 CD=0.07343 CY=0.037623 Cl=-0.003454 Cm=0.01511 Cn=0.001041 Mx=-0.7402 My=+0.7640 Mz=+0.2170
+  SETTLED [LIVE PLUGIN, window-avg - see staleness note below]  CL=0.62947 CD=0.07277 CY=0.035167 Cl=-0.003385 Cm=0.01948 Cn=0.001697 Mx=-0.7202 My=+0.6621 Mz=+0.3557
+  SETTLED [mirror-vs-live-window-avg rel.diff, INFORMATIONAL ONLY - see staleness note below] CL=1.28% CD=0.89% CY=6.53% Cl=1.98% Cm=22.47% Cn=38.65% Mx=2.69% My=13.34% Mz=38.99%
+  NOTE: the two window-avg comparisons above can show a large apparent diff purely from 20Hz live-topic publish-rate staleness during fast dynamics (see paired_live_mirror_diff()'s docstring) - NOT used to determine pass/fail. The AUTHORITATIVE, timing-paired comparison over the full pulse-phase window (20 independent live-publish instants) is:
+  PAIRED [mirror-vs-live, tick-synchronized, mean |reldiff| (informational) over 20 pairs] CL=0.04% CD=0.16% CY=1.74% Cl=1.26% Cm=1.27% Cn=2.44% Mx=1.27% My=1.76% Mz=2.43%
+  PAIRED [fraction of the 20 pairs exceeding the floor-aware tolerance - THIS decides pass/fail, not the mean above] CL=0% CD=0% CY=0% Cl=0% Cm=0% Cn=0% Mx=0% My=0% Mz=0%
+  LIVE-CROSS-CHECK RESULT: CONFIRMS_MIRROR (all timing-paired live-vs-mirror diffs within tolerance)
+  dynamics: max|p|=178.251deg/s max|q|=25.627deg/s max|r|=76.105deg/s max|roll|=145.736deg early_p_trend=-504.185deg/s^2
+
+--- AILERON_P25 (pulse=+25deg, channel=aileron) ---
+  any_nan=False EARLY(t~0.08-0.18s, near-static, achieved delta_e/a/r=-3.876/+24.371/-0.748deg): [MIRROR] CL=0.62085 CD=0.10698 CY=-0.006450 Cl=0.106075 Cm=0.00131 Cn=-0.005948 Mx=+20.6599 My=-0.0922 Mz=-1.1576 (p/q/r=+127.39/+1.43/-4.68deg/s)
+  EARLY  [LIVE PLUGIN, window-avg - see staleness note below]  CL=0.62617 CD=0.09639 CY=-0.004450 Cl=0.098521 Cm=0.00258 Cn=-0.003992 Mx=+19.1968 My=-0.1188 Mz=-0.7773
+  EARLY  [mirror-vs-live-window-avg rel.diff, INFORMATIONAL ONLY - see staleness note below] CL=0.85% CD=9.90% CY=31.02% Cl=7.12% Cm=49.23% Cn=32.89% Mx=7.08% My=22.39% Mz=32.85%
+  SETTLED (last 20% of pulse window, DYNAMIC steady state - includes rate-damping, see header): actual_delta_e/a/r=+0.003/+23.297/-2.102deg [MIRROR] CL=1.05052 CD=0.14061 CY=-0.082435 Cl=0.003844 Cm=-0.21400 Cn=0.003548 Mx=+0.8450 My=+3.2435 Mz=+0.7945
+  SETTLED [LIVE PLUGIN, window-avg - see staleness note below]  CL=1.01144 CD=0.13625 CY=-0.078483 Cl=0.004236 Cm=-0.19256 Cn=0.002564 Mx=+0.9234 My=+2.7048 Mz=+0.5722
+  SETTLED [mirror-vs-live-window-avg rel.diff, INFORMATIONAL ONLY - see staleness note below] CL=3.72% CD=3.10% CY=4.79% Cl=9.23% Cm=10.02% Cn=27.74% Mx=8.50% My=16.61% Mz=27.97%
+  NOTE: the two window-avg comparisons above can show a large apparent diff purely from 20Hz live-topic publish-rate staleness during fast dynamics (see paired_live_mirror_diff()'s docstring) - NOT used to determine pass/fail. The AUTHORITATIVE, timing-paired comparison over the full pulse-phase window (20 independent live-publish instants) is:
+  PAIRED [mirror-vs-live, tick-synchronized, mean |reldiff| (informational) over 20 pairs] CL=0.18% CD=0.33% CY=1.85% Cl=1.31% Cm=3.99% Cn=2.72% Mx=1.30% My=2.14% Mz=2.71%
+  PAIRED [fraction of the 20 pairs exceeding the floor-aware tolerance - THIS decides pass/fail, not the mean above] CL=0% CD=0% CY=0% Cl=0% Cm=0% Cn=0% Mx=0% My=0% Mz=0%
+  LIVE-CROSS-CHECK RESULT: CONFIRMS_MIRROR (all timing-paired live-vs-mirror diffs within tolerance)
+  dynamics: max|p|=310.640deg/s max|q|=83.239deg/s max|r|=105.131deg/s max|roll|=179.527deg early_p_trend=+836.477deg/s^2
+
+--- AILERON_M25 (pulse=-25deg, channel=aileron) ---
+  any_nan=False EARLY(t~0.08-0.18s, near-static, achieved delta_e/a/r=-3.874/-24.371/+0.749deg): [MIRROR] CL=0.62115 CD=0.10700 CY=0.006468 Cl=-0.106073 Cm=0.00117 Cn=0.005947 Mx=-20.6598 My=-0.0896 Mz=+1.1574 (p/q/r=-127.36/+1.44/+4.81deg/s)
+  EARLY  [LIVE PLUGIN, window-avg - see staleness note below]  CL=0.62635 CD=0.09640 CY=0.004460 Cl=-0.098517 Cm=0.00250 Cn=0.003994 Mx=-19.1962 My=-0.1174 Mz=+0.7779
+  EARLY  [mirror-vs-live-window-avg rel.diff, INFORMATIONAL ONLY - see staleness note below] CL=0.83% CD=9.90% CY=31.05% Cl=7.12% Cm=53.32% Cn=32.83% Mx=7.08% My=23.70% Mz=32.79%
+  SETTLED (last 20% of pulse window, DYNAMIC steady state - includes rate-damping, see header): actual_delta_e/a/r=-0.002/-23.297/+2.099deg [MIRROR] CL=1.05043 CD=0.14060 CY=0.082353 Cl=-0.003839 Cm=-0.21393 Cn=-0.003522 Mx=-0.8438 My=+3.2395 Mz=-0.7888
+  SETTLED [LIVE PLUGIN, window-avg - see staleness note below]  CL=1.01137 CD=0.13624 CY=0.078405 Cl=-0.004229 Cm=-0.19250 Cn=-0.002539 Mx=-0.9219 My=+2.7012 Mz=-0.5668
+  SETTLED [mirror-vs-live-window-avg rel.diff, INFORMATIONAL ONLY - see staleness note below] CL=3.72% CD=3.10% CY=4.79% Cl=9.21% Cm=10.02% Cn=27.91% Mx=8.48% My=16.62% Mz=28.14%
+  NOTE: the two window-avg comparisons above can show a large apparent diff purely from 20Hz live-topic publish-rate staleness during fast dynamics (see paired_live_mirror_diff()'s docstring) - NOT used to determine pass/fail. The AUTHORITATIVE, timing-paired comparison over the full pulse-phase window (20 independent live-publish instants) is:
+  PAIRED [mirror-vs-live, tick-synchronized, mean |reldiff| (informational) over 20 pairs] CL=0.18% CD=0.33% CY=1.88% Cl=1.31% Cm=3.68% Cn=2.64% Mx=1.30% My=2.15% Mz=2.63%
+  PAIRED [fraction of the 20 pairs exceeding the floor-aware tolerance - THIS decides pass/fail, not the mean above] CL=0% CD=0% CY=0% Cl=0% Cm=0% Cn=0% Mx=0% My=0% Mz=0%
+  LIVE-CROSS-CHECK RESULT: CONFIRMS_MIRROR (all timing-paired live-vs-mirror diffs within tolerance)
+  dynamics: max|p|=310.639deg/s max|q|=83.228deg/s max|r|=105.027deg/s max|roll|=179.537deg early_p_trend=-836.449deg/s^2
+
+  Control-drag check (aileron): CD_trim=0.05639
+    pulse=+15deg: CD_early=0.07853 (delta=+0.02215)
+    pulse=-15deg: CD_early=0.07855 (delta=+0.02216)
+    pulse=+25deg: CD_early=0.10698 (delta=+0.05059)
+    pulse=-25deg: CD_early=0.10700 (delta=+0.05061)
+  10-25deg-region smoothness (Cl): +15->+25 growth=+0.043289, -15->-25 growth=+0.043290 -> smooth, non-flat (OK)
+
+------------------------------------------------------------------------------
+CHANNEL: RUDDER
+------------------------------------------------------------------------------
+--- RUDDER_P15 (pulse=+15deg, channel=rudder) ---
+  any_nan=False EARLY(t~0.08-0.18s, near-static, achieved delta_e/a/r=-3.988/+0.027/+11.880deg): [MIRROR] CL=0.63771 CD=0.05734 CY=0.017724 Cl=-0.000284 Cm=0.01056 Cn=-0.005292 Mx=-0.0557 My=-0.1980 Mz=-1.0355 (p/q/r=+0.07/-0.51/-5.16deg/s)
+  EARLY  [LIVE PLUGIN, window-avg - see staleness note below]  CL=0.63791 CD=0.05720 CY=0.016408 Cl=-0.000132 Cm=0.01000 Cn=-0.004890 Mx=-0.0258 My=-0.1861 Mz=-0.9559
+  EARLY  [mirror-vs-live-window-avg rel.diff, INFORMATIONAL ONLY - see staleness note below] CL=0.03% CD=0.24% CY=7.43% Cl=53.69% Cm=5.28% Cn=7.59% Mx=53.69% My=6.02% Mz=7.68%
+  SETTLED (last 20% of pulse window, DYNAMIC steady state - includes rate-damping, see header): actual_delta_e/a/r=-4.352/+0.003/+14.027deg [MIRROR] CL=0.64018 CD=0.05791 CY=-0.011846 Cl=0.000135 Cm=0.01738 Cn=0.003005 Mx=+0.0273 My=-0.2296 Mz=+0.6071
+  SETTLED [LIVE PLUGIN, window-avg - see staleness note below]  CL=0.64030 CD=0.05792 CY=-0.011042 Cl=0.000082 Cm=0.01721 Cn=0.002789 Mx=+0.0166 My=-0.2255 Mz=+0.5632
+  SETTLED [mirror-vs-live-window-avg rel.diff, INFORMATIONAL ONLY - see staleness note below] CL=0.02% CD=0.00% CY=6.78% Cl=38.99% Cm=1.02% Cn=7.16% Mx=38.97% My=1.77% Mz=7.23%
+  NOTE: the two window-avg comparisons above can show a large apparent diff purely from 20Hz live-topic publish-rate staleness during fast dynamics (see paired_live_mirror_diff()'s docstring) - NOT used to determine pass/fail. The AUTHORITATIVE, timing-paired comparison over the full pulse-phase window (20 independent live-publish instants) is:
+  PAIRED [mirror-vs-live, tick-synchronized, mean |reldiff| (informational) over 20 pairs] CL=0.01% CD=0.01% CY=2.05% Cl=7.70% Cm=0.21% Cn=2.01% Mx=7.70% My=0.28% Mz=2.00%
+  PAIRED [fraction of the 20 pairs exceeding the floor-aware tolerance - THIS decides pass/fail, not the mean above] CL=0% CD=0% CY=0% Cl=0% Cm=0% Cn=0% Mx=0% My=0% Mz=0%
+  LIVE-CROSS-CHECK RESULT: CONFIRMS_MIRROR (all timing-paired live-vs-mirror diffs within tolerance)
+  dynamics: max|p|=6.535deg/s max|q|=3.477deg/s max|r|=22.458deg/s max|roll|=3.539deg early_p_trend=-5.852deg/s^2
+
+--- RUDDER_M15 (pulse=-15deg, channel=rudder) ---
+  any_nan=False EARLY(t~0.08-0.18s, near-static, achieved delta_e/a/r=-3.988/-0.027/-11.879deg): [MIRROR] CL=0.63771 CD=0.05734 CY=-0.017706 Cl=0.000288 Cm=0.01056 Cn=0.005298 Mx=+0.0565 My=-0.1980 Mz=+1.0365 (p/q/r=-0.04/-0.51/+5.29deg/s)
+  EARLY  [LIVE PLUGIN, window-avg - see staleness note below]  CL=0.63791 CD=0.05720 CY=-0.016398 Cl=0.000136 Cm=0.01000 Cn=0.004899 Mx=+0.0267 My=-0.1861 Mz=+0.9575
+  EARLY  [mirror-vs-live-window-avg rel.diff, INFORMATIONAL ONLY - see staleness note below] CL=0.03% CD=0.24% CY=7.39% Cl=52.74% Cm=5.28% Cn=7.53% Mx=52.74% My=6.02% Mz=7.62%
+  SETTLED (last 20% of pulse window, DYNAMIC steady state - includes rate-damping, see header): actual_delta_e/a/r=-4.353/-0.003/-14.026deg [MIRROR] CL=0.64008 CD=0.05791 CY=0.011984 Cl=-0.000139 Cm=0.01743 Cn=-0.003027 Mx=-0.0281 My=-0.2299 Mz=-0.6116
+  SETTLED [LIVE PLUGIN, window-avg - see staleness note below]  CL=0.64020 CD=0.05791 CY=0.011182 Cl=-0.000086 Cm=0.01725 Cn=-0.002812 Mx=-0.0174 My=-0.2259 Mz=-0.5678
+  SETTLED [mirror-vs-live-window-avg rel.diff, INFORMATIONAL ONLY - see staleness note below] CL=0.02% CD=0.00% CY=6.69% Cl=37.87% Cm=1.02% Cn=7.09% Mx=37.86% My=1.77% Mz=7.16%
+  NOTE: the two window-avg comparisons above can show a large apparent diff purely from 20Hz live-topic publish-rate staleness during fast dynamics (see paired_live_mirror_diff()'s docstring) - NOT used to determine pass/fail. The AUTHORITATIVE, timing-paired comparison over the full pulse-phase window (20 independent live-publish instants) is:
+  PAIRED [mirror-vs-live, tick-synchronized, mean |reldiff| (informational) over 20 pairs] CL=0.01% CD=0.01% CY=2.13% Cl=12.07% Cm=0.21% Cn=1.96% Mx=12.07% My=0.28% Mz=1.95%
+  PAIRED [fraction of the 20 pairs exceeding the floor-aware tolerance - THIS decides pass/fail, not the mean above] CL=0% CD=0% CY=0% Cl=0% Cm=0% Cn=0% Mx=0% My=0% Mz=0%
+  LIVE-CROSS-CHECK RESULT: CONFIRMS_MIRROR (all timing-paired live-vs-mirror diffs within tolerance)
+  dynamics: max|p|=6.561deg/s max|q|=3.492deg/s max|r|=22.519deg/s max|roll|=3.572deg early_p_trend=+5.911deg/s^2
+
+--- RUDDER_P25 (pulse=+25deg, channel=rudder) ---
+  any_nan=False EARLY(t~0.08-0.18s, near-static, achieved delta_e/a/r=-3.987/+0.047/+18.774deg): [MIRROR] CL=0.63772 CD=0.05890 CY=0.028441 Cl=-0.000299 Cm=0.01054 Cn=-0.008496 Mx=-0.0585 My=-0.1977 Mz=-1.6622 (p/q/r=+0.14/-0.51/-7.01deg/s)
+  EARLY  [LIVE PLUGIN, window-avg - see staleness note below]  CL=0.63792 CD=0.05841 CY=0.024845 Cl=-0.000112 Cm=0.00999 Cn=-0.007409 Mx=-0.0220 My=-0.1859 Mz=-1.4483
+  EARLY  [mirror-vs-live-window-avg rel.diff, INFORMATIONAL ONLY - see staleness note below] CL=0.03% CD=0.84% CY=12.64% Cl=62.32% Cm=5.22% Cn=12.80% Mx=62.30% My=5.95% Mz=12.87%
+  SETTLED (last 20% of pulse window, DYNAMIC steady state - includes rate-damping, see header): actual_delta_e/a/r=-4.422/+0.006/+23.335deg [MIRROR] CL=0.62454 CD=0.05914 CY=-0.018847 Cl=0.000219 Cm=0.02469 Cn=0.004742 Mx=+0.0446 My=-0.2995 Mz=+0.9627
+  SETTLED [LIVE PLUGIN, window-avg - see staleness note below]  CL=0.62537 CD=0.05919 CY=-0.017456 Cl=0.000128 Cm=0.02422 Cn=0.004368 Mx=+0.0261 My=-0.2887 Mz=+0.8858
+  SETTLED [mirror-vs-live-window-avg rel.diff, INFORMATIONAL ONLY - see staleness note below] CL=0.13% CD=0.07% CY=7.38% Cl=41.55% Cm=1.92% Cn=7.88% Mx=41.51% My=3.60% Mz=7.98%
+  NOTE: the two window-avg comparisons above can show a large apparent diff purely from 20Hz live-topic publish-rate staleness during fast dynamics (see paired_live_mirror_diff()'s docstring) - NOT used to determine pass/fail. The AUTHORITATIVE, timing-paired comparison over the full pulse-phase window (20 independent live-publish instants) is:
+  PAIRED [mirror-vs-live, tick-synchronized, mean |reldiff| (informational) over 20 pairs] CL=0.01% CD=0.02% CY=2.11% Cl=3.17% Cm=0.28% Cn=5.20% Mx=3.17% My=0.39% Mz=5.19%
+  PAIRED [fraction of the 20 pairs exceeding the floor-aware tolerance - THIS decides pass/fail, not the mean above] CL=0% CD=0% CY=0% Cl=0% Cm=0% Cn=0% Mx=0% My=0% Mz=0%
+  LIVE-CROSS-CHECK RESULT: CONFIRMS_MIRROR (all timing-paired live-vs-mirror diffs within tolerance)
+  dynamics: max|p|=11.004deg/s max|q|=5.895deg/s max|r|=37.546deg/s max|roll|=5.647deg early_p_trend=-8.525deg/s^2
+
+--- RUDDER_M25 (pulse=-25deg, channel=rudder) ---
+  any_nan=False EARLY(t~0.08-0.18s, near-static, achieved delta_e/a/r=-3.987/-0.047/-18.773deg): [MIRROR] CL=0.63772 CD=0.05890 CY=-0.028419 Cl=0.000303 Cm=0.01054 Cn=0.008504 Mx=+0.0593 My=-0.1977 Mz=+1.6637 (p/q/r=-0.11/-0.51/+7.14deg/s)
+  EARLY  [LIVE PLUGIN, window-avg - see staleness note below]  CL=0.63792 CD=0.05841 CY=-0.024832 Cl=0.000117 Cm=0.00999 Cn=0.007419 Mx=+0.0230 My=-0.1859 Mz=+1.4503
+  EARLY  [mirror-vs-live-window-avg rel.diff, INFORMATIONAL ONLY - see staleness note below] CL=0.03% CD=0.84% CY=12.62% Cl=61.28% Cm=5.22% Cn=12.75% Mx=61.27% My=5.95% Mz=12.83%
+  SETTLED (last 20% of pulse window, DYNAMIC steady state - includes rate-damping, see header): actual_delta_e/a/r=-4.422/-0.006/-23.334deg [MIRROR] CL=0.62437 CD=0.05913 CY=0.018977 Cl=-0.000224 Cm=0.02476 Cn=-0.004766 Mx=-0.0456 My=-0.3000 Mz=-0.9677
+  SETTLED [LIVE PLUGIN, window-avg - see staleness note below]  CL=0.62521 CD=0.05918 CY=0.017589 Cl=-0.000133 Cm=0.02429 Cn=-0.004393 Mx=-0.0271 My=-0.2892 Mz=-0.8909
+  SETTLED [mirror-vs-live-window-avg rel.diff, INFORMATIONAL ONLY - see staleness note below] CL=0.13% CD=0.07% CY=7.31% Cl=40.59% Cm=1.92% Cn=7.82% Mx=40.56% My=3.59% Mz=7.93%
+  NOTE: the two window-avg comparisons above can show a large apparent diff purely from 20Hz live-topic publish-rate staleness during fast dynamics (see paired_live_mirror_diff()'s docstring) - NOT used to determine pass/fail. The AUTHORITATIVE, timing-paired comparison over the full pulse-phase window (20 independent live-publish instants) is:
+  PAIRED [mirror-vs-live, tick-synchronized, mean |reldiff| (informational) over 20 pairs] CL=0.01% CD=0.02% CY=2.08% Cl=3.17% Cm=0.28% Cn=8.41% Mx=3.17% My=0.39% Mz=8.40%
+  PAIRED [fraction of the 20 pairs exceeding the floor-aware tolerance - THIS decides pass/fail, not the mean above] CL=0% CD=0% CY=0% Cl=0% Cm=0% Cn=0% Mx=0% My=0% Mz=0%
+  LIVE-CROSS-CHECK RESULT: CONFIRMS_MIRROR (all timing-paired live-vs-mirror diffs within tolerance)
+  dynamics: max|p|=11.025deg/s max|q|=5.920deg/s max|r|=37.591deg/s max|roll|=5.677deg early_p_trend=+8.586deg/s^2
+
+  Control-drag check (rudder): CD_trim=0.05639
+    pulse=+15deg: CD_early=0.05734 (delta=+0.00095)
+    pulse=-15deg: CD_early=0.05734 (delta=+0.00096)
+    pulse=+25deg: CD_early=0.05890 (delta=+0.00252)
+    pulse=-25deg: CD_early=0.05890 (delta=+0.00252)
+  10-25deg-region smoothness (CY): +15->+25 growth=+0.010717, -15->-25 growth=+0.010713 -> smooth, non-flat (OK)
+
+==============================================================================
+ANTI-WINDUP CHECK (Part 7)
+==============================================================================
+Normal +/-15/+/-25deg pulses stay well within +/-45deg raw commands (never persistently out of range) - per the prior stage's finding, the actuator's anti-windup droop is only triggered by a SUSTAINED out-of-+/-45deg-range RAW command, which this task did not issue.

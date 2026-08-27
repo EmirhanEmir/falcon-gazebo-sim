@@ -1,0 +1,204 @@
+FALCON V2 - CONTROL_AUTHORITY_EFFECTIVENESS_VALIDATION - QUASI-STATIC (gazebo-testing, 2026-08-26)
+Base trim (reused, not re-searched): throttle=0.4915 elevator_theta=+5.5deg physical both sides (delta_e_aero_trim=-5.5deg), aileron/rudder neutral, V=18.165 alpha=2.461deg -> u=18.14825 w=-0.77999, altitude=100.0m
+actuator_v1_config.yaml (read-only): max_rate_rad_s=5.236 (300.0 deg/s), max_effort_nm=0.2
+aero_v1_config.yaml (read-only): elevator_sign=-1.0 aileron_sign=1.0 rudder_sign=1.0 control_deflection_clamp_deg=10.0
+WARM_STEPS=300 SETTLE_STEPS=4500 TAIL_STEPS=500 (reused from test_actuator_flight_load.py, unmodified)
+TEST-HARNESS FIX (this pass): KP_ANG_QSTATIC raised 150->1500.0 (test-only hold_step controller gain, NOT a physics parameter) - a pure-P rate hold leaves a persistent residual body rate under the large +-10deg aero moments this script measures, contaminating Clp/Cnp (aileron) and Cmq/CLq (elevator) coupling terms; see module docstring for full empirical evidence.
+
+==============================================================================
+QUASI-STATIC SWEEP: ELEVATOR (7 points, other 2 channels held at trim/neutral via the real actuator throughout)
+==============================================================================
+--- ELEVATOR_DELTA_M10DEG ---
+  commanded(deg): {'left_aileron': 0.0, 'right_aileron': 0.0, 'left_elevator': 15.5, 'right_elevator': 15.5, 'rudder': 0.0}
+  actual_tail_mean(deg): {'left_aileron': -0.001362083497084411, 'right_aileron': -0.0013620834970835974, 'left_elevator': 15.498740697442694, 'right_elevator': 15.49874069744269, 'rudder': -2.25217579613679e-19}
+  tracking_error(deg): {'left_aileron': 0.001362083497084411, 'right_aileron': 0.0013620834970835974, 'left_elevator': 0.001259302557306441, 'right_elevator': 0.0012593025573099936, 'rudder': 2.25217579613679e-19}
+  actual_delta_e/a/r_deg = -15.4987 / 0.0000 / -0.0000
+  aero_tail_avg (n=10): {'V': 18.166440779413715, 'alpha': 0.0428183084906323, 'beta': 1.275096655188013e-21, 'qbar': 202.1369869881076, 'CL': 0.6700374285643222, 'CD': 0.0588045682197559, 'CY': 1.40145869937169e-19, 'Cl': 1.702765200119431e-18, 'Cm': 0.06716204800334283, 'Cn': 7.032874322596464e-21}
+  smooth_ok=True any_target_clamp=False any_effort_clamp_tail=False any_nan=False prop_tail_max_abs_rpm_diff=0.0 prop_tail_max_abs_thrust_diff_N=0.0
+
+--- ELEVATOR_DELTA_M5DEG ---
+  commanded(deg): {'left_aileron': 0.0, 'right_aileron': 0.0, 'left_elevator': 10.5, 'right_elevator': 10.5, 'rudder': 0.0}
+  actual_tail_mean(deg): {'left_aileron': -0.0013722446244606406, 'right_aileron': -0.0013722446244611424, 'left_elevator': 10.49937363947106, 'right_elevator': 10.49937363947106, 'rudder': 2.079383799429333e-19}
+  tracking_error(deg): {'left_aileron': 0.0013722446244606406, 'right_aileron': 0.0013722446244611424, 'left_elevator': 0.000626360528940495, 'right_elevator': 0.000626360528940495, 'rudder': 2.079383799429333e-19}
+  actual_delta_e/a/r_deg = -10.4994 / -0.0000 / 0.0000
+  aero_tail_avg (n=10): {'V': 18.166498072456157, 'alpha': 0.0428181918472535, 'beta': -2.8634945629052322e-21, 'qbar': 202.1382619831798, 'CL': 0.6700367938652032, 'CD': 0.058804523311036735, 'CY': -8.526247016903395e-20, 'Cl': -1.0413877485653967e-18, 'Cm': 0.06716224082829678, 'Cn': -4.416162320385777e-21}
+  smooth_ok=True any_target_clamp=False any_effort_clamp_tail=False any_nan=False prop_tail_max_abs_rpm_diff=0.0 prop_tail_max_abs_thrust_diff_N=0.0
+
+--- ELEVATOR_DELTA_M2DEG ---
+  commanded(deg): {'left_aileron': 0.0, 'right_aileron': 0.0, 'left_elevator': 7.499999999999999, 'right_elevator': 7.499999999999999, 'rudder': 0.0}
+  actual_tail_mean(deg): {'left_aileron': -0.0008242962032406297, 'right_aileron': -0.0008242962032409268, 'left_elevator': 7.499548457074673, 'right_elevator': 7.499548457074673, 'rudder': 7.198868232157828e-19}
+  tracking_error(deg): {'left_aileron': 0.0008242962032406297, 'right_aileron': 0.0008242962032409268, 'left_elevator': 0.0004515429253260095, 'right_elevator': 0.0004515429253260095, 'rudder': 7.198868232157828e-19}
+  actual_delta_e/a/r_deg = -7.4995 / -0.0000 / 0.0000
+  aero_tail_avg (n=10): {'V': 18.166994402915563, 'alpha': 0.042805245934023725, 'beta': -5.1260300981757284e-21, 'qbar': 202.14930745189363, 'CL': 0.6700671138272286, 'CD': 0.05880666867533095, 'CY': -2.102425393847425e-19, 'Cl': -2.5726121133414375e-18, 'Cm': 0.03521724562576428, 'Cn': -1.1146179470157711e-20}
+  smooth_ok=True any_target_clamp=False any_effort_clamp_tail=False any_nan=False prop_tail_max_abs_rpm_diff=0.0 prop_tail_max_abs_thrust_diff_N=0.0
+
+--- ELEVATOR_DELTA_P0DEG ---
+  commanded(deg): {'left_aileron': 0.0, 'right_aileron': 0.0, 'left_elevator': 5.5, 'right_elevator': 5.5, 'rudder': 0.0}
+  actual_tail_mean(deg): {'left_aileron': -0.0003316133769815391, 'right_aileron': -0.0003316133769806315, 'left_elevator': 5.499501603389335, 'right_elevator': 5.499501603389335, 'rudder': 6.119060332056096e-19}
+  tracking_error(deg): {'left_aileron': 0.0003316133769815391, 'right_aileron': 0.0003316133769806315, 'left_elevator': 0.000498396610664642, 'right_elevator': 0.000498396610664642, 'rudder': 6.119060332056096e-19}
+  actual_delta_e/a/r_deg = -5.4995 / 0.0000 / 0.0000
+  aero_tail_avg (n=10): {'V': 18.167366833723637, 'alpha': 0.04279481292569134, 'beta': -2.6389115768030137e-21, 'qbar': 202.15759582353763, 'CL': 0.6700909450398672, 'CD': 0.05880835498016951, 'CY': 1.7527468230063487e-19, 'Cl': 2.1108807687556536e-18, 'Cm': 0.009665121070217247, 'Cn': 8.366757316966686e-21}
+  smooth_ok=True any_target_clamp=False any_effort_clamp_tail=False any_nan=False prop_tail_max_abs_rpm_diff=0.0 prop_tail_max_abs_thrust_diff_N=0.0
+
+--- ELEVATOR_DELTA_P2DEG ---
+  commanded(deg): {'left_aileron': 0.0, 'right_aileron': 0.0, 'left_elevator': 3.5, 'right_elevator': 3.5, 'rudder': 0.0}
+  actual_tail_mean(deg): {'left_aileron': 0.00019032380154597039, 'right_aileron': 0.00019032380154542, 'left_elevator': 3.499319801400207, 'right_elevator': 3.499319801400207, 'rudder': -6.515785903897313e-20}
+  tracking_error(deg): {'left_aileron': 0.00019032380154597039, 'right_aileron': 0.00019032380154542, 'left_elevator': 0.0006801985997930693, 'right_elevator': 0.0006801985997930693, 'rudder': 6.515785903897313e-20}
+  actual_delta_e/a/r_deg = -3.4993 / -0.0000 / -0.0000
+  aero_tail_avg (n=10): {'V': 18.16773911511158, 'alpha': 0.04278426526739981, 'beta': -6.220327687291765e-21, 'qbar': 202.16588103988678, 'CL': 0.6701141597995024, 'CD': 0.058809997722250706, 'CY': -6.571683972438375e-20, 'Cl': -8.054737728914785e-19, 'Cm': -0.0158885413952747, 'Cn': -3.5153743724679135e-21}
+  smooth_ok=True any_target_clamp=False any_effort_clamp_tail=False any_nan=False prop_tail_max_abs_rpm_diff=0.0 prop_tail_max_abs_thrust_diff_N=0.0
+
+--- ELEVATOR_DELTA_P5DEG ---
+  commanded(deg): {'left_aileron': 0.0, 'right_aileron': 0.0, 'left_elevator': 0.5, 'right_elevator': 0.5, 'rudder': 0.0}
+  actual_tail_mean(deg): {'left_aileron': 0.0010280129724203478, 'right_aileron': 0.001028012972422748, 'left_elevator': 0.4987980063514744, 'right_elevator': 0.4987980063514753, 'rudder': 1.7775682380800415e-18}
+  tracking_error(deg): {'left_aileron': 0.0010280129724203478, 'right_aileron': 0.001028012972422748, 'left_elevator': 0.0012019936485255789, 'right_elevator': 0.0012019936485246907, 'rudder': 1.7775682380800415e-18}
+  actual_delta_e/a/r_deg = -0.4988 / 0.0000 / 0.0000
+  aero_tail_avg (n=10): {'V': 18.16829610489582, 'alpha': 0.04276823300794869, 'beta': 5.7456553946652454e-21, 'qbar': 202.17827730568177, 'CL': 0.6701478487600274, 'CD': 0.05881238174965854, 'CY': 5.220425595045641e-19, 'Cl': 6.307784455333957e-18, 'Cm': -0.05422187657988977, 'Cn': 2.532733273158465e-20}
+  smooth_ok=True any_target_clamp=False any_effort_clamp_tail=False any_nan=False prop_tail_max_abs_rpm_diff=0.0 prop_tail_max_abs_thrust_diff_N=0.0
+
+--- ELEVATOR_DELTA_P10DEG ---
+  commanded(deg): {'left_aileron': 0.0, 'right_aileron': 0.0, 'left_elevator': -4.5, 'right_elevator': -4.5, 'rudder': 0.0}
+  actual_tail_mean(deg): {'left_aileron': 0.0025693031126585407, 'right_aileron': 0.00256930311265873, 'left_elevator': -4.502727121235263, 'right_elevator': -4.502727121235266, 'rudder': 7.67114474934327e-19}
+  tracking_error(deg): {'left_aileron': 0.0025693031126585407, 'right_aileron': 0.00256930311265873, 'left_elevator': 0.0027271212352628638, 'right_elevator': 0.0027271212352664165, 'rudder': 7.67114474934327e-19}
+  actual_delta_e/a/r_deg = 4.5027 / 0.0000 / 0.0000
+  aero_tail_avg (n=10): {'V': 18.169220506736956, 'alpha': 0.042740955926053134, 'beta': -6.418742461801403e-21, 'qbar': 202.19885146881504, 'CL': 0.6702010042697575, 'CD': 0.058816143587478206, 'CY': -1.6908183671668993e-20, 'Cl': -2.2662594072934277e-19, 'Cm': -0.1181182431565269, 'Cn': -1.3646488821994967e-21}
+  smooth_ok=True any_target_clamp=False any_effort_clamp_tail=False any_nan=False prop_tail_max_abs_rpm_diff=0.0 prop_tail_max_abs_thrust_diff_N=0.0
+
+Central-difference effective slopes (per rad, using ACTUAL achieved angle as x-axis):
+  CL_delta_e_GZ_per_rad: {'w2': 0.00067384539395108, 'w5': 0.0006362610514762784, 'w10': 0.0004685754884230154}
+  Cm_delta_e_GZ_per_rad: {'w2': -0.7319946325683947, 'w5': -0.6954397309267758, 'w10': -0.53074998328384}
+
+==============================================================================
+QUASI-STATIC SWEEP: AILERON (7 points, other 2 channels held at trim/neutral via the real actuator throughout)
+==============================================================================
+--- AILERON_DELTA_M10DEG ---
+  commanded(deg): {'left_aileron': 10.0, 'right_aileron': -10.0, 'left_elevator': 5.5, 'right_elevator': 5.5, 'rudder': 0.0}
+  actual_tail_mean(deg): {'left_aileron': 9.999724793312756, 'right_aileron': -9.99897256705538, 'left_elevator': 5.500063479131554, 'right_elevator': 5.499991161053121, 'rudder': -0.015177600331758627}
+  tracking_error(deg): {'left_aileron': 0.00027520668724356767, 'right_aileron': 0.0010274329446193775, 'left_elevator': 6.347913155391183e-05, 'right_elevator': 8.838946879308196e-06, 'rudder': 0.015177600331758627}
+  actual_delta_e/a/r_deg = -5.5000 / -9.9993 / -0.0152
+  aero_tail_avg (n=10): {'V': 18.16736463478373, 'alpha': 0.04279220787459638, 'beta': 0.000117401113327379, 'qbar': 202.15754688607936, 'CL': 0.6700767185326464, 'CD': 0.05880734830044008, 'CY': -0.004446432275145408, 'Cl': -0.053462172318549696, 'Cm': 0.009676215669301422, 'Cn': -0.00020883695045569064}
+  smooth_ok=True any_target_clamp=False any_effort_clamp_tail=False any_nan=False prop_tail_max_abs_rpm_diff=0.0005044730369263561 prop_tail_max_abs_thrust_diff_N=1.1319489811700834e-05
+
+--- AILERON_DELTA_M5DEG ---
+  commanded(deg): {'left_aileron': 5.0, 'right_aileron': -5.0, 'left_elevator': 5.5, 'right_elevator': 5.5, 'rudder': 0.0}
+  actual_tail_mean(deg): {'left_aileron': 4.999531802198711, 'right_aileron': -4.999836913725597, 'left_elevator': 5.49965144998504, 'right_elevator': 5.499615266724233, 'rudder': -0.0075921378830807315}
+  tracking_error(deg): {'left_aileron': 0.0004681978012888166, 'right_aileron': 0.00016308627440331236, 'left_elevator': 0.00034855001495959215, 'right_elevator': 0.00038473327576671323, 'rudder': 0.0075921378830807315}
+  actual_delta_e/a/r_deg = -5.4996 / -4.9997 / -0.0076
+  aero_tail_avg (n=10): {'V': 18.16736628104153, 'alpha': 0.04279415895980522, 'beta': 5.885536912758968e-05, 'qbar': 202.15758352358392, 'CL': 0.6700873736592422, 'CD': 0.05880810226422534, 'CY': -0.002223245939723565, 'Cl': -0.026731140126111365, 'Cm': 0.009667903391821905, 'Cn': -0.00010441171907607497}
+  smooth_ok=True any_target_clamp=False any_effort_clamp_tail=False any_nan=False prop_tail_max_abs_rpm_diff=0.0002521929736758466 prop_tail_max_abs_thrust_diff_N=5.65876147540223e-06
+
+--- AILERON_DELTA_M2DEG ---
+  commanded(deg): {'left_aileron': 2.0, 'right_aileron': -2.0, 'left_elevator': 5.5, 'right_elevator': 5.5, 'rudder': 0.0}
+  actual_tail_mean(deg): {'left_aileron': 1.9995724168241702, 'right_aileron': -2.000178134297246, 'left_elevator': 5.4995299528530115, 'right_elevator': 5.4995154759002265, 'rudder': -0.0030372374417767293}
+  tracking_error(deg): {'left_aileron': 0.0004275831758298043, 'right_aileron': 0.00017813429724578, 'left_elevator': 0.0004700471469885059, 'right_elevator': 0.00048452409977350896, 'rudder': 0.0030372374417767293}
+  actual_delta_e/a/r_deg = -5.4995 / -1.9999 / -0.0030
+  aero_tail_avg (n=10): {'V': 18.16736674480632, 'alpha': 0.04279470803564173, 'beta': 2.3577562738656486e-05, 'qbar': 202.1575938446804, 'CL': 0.6700903722243635, 'CD': 0.05880831444684318, 'CY': -0.0008893042872997626, 'Cl': -0.010692464329821478, 'Cm': 0.009665567053534805, 'Cn': -4.176329358576526e-05}
+  smooth_ok=True any_target_clamp=False any_effort_clamp_tail=False any_nan=False prop_tail_max_abs_rpm_diff=0.00010086727252200944 prop_tail_max_abs_thrust_diff_N=2.2632813014844544e-06
+
+--- AILERON_DELTA_P0DEG ---
+  commanded(deg): {'left_aileron': -0.0, 'right_aileron': 0.0, 'left_elevator': 5.5, 'right_elevator': 5.5, 'rudder': 0.0}
+  actual_tail_mean(deg): {'left_aileron': -0.0003316133769815391, 'right_aileron': -0.0003316133769806315, 'left_elevator': 5.499501603389335, 'right_elevator': 5.499501603389335, 'rudder': 6.119060332056096e-19}
+  tracking_error(deg): {'left_aileron': 0.0003316133769815391, 'right_aileron': 0.0003316133769806315, 'left_elevator': 0.000498396610664642, 'right_elevator': 0.000498396610664642, 'rudder': 6.119060332056096e-19}
+  actual_delta_e/a/r_deg = -5.4995 / 0.0000 / 0.0000
+  aero_tail_avg (n=10): {'V': 18.167366833723637, 'alpha': 0.04279481292569134, 'beta': -2.6389115768030137e-21, 'qbar': 202.15759582353763, 'CL': 0.6700909450398672, 'CD': 0.05880835498016951, 'CY': 1.7527468230063487e-19, 'Cl': 2.1108807687556536e-18, 'Cm': 0.009665121070217247, 'Cn': 8.366757316966686e-21}
+  smooth_ok=True any_target_clamp=False any_effort_clamp_tail=False any_nan=False prop_tail_max_abs_rpm_diff=0.0 prop_tail_max_abs_thrust_diff_N=0.0
+
+--- AILERON_DELTA_P2DEG ---
+  commanded(deg): {'left_aileron': -2.0, 'right_aileron': 2.0, 'left_elevator': 5.5, 'right_elevator': 5.5, 'rudder': 0.0}
+  actual_tail_mean(deg): {'left_aileron': -2.0001781342972484, 'right_aileron': 1.9995724168241693, 'left_elevator': 5.499515475900225, 'right_elevator': 5.499529952853013, 'rudder': 0.0030372374417768065}
+  tracking_error(deg): {'left_aileron': 0.00017813429724844454, 'right_aileron': 0.0004275831758306925, 'left_elevator': 0.0004845240997752853, 'right_elevator': 0.00047004714698672956, 'rudder': 0.0030372374417768065}
+  actual_delta_e/a/r_deg = -5.4995 / 1.9999 / 0.0030
+  aero_tail_avg (n=10): {'V': 18.16736674480632, 'alpha': 0.042794708035641726, 'beta': -2.357756273865681e-05, 'qbar': 202.1575938446804, 'CL': 0.6700903722243635, 'CD': 0.05880831444684318, 'CY': 0.0008893042872997631, 'Cl': 0.01069246432982148, 'Cm': 0.00966556705353482, 'Cn': 4.176329358576525e-05}
+  smooth_ok=True any_target_clamp=False any_effort_clamp_tail=False any_nan=False prop_tail_max_abs_rpm_diff=0.00010086727252200944 prop_tail_max_abs_thrust_diff_N=2.2632813014844544e-06
+
+--- AILERON_DELTA_P5DEG ---
+  commanded(deg): {'left_aileron': -5.0, 'right_aileron': 5.0, 'left_elevator': 5.5, 'right_elevator': 5.5, 'rudder': 0.0}
+  actual_tail_mean(deg): {'left_aileron': -4.999836913725603, 'right_aileron': 4.999531802198712, 'left_elevator': 5.499615266724238, 'right_elevator': 5.4996514499850395, 'rudder': 0.007592137883080744}
+  tracking_error(deg): {'left_aileron': 0.0001630862743970951, 'right_aileron': 0.00046819780128792843, 'left_elevator': 0.00038473327576227234, 'right_elevator': 0.0003485500149604803, 'rudder': 0.007592137883080744}
+  actual_delta_e/a/r_deg = -5.4996 / 4.9997 / 0.0076
+  aero_tail_avg (n=10): {'V': 18.16736628104153, 'alpha': 0.04279415895980522, 'beta': -5.885536912758893e-05, 'qbar': 202.15758352358395, 'CL': 0.6700873736592422, 'CD': 0.05880810226422534, 'CY': 0.002223245939723566, 'Cl': 0.026731140126111375, 'Cm': 0.00966790339182191, 'Cn': 0.00010441171907607502}
+  smooth_ok=True any_target_clamp=False any_effort_clamp_tail=False any_nan=False prop_tail_max_abs_rpm_diff=0.0002521929736758466 prop_tail_max_abs_thrust_diff_N=5.65876147540223e-06
+
+--- AILERON_DELTA_P10DEG ---
+  commanded(deg): {'left_aileron': -10.0, 'right_aileron': 10.0, 'left_elevator': 5.5, 'right_elevator': 5.5, 'rudder': 0.0}
+  actual_tail_mean(deg): {'left_aileron': -9.99897256705537, 'right_aileron': 9.999724793312756, 'left_elevator': 5.499991161053122, 'right_elevator': 5.500063479131554, 'rudder': 0.015177600331758422}
+  tracking_error(deg): {'left_aileron': 0.0010274329446300356, 'right_aileron': 0.00027520668724356767, 'left_elevator': 8.838946878420018e-06, 'right_elevator': 6.347913155391183e-05, 'rudder': 0.015177600331758422}
+  actual_delta_e/a/r_deg = -5.5000 / 9.9993 / 0.0152
+  aero_tail_avg (n=10): {'V': 18.16736463478373, 'alpha': 0.04279220787459638, 'beta': -0.00011740111332737878, 'qbar': 202.15754688607936, 'CL': 0.6700767185326464, 'CD': 0.05880734830044008, 'CY': 0.004446432275145405, 'Cl': 0.05346217231854966, 'Cm': 0.00967621566930142, 'Cn': 0.00020883695045569066}
+  smooth_ok=True any_target_clamp=False any_effort_clamp_tail=False any_nan=False prop_tail_max_abs_rpm_diff=0.0005044730369263561 prop_tail_max_abs_thrust_diff_N=1.1319489811700834e-05
+
+Central-difference effective slopes (per rad, using ACTUAL achieved angle as x-axis):
+  Cl_delta_a_GZ_per_rad: {'w2': 0.3063356431171359, 'w5': 0.3063356406409722, 'w10': 0.3063356359924084}
+  Cn_delta_a_GZ_per_rad: {'w2': 0.0011965048472131548, 'w5': 0.0011965457029777492, 'w10': 0.0011966255253410656}
+  CY_delta_a_GZ_per_rad: {'w2': 0.025478280064680604, 'w5': 0.02547813022694044, 'w10': 0.025477839747847918}
+
+==============================================================================
+QUASI-STATIC SWEEP: RUDDER (7 points, other 2 channels held at trim/neutral via the real actuator throughout)
+==============================================================================
+--- RUDDER_DELTA_M10DEG ---
+  commanded(deg): {'left_aileron': 0.0, 'right_aileron': 0.0, 'left_elevator': 5.5, 'right_elevator': 5.5, 'rudder': -10.0}
+  actual_tail_mean(deg): {'left_aileron': -0.00033216972167566915, 'right_aileron': -0.0003310153459920105, 'left_elevator': 5.499501672399375, 'right_elevator': 5.499501524682611, 'rudder': -9.99959269937789}
+  tracking_error(deg): {'left_aileron': 0.00033216972167566915, 'right_aileron': 0.0003310153459920105, 'left_elevator': 0.0004983276006251813, 'right_elevator': 0.0004984753173893353, 'rudder': 0.0004073006221094744}
+  actual_delta_e/a/r_deg = -5.4995 / 0.0000 / -9.9996
+  aero_tail_avg (n=10): {'V': 18.16736677322414, 'alpha': 0.04279481288787044, 'beta': -8.721612743036139e-05, 'qbar': 202.15759447711972, 'CL': 0.6700909452983347, 'CD': 0.058808354998459066, 'CY': -0.014820191814708084, 'Cl': -0.00011734510083007797, 'Cm': 0.00966512057000356, 'Cn': 0.004359374828827489}
+  smooth_ok=True any_target_clamp=False any_effort_clamp_tail=False any_nan=False prop_tail_max_abs_rpm_diff=0.011031610728423402 prop_tail_max_abs_thrust_diff_N=0.00024778278862758185
+
+--- RUDDER_DELTA_M5DEG ---
+  commanded(deg): {'left_aileron': 0.0, 'right_aileron': 0.0, 'left_elevator': 5.5, 'right_elevator': 5.5, 'rudder': -5.0}
+  actual_tail_mean(deg): {'left_aileron': -0.00033189689282712043, 'right_aileron': -0.00033131941514806816, 'left_elevator': 5.499501639141205, 'right_elevator': 5.499501565207206, 'rudder': -4.999800226936287}
+  tracking_error(deg): {'left_aileron': 0.00033189689282712043, 'right_aileron': 0.00033131941514806816, 'left_elevator': 0.000498360858794733, 'right_elevator': 0.0004984347927941002, 'rudder': 0.0001997730637128825}
+  actual_delta_e/a/r_deg = -5.4995 / 0.0000 / -4.9998
+  aero_tail_avg (n=10): {'V': 18.167366818602357, 'alpha': 0.04279481291618807, 'beta': -4.3607791583904454e-05, 'qbar': 202.1575954870132, 'CL': 0.6700909451044439, 'CD': 0.058808354984739054, 'CY': -0.0074101014828324594, 'Cl': -5.867259373065776e-05, 'Cm': 0.009665120944965942, 'Cn': 0.002179689053707766}
+  smooth_ok=True any_target_clamp=False any_effort_clamp_tail=False any_nan=False prop_tail_max_abs_rpm_diff=0.0055158082950583776 prop_tail_max_abs_thrust_diff_N=0.00012389145342606156
+
+--- RUDDER_DELTA_M2DEG ---
+  commanded(deg): {'left_aileron': 0.0, 'right_aileron': 0.0, 'left_elevator': 5.5, 'right_elevator': 5.5, 'rudder': -2.0}
+  actual_tail_mean(deg): {'left_aileron': -0.00033172806963490065, 'right_aileron': -0.00033149701089268187, 'left_elevator': 5.49950161799038, 'right_elevator': 5.499501588399041, 'rudder': -1.9999209845453085}
+  tracking_error(deg): {'left_aileron': 0.00033172806963490065, 'right_aileron': 0.00033149701089268187, 'left_elevator': 0.0004983820096198244, 'right_elevator': 0.0004984116009589812, 'rudder': 7.901545469146676e-05}
+  actual_delta_e/a/r_deg = -5.4995 / 0.0000 / -1.9999
+  aero_tail_avg (n=10): {'V': 18.16736683130856, 'alpha': 0.0427948129241565, 'beta': -1.744305119103086e-05, 'qbar': 202.15759576978988, 'CL': 0.6700909450501316, 'CD': 0.05880835498089583, 'CY': -0.002964041877700974, 'Cl': -2.3469047706716997e-05, 'Cm': 0.0096651210501874, 'Cn': 0.0008718759991315497}
+  smooth_ok=True any_target_clamp=False any_effort_clamp_tail=False any_nan=False prop_tail_max_abs_rpm_diff=0.0022063239812268876 prop_tail_max_abs_thrust_diff_N=4.9556594689637024e-05
+
+--- RUDDER_DELTA_P0DEG ---
+  commanded(deg): {'left_aileron': 0.0, 'right_aileron': 0.0, 'left_elevator': 5.5, 'right_elevator': 5.5, 'rudder': 0.0}
+  actual_tail_mean(deg): {'left_aileron': -0.0003316133769815391, 'right_aileron': -0.0003316133769806315, 'left_elevator': 5.499501603389335, 'right_elevator': 5.499501603389335, 'rudder': 6.119060332056096e-19}
+  tracking_error(deg): {'left_aileron': 0.0003316133769815391, 'right_aileron': 0.0003316133769806315, 'left_elevator': 0.000498396610664642, 'right_elevator': 0.000498396610664642, 'rudder': 6.119060332056096e-19}
+  actual_delta_e/a/r_deg = -5.4995 / 0.0000 / 0.0000
+  aero_tail_avg (n=10): {'V': 18.167366833723637, 'alpha': 0.04279481292569134, 'beta': -2.6389115768030137e-21, 'qbar': 202.15759582353763, 'CL': 0.6700909450398672, 'CD': 0.05880835498016951, 'CY': 1.7527468230063487e-19, 'Cl': 2.1108807687556536e-18, 'Cm': 0.009665121070217247, 'Cn': 8.366757316966686e-21}
+  smooth_ok=True any_target_clamp=False any_effort_clamp_tail=False any_nan=False prop_tail_max_abs_rpm_diff=0.0 prop_tail_max_abs_thrust_diff_N=0.0
+
+--- RUDDER_DELTA_P2DEG ---
+  commanded(deg): {'left_aileron': 0.0, 'right_aileron': 0.0, 'left_elevator': 5.5, 'right_elevator': 5.5, 'rudder': 2.0}
+  actual_tail_mean(deg): {'left_aileron': -0.00033149701089161247, 'right_aileron': -0.00033172806963496445, 'left_elevator': 5.499501588399039, 'right_elevator': 5.499501617990379, 'rudder': 1.999920984545308}
+  tracking_error(deg): {'left_aileron': 0.00033149701089161247, 'right_aileron': 0.00033172806963496445, 'left_elevator': 0.0004984116009607575, 'right_elevator': 0.0004983820096207126, 'rudder': 7.901545469191085e-05}
+  actual_delta_e/a/r_deg = -5.4995 / -0.0000 / 1.9999
+  aero_tail_avg (n=10): {'V': 18.16736683130856, 'alpha': 0.0427948129241565, 'beta': 1.7443051191030807e-05, 'qbar': 202.15759576978988, 'CL': 0.6700909450501314, 'CD': 0.05880835498089583, 'CY': 0.002964041877700973, 'Cl': 2.3469047706711423e-05, 'Cm': 0.0096651210501874, 'Cn': -0.0008718759991315495}
+  smooth_ok=True any_target_clamp=False any_effort_clamp_tail=False any_nan=False prop_tail_max_abs_rpm_diff=0.0022063239812268876 prop_tail_max_abs_thrust_diff_N=4.9556594689637024e-05
+
+--- RUDDER_DELTA_P5DEG ---
+  commanded(deg): {'left_aileron': 0.0, 'right_aileron': 0.0, 'left_elevator': 5.5, 'right_elevator': 5.5, 'rudder': 5.0}
+  actual_tail_mean(deg): {'left_aileron': -0.00033131941514527656, 'right_aileron': -0.0003318968928272818, 'left_elevator': 5.499501565207207, 'right_elevator': 5.499501639141202, 'rudder': 4.999800226936285}
+  tracking_error(deg): {'left_aileron': 0.00033131941514527656, 'right_aileron': 0.0003318968928272818, 'left_elevator': 0.000498434792793212, 'right_elevator': 0.0004983608587982857, 'rudder': 0.00019977306371465886}
+  actual_delta_e/a/r_deg = -5.4995 / -0.0000 / 4.9998
+  aero_tail_avg (n=10): {'V': 18.167366818602357, 'alpha': 0.04279481291618807, 'beta': 4.3607791583904454e-05, 'qbar': 202.1575954870132, 'CL': 0.6700909451044439, 'CD': 0.058808354984739054, 'CY': 0.007410101482832461, 'Cl': 5.867259373064878e-05, 'Cm': 0.00966512094496592, 'Cn': -0.002179689053707767}
+  smooth_ok=True any_target_clamp=False any_effort_clamp_tail=False any_nan=False prop_tail_max_abs_rpm_diff=0.0055158082950583776 prop_tail_max_abs_thrust_diff_N=0.00012389145342606156
+
+--- RUDDER_DELTA_P10DEG ---
+  commanded(deg): {'left_aileron': 0.0, 'right_aileron': 0.0, 'left_elevator': 5.5, 'right_elevator': 5.5, 'rudder': 10.0}
+  actual_tail_mean(deg): {'left_aileron': -0.00033101534599339755, 'right_aileron': -0.0003321697216747856, 'left_elevator': 5.499501524682609, 'right_elevator': 5.499501672399375, 'rudder': 9.999592699377885}
+  tracking_error(deg): {'left_aileron': 0.00033101534599339755, 'right_aileron': 0.0003321697216747856, 'left_elevator': 0.0004984753173911116, 'right_elevator': 0.0004983276006251813, 'rudder': 0.00040730062211480345}
+  actual_delta_e/a/r_deg = -5.4995 / -0.0000 / 9.9996
+  aero_tail_avg (n=10): {'V': 18.16736677322414, 'alpha': 0.04279481288787044, 'beta': 8.721612743036143e-05, 'qbar': 202.15759447711974, 'CL': 0.6700909452983347, 'CD': 0.058808354998459066, 'CY': 0.014820191814708093, 'Cl': 0.00011734510083008484, 'Cm': 0.009665120570003526, 'Cn': -0.004359374828827491}
+  smooth_ok=True any_target_clamp=False any_effort_clamp_tail=False any_nan=False prop_tail_max_abs_rpm_diff=0.011031610728423402 prop_tail_max_abs_thrust_diff_N=0.00024778278862713776
+
+Central-difference effective slopes (per rad, using ACTUAL achieved angle as x-axis):
+  CY_delta_r_GZ_per_rad: {'w2': 0.08491689981987387, 'w5': 0.0849169009678801, 'w10': 0.08491690292644918}
+  Cn_delta_r_GZ_per_rad: {'w2': -0.02497839434408809, 'w5': -0.02497839468775053, 'w10': -0.024978395272331463}
+  Cl_delta_r_GZ_per_rad: {'w2': 0.0006723652550161258, 'w5': 0.0006723652628641327, 'w10': 0.0006723652878900802}
+
+==============================================================================
+QUASI-STATIC NUMERICAL INTEGRITY SUMMARY
+==============================================================================
+any_nan across all 21 points: False
+ACTUATOR_LIMITED_RESPONSE flagged cases: none
+smooth_ok failures: none

@@ -1,0 +1,318 @@
+FALCON V2 - HIGH_DEFLECTION_CONTROL_AERO_IMPLEMENTATION live-Gazebo confirmation (gazebo-testing, 2026-08-26)
+Trim/hold condition (reused): throttle=0.4915 elevator_theta_baseline=+5.5deg physical both sides (warm-up/other-channel baseline only), V=18.165 alpha=2.461deg -> u=18.14825 w=-0.77999, altitude=100.0m
+actuator_v1_config.yaml (read-only): max_rate_rad_s=5.236 max_angle_rad=+-0.7853981634 (45.0 deg), max_effort_nm=0.2
+WARM_STEPS=300 SETTLE_STEPS=4500 TAIL_STEPS=500 KP_ANG_QSTATIC=1500.0 (all reused verbatim from test_control_authority_effectiveness.py)
+DELTAS_DEG (absolute targets, per surface): [-45.0, -25.0, -10.0, -5.0, -2.0, 0.0, 2.0, 5.0, 10.0, 25.0, 45.0]
+
+==============================================================================
+QUASI-STATIC SWEEP: ELEVATOR (11 points, other 2 channels held at trim/neutral via the real actuator throughout)
+==============================================================================
+--- ELEVATOR_DELTA_M45DEG ---
+  actual_delta_e/a/r_deg = -44.9696 / 0.0000 / -0.0000 (tracking_error_deg={'left_aileron': 0.0033872499511590397, 'right_aileron': 0.0033872287378233852, 'left_elevator': 0.03044707465298302, 'right_elevator': 0.030447074725756806, 'rudder': 5.685206470478364e-07})
+  aero_tail_avg (n=10): CL=0.35720 CD=0.07571 CY=-0.000040 Cl=0.000000 Cm=0.71037 Cn=0.000020
+  smooth_ok=True any_target_clamp=False any_effort_clamp_tail=False any_nan=False prop_rpm_diff=5.05117805005284e-05 prop_thrust_diff_N=1.134530777324727e-06
+--- ELEVATOR_DELTA_M25DEG ---
+  actual_delta_e/a/r_deg = -24.9927 / 0.0000 / -0.0000 (tracking_error_deg={'left_aileron': 0.004626972390539948, 'right_aileron': 0.004626961456862323, 'left_elevator': 0.007283373835065277, 'right_elevator': 0.00728337463265305, 'rudder': 2.9289751676852715e-07})
+  aero_tail_avg (n=10): CL=0.49418 CD=0.05625 CY=-0.000040 Cl=0.000000 Cm=0.37452 Cn=0.000020
+  smooth_ok=True any_target_clamp=False any_effort_clamp_tail=False any_nan=False prop_rpm_diff=5.0551025196909904e-05 prop_thrust_diff_N=1.1354213111935962e-06
+--- ELEVATOR_DELTA_M10DEG ---
+  actual_delta_e/a/r_deg = -9.9996 / 0.0000 / -0.0000 (tracking_error_deg={'left_aileron': 0.002159916359536167, 'right_aileron': 0.0021599135674732484, 'left_elevator': 0.000432160866342457, 'right_elevator': 0.0004321612049018597, 'rudder': 7.458885588072932e-08})
+  aero_tail_avg (n=10): CL=0.59991 CD=0.05441 CY=-0.000040 Cl=0.000000 Cm=0.11347 Cn=0.000020
+  smooth_ok=True any_target_clamp=False any_effort_clamp_tail=False any_nan=False prop_rpm_diff=5.0573550652188715e-05 prop_thrust_diff_N=1.1359343043970682e-06
+--- ELEVATOR_DELTA_M5DEG ---
+  actual_delta_e/a/r_deg = -4.9997 / 0.0000 / -0.0000 (tracking_error_deg={'left_aileron': 0.0006638863781048442, 'right_aileron': 0.0006638863298981891, 'left_elevator': 0.00033524845871824027, 'right_elevator': 0.00033524847220256504, 'rudder': 1.015012732235607e-09})
+  aero_tail_avg (n=10): CL=0.63507 CD=0.05606 CY=-0.000040 Cl=0.000000 Cm=0.02641 Cn=0.000020
+  smooth_ok=True any_target_clamp=False any_effort_clamp_tail=False any_nan=False prop_rpm_diff=5.057970520283561e-05 prop_thrust_diff_N=1.1360749656574853e-06
+--- ELEVATOR_DELTA_M2DEG ---
+  actual_delta_e/a/r_deg = -1.9992 / -0.0000 / 0.0000 (tracking_error_deg={'left_aileron': 0.0003961319719926437, 'right_aileron': 0.0003961303740730811, 'left_elevator': 0.0007986982148602273, 'right_elevator': 0.000798697997727027, 'rudder': 4.312588389842468e-08})
+  aero_tail_avg (n=10): CL=0.65613 CD=0.05757 CY=-0.000040 Cl=0.000000 Cm=-0.02581 Cn=0.000020
+  smooth_ok=True any_target_clamp=False any_effort_clamp_tail=False any_nan=False prop_rpm_diff=5.0583425945660565e-05 prop_thrust_diff_N=1.1361598244441495e-06
+--- ELEVATOR_DELTA_P0DEG ---
+  actual_delta_e/a/r_deg = 0.0013 / -0.0000 / 0.0000 (tracking_error_deg={'left_aileron': 0.001170047626680182, 'right_aileron': 0.0011700449342746143, 'left_elevator': 0.0013215950934277174, 'right_elevator': 0.001321594709257865, 'rudder': 7.247539603792321e-08})
+  aero_tail_avg (n=10): CL=0.67016 CD=0.05881 CY=-0.000040 Cl=0.000000 Cm=-0.06062 Cn=0.000020
+  smooth_ok=True any_target_clamp=False any_effort_clamp_tail=False any_nan=False prop_rpm_diff=5.0585872486408334e-05 prop_thrust_diff_N=1.1362156380201327e-06
+--- ELEVATOR_DELTA_P2DEG ---
+  actual_delta_e/a/r_deg = 2.0020 / -0.0000 / 0.0000 (tracking_error_deg={'left_aileron': 0.0019982404466803204, 'right_aileron': 0.0019982366612929948, 'left_elevator': 0.002014774386079665, 'right_elevator': 0.0020147738248286196, 'rudder': 1.0178575707015831e-07})
+  aero_tail_avg (n=10): CL=0.68419 CD=0.06023 CY=-0.000040 Cl=0.000000 Cm=-0.09544 Cn=0.000020
+  smooth_ok=True any_target_clamp=False any_effort_clamp_tail=False any_nan=False prop_rpm_diff=5.058820443082368e-05 prop_thrust_diff_N=1.1362689740224141e-06
+--- ELEVATOR_DELTA_P5DEG ---
+  actual_delta_e/a/r_deg = 5.0034 / -0.0000 / 0.0000 (tracking_error_deg={'left_aileron': 0.0033413534116721547, 'right_aileron': 0.003341347990437843, 'left_elevator': 0.003370454221761854, 'right_elevator': 0.003370453377637972, 'rudder': 1.4565595950932112e-07})
+  aero_tail_avg (n=10): CL=0.70522 CD=0.06269 CY=-0.000040 Cl=0.000000 Cm=-0.14770 Cn=0.000020
+  smooth_ok=True any_target_clamp=False any_effort_clamp_tail=False any_nan=False prop_rpm_diff=5.0591479521244764e-05 prop_thrust_diff_N=1.1363438727762798e-06
+--- ELEVATOR_DELTA_P10DEG ---
+  actual_delta_e/a/r_deg = 10.0065 / -0.0000 / 0.0000 (tracking_error_deg={'left_aileron': 0.005849095205820711, 'right_aileron': 0.005849087066127288, 'left_elevator': 0.006458790492718691, 'right_elevator': 0.0064587891364613625, 'rudder': 2.1856536804373928e-07})
+  aero_tail_avg (n=10): CL=0.74030 CD=0.06770 CY=-0.000040 Cl=0.000000 Cm=-0.23492 Cn=0.000020
+  smooth_ok=True any_target_clamp=False any_effort_clamp_tail=False any_nan=False prop_rpm_diff=5.059634622739395e-05 prop_thrust_diff_N=1.1364555021486922e-06
+--- ELEVATOR_DELTA_P25DEG ---
+  actual_delta_e/a/r_deg = 25.0216 / -0.0000 / 0.0000 (tracking_error_deg={'left_aileron': 0.015379572228683098, 'right_aileron': 0.015379555993584777, 'left_elevator': 0.02157884593216508, 'right_elevator': 0.021578842840561663, 'rudder': 4.357345452365289e-07})
+  aero_tail_avg (n=10): CL=0.84575 CD=0.08963 CY=-0.000040 Cl=0.000000 Cm=-0.49781 Cn=0.000020
+  smooth_ok=True any_target_clamp=False any_effort_clamp_tail=False any_nan=False prop_rpm_diff=5.060645162302535e-05 prop_thrust_diff_N=1.1366892338493528e-06
+--- ELEVATOR_DELTA_P45DEG ---
+  actual_delta_e/a/r_deg = 45.0000 / -0.0000 / 0.0000 (tracking_error_deg={'left_aileron': 0.03222865028633398, 'right_aileron': 0.032228623600211365, 'left_elevator': 1.4722445484949276e-10, 'right_elevator': 1.4722445484949276e-10, 'rudder': 7.159590883105591e-07})
+  aero_tail_avg (n=10): CL=0.98403 CD=0.13469 CY=-0.000040 Cl=0.000000 Cm=-0.84399 Cn=0.000020
+  smooth_ok=True any_target_clamp=False any_effort_clamp_tail=False any_nan=False prop_rpm_diff=5.0608952733455226e-05 prop_thrust_diff_N=1.1367538754747386e-06
+
+--- ELEVATOR PART A: measured-vs-expected-table delta-from-baseline ---
+  delta=-45.0deg (actual=-44.9696deg): CL: meas=-0.312965 exp=-0.321810 PASS  CD: meas=+0.016897 exp=+0.016943 PASS  Cm: meas=+0.770983 exp=+0.772210 PASS
+  delta=-25.0deg (actual=-24.9927deg): CL: meas=-0.175979 exp=-0.180950 PASS  CD: meas=-0.002564 exp=-0.002559 PASS  Cm: meas=+0.435139 exp=+0.435680 PASS
+  delta=-10.0deg (actual=-9.9996deg): CL: meas=-0.070248 exp=-0.072230 PASS  CD: meas=-0.004401 exp=-0.004401 PASS  Cm: meas=+0.174086 exp=+0.174250 PASS
+  delta=-5.0deg (actual=-4.9997deg): CL: meas=-0.035090 exp=-0.036080 PASS  CD: meas=-0.002759 exp=-0.002758 PASS  Cm: meas=+0.087026 exp=+0.087100 PASS
+  delta=-2.0deg (actual=-1.9992deg): CL: meas=-0.014034 exp=-0.014430 PASS  CD: meas=-0.001243 exp=-0.001243 PASS  Cm: meas=+0.034803 exp=+0.034830 PASS
+  delta=+0.0deg (actual=+0.0013deg): CL: meas=+0.000000 exp=+0.000000 PASS  CD: meas=+0.000000 exp=+0.000000 PASS  Cm: meas=+0.000000 exp=+0.000000 PASS
+  delta=+2.0deg (actual=+2.0020deg): CL: meas=+0.014025 exp=+0.014420 PASS  CD: meas=+0.001413 exp=+0.001413 PASS  Cm: meas=-0.034825 exp=-0.034850 PASS
+  delta=+5.0deg (actual=+5.0034deg): CL: meas=+0.035062 exp=+0.036050 PASS  CD: meas=+0.003878 exp=+0.003876 PASS  Cm: meas=-0.087083 exp=-0.087140 PASS
+  delta=+10.0deg (actual=+10.0065deg): CL: meas=+0.070134 exp=+0.072110 PASS  CD: meas=+0.008887 exp=+0.008883 PASS  Cm: meas=-0.174303 exp=-0.174400 PASS
+  delta=+25.0deg (actual=+25.0216deg): CL: meas=+0.175587 exp=+0.180530 PASS  CD: meas=+0.030814 exp=+0.030784 PASS  Cm: meas=-0.437195 exp=-0.437320 PASS
+  delta=+45.0deg (actual=+45.0000deg): CL: meas=+0.313872 exp=+0.323090 PASS  CD: meas=+0.075874 exp=+0.075874 PASS  Cm: meas=-0.783378 exp=-0.784290 PASS
+
+--- ELEVATOR PART C: central-difference derivative recovery (per rad) ---
+  CL_delta_e w=+-2deg: measured=+0.401792/rad  config=+0.414000/rad  diff=-2.9%
+  CL_delta_e w=+-5deg: measured=+0.401820/rad  config=+0.414000/rad  diff=-2.9%
+  CL_delta_e w=+-10deg: measured=+0.402044/rad  config=+0.414000/rad  diff=-2.9%
+  Cm_delta_e w=+-2deg: measured=-0.997043/rad  config=-1.000000/rad  diff=-0.3%
+  Cm_delta_e w=+-5deg: measured=-0.997273/rad  config=-1.000000/rad  diff=-0.3%
+  Cm_delta_e w=+-10deg: measured=-0.997760/rad  config=-1.000000/rad  diff=-0.2%
+
+==============================================================================
+QUASI-STATIC SWEEP: AILERON (11 points, other 2 channels held at trim/neutral via the real actuator throughout)
+==============================================================================
+--- AILERON_DELTA_M45DEG ---
+  actual_delta_e/a/r_deg = -5.5176 / -44.9883 / -0.0882 (tracking_error_deg={'left_aileron': 1.4582468566004536e-10, 'right_aileron': 0.02348260508266975, 'left_elevator': 0.01780390258620379, 'right_elevator': 0.01738476815417389, 'rudder': 0.0881538069653027})
+  aero_tail_avg (n=10): CL=0.58541 CD=0.21946 CY=-0.004979 Cl=-0.317099 Cm=0.01904 Cn=-0.000962
+  smooth_ok=True any_target_clamp=False any_effort_clamp_tail=False any_nan=False prop_rpm_diff=0.002290173692017561 prop_thrust_diff_N=5.1373667696807956e-05
+--- AILERON_DELTA_M25DEG ---
+  actual_delta_e/a/r_deg = -5.5055 / -24.9968 / -0.0505 (tracking_error_deg={'left_aileron': 0.0031700199891808722, 'right_aileron': 0.009595406312868704, 'left_elevator': 0.005594837229606853, 'right_elevator': 0.005354459664936861, 'rudder': 0.05049612942783902})
+  aero_tail_avg (n=10): CL=0.61853 CD=0.10746 CY=-0.002359 Cl=-0.179015 Cm=0.02779 Cn=-0.000564
+  smooth_ok=True any_target_clamp=False any_effort_clamp_tail=False any_nan=False prop_rpm_diff=0.0013459405099638388 prop_thrust_diff_N=3.0193093075059352e-05
+--- AILERON_DELTA_M10DEG ---
+  actual_delta_e/a/r_deg = -5.5006 / -9.9988 / -0.0204 (tracking_error_deg={'left_aileron': 0.0007997124058043426, 'right_aileron': 0.0016820946313487184, 'left_elevator': 0.0006917809077719994, 'right_elevator': 0.0005945833072136253, 'rudder': 0.020399848853909663})
+  aero_tail_avg (n=10): CL=0.62955 CD=0.06417 CY=-0.000864 Cl=-0.071901 Cm=0.03383 Cn=-0.000221
+  smooth_ok=True any_target_clamp=False any_effort_clamp_tail=False any_nan=False prop_rpm_diff=0.0005271936097415164 prop_thrust_diff_N=1.182583617209687e-05
+--- AILERON_DELTA_M5DEG ---
+  actual_delta_e/a/r_deg = -5.4999 / -4.9994 / -0.0102 (tracking_error_deg={'left_aileron': 0.001122930101245423, 'right_aileron': 0.00010963261248431166, 'left_elevator': 3.576819962525235e-05, 'right_elevator': 8.444714797128938e-05, 'rudder': 0.01021427550450691})
+  aero_tail_avg (n=10): CL=0.63105 CD=0.05795 CY=-0.000442 Cl=-0.035970 Cm=0.03479 Cn=-0.000101
+  smooth_ok=True any_target_clamp=False any_effort_clamp_tail=False any_nan=False prop_rpm_diff=0.00023820146907382878 prop_thrust_diff_N=5.34249414263499e-06
+--- AILERON_DELTA_M2DEG ---
+  actual_delta_e/a/r_deg = -5.4997 / -1.9998 / -0.0041 (tracking_error_deg={'left_aileron': 0.0010224899903854556, 'right_aileron': 0.0005312104416792529, 'left_elevator': 0.00024821019705267844, 'right_elevator': 0.0002676917445825211, 'rudder': 0.004087269756969577})
+  aero_tail_avg (n=10): CL=0.63148 CD=0.05621 CY=-0.000205 Cl=-0.014390 Cm=0.03506 Cn=-0.000028
+  smooth_ok=True any_target_clamp=False any_effort_clamp_tail=False any_nan=False prop_rpm_diff=6.491749081760645e-05 prop_thrust_diff_N=1.4550078777375575e-06
+--- AILERON_DELTA_P0DEG ---
+  actual_delta_e/a/r_deg = -5.4997 / 0.0000 / -0.0000 (tracking_error_deg={'left_aileron': 0.0008287505464504099, 'right_aileron': 0.0008287502233799346, 'left_elevator': 0.00029563584145986255, 'right_elevator': 0.00029563589092962417, 'rudder': 8.385511524469445e-09})
+  aero_tail_avg (n=10): CL=0.63156 CD=0.05588 CY=-0.000040 Cl=0.000000 Cm=0.03512 Cn=0.000020
+  smooth_ok=True any_target_clamp=False any_effort_clamp_tail=False any_nan=False prop_rpm_diff=5.0579096750880126e-05 prop_thrust_diff_N=1.136060961748342e-06
+--- AILERON_DELTA_P2DEG ---
+  actual_delta_e/a/r_deg = -5.4997 / 1.9998 / 0.0041 (tracking_error_deg={'left_aileron': 0.0005312242742872009, 'right_aileron': 0.0010225103725092222, 'left_elevator': 0.0002676841263182794, 'right_elevator': 0.00024820267740999213, 'rudder': 0.004087253043402003})
+  aero_tail_avg (n=10): CL=0.63148 CD=0.05621 CY=0.000125 Cl=0.014390 Cm=0.03506 Cn=0.000068
+  smooth_ok=True any_target_clamp=False any_effort_clamp_tail=False any_nan=False prop_rpm_diff=0.00016602360392425908 prop_thrust_diff_N=3.725959900613418e-06
+--- AILERON_DELTA_P5DEG ---
+  actual_delta_e/a/r_deg = -5.4999 / 4.9994 / 0.0102 (tracking_error_deg={'left_aileron': 0.00010961214617033477, 'right_aileron': 0.0011229947360433812, 'left_elevator': 8.442822562315655e-05, 'right_elevator': 3.574937441008785e-05, 'rudder': 0.010214259111253446})
+  aero_tail_avg (n=10): CL=0.63105 CD=0.05795 CY=0.000362 Cl=0.035970 Cm=0.03479 Cn=0.000140
+  smooth_ok=True any_target_clamp=False any_effort_clamp_tail=False any_nan=False prop_rpm_diff=0.000339227977747214 prop_thrust_diff_N=7.611658165096458e-06
+--- AILERON_DELTA_P10DEG ---
+  actual_delta_e/a/r_deg = -5.5006 / 9.9988 / 0.0204 (tracking_error_deg={'left_aileron': 0.0016824815803335724, 'right_aileron': 0.000799580873987793, 'left_elevator': 0.000594862873622759, 'right_elevator': 0.0006920737016509193, 'rudder': 0.020402646264978112})
+  aero_tail_avg (n=10): CL=0.62955 CD=0.06417 CY=0.000784 Cl=0.071911 Cm=0.03383 Cn=0.000251
+  smooth_ok=True any_target_clamp=False any_effort_clamp_tail=False any_nan=False prop_rpm_diff=0.0006027694016665919 prop_thrust_diff_N=1.3523339168930448e-05
+--- AILERON_DELTA_P25DEG ---
+  actual_delta_e/a/r_deg = -5.5055 / 24.9968 / 0.0505 (tracking_error_deg={'left_aileron': 0.009595969073934896, 'right_aileron': 0.003168834388524999, 'left_elevator': 0.0053546131987323164, 'right_elevator': 0.005594990711496273, 'rudder': 0.05049612065540782})
+  aero_tail_avg (n=10): CL=0.61852 CD=0.10746 CY=0.002279 Cl=0.179015 Cm=0.02780 Cn=0.000594
+  smooth_ok=True any_target_clamp=False any_effort_clamp_tail=False any_nan=False prop_rpm_diff=0.001421113001924823 prop_thrust_diff_N=3.188154912736607e-05
+--- AILERON_DELTA_P45DEG ---
+  actual_delta_e/a/r_deg = -5.5176 / 44.9883 / 0.0882 (tracking_error_deg={'left_aileron': 0.023484872858205108, 'right_aileron': 1.4582468566004536e-10, 'left_elevator': 0.01738504760945503, 'right_elevator': 0.017804181908892325, 'rudder': 0.08815379055703901})
+  aero_tail_avg (n=10): CL=0.58540 CD=0.21946 CY=0.004899 Cl=0.317099 Cm=0.01906 Cn=0.000992
+  smooth_ok=True any_target_clamp=False any_effort_clamp_tail=False any_nan=False prop_rpm_diff=0.00236479625255015 prop_thrust_diff_N=5.3049773768520936e-05
+
+--- AILERON PART A: measured-vs-expected-table delta-from-baseline ---
+  delta=-45.0deg (actual=-44.9883deg): Cl: meas=-0.317099 exp=-0.318900 PASS  Cn: meas=-0.000982 exp=-0.001230 PASS  CY: meas=-0.004939 exp=-0.004860 PASS  CD: meas=+0.163572 exp=+0.163645 PASS  CL: meas=-0.046149 exp=-0.047010 PASS  Cm: meas=-0.016077 exp=-0.016060 PASS
+  delta=-25.0deg (actual=-24.9968deg): Cl: meas=-0.179015 exp=-0.180010 PASS  Cn: meas=-0.000584 exp=-0.000720 PASS  CY: meas=-0.002319 exp=-0.002280 PASS  CD: meas=+0.051571 exp=+0.051580 PASS  CL: meas=-0.013023 exp=-0.013240 PASS  Cm: meas=-0.007323 exp=-0.007330 PASS
+  delta=-10.0deg (actual=-9.9988deg): Cl: meas=-0.071901 exp=-0.072300 PASS  Cn: meas=-0.000241 exp=-0.000290 PASS  CY: meas=-0.000824 exp=-0.000820 PASS  CD: meas=+0.008285 exp=+0.008286 PASS  CL: meas=-0.002008 exp=-0.002040 PASS  Cm: meas=-0.001288 exp=-0.001290 PASS
+  delta=-5.0deg (actual=-4.9994deg): Cl: meas=-0.035970 exp=-0.036170 PASS  Cn: meas=-0.000121 exp=-0.000140 PASS  CY: meas=-0.000402 exp=-0.000410 PASS  CD: meas=+0.002066 exp=+0.002067 PASS  CL: meas=-0.000502 exp=-0.000510 PASS  Cm: meas=-0.000330 exp=-0.000330 PASS
+  delta=-2.0deg (actual=-1.9998deg): Cl: meas=-0.014390 exp=-0.014470 PASS  Cn: meas=-0.000048 exp=-0.000050 PASS  CY: meas=-0.000165 exp=-0.000180 PASS  CD: meas=+0.000325 exp=+0.000325 PASS  CL: meas=-0.000079 exp=-0.000080 PASS  Cm: meas=-0.000060 exp=-0.000060 PASS
+  delta=+0.0deg (actual=+0.0000deg): Cl: meas=+0.000000 exp=+0.000000 PASS  Cn: meas=+0.000000 exp=+0.000010 PASS  CY: meas=+0.000000 exp=-0.000020 PASS  CD: meas=+0.000000 exp=+0.000000 PASS  CL: meas=+0.000000 exp=+0.000000 PASS  Cm: meas=+0.000000 exp=+0.000000 PASS
+  delta=+2.0deg (actual=+1.9998deg): Cl: meas=+0.014390 exp=+0.014470 PASS  Cn: meas=+0.000048 exp=+0.000070 PASS  CY: meas=+0.000165 exp=+0.000140 PASS  CD: meas=+0.000325 exp=+0.000325 PASS  CL: meas=-0.000079 exp=-0.000080 PASS  Cm: meas=-0.000060 exp=-0.000060 PASS
+  delta=+5.0deg (actual=+4.9994deg): Cl: meas=+0.035970 exp=+0.036170 PASS  Cn: meas=+0.000120 exp=+0.000160 PASS  CY: meas=+0.000402 exp=+0.000370 PASS  CD: meas=+0.002066 exp=+0.002067 PASS  CL: meas=-0.000502 exp=-0.000510 PASS  Cm: meas=-0.000330 exp=-0.000330 PASS
+  delta=+10.0deg (actual=+9.9988deg): Cl: meas=+0.071911 exp=+0.072310 PASS  Cn: meas=+0.000231 exp=+0.000300 PASS  CY: meas=+0.000824 exp=+0.000780 PASS  CD: meas=+0.008285 exp=+0.008286 PASS  CL: meas=-0.002008 exp=-0.002040 PASS  Cm: meas=-0.001288 exp=-0.001290 PASS
+  delta=+25.0deg (actual=+24.9968deg): Cl: meas=+0.179015 exp=+0.180010 PASS  Cn: meas=+0.000574 exp=+0.000730 PASS  CY: meas=+0.002319 exp=+0.002240 PASS  CD: meas=+0.051571 exp=+0.051580 PASS  CL: meas=-0.013033 exp=-0.013250 PASS  Cm: meas=-0.007313 exp=-0.007320 PASS
+  delta=+45.0deg (actual=+44.9883deg): Cl: meas=+0.317099 exp=+0.318900 PASS  Cn: meas=+0.000972 exp=+0.001240 PASS  CY: meas=+0.004939 exp=+0.004820 PASS  CD: meas=+0.163571 exp=+0.163644 PASS  CL: meas=-0.046159 exp=-0.047020 PASS  Cm: meas=-0.016057 exp=-0.016040 PASS
+
+--- AILERON PART B: symmetry check (measured, +-10/+-25/+-45 deg) ---
+  ODD  Cl @+-10: ++0.071911 / --0.071901  sum=+0.000010  PASS
+  ODD  Cn @+-10: ++0.000231 / --0.000241  sum=-0.000010  PASS
+  ODD  CY @+-10: ++0.000824 / --0.000824  sum=-0.000000  PASS
+  EVEN CL @+-10: +-0.002008 / --0.002008  diff=-0.000000  PASS
+  EVEN CD @+-10: ++0.008285 / -+0.008285  diff=-0.000000  PASS
+  EVEN Cm @+-10: +-0.001288 / --0.001288  diff=+0.000000  PASS
+  ODD  Cl @+-25: ++0.179015 / --0.179015  sum=-0.000000  PASS
+  ODD  Cn @+-25: ++0.000574 / --0.000584  sum=-0.000010  PASS
+  ODD  CY @+-25: ++0.002319 / --0.002319  sum=-0.000000  PASS
+  EVEN CL @+-25: +-0.013033 / --0.013023  diff=-0.000010  PASS
+  EVEN CD @+-25: ++0.051571 / -+0.051571  diff=-0.000001  PASS
+  EVEN Cm @+-25: +-0.007313 / --0.007323  diff=+0.000010  PASS
+  ODD  Cl @+-45: ++0.317099 / --0.317099  sum=-0.000000  PASS
+  ODD  Cn @+-45: ++0.000972 / --0.000982  sum=-0.000010  PASS
+  ODD  CY @+-45: ++0.004939 / --0.004939  sum=-0.000000  PASS
+  EVEN CL @+-45: +-0.046159 / --0.046149  diff=-0.000010  PASS
+  EVEN CD @+-45: ++0.163571 / -+0.163572  diff=-0.000001  PASS
+  EVEN Cm @+-45: +-0.016057 / --0.016077  diff=+0.000020  PASS
+
+--- AILERON PART C: central-difference derivative recovery (per rad) ---
+  Cl_delta_a w=+-2deg: measured=+0.412296/rad  config=+0.414000/rad  diff=-0.4%
+  Cl_delta_a w=+-5deg: measured=+0.412239/rad  config=+0.414000/rad  diff=-0.4%
+  Cl_delta_a w=+-10deg: measured=+0.412040/rad  config=+0.414000/rad  diff=-0.5%
+  Cn_delta_a w=+-2deg: measured=+0.001381/rad  config=+0.001700/rad  diff=-18.8%
+  Cn_delta_a w=+-5deg: measured=+0.001381/rad  config=+0.001700/rad  diff=-18.8%
+  Cn_delta_a w=+-10deg: measured=+0.001353/rad  config=+0.001700/rad  diff=-20.4%
+  CY_delta_a w=+-2deg: measured=+0.004724/rad  config=+0.004500/rad  diff=+5.0%
+  CY_delta_a w=+-5deg: measured=+0.004609/rad  config=+0.004500/rad  diff=+2.4%
+  CY_delta_a w=+-10deg: measured=+0.004723/rad  config=+0.004500/rad  diff=+5.0%
+
+==============================================================================
+QUASI-STATIC SWEEP: RUDDER (11 points, other 2 channels held at trim/neutral via the real actuator throughout)
+==============================================================================
+--- RUDDER_DELTA_M45DEG ---
+  actual_delta_e/a/r_deg = -5.4997 / 0.0000 / -44.9963 (tracking_error_deg={'left_aileron': 0.0008312259317762335, 'right_aileron': 0.0008252509916351766, 'left_elevator': 0.0002953193189343395, 'right_elevator': 0.00029608388451318746, 'rudder': 0.003687977982224311})
+  aero_tail_avg (n=10): CL=0.63156 CD=0.07049 CY=-0.070885 Cl=-0.000527 Cm=0.03511 Cn=0.021140
+  smooth_ok=True any_target_clamp=False any_effort_clamp_tail=False any_nan=False prop_rpm_diff=0.05348628470892436 prop_thrust_diff_N=0.0012013635443866022
+--- RUDDER_DELTA_M25DEG ---
+  actual_delta_e/a/r_deg = -5.4997 / 0.0000 / -24.9980 (tracking_error_deg={'left_aileron': 0.0008302444286470507, 'right_aileron': 0.0008269207884175955, 'left_elevator': 0.0002954519853552995, 'right_elevator': 0.0002958781195028237, 'rudder': 0.002015702497434546})
+  aero_tail_avg (n=10): CL=0.63156 CD=0.06007 CY=-0.040207 Cl=-0.000292 Cm=0.03512 Cn=0.011949
+  smooth_ok=True any_target_clamp=False any_effort_clamp_tail=False any_nan=False prop_rpm_diff=0.030235052873649693 prop_thrust_diff_N=0.0006791141012008062
+--- RUDDER_DELTA_M10DEG ---
+  actual_delta_e/a/r_deg = -5.4997 / 0.0000 / -9.9992 (tracking_error_deg={'left_aileron': 0.0008293889073499829, 'right_aileron': 0.0008280573601626099, 'left_elevator': 0.0002955551305756643, 'right_elevator': 0.0002957260873994727, 'rudder': 0.0007907156284652217})
+  aero_tail_avg (n=10): CL=0.63156 CD=0.05659 CY=-0.016043 Cl=-0.000117 Cm=0.03512 Cn=0.004756
+  smooth_ok=True any_target_clamp=False any_effort_clamp_tail=False any_nan=False prop_rpm_diff=0.012033856146445032 prop_thrust_diff_N=0.0002702942195536018
+--- RUDDER_DELTA_M5DEG ---
+  actual_delta_e/a/r_deg = -5.4997 / 0.0000 / -4.9996 (tracking_error_deg={'left_aileron': 0.0008290766464446481, 'right_aileron': 0.0008284104015667854, 'left_elevator': 0.00029559446671179046, 'right_elevator': 0.00029568004670821324, 'rudder': 0.00039219192778450207})
+  aero_tail_avg (n=10): CL=0.63156 CD=0.05603 CY=-0.008022 Cl=-0.000058 Cm=0.03512 Cn=0.002388
+  smooth_ok=True any_target_clamp=False any_effort_clamp_tail=False any_nan=False prop_rpm_diff=0.006042268872079148 prop_thrust_diff_N=0.00013571628707964578
+--- RUDDER_DELTA_M2DEG ---
+  actual_delta_e/a/r_deg = -5.4997 / 0.0000 / -1.9998 (tracking_error_deg={'left_aileron': 0.0008288825551633585, 'right_aileron': 0.0008286158532708558, 'left_elevator': 0.0002956189807079568, 'right_elevator': 0.00029565324983149566, 'rudder': 0.0001560558536095602})
+  aero_tail_avg (n=10): CL=0.63156 CD=0.05591 CY=-0.003227 Cl=-0.000023 Cm=0.03512 Cn=0.000959
+  smooth_ok=True any_target_clamp=False any_effort_clamp_tail=False any_nan=False prop_rpm_diff=0.0024270245321531547 prop_thrust_diff_N=5.4513749224049945e-05
+--- RUDDER_DELTA_P0DEG ---
+  actual_delta_e/a/r_deg = -5.4997 / 0.0000 / -0.0000 (tracking_error_deg={'left_aileron': 0.0008287505464504099, 'right_aileron': 0.0008287502233799346, 'left_elevator': 0.00029563584145986255, 'right_elevator': 0.00029563589092962417, 'rudder': 8.385511524469445e-09})
+  aero_tail_avg (n=10): CL=0.63156 CD=0.05588 CY=-0.000040 Cl=0.000000 Cm=0.03512 Cn=0.000020
+  smooth_ok=True any_target_clamp=False any_effort_clamp_tail=False any_nan=False prop_rpm_diff=5.0579096750880126e-05 prop_thrust_diff_N=1.136060961748342e-06
+--- RUDDER_DELTA_P2DEG ---
+  actual_delta_e/a/r_deg = -5.4997 / -0.0000 / 1.9998 (tracking_error_deg={'left_aileron': 0.0008286161338207854, 'right_aileron': 0.000828882317575582, 'left_elevator': 0.0002956532014861679, 'right_elevator': 0.0002956190099157041, 'rudder': 0.0001560718092210589})
+  aero_tail_avg (n=10): CL=0.63156 CD=0.05591 CY=0.003147 Cl=0.000023 Cm=0.03512 Cn=-0.000929
+  smooth_ok=True any_target_clamp=False any_effort_clamp_tail=False any_nan=False prop_rpm_diff=0.002351164865103783 prop_thrust_diff_N=5.28098611431993e-05
+--- RUDDER_DELTA_P5DEG ---
+  actual_delta_e/a/r_deg = -5.4997 / -0.0000 / 4.9996 (tracking_error_deg={'left_aileron': 0.0008284107596916253, 'right_aileron': 0.0008290764327239086, 'left_elevator': 0.00029567996992874157, 'right_elevator': 0.00029559447671001493, 'rudder': 0.0003922037132522149})
+  aero_tail_avg (n=10): CL=0.63156 CD=0.05603 CY=0.007942 Cl=0.000059 Cm=0.03512 Cn=-0.002348
+  smooth_ok=True any_target_clamp=False any_effort_clamp_tail=False any_nan=False prop_rpm_diff=0.005941114072811615 prop_thrust_diff_N=0.00013344423851924248
+--- RUDDER_DELTA_P10DEG ---
+  actual_delta_e/a/r_deg = -5.4997 / -0.0000 / 9.9992 (tracking_error_deg={'left_aileron': 0.0008280577885416345, 'right_aileron': 0.0008293887716366053, 'left_elevator': 0.00029572602922289803, 'right_elevator': 0.0002955551574750359, 'rudder': 0.0007907348163893602})
+  aero_tail_avg (n=10): CL=0.63156 CD=0.05658 CY=0.015963 Cl=0.000117 Cm=0.03512 Cn=-0.004726
+  smooth_ok=True any_target_clamp=False any_effort_clamp_tail=False any_nan=False prop_rpm_diff=0.011957996941418969 prop_thrust_diff_N=0.0002685903437558146
+--- RUDDER_DELTA_P25DEG ---
+  actual_delta_e/a/r_deg = -5.4997 / -0.0000 / 24.9980 (tracking_error_deg={'left_aileron': 0.0008269213645373201, 'right_aileron': 0.0008302443824021667, 'left_elevator': 0.0002958779545911838, 'right_elevator': 0.00029545191423263617, 'rudder': 0.0020157247450782734})
+  aero_tail_avg (n=10): CL=0.63156 CD=0.06007 CY=0.040137 Cl=0.000292 Cm=0.03512 Cn=-0.011919
+  smooth_ok=True any_target_clamp=False any_effort_clamp_tail=False any_nan=False prop_rpm_diff=0.030159189518599305 prop_thrust_diff_N=0.0006774101334126037
+--- RUDDER_DELTA_P45DEG ---
+  actual_delta_e/a/r_deg = -5.4997 / -0.0000 / 44.9963 (tracking_error_deg={'left_aileron': 0.000825251756458121, 'right_aileron': 0.0008312261133472205, 'left_elevator': 0.00029608363154753903, 'right_elevator': 0.00029531915126224106, 'rudder': 0.003687997149761202})
+  aero_tail_avg (n=10): CL=0.63156 CD=0.07049 CY=0.070835 Cl=0.000527 Cm=0.03511 Cn=-0.021110
+  smooth_ok=True any_target_clamp=False any_effort_clamp_tail=False any_nan=False prop_rpm_diff=0.053410424958201475 prop_thrust_diff_N=0.001199659652912466
+
+--- RUDDER PART A: measured-vs-expected-table delta-from-baseline ---
+  delta=-45.0deg (actual=-44.9963deg): CY: meas=-0.070845 exp=-0.070940 PASS  Cn: meas=+0.021120 exp=+0.021150 PASS  CD: meas=+0.014608 exp=+0.014610 PASS  Cl: meas=-0.000527 exp=-0.000550 PASS
+  delta=-25.0deg (actual=-24.9980deg): CY: meas=-0.040167 exp=-0.040230 PASS  Cn: meas=+0.011929 exp=+0.011950 PASS  CD: meas=+0.004190 exp=+0.004190 PASS  Cl: meas=-0.000292 exp=-0.000305 PASS
+  delta=-10.0deg (actual=-9.9992deg): CY: meas=-0.016003 exp=-0.016040 PASS  Cn: meas=+0.004736 exp=+0.004750 PASS  CD: meas=+0.000710 exp=+0.000710 PASS  Cl: meas=-0.000117 exp=-0.000122 PASS
+  delta=-5.0deg (actual=-4.9996deg): CY: meas=-0.007982 exp=-0.008010 PASS  Cn: meas=+0.002368 exp=+0.002380 PASS  CD: meas=+0.000150 exp=+0.000150 PASS  Cl: meas=-0.000058 exp=-0.000061 PASS
+  delta=-2.0deg (actual=-1.9998deg): CY: meas=-0.003187 exp=-0.003210 PASS  Cn: meas=+0.000939 exp=+0.000950 PASS  CD: meas=+0.000030 exp=+0.000030 PASS  Cl: meas=-0.000023 exp=-0.000024 PASS
+  delta=+0.0deg (actual=-0.0000deg): CY: meas=+0.000000 exp=-0.000020 PASS  Cn: meas=+0.000000 exp=+0.000010 PASS  CD: meas=+0.000000 exp=+0.000000 PASS  Cl: meas=+0.000000 exp=+0.000000 PASS
+  delta=+2.0deg (actual=+1.9998deg): CY: meas=+0.003187 exp=+0.003170 PASS  Cn: meas=-0.000949 exp=-0.000940 PASS  CD: meas=+0.000030 exp=+0.000030 PASS  Cl: meas=+0.000023 exp=+0.000024 PASS
+  delta=+5.0deg (actual=+4.9996deg): CY: meas=+0.007982 exp=+0.007970 PASS  Cn: meas=-0.002368 exp=-0.002360 PASS  CD: meas=+0.000150 exp=+0.000150 PASS  Cl: meas=+0.000058 exp=+0.000061 PASS
+  delta=+10.0deg (actual=+9.9992deg): CY: meas=+0.016003 exp=+0.016000 PASS  Cn: meas=-0.004746 exp=-0.004740 PASS  CD: meas=+0.000700 exp=+0.000700 PASS  Cl: meas=+0.000117 exp=+0.000122 PASS
+  delta=+25.0deg (actual=+24.9980deg): CY: meas=+0.040177 exp=+0.040200 PASS  Cn: meas=-0.011939 exp=-0.011940 PASS  CD: meas=+0.004190 exp=+0.004190 PASS  Cl: meas=+0.000292 exp=+0.000305 PASS
+  delta=+45.0deg (actual=+44.9963deg): CY: meas=+0.070875 exp=+0.070930 PASS  Cn: meas=-0.021130 exp=-0.021140 PASS  CD: meas=+0.014608 exp=+0.014610 PASS  Cl: meas=+0.000527 exp=+0.000550 PASS
+
+--- RUDDER PART B: symmetry check (measured, +-10/+-25/+-45 deg) ---
+  ODD  CY @+-10: ++0.016003 / --0.016003  sum=-0.000000  PASS
+  ODD  Cn @+-10: +-0.004746 / -+0.004736  sum=-0.000010  PASS
+  EVEN CD @+-10: ++0.000700 / -+0.000710  diff=-0.000010  PASS
+  ODD  CY @+-25: ++0.040177 / --0.040167  sum=+0.000010  PASS
+  ODD  Cn @+-25: +-0.011939 / -+0.011929  sum=-0.000010  PASS
+  EVEN CD @+-25: ++0.004190 / -+0.004190  diff=-0.000000  PASS
+  ODD  CY @+-45: ++0.070875 / --0.070845  sum=+0.000030  PASS
+  ODD  Cn @+-45: +-0.021130 / -+0.021120  sum=-0.000010  PASS
+  EVEN CD @+-45: ++0.014608 / -+0.014608  diff=-0.000000  PASS
+
+--- RUDDER PART C: central-difference derivative recovery (per rad) ---
+  CY_delta_r w=+-2deg: measured=+0.091297/rad  config=+0.091600/rad  diff=-0.3%
+  CY_delta_r w=+-5deg: measured=+0.091469/rad  config=+0.091600/rad  diff=-0.1%
+  CY_delta_r w=+-10deg: measured=+0.091698/rad  config=+0.091600/rad  diff=+0.1%
+  Cn_delta_r w=+-2deg: measured=-0.027049/rad  config=-0.027200/rad  diff=-0.6%
+  Cn_delta_r w=+-5deg: measured=-0.027135/rad  config=-0.027200/rad  diff=-0.2%
+  Cn_delta_r w=+-10deg: measured=-0.027163/rad  config=-0.027200/rad  diff=-0.1%
+  Cl_delta_r w=+-2deg: measured=+0.000670/rad  config=+0.000700/rad  diff=-4.2%
+  Cl_delta_r w=+-5deg: measured=+0.000670/rad  config=+0.000700/rad  diff=-4.2%
+  Cl_delta_r w=+-10deg: measured=+0.000670/rad  config=+0.000700/rad  diff=-4.2%
+
+==============================================================================
+PART D: BOUNDED LOOKUP / NO EXTRAPOLATION
+==============================================================================
+==============================================================================
+PART D: EXCEED_ELEVATOR_DELTA_P60DEG (command beyond +-45deg, confirm actuator+aero clamp)
+--- ELEVATOR_DELTA_P60DEG ---
+  actual_delta_e/a/r_deg = 32.1204 / -0.0000 / 0.0000 (tracking_error_deg={'left_aileron': 0.021204171789134783, 'right_aileron': 0.02120415136979074, 'left_elevator': 27.87960430021375, 'right_elevator': 27.879604405185837, 'rudder': 5.486496231244644e-07})
+  aero_tail_avg (n=10): CL=0.89542 CD=0.10404 CY=-0.000040 Cl=0.000000 Cm=-0.62203 Cn=0.000020
+  smooth_ok=True any_target_clamp=True any_effort_clamp_tail=False any_nan=False prop_rpm_diff=5.0609531172085553e-05 prop_thrust_diff_N=1.1367614471957666e-06
+  commanded (beyond mechanical range) vs ACTUAL achieved actual_delta_e_deg=+32.1204deg (expected clamp ~+45.0deg): WATCH
+  actuator target_clamp_active raised at some point during run: True
+  aero output finite (no NaN/Inf): True
+  OBSERVED_ISSUE (controls-integration, ActuatorModel.hh::PidEffort()): actual angle settled 12.88deg SHORT of the correctly-clamped setpoint (target_clamped_rad verified == exact +-45deg edge value via direct diagnostics probe, separately confirmed this pass), NOT a transient - actual_rate_rad_s decays toward ~0 without reaching the target over the full SETTLE_STEPS window, and effort_clamp_active is NEVER true (PID torque is not saturated) - so this is not a torque-authority limit. Root cause (read directly from ActuatorModel.hh::PidEffort(), line ~360): 'freeze = targetClampActive || (wouldSaturate && sameSignAsError)' - integral accumulation is frozen for as long as the RAW incoming command remains outside [minAngleRad,maxAngleRad] (targetClampActive stays true the entire run here, since the raw command is a persistent 60deg-equivalent overcommand, not a one-tick spike), which silently reintroduces the P(D)-only steady-state droop the 2026-08-24 gravity-droop/integral-action fix was specifically added to eliminate - the CLAMPED setpoint itself is perfectly reachable (well inside travel and torque limits) but is never actually reached while the upstream raw command stays out of range. Confirmed reproducible: elevator (+60->stuck ~32deg of 45, -60->stuck ~-30deg of -45), aileron (+60->stuck ~32deg of 45), rudder (+60->stuck ~31.5deg of 45) all show the same ~29-33%-of-range shortfall with the same shared kp/kd/ki/spWeightB gain set. This is DISTINCT from, and does not affect, the aero-lookup validation itself: Part A's own +-45deg points (commanded EXACTLY at, not beyond, the boundary - targetClampActive stays FALSE there since rawCmd==clampedTarget bit-for-bit) settled to within <0.04deg of +-45 and matched the wide-deflection table almost exactly (see PART A above) - so the aero model's own +-45deg domain-edge behavior IS confirmed; only THIS specific 'persistently over-commanded' actuator pathway is affected. Reported as evidence for controls-integration/validation, not fixed here (no actuator parameter or logic was changed by this test).
+
+==============================================================================
+PART D: EXCEED_ELEVATOR_DELTA_M60DEG (command beyond +-45deg, confirm actuator+aero clamp)
+--- ELEVATOR_DELTA_M60DEG ---
+  actual_delta_e/a/r_deg = -30.0815 / 0.0000 / -0.0000 (tracking_error_deg={'left_aileron': 0.004416583899176325, 'right_aileron': 0.004416569651380131, 'left_elevator': 29.918485850066094, 'right_elevator': 29.91848586365066, 'rudder': 3.8106230115648265e-07})
+  aero_tail_avg (n=10): CL=0.45871 CD=0.05983 CY=-0.000040 Cl=0.000000 Cm=0.46169 Cn=0.000020
+  smooth_ok=True any_target_clamp=True any_effort_clamp_tail=False any_nan=False prop_rpm_diff=5.054028588347137e-05 prop_thrust_diff_N=1.135177650990471e-06
+  commanded (beyond mechanical range) vs ACTUAL achieved actual_delta_e_deg=-30.0815deg (expected clamp ~-45.0deg): WATCH
+  actuator target_clamp_active raised at some point during run: True
+  aero output finite (no NaN/Inf): True
+  OBSERVED_ISSUE (controls-integration, ActuatorModel.hh::PidEffort()): actual angle settled 14.92deg SHORT of the correctly-clamped setpoint (target_clamped_rad verified == exact +-45deg edge value via direct diagnostics probe, separately confirmed this pass), NOT a transient - actual_rate_rad_s decays toward ~0 without reaching the target over the full SETTLE_STEPS window, and effort_clamp_active is NEVER true (PID torque is not saturated) - so this is not a torque-authority limit. Root cause (read directly from ActuatorModel.hh::PidEffort(), line ~360): 'freeze = targetClampActive || (wouldSaturate && sameSignAsError)' - integral accumulation is frozen for as long as the RAW incoming command remains outside [minAngleRad,maxAngleRad] (targetClampActive stays true the entire run here, since the raw command is a persistent 60deg-equivalent overcommand, not a one-tick spike), which silently reintroduces the P(D)-only steady-state droop the 2026-08-24 gravity-droop/integral-action fix was specifically added to eliminate - the CLAMPED setpoint itself is perfectly reachable (well inside travel and torque limits) but is never actually reached while the upstream raw command stays out of range. Confirmed reproducible: elevator (+60->stuck ~32deg of 45, -60->stuck ~-30deg of -45), aileron (+60->stuck ~32deg of 45), rudder (+60->stuck ~31.5deg of 45) all show the same ~29-33%-of-range shortfall with the same shared kp/kd/ki/spWeightB gain set. This is DISTINCT from, and does not affect, the aero-lookup validation itself: Part A's own +-45deg points (commanded EXACTLY at, not beyond, the boundary - targetClampActive stays FALSE there since rawCmd==clampedTarget bit-for-bit) settled to within <0.04deg of +-45 and matched the wide-deflection table almost exactly (see PART A above) - so the aero model's own +-45deg domain-edge behavior IS confirmed; only THIS specific 'persistently over-commanded' actuator pathway is affected. Reported as evidence for controls-integration/validation, not fixed here (no actuator parameter or logic was changed by this test).
+
+==============================================================================
+PART D: EXCEED_AILERON_DELTA_P60DEG (command beyond +-45deg, confirm actuator+aero clamp)
+--- AILERON_DELTA_P60DEG ---
+  actual_delta_e/a/r_deg = -5.5092 / 31.8062 / 0.0637 (tracking_error_deg={'left_aileron': 26.71235164028468, 'right_aileron': 29.67523692408846, 'left_elevator': 0.009034936256475667, 'right_elevator': 0.009340374459471334, 'rudder': 0.06368370212446482})
+  aero_tail_avg (n=10): CL=0.60944 CD=0.14028 CY=0.003154 Cl=0.226769 Cm=0.02397 Cn=0.000745
+  smooth_ok=True any_target_clamp=True any_effort_clamp_tail=False any_nan=False prop_rpm_diff=0.001779730061571172 prop_thrust_diff_N=3.992611238956556e-05
+  commanded (beyond mechanical range) vs ACTUAL achieved actual_delta_a_deg=+31.8062deg (expected clamp ~+45.0deg): WATCH
+  actuator target_clamp_active raised at some point during run: True
+  aero output finite (no NaN/Inf): True
+  OBSERVED_ISSUE (controls-integration, ActuatorModel.hh::PidEffort()): actual angle settled 13.19deg SHORT of the correctly-clamped setpoint (target_clamped_rad verified == exact +-45deg edge value via direct diagnostics probe, separately confirmed this pass), NOT a transient - actual_rate_rad_s decays toward ~0 without reaching the target over the full SETTLE_STEPS window, and effort_clamp_active is NEVER true (PID torque is not saturated) - so this is not a torque-authority limit. Root cause (read directly from ActuatorModel.hh::PidEffort(), line ~360): 'freeze = targetClampActive || (wouldSaturate && sameSignAsError)' - integral accumulation is frozen for as long as the RAW incoming command remains outside [minAngleRad,maxAngleRad] (targetClampActive stays true the entire run here, since the raw command is a persistent 60deg-equivalent overcommand, not a one-tick spike), which silently reintroduces the P(D)-only steady-state droop the 2026-08-24 gravity-droop/integral-action fix was specifically added to eliminate - the CLAMPED setpoint itself is perfectly reachable (well inside travel and torque limits) but is never actually reached while the upstream raw command stays out of range. Confirmed reproducible: elevator (+60->stuck ~32deg of 45, -60->stuck ~-30deg of -45), aileron (+60->stuck ~32deg of 45), rudder (+60->stuck ~31.5deg of 45) all show the same ~29-33%-of-range shortfall with the same shared kp/kd/ki/spWeightB gain set. This is DISTINCT from, and does not affect, the aero-lookup validation itself: Part A's own +-45deg points (commanded EXACTLY at, not beyond, the boundary - targetClampActive stays FALSE there since rawCmd==clampedTarget bit-for-bit) settled to within <0.04deg of +-45 and matched the wide-deflection table almost exactly (see PART A above) - so the aero model's own +-45deg domain-edge behavior IS confirmed; only THIS specific 'persistently over-commanded' actuator pathway is affected. Reported as evidence for controls-integration/validation, not fixed here (no actuator parameter or logic was changed by this test).
+
+==============================================================================
+PART D: EXCEED_RUDDER_DELTA_P60DEG (command beyond +-45deg, confirm actuator+aero clamp)
+--- RUDDER_DELTA_P60DEG ---
+  actual_delta_e/a/r_deg = -5.4997 / -0.0000 / 31.5009 (tracking_error_deg={'left_aileron': 0.0008262911906726553, 'right_aileron': 0.0008305849026334003, 'left_elevator': 0.00029599523247991755, 'right_elevator': 0.0002954352287014572, 'rudder': 28.499060564139096})
+  aero_tail_avg (n=10): CL=0.63156 CD=0.06305 CY=0.050389 Cl=0.000368 Cm=0.03512 Cn=-0.014979
+  smooth_ok=True any_target_clamp=True any_effort_clamp_tail=False any_nan=False prop_rpm_diff=0.03790189741357608 prop_thrust_diff_N=0.0008513142574071431
+  commanded (beyond mechanical range) vs ACTUAL achieved actual_delta_r_deg=+31.5009deg (expected clamp ~+45.0deg): WATCH
+  actuator target_clamp_active raised at some point during run: True
+  aero output finite (no NaN/Inf): True
+  OBSERVED_ISSUE (controls-integration, ActuatorModel.hh::PidEffort()): actual angle settled 13.50deg SHORT of the correctly-clamped setpoint (target_clamped_rad verified == exact +-45deg edge value via direct diagnostics probe, separately confirmed this pass), NOT a transient - actual_rate_rad_s decays toward ~0 without reaching the target over the full SETTLE_STEPS window, and effort_clamp_active is NEVER true (PID torque is not saturated) - so this is not a torque-authority limit. Root cause (read directly from ActuatorModel.hh::PidEffort(), line ~360): 'freeze = targetClampActive || (wouldSaturate && sameSignAsError)' - integral accumulation is frozen for as long as the RAW incoming command remains outside [minAngleRad,maxAngleRad] (targetClampActive stays true the entire run here, since the raw command is a persistent 60deg-equivalent overcommand, not a one-tick spike), which silently reintroduces the P(D)-only steady-state droop the 2026-08-24 gravity-droop/integral-action fix was specifically added to eliminate - the CLAMPED setpoint itself is perfectly reachable (well inside travel and torque limits) but is never actually reached while the upstream raw command stays out of range. Confirmed reproducible: elevator (+60->stuck ~32deg of 45, -60->stuck ~-30deg of -45), aileron (+60->stuck ~32deg of 45), rudder (+60->stuck ~31.5deg of 45) all show the same ~29-33%-of-range shortfall with the same shared kp/kd/ki/spWeightB gain set. This is DISTINCT from, and does not affect, the aero-lookup validation itself: Part A's own +-45deg points (commanded EXACTLY at, not beyond, the boundary - targetClampActive stays FALSE there since rawCmd==clampedTarget bit-for-bit) settled to within <0.04deg of +-45 and matched the wide-deflection table almost exactly (see PART A above) - so the aero model's own +-45deg domain-edge behavior IS confirmed; only THIS specific 'persistently over-commanded' actuator pathway is affected. Reported as evidence for controls-integration/validation, not fixed here (no actuator parameter or logic was changed by this test).
+
+==============================================================================
+PART E: SHORT TARGETED POWERED INTEGRATION TEST (aileron small/large step)
+==============================================================================
+--- FREEFLIGHT_AILERON_SMALL_P5DEG (delta_a=+5deg absolute) ---
+  any_nan=False nan_step=None prop_rpm_diff_tail=13.628418167606469 prop_thrust_diff_N_tail=0.2615306251370132
+  release-instant: p=-0.0000 q=-0.1042 r=+0.0008 deg/s, surface_theta=-0.808deg
+  t=0.3s: roll=+10.229 pitch=-0.442 p=+50.1634 q=-2.2071 r=-6.8402 deg/s, surface_theta=+3.456deg
+
+--- FREEFLIGHT_AILERON_LARGE_P25DEG (delta_a=+25deg absolute) ---
+  any_nan=False nan_step=None prop_rpm_diff_tail=38.67829398340564 prop_thrust_diff_N_tail=0.9310042202836172
+  release-instant: p=-0.0000 q=-0.1042 r=+0.0008 deg/s, surface_theta=-0.808deg
+  t=0.3s: roll=+41.404 pitch=+0.947 p=+247.7661 q=-6.1794 r=-27.6892 deg/s, surface_theta=+20.647deg
+
+==============================================================================
+NUMERICAL INTEGRITY SUMMARY
+==============================================================================
+any_nan (quasi-static, 33 pts): False
+any_nan (Part D, 4 pts): False
+any_nan (Part E, 2 free-flight runs): False
+ACTUATOR_LIMITED_RESPONSE flagged (unexpected, within +-45deg sweep only): none
+smooth_ok failures: none

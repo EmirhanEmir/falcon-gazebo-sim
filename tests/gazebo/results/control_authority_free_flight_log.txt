@@ -1,0 +1,37 @@
+FALCON V2 - CONTROL_AUTHORITY_EFFECTIVENESS_VALIDATION - FREE_FLIGHT (gazebo-testing, 2026-08-26)
+Base trim (reused): throttle=0.4915 elevator_theta=+5.5deg both sides, V=18.165 alpha=2.461deg, altitude=100.0m. HOLD_STEPS=800 RELEASE_STEPS=2500 (2.5s free window)
+
+--- FREEFLIGHT_ELEVATOR_DELTA_P5DEG ---
+  any_nan=False nan_step=None
+  release-instant state: V=18.168 alpha=+2.449 beta=+0.000 roll=-0.000 pitch=+0.246 p=-0.0000 q=+0.2185 r=-0.0000 deg(/s)
+  t=0.3s state: V=18.315 alpha=+0.612 beta=+0.000 roll=-0.000 pitch=+3.249 yaw=-0.000 p=+0.0000 q=+2.8377 r=-0.0000 deg(/s)
+
+--- FREEFLIGHT_ELEVATOR_DELTA_M5DEG ---
+  any_nan=False nan_step=None
+  release-instant state: V=18.168 alpha=+2.449 beta=+0.000 roll=-0.000 pitch=+0.246 p=-0.0000 q=+0.2185 r=-0.0000 deg(/s)
+  t=0.3s state: V=18.255 alpha=+3.701 beta=+0.000 roll=-0.000 pitch=-2.169 yaw=-0.000 p=+0.0000 q=-6.5444 r=-0.0000 deg(/s)
+
+--- FREEFLIGHT_AILERON_DELTA_P5DEG ---
+  any_nan=False nan_step=None
+  release-instant state: V=18.168 alpha=+2.449 beta=+0.000 roll=-0.000 pitch=+0.246 p=-0.0000 q=+0.2185 r=-0.0000 deg(/s)
+  t=0.3s state: V=18.287 alpha=+2.143 beta=+0.100 roll=+7.227 pitch=+0.580 yaw=-0.523 p=+37.4273 q=-2.0531 r=-4.6477 deg(/s)
+
+--- FREEFLIGHT_AILERON_DELTA_M5DEG ---
+  any_nan=False nan_step=None
+  release-instant state: V=18.168 alpha=+2.449 beta=+0.000 roll=-0.000 pitch=+0.246 p=-0.0000 q=+0.2185 r=-0.0000 deg(/s)
+  t=0.3s state: V=18.287 alpha=+2.143 beta=-0.100 roll=-7.227 pitch=+0.580 yaw=+0.523 p=-37.4273 q=-2.0531 r=+4.6477 deg(/s)
+
+--- FREEFLIGHT_RUDDER_DELTA_P5DEG ---
+  any_nan=False nan_step=None
+  release-instant state: V=18.168 alpha=+2.449 beta=+0.000 roll=-0.000 pitch=+0.246 p=-0.0000 q=+0.2185 r=-0.0000 deg(/s)
+  t=0.3s state: V=18.287 alpha=+2.156 beta=+0.769 roll=-0.047 pitch=+0.544 yaw=-0.665 p=-0.5624 q=-1.8857 r=-4.6517 deg(/s)
+
+--- FREEFLIGHT_RUDDER_DELTA_M5DEG ---
+  any_nan=False nan_step=None
+  release-instant state: V=18.168 alpha=+2.449 beta=+0.000 roll=-0.000 pitch=+0.246 p=-0.0000 q=+0.2185 r=-0.0000 deg(/s)
+  t=0.3s state: V=18.287 alpha=+2.156 beta=-0.769 roll=+0.047 pitch=+0.544 yaw=+0.665 p=+0.5624 q=-1.8857 r=+4.6517 deg(/s)
+
+==============================================================================
+FREE-FLIGHT NUMERICAL INTEGRITY SUMMARY
+==============================================================================
+any_nan across all 6 free-flight runs: False
