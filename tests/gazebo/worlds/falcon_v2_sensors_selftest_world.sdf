@@ -1,0 +1,142 @@
+<?xml version="1.0"?>
+<!--
+  FALCON V2 sensor-suite self-test world.
+
+  Owner: controls-integration. Task:
+  SENSOR_MODEL_AND_ARDUPLANE_SITL_PREPARATION (2026-08-27). Name deliberately
+  prefixed/scoped ("falcon_v2_sensors_selftest_world") to avoid collision
+  with gazebo-testing-owned world files (falcon_v2_freefall_world.sdf,
+  falcon_v2_zero_g_world.sdf, falcon_v2_powered_free_flight_gui_world.sdf) -
+  this file is additive, does not modify any of those.
+
+  Purpose: the ONLY place in this repository where the NATIVE gz-sim IMU/
+  NavSat/AirPressure/Magnetometer System plugins are loaded (they must be
+  loaded at the WORLD level, not inside model.sdf - confirmed via
+  /usr/share/gz/gz-sim8/worlds/sensors.sdf, the upstream reference world for
+  exactly this sensor set). model/model.sdf itself only carries the
+  <sensor> elements (data definitions) and the custom FalconV2Pitot plugin
+  (model-level, since it is this project's own System plugin, same pattern
+  as FalconV2Wind/FalconV2Actuators/etc.).
+
+  Used by (gazebo-testing, future live validation - NOT executed by this
+  task, self-tests in plugins/sensors/test/sensors_model_selftest.cc are the
+  pure-math, no-live-Gazebo-required check owned by this task):
+    - SENSOR_LIVE_OUTPUT_TEST (IMU/GPS/baro/mag/pitot each produce finite,
+      non-stale output at their configured rate)
+    - WIND_PITOT_RESPONSE_TEST (mandatory headwind/tailwind/crosswind live
+      check - commands via /model/falcon_v2/wind/steady_cmd, per
+      docs/source_of_truth/environment/WIND.md sec 6, and confirms
+      /model/falcon_v2/sensors/pitot/airspeed_mps responds; ALSO confirms,
+      by contrast, that the native NavSat/IMU/baro/mag sensors are
+      unaffected by wind, as expected)
+
+  SPHERICAL_COORDINATES / MAGNETIC_FIELD: both explicitly restated below at
+  their SDF-spec DEFAULT values (surface_model=EARTH_WGS84,
+  world_frame_orientation=ENU, lat=0, lon=0, elevation=0, heading_deg=0;
+  magnetic_field=(5.5645e-6, 22.8758e-6, -42.3884e-6) Tesla) - NOT silently
+  relying on the parser default, so a future reader does not have to know
+  sdformat's own default to know what reference this world uses. Both are
+  PLACEHOLDER_ORIGIN / SIMULATION_ASSUMPTION: the real Falcon V2's actual
+  flight-test lat/lon/elevation and true local magnetic field are
+  DATA_REQUIRED (not present anywhere in this repository) - see
+  docs/source_of_truth/sensors/SENSORS.md sec 5/sec 4.4 for the full status
+  record. The magnetic_field value itself IS sourced (sdformat's own
+  documented world-element default, /usr/share/sdformat14/1.11/world.sdf),
+  not invented by this task - but it is not Falcon-location-specific,
+  hence still tagged an assumption for THIS project's purposes.
+-->
+<sdf version="1.9">
+  <world name="falcon_v2_sensors_selftest">
+    <physics name="1ms" type="dartsim">
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>1.0</real_time_factor>
+    </physics>
+    <gravity>0 0 -9.81</gravity>
+
+    <spherical_coordinates>
+      <surface_model>EARTH_WGS84</surface_model>
+      <world_frame_orientation>ENU</world_frame_orientation>
+      <latitude_deg>0.0</latitude_deg>
+      <longitude_deg>0.0</longitude_deg>
+      <elevation>0.0</elevation>
+      <heading_deg>0.0</heading_deg>
+    </spherical_coordinates>
+
+    <magnetic_field>5.5645e-6 22.8758e-6 -42.3884e-6</magnetic_field>
+
+    <plugin filename="gz-sim-physics-system" name="gz::sim::systems::Physics"></plugin>
+    <plugin filename="gz-sim-scene-broadcaster-system" name="gz::sim::systems::SceneBroadcaster"></plugin>
+    <plugin filename="gz-sim-user-commands-system" name="gz::sim::systems::UserCommands"></plugin>
+
+    <!-- NATIVE sensor-processing systems - see file header comment. The
+         air_speed/wind-effects systems are DELIBERATELY NOT loaded here
+         (this project's pitot is the custom FalconV2Pitot plugin inside
+         model.sdf instead - see PitotModel.hh header comment for why).
+
+         gz-sim-magnetometer-system REMOVED here 2026-08-27 (bug-fix
+         follow-up, controls-integration): gazebo-testing live-validated
+         (docs/test_results/2026-08-27_sensor_model_sitl_preparation.md
+         sec 5) that this installation's native magnetometer system
+         publishes a constant ~0.32-magnitude field_tesla output,
+         completely unresponsive to a 100x change in the world's declared
+         <magnetic_field> value below - a confirmed, reproducible
+         TEST_FAILED, independently reproduced by this agent via live gdb
+         instrumentation (see plugins/sensors/MagnetometerSystem.hh header
+         comment for the full evidence trail). Magnetometer output is now
+         produced by the custom FalconV2Magnetometer model-level plugin in
+         model/model.sdf instead (same topic, same message type) - loading
+         the native system here as well would create a second, defective
+         publisher on the same topic, so it must stay removed. The world's
+         <magnetic_field> element below is left in place/unchanged: it is
+         still this world's documented Earth-field reference value, and it
+         is what FalconV2Magnetometer's own default
+         world_magnetic_field_tesla parameter numerically matches (see
+         model.sdf plugin block) - it is simply no longer read via the
+         native system's ECM-component path, since that path is confirmed
+         not to work on this installation. -->
+    <plugin filename="gz-sim-imu-system" name="gz::sim::systems::Imu"></plugin>
+    <plugin filename="gz-sim-navsat-system" name="gz::sim::systems::NavSat"></plugin>
+    <plugin filename="gz-sim-air-pressure-system" name="gz::sim::systems::AirPressure"></plugin>
+
+    <light type="directional" name="sun">
+      <cast_shadows>true</cast_shadows>
+      <pose>0 0 10 0 0 0</pose>
+      <diffuse>0.8 0.8 0.8 1</diffuse>
+      <specular>0.2 0.2 0.2 1</specular>
+      <direction>-0.5 0.1 -0.9</direction>
+    </light>
+
+    <model name="ground_plane">
+      <static>true</static>
+      <link name="link">
+        <collision name="collision">
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>1000 1000</size>
+            </plane>
+          </geometry>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>1000 1000</size>
+            </plane>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Spawned well clear of the ground, straight-and-level, so the
+         powered-trim-like free-flight condition (if a future test drives
+         throttle/actuators) is not immediately confounded by ground
+         contact. No aircraft-physics parameter is touched by this
+         placement choice. -->
+    <include>
+      <uri>file:///home/emirhan/Desktop/FalconV2/model</uri>
+      <name>falcon_v2</name>
+      <pose>0 0 50 0 0 0</pose>
+    </include>
+  </world>
+</sdf>

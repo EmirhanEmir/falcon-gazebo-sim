@@ -1,0 +1,112 @@
+<?xml version="1.0"?>
+<!--
+  FALCON V2 - sensor self-test world variant with a DELIBERATELY SCALED
+  <magnetic_field> value, used ONLY for the live MAG_FIELD_SOURCE_REVIEW_
+  REQUIRED diagnostic (task SENSOR_MODEL_AND_ARDUPLANE_SITL_PREPARATION,
+  2026-08-27, gazebo-testing).
+
+  Owner: gazebo-testing. This file is an EXACT copy of
+  tests/gazebo/worlds/falcon_v2_sensors_selftest_world.sdf (owned by
+  controls-integration) with ONLY the <magnetic_field> element changed, from
+  (5.5645e-6, 22.8758e-6, -42.3884e-6) Tesla to
+  (5.5645e-4, 22.8758e-4, -42.3884e-4) Tesla - exactly 100x larger, same
+  direction. Purpose: if the live magnetometer sensor's field_tesla output
+  scales by the same 100x factor when this world is used instead of the
+  original, that is direct evidence the sensor DOES read the world's
+  declared <magnetic_field> element (pointing to a units/scale bug in how
+  the value is used). If the output does NOT change at all, that is direct
+  evidence the sensor is NOT sourcing the declared world element at all
+  (pointing to an internal fallback/default or a different bug). Additive
+  only - does not modify falcon_v2_sensors_selftest_world.sdf or any other
+  existing file.
+-->
+<sdf version="1.9">
+  <world name="falcon_v2_sensors_selftest_altmag">
+    <physics name="1ms" type="dartsim">
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>1.0</real_time_factor>
+    </physics>
+    <gravity>0 0 -9.81</gravity>
+
+    <spherical_coordinates>
+      <surface_model>EARTH_WGS84</surface_model>
+      <world_frame_orientation>ENU</world_frame_orientation>
+      <latitude_deg>0.0</latitude_deg>
+      <longitude_deg>0.0</longitude_deg>
+      <elevation>0.0</elevation>
+      <heading_deg>0.0</heading_deg>
+    </spherical_coordinates>
+
+    <!-- ONLY DIFFERENCE from falcon_v2_sensors_selftest_world.sdf: 100x the
+         magnitude, same direction, of the original SIMULATION_ASSUMPTION
+         placeholder field. -->
+    <magnetic_field>5.5645e-4 22.8758e-4 -42.3884e-4</magnetic_field>
+
+    <plugin filename="gz-sim-physics-system" name="gz::sim::systems::Physics"></plugin>
+    <plugin filename="gz-sim-scene-broadcaster-system" name="gz::sim::systems::SceneBroadcaster"></plugin>
+    <plugin filename="gz-sim-user-commands-system" name="gz::sim::systems::UserCommands"></plugin>
+
+    <plugin filename="gz-sim-imu-system" name="gz::sim::systems::Imu"></plugin>
+    <plugin filename="gz-sim-navsat-system" name="gz::sim::systems::NavSat"></plugin>
+    <plugin filename="gz-sim-air-pressure-system" name="gz::sim::systems::AirPressure"></plugin>
+    <!-- gz-sim-magnetometer-system REMOVED here 2026-08-27 (gazebo-testing,
+         independent magnetometer re-check follow-up): this file predates
+         controls-integration's native-magnetometer-system removal from
+         model.sdf. Empirically confirmed harmless as dead code while it
+         was still declared here (no matching <sensor type="magnetometer">
+         element exists anywhere for it to attach to since model.sdf's
+         removal, so it never created a second publisher - verified this
+         pass, 0/60 samples matched the old broken-native-system's frozen
+         signature magnitude when this world was live-tested with the line
+         still present). Removed anyway for hygiene/clarity, matching
+         falcon_v2_sensors_selftest_world.sdf's already-corrected pattern.
+         NOTE: this world's own <magnetic_field> element below is ALSO now
+         inert for the SAME reason documented in
+         falcon_v2_sensors_selftest_magscaled_world.sdf's header comment -
+         the FalconV2Magnetometer plugin (loaded at model level, inside
+         model/model.sdf) reads its own <world_magnetic_field_tesla> plugin
+         parameter, not this world-level element, so scaling this element
+         no longer exercises anything for the magnetometer. This world's
+         100x-scaled <magnetic_field> value below is retained only as an
+         inert historical artifact of the now-superseded native-system
+         diagnostic; the CURRENT field-scale regression check uses
+         falcon_v2_sensors_selftest_magscaled_world.sdf +
+         falcon_v2_magnetometer_scaled_model/ instead. -->
+
+    <light type="directional" name="sun">
+      <cast_shadows>true</cast_shadows>
+      <pose>0 0 10 0 0 0</pose>
+      <diffuse>0.8 0.8 0.8 1</diffuse>
+      <specular>0.2 0.2 0.2 1</specular>
+      <direction>-0.5 0.1 -0.9</direction>
+    </light>
+
+    <model name="ground_plane">
+      <static>true</static>
+      <link name="link">
+        <collision name="collision">
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>1000 1000</size>
+            </plane>
+          </geometry>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>1000 1000</size>
+            </plane>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+
+    <include>
+      <uri>file:///home/emirhan/Desktop/FalconV2/model</uri>
+      <name>falcon_v2</name>
+      <pose>0 0 50 0 0 0</pose>
+    </include>
+  </world>
+</sdf>

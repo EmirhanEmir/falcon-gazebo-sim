@@ -1,0 +1,108 @@
+# =============================================================================
+# FALCON V2 - ArduPlane SITL parameter profile V1
+# =============================================================================
+# Owner: controls-integration. Task:
+# SENSOR_MODEL_AND_ARDUPLANE_SITL_PREPARATION (2026-08-27).
+#
+# Full provenance / classification for every value (and every value
+# deliberately EXCLUDED) below:
+#   docs/source_of_truth/autopilot/SITL_PARAM_MIGRATION.md
+#
+# Format: ArduPilot's own Tools/autotest/default_params/*.parm convention -
+# whitespace-separated NAME VALUE, "#" comment lines - the format
+# pymavlink/mavparm.py's load() (used by sim_vehicle.py --add-param-file)
+# actually parses. Deliberately NOT the real aircraft's comma-CSV GCS-export
+# format (docs/source_of_truth/autopilot/real_aircraft/yeni_pixhawk.param) -
+# that file is a different, GCS-side export convention and is NEVER modified
+# or copied wholesale.
+#
+# DOES NOT include: RC calibration hardware specifics, INS/COMPASS/BARO
+# device IDs and calibration offsets, BRD/CAN/SERIAL hardware config, stale
+# BATT_* values, the old no-pitot ARSPD_TYPE=0 config, TECS/NAVL1/EK3/AHRS/
+# GPS/FLTMODE/FENCE/ARMING/AFS groups (all REVIEW_AND_ADAPT or
+# DROP_OR_DO_NOT_IMPORT - see the migration doc). No PID is retuned, no
+# autotune is executed by writing this file.
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Roll/Pitch rate controller - FALCON_V2_MANUFACTURER_INITIAL_PID
+# (Titan Dynamics Falcon V2 Build & User Manual Rev 1.0-sourced values, given
+# directly by the project owner for this task - see migration doc sec 1).
+# NEVER labeled FINAL_TUNED_PID or FLIGHT_VALIDATED_FINAL_PID. Autotune is
+# NOT executed by this file - AUTOTUNE_LEVEL is recorded as the
+# manufacturer-recommended starting point only.
+# -----------------------------------------------------------------------------
+RLL_RATE_P    0.25
+RLL_RATE_I    0.125
+RLL_RATE_D    0.002
+RLL_RATE_FF   0.125
+PTCH_RATE_P   0.25
+PTCH_RATE_I   0.125
+PTCH_RATE_D   0.002
+PTCH_RATE_FF  0.125
+# MANUFACTURER_RECOMMENDED_AUTOTUNE_LEVEL - not executed this stage.
+AUTOTUNE_LEVEL 8
+
+# -----------------------------------------------------------------------------
+# Servo function mapping - REAL_PARAM_CONFIGURATION, CONFIRMED against
+# installed ArduPlane 4.8.0-dev libraries/SRV_Channel/SRV_Channel.h enum
+# (k_aileron=4, k_elevator=19, k_rudder=21, k_throttleLeft=73,
+# k_throttleRight=74). Channel numbers 1-5 kept identical to the real
+# aircraft's own wiring (migration doc sec 2) - not renumbered.
+# -----------------------------------------------------------------------------
+SERVO1_FUNCTION   4
+SERVO1_MIN        800
+SERVO1_MAX        2200
+SERVO1_TRIM       1500
+SERVO1_REVERSED   1
+
+SERVO2_FUNCTION   19
+SERVO2_MIN        800
+SERVO2_MAX        2200
+SERVO2_TRIM       1500
+SERVO2_REVERSED   0
+
+SERVO3_FUNCTION   73
+SERVO3_MIN        1000
+SERVO3_MAX        2000
+SERVO3_TRIM       1000
+SERVO3_REVERSED   0
+
+SERVO4_FUNCTION   21
+SERVO4_MIN        800
+SERVO4_MAX        2200
+SERVO4_TRIM       1500
+SERVO4_REVERSED   1
+
+SERVO5_FUNCTION   74
+SERVO5_MIN        1000
+SERVO5_MAX        2000
+SERVO5_TRIM       1000
+SERVO5_REVERSED   0
+
+# -----------------------------------------------------------------------------
+# Simulated pitot - SITL_REQUIRED / SIMULATION_ADDED_PITOT_SENSOR. The real
+# Falcon V2 had NO pitot (old ARSPD_TYPE=0 in yeni_pixhawk.param) - this is a
+# NEW simulation-only capability, not a real-flight-proven sensor.
+# ARSPD_TYPE=100 (SITL backend) CONFIRMED exact via installed AP_Airspeed.h
+# enum TYPE_SITL=100 - not ambiguous, no PID_MAPPING_REVIEW_REQUIRED-style
+# flag needed for this value. Wiring PitotSystem.cc's differential pressure
+# into AP::sitl()->state.airspeed_raw_pressure is NEXT-STAGE work, not done
+# by this file (migration doc sec 4/16).
+# -----------------------------------------------------------------------------
+ARSPD_TYPE      100
+ARSPD_USE       1
+
+# AIRSPEED_MIN/CRUISE/MAX - GAZEBO_VALIDATION, SIMULATION_DERIVED_FROM_
+# GAZEBO_ENVELOPE (docs/test_results/2026-08-27_flight_envelope_validation.md).
+# 12.5 m/s (moment-infeasible trim) is NEVER used as MIN. 30 m/s is NOT used
+# as MAX just because it numerically worked once - 28 m/s (a
+# PROVISIONAL_EDGE_ENVELOPE point with margin) is used instead.
+AIRSPEED_MIN      16
+AIRSPEED_CRUISE   18
+AIRSPEED_MAX      28
+# DATA_REQUIRED - no validated stall speed exists in this repository's
+# Gazebo test results. Left at ArduPlane's own default (0 = unused),
+# matching the real .param's own value (also 0) - not a regression, not a
+# fabricated number.
+AIRSPEED_STALL    0

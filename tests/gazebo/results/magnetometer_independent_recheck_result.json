@@ -1,0 +1,74 @@
+{
+  "declared_vec": [
+    5.5645e-06,
+    2.28758e-05,
+    -4.23884e-05
+  ],
+  "declared_mag": 4.848754830314686e-05,
+  "declared_rate_hz": 50.0,
+  "declared_topic": "/model/falcon_v2/sensors/mag",
+  "part1": {
+    "avg_field": [
+      5.5645029831503816e-06,
+      2.287579999999668e-05,
+      -4.23883996083912e-05
+    ],
+    "mag": 4.848754830314683e-05,
+    "declared_mag": 4.848754830314686e-05,
+    "ratio": 0.9999999999999993,
+    "comp_err": [
+      2.9831503817212036e-12,
+      -3.3203691532368573e-18,
+      3.916088034904529e-13
+    ],
+    "final_rpy": [
+      -2.834592647960088e-14,
+      1.4346572244497893e-07,
+      1.39081423597787e-12
+    ],
+    "any_nan": false,
+    "PASS": true
+  },
+  "part2": {
+    "n_samples": 300,
+    "max_roll": 5.718337668954974e-05,
+    "max_pitch": 2.9685262957493004e-05,
+    "observed_rate": 0.4999998532856267,
+    "commanded_rate": 0.5,
+    "mag_min": 4.848754830314685e-05,
+    "mag_max": 4.8487548303146875e-05,
+    "declared_mag": 4.848754830314686e-05,
+    "max_err_ecm": 2.3541666717752287e-08,
+    "avg_err_ecm": 1.1810069842426309e-08,
+    "max_err_imu": 1.0593743056402237e-07,
+    "avg_err_imu": 9.557909133958635e-08,
+    "any_nan": false,
+    "PASS": true
+  },
+  "part3": {
+    "avg_field_scaled": [
+      0.0005564502983150383,
+      0.0022875799999996682,
+      -0.0042388399608391195
+    ],
+    "mag_scaled": 0.004848754830314683,
+    "mag_unscaled": 4.848754830314683e-05,
+    "ratio": 100.0,
+    "comp_ratios": [
+      100.00000000000001,
+      100.00000000000001,
+      99.99999999999999
+    ],
+    "any_nan": false,
+    "PASS": true
+  },
+  "part4": {
+    "observed_hz": 50.0,
+    "declared_rate": 50.0,
+    "n_broken_signature": 0,
+    "observed_hz_altmag_legacy": 50.0,
+    "n_broken_signature_altmag_legacy": 0,
+    "PASS": true
+  },
+  "overall_PASS": true
+}

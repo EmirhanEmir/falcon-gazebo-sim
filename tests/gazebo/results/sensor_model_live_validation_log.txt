@@ -1,0 +1,76 @@
+==============================================================================
+FALCON V2 - SENSOR_MODEL_AND_ARDUPLANE_SITL_PREPARATION live validation
+gazebo-testing, 2026-08-27
+==============================================================================
+World: /home/emirhan/Desktop/FalconV2/tests/gazebo/worlds/falcon_v2_sensors_selftest_world.sdf
+Declared world magnetic_field (T): (5.5645e-06, 2.28758e-05, -4.23884e-05), magnitude=4.848755e-05 T
+
+==============================================================================
+PART A: BARO_ALTITUDE_RESPONSE_REVIEW_REQUIRED
+==============================================================================
+--- A1: free-fall descent regression (spawn Z=150m, unheld, 3000 steps=3s) ---
+any_nan=False n_baro_paired_samples=150
+  first sample: t=0.002s z=150.0000m pressure=99534.8144Pa (ISA-predicted=99535.9552Pa)
+  last  sample: t=2.980s z=109.8560m pressure=100013.2887Pa (ISA-predicted=100012.2236Pa)
+  observed dP/dz (least-squares over full descent): -11.897948 Pa/m
+  ISA-predicted dP/dz over the same z-range: -11.864023 Pa/m
+  ratio observed/ISA-predicted slope: 1.0028595056374865
+
+--- A2/A3: two independent spawn-altitude comparison (Z=10m vs Z=300m, ~0.3s settle) ---
+[A2 Z=10m ] any_nan=False baro_count=16 baro_avg=101203.8410136577 ISA_pred=101204.9262 final_z=9.980553985496803
+[A3 Z=300m] any_nan=False baro_count=16 baro_avg=97771.68692682667 ISA_pred=97772.5739 final_z=299.980553985497
+  delta observed (Z300-Z10) = -3432.1541 Pa vs ISA-predicted delta = -3432.3523 Pa
+
+==============================================================================
+PART B: MAG_FIELD_SOURCE_REVIEW_REQUIRED
+==============================================================================
+[B_MAG_HDG_0] any_nan=False mag_count=76 mag_avg=(0.27609031324184313, -0.02415330522486606, -0.15997112550148448) |mag|=0.32000000658355665
+[B_MAG_HDG_90] any_nan=False mag_count=75 mag_avg=(-0.024136789973122685, -0.2760735750192108, -0.1600024734596639) |mag|=0.3199999921364138
+[B_MAG_HDG_180] any_nan=False mag_count=75 mag_avg=(-0.2760566095914772, 0.0241533070876038, -0.1600292797300735) |mag|=0.3200000067395866
+[B_MAG_HDG_270] any_nan=False mag_count=75 mag_avg=(0.02416982199524575, 0.27607357501921176, -0.15999751708965834) |mag|=0.3200000071781651
+declared world |magnetic_field| = 4.848755e-05 T
+observed/declared magnitude ratios across headings: [6599.632643475779, 6599.632345520049, 6599.632646693718, 6599.632655738896]
+
+--- B2: field-scale test (100x world magnetic_field, altmag world) ---
+[B2 altmag] any_nan=False mag_avg=(0.27609031316319294, -0.024153305224866056, -0.1599711256371922) |mag|=0.3200000065835403
+[baseline 0deg, original world] mag_avg=(0.27609031324184313, -0.02415330522486606, -0.15997112550148448) |mag|=0.32000000658355665
+ratio |mag|(altmag=100x world field) / |mag|(original world field) = 1.0000 (expect ~100 if sensor scales with declared world field, ~1 if it ignores it)
+
+==============================================================================
+PART C: IMU STATIC + KNOWN-RATE
+==============================================================================
+--- C1: static/at-rest under gravity (held zero body velocity, throttle=0) ---
+any_nan=False imu_count=201 orientation_last=(-1.22736912100913e-16, 0.0001402403179812412, 3.5251438765951687e-11, 0.9999999901663268) specific_force_tail_avg=(-0.0013637950129426531, -2.4597659050371432e-11, 9.754037782289847)
+
+--- C2: known constant yaw rate (r_target=+0.3 rad/s, held via hold_step angular target) ---
+any_nan=False imu_count=201 commanded_r=0.3 measured_angvel_z_tail_avg=0.30072483981827347 final_av=(9.174769396329475e-07, 0.00013572673960231905, 0.2999997565924094)
+
+==============================================================================
+PART D: GPS known-motion
+==============================================================================
+--- D1: pure vertical free-fall (spawn Z=150m, unheld, throttle=0, 2000 steps) ---
+any_nan=False n_gps_paired_samples=10
+  first: {'t': 0.002, 'true_z': 149.99995095006588, 'true_v': (9.91881395056539e-10, -1.8810266387783363e-12, -0.029429945114967625), 'gps_alt': 150.09998038318008, 'gps_v': (6.308488089594746e-09, -1.7853009502623427e-13, -0.01961999930595533), 'lat': -1.6145334350796161e-21, 'lon': 1.5119098910518599e-06}
+  last : {'t': 1.8, 'true_z': 134.8393958814628, 'true_v': (2.509054808736279, -0.00015879325150988178, -16.893743248445958), 'gps_alt': 134.70262337476015, 'gps_v': (2.5475047077615462, -6.973564024023337e-05, -16.851249993141636), 'lat': -5.803896431548608e-10, 'lon': 1.5295700024458537e-05}
+
+--- D2: powered forward trim, released after 500-step hold (2500 steps total) ---
+any_nan=False n_gps_paired_samples=13
+  first (near release): {'t': 0.001, 'true_z': 99.99976610625887, 'true_v': (4.985426354735774, -2.8444767041529055e-08, -0.23389374112570085), 'gps_alt': 100.09987395815551, 'gps_v': (2.6922447388283874, -3.362785575557696e-23, -0.12604469077114294), 'lat': -3.041318500898303e-31, 'lon': 1.5361062098829952e-06}
+  last                : {'t': 2.4, 'true_z': 98.21217498600716, 'true_v': (18.786595024574723, -0.0013732443523703209, -0.2044056727638044), 'gps_alt': 98.31833764910698, 'gps_v': (18.78175760283574, -0.0015070531007003356, -0.1976511110162144), 'lat': -4.40184288555814e-09, 'lon': 0.00039878215102403836}
+
+==============================================================================
+PART E: PITOT wind response at nominal trim (V~18.166m/s, throttle=0.5010, elevator=+4.5deg)
+==============================================================================
+[E1_ZERO_WIND] wind_cmd=(0.0, 0.0, 0.0) any_nan=False pitot_v_avg=18.165060916117888 pitot_p_avg=202.1062825611298 aero_V_avg=18.164818988750017 final_lv=(18.147891970266667, 0.000116322469528814, -0.802390977452597)
+[E2_HEADWIND_5] wind_cmd=(-5.0, 0.0, 0.0) any_nan=False pitot_v_avg=23.151814749319215 pitot_p_avg=328.3039972967705 aero_V_avg=23.151827161751115 final_lv=(18.14220345788703, 0.0001886456289147371, -0.684129823212032)
+[E3_TAILWIND_5] wind_cmd=(5.0, 0.0, 0.0) any_nan=False pitot_v_avg=13.18345252914676 pitot_p_avg=106.45460301557755 aero_V_avg=13.18294715255596 final_lv=(18.154978607422493, 6.131623906211821e-05, -0.8905991003947819)
+[E4_CROSSWIND_5] wind_cmd=(0.0, 5.0, 0.0) any_nan=False pitot_v_avg=18.848403400209566 pitot_p_avg=217.5981851047995 aero_V_avg=18.84794187345547 final_lv=(18.148859336012848, -0.05573577650894732, -0.7956942823606937)
+
+Pitot sign-check summary (vs E1 zero-wind baseline):
+  [E2_HEADWIND_5] pitot_v_avg=23.151814749319215 delta_vs_zero_wind=+4.9868 aero_diag_V=23.151827161751115 pitot_vs_aero_diff=-0.000012
+  [E3_TAILWIND_5] pitot_v_avg=13.18345252914676 delta_vs_zero_wind=-4.9816 aero_diag_V=13.18294715255596 pitot_vs_aero_diff=+0.000505
+  [E4_CROSSWIND_5] pitot_v_avg=18.848403400209566 delta_vs_zero_wind=+0.6833 aero_diag_V=18.84794187345547 pitot_vs_aero_diff=+0.000462
+
+==============================================================================
+DONE. Results: tests/gazebo/results/sensor_model_live_validation_{log.txt,result.json}
+==============================================================================

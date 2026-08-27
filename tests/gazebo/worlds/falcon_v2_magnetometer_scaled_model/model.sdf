@@ -2,6 +2,34 @@
 <sdf version="1.9">
   <!--
     ============================================================================
+    GAZEBO-TESTING DIAGNOSTIC COPY - NOT the authoritative model.sdf
+    ============================================================================
+    Owner: gazebo-testing. Task: SENSOR_MODEL_AND_ARDUPLANE_SITL_PREPARATION
+    independent magnetometer re-check (2026-08-27). Exact copy of
+    /home/emirhan/Desktop/FalconV2/model/model.sdf (meshes/ symlinked back to
+    the original, never duplicated) with EXACTLY ONE value changed: the
+    FalconV2Magnetometer plugin's own <world_magnetic_field_tesla> parameter,
+    scaled 100x (see that element below for the exact before/after values).
+
+    WHY THIS FILE EXISTS, INSTEAD OF REUSING THE EXISTING
+    falcon_v2_sensors_selftest_altmag_world.sdf (which scales the WORLD-level
+    <magnetic_field> element by 100x): live-tested this pass and confirmed
+    the NEW FalconV2Magnetometer plugin does NOT read the world's
+    <magnetic_field> SDF element at all - it has its own independent,
+    model-plugin-level <world_magnetic_field_tesla> parameter (see
+    plugins/sensors/MagnetometerSystem.hh/.cc - Configure() reads
+    `_sdf->Get<Vector3d>("world_magnetic_field_tesla", ...)`, never touches
+    any world/ECM MagneticField component). Scaling the world element (the
+    old altmag world) is therefore a no-op for this plugin's actual read
+    path and would silently validate nothing. This file scales the
+    parameter the plugin genuinely reads, making it the correct regression
+    vehicle for "does the new plugin's output scale with its declared
+    field source." Never used to change any aircraft physics parameter -
+    mass/CG/inertia/aero/control-authority/thrust are untouched, this is a
+    sensor-declaration-only diagnostic copy of a non-physics plugin
+    parameter, and it is NOT used by anything other than this one
+    diagnostic test.
+    ============================================================================
     FALCON V2 - Gazebo Sim Harmonic model, STRUCTURAL V1
     ============================================================================
     Author (this pass): geometry-structure specialist agent, 2026-08-21.
@@ -1628,7 +1656,10 @@
            /usr/share/sdformat14/1.11/world.sdf) - see SENSORS.md sec 4.4.
            The real Falcon V2 flight-location-specific magnetic field
            remains DATA_REQUIRED. -->
-      <world_magnetic_field_tesla>5.5645e-6 22.8758e-6 -42.3884e-6</world_magnetic_field_tesla>
+      <!-- GAZEBO-TESTING DIAGNOSTIC COPY: scaled 100x from the authoritative
+           model.sdf value (5.5645e-6 22.8758e-6 -42.3884e-6 T) - see file
+           header comment. Only used by this one diagnostic world. -->
+      <world_magnetic_field_tesla>5.5645e-4 22.8758e-4 -42.3884e-4</world_magnetic_field_tesla>
       <!-- V1_PROVISIONAL update rate - matches the value already
            documented/used for the (now-replaced) native sensor, see
            SENSORS.md sec 6. -->

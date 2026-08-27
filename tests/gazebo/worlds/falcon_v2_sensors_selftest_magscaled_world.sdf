@@ -1,0 +1,99 @@
+<?xml version="1.0"?>
+<!--
+  FALCON V2 - magnetometer PLUGIN-PARAMETER scale diagnostic world.
+
+  Owner: gazebo-testing. Task: SENSOR_MODEL_AND_ARDUPLANE_SITL_PREPARATION
+  independent magnetometer re-check (2026-08-27).
+
+  This is NOT a copy of falcon_v2_sensors_selftest_altmag_world.sdf (that
+  file scales the WORLD-level <magnetic_field> element, which the NEW
+  FalconV2Magnetometer plugin never reads - confirmed live this pass, see
+  the model.sdf copy this world includes). This world is otherwise
+  identical to controls-integration's falcon_v2_sensors_selftest_world.sdf
+  (same physics/spherical_coordinates/native IMU+NavSat+AirPressure
+  systems, no native magnetometer system - matches the current, corrected
+  architecture) except that it <include>s
+  tests/gazebo/worlds/falcon_v2_magnetometer_scaled_model/ (a gazebo-testing
+  -owned diagnostic copy of model/model.sdf with ONLY the
+  FalconV2Magnetometer plugin's own <world_magnetic_field_tesla> parameter
+  scaled 100x) instead of the real model/ directory. Purpose: confirm the
+  new plugin's live field_tesla output scales proportionally when the
+  parameter it actually reads changes - the decisive regression check that
+  the original native-sensor defect (constant magnitude, zero sensitivity
+  to any declared field value) is genuinely fixed, not just silently
+  unchanged. Additive only - does not modify any other file.
+-->
+<sdf version="1.9">
+  <world name="falcon_v2_sensors_selftest_magscaled">
+    <physics name="1ms" type="dartsim">
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>1.0</real_time_factor>
+    </physics>
+    <gravity>0 0 -9.81</gravity>
+
+    <spherical_coordinates>
+      <surface_model>EARTH_WGS84</surface_model>
+      <world_frame_orientation>ENU</world_frame_orientation>
+      <latitude_deg>0.0</latitude_deg>
+      <longitude_deg>0.0</longitude_deg>
+      <elevation>0.0</elevation>
+      <heading_deg>0.0</heading_deg>
+    </spherical_coordinates>
+
+    <!-- Restated for documentation completeness only - the
+         FalconV2Magnetometer plugin does NOT read this element (see file
+         header comment); left at the same reference value as the other
+         sensor selftest worlds so a future reader is not confused by an
+         inconsistent value here. -->
+    <magnetic_field>5.5645e-6 22.8758e-6 -42.3884e-6</magnetic_field>
+
+    <plugin filename="gz-sim-physics-system" name="gz::sim::systems::Physics"></plugin>
+    <plugin filename="gz-sim-scene-broadcaster-system" name="gz::sim::systems::SceneBroadcaster"></plugin>
+    <plugin filename="gz-sim-user-commands-system" name="gz::sim::systems::UserCommands"></plugin>
+
+    <plugin filename="gz-sim-imu-system" name="gz::sim::systems::Imu"></plugin>
+    <plugin filename="gz-sim-navsat-system" name="gz::sim::systems::NavSat"></plugin>
+    <plugin filename="gz-sim-air-pressure-system" name="gz::sim::systems::AirPressure"></plugin>
+    <!-- Native gz-sim-magnetometer-system deliberately NOT loaded - see
+         falcon_v2_sensors_selftest_world.sdf header comment (confirmed
+         non-functional on this installation; FalconV2Magnetometer, loaded
+         at model level inside the included model.sdf copy below, is the
+         sole publisher on the mag topic in this world). -->
+
+    <light type="directional" name="sun">
+      <cast_shadows>true</cast_shadows>
+      <pose>0 0 10 0 0 0</pose>
+      <diffuse>0.8 0.8 0.8 1</diffuse>
+      <specular>0.2 0.2 0.2 1</specular>
+      <direction>-0.5 0.1 -0.9</direction>
+    </light>
+
+    <model name="ground_plane">
+      <static>true</static>
+      <link name="link">
+        <collision name="collision">
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>1000 1000</size>
+            </plane>
+          </geometry>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>1000 1000</size>
+            </plane>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+
+    <include>
+      <uri>file:///home/emirhan/Desktop/FalconV2/tests/gazebo/worlds/falcon_v2_magnetometer_scaled_model</uri>
+      <name>falcon_v2</name>
+      <pose>0 0 50 0 0 0</pose>
+    </include>
+  </world>
+</sdf>

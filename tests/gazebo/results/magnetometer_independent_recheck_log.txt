@@ -1,0 +1,54 @@
+==============================================================================
+FALCON V2 - independent magnetometer re-check (gazebo-testing, 2026-08-27)
+==============================================================================
+[SELFCHECK] from-scratch rotate_world_vector_to_body() matches gz.math7 Quaterniond.rotate_vector_reverse() on 200 random (q,v) pairs to <1e-9 - my independent rotation formula is itself correct before using it to judge the plugin.
+
+[0] Declared plugin parameters, read directly from model/model.sdf via xml parsing (not copied from any other report):
+    world_magnetic_field_tesla = (5.5645e-06, 2.28758e-05, -4.23884e-05) T, |.|=4.84875483e-05 T
+    update_rate_hz = 50.0, topic = /model/falcon_v2/sensors/mag
+
+------------------------------------------------------------------------------
+PART 1: static level (rpy=0,0,0), velocity-command hold, unscaled world
+------------------------------------------------------------------------------
+  mag messages captured (paired) = 60, any_nan=False
+  tail-avg mag field (last 60) = (5.5645029831503816e-06, 2.287579999999668e-05, -4.23883996083912e-05)
+  |mag| = 4.84875483e-05 T  vs declared |.|=4.84875483e-05 T (ratio=1.000000)
+  per-axis (observed - declared) = (2.9831503817212036e-12, -3.3203691532368573e-18, 3.916088034904529e-13)
+  ECM ground-truth final rpy (rad) = (-2.834592647960088e-14, 1.4346572244497893e-07, 1.39081423597787e-12) (expect ~0,0,0)
+  PART 1 VERDICT: PASS
+
+------------------------------------------------------------------------------
+PART 2: known commanded yaw rate r=+0.5 rad/s (world Z), 6000 steps (6s)
+------------------------------------------------------------------------------
+  mag messages captured (paired) = 300, any_nan=False
+  first sample t~0.020s ecm_rpy=(6.856274679166245e-09, -2.7483418598459054e-07, 0.009499999091607647)
+  last  sample t~6.000s ecm_rpy=(-5.718337668954974e-05, -5.809931291309081e-06, 2.9994991217396554)
+  max |roll| over sweep = 0.000057 rad, max |pitch| = 0.000030 rad (expect ~0 if command is a pure world-Z yaw rate, as assumed)
+  yaw swept (unwrapped) = 2.99000 rad over 5.9800 s -> observed rate=0.50000 rad/s vs commanded r=0.5 rad/s
+  |mag| range over full sweep = [4.84875483e-05, 4.84875483e-05] T (rotation-invariant check - should stay == declared |.|=4.84875483e-05 T)
+  cross-check vs ECM ground-truth WorldPose (own rotation formula): max_err=2.354e-08 T, avg_err=1.181e-08 T (relative to |.|=4.849e-05 T)
+  cross-check vs LIVE IMU orientation topic (own rotation formula): max_err=1.059e-07 T, avg_err=9.558e-08 T, n_missing_imu_pairing=0/300
+  PART 2 VERDICT: PASS
+
+------------------------------------------------------------------------------
+PART 3: field-SCALE regression (plugin's own parameter x100), new falcon_v2_sensors_selftest_magscaled_world.sdf
+------------------------------------------------------------------------------
+  scaled model.sdf copy's own declared world_magnetic_field_tesla = (0.00055645, 0.00228758, -0.00423884) T, |.|=4.84875483e-03 T (read independently from tests/gazebo/worlds/falcon_v2_magnetometer_scaled_model/model.sdf)
+  mag messages captured = 60, any_nan=False
+  tail-avg mag field (scaled world) = (0.0005564502983150383, 0.0022875799999996682, -0.0042388399608391195)
+  |mag| = 4.84875483e-03 T
+  magnitude ratio (scaled/unscaled, BOTH LIVE-MEASURED this pass) = 100.0000 (expect ~100, since the plugin parameter itself was scaled 100x)
+  per-axis ratio (scaled/unscaled) = (100.00000000000001, 100.00000000000001, 99.99999999999999) (expect ~100,100,100 - a clean, consistent scale factor, unlike the original defect's per-axis ratios of ~49590x/-1058x/3775x)
+  PART 3 VERDICT: PASS
+
+------------------------------------------------------------------------------
+PART 4: single-publisher / rate sanity check
+------------------------------------------------------------------------------
+  main world: 100 paired mag samples over ~1.980s sim time -> observed rate ~= 50.00 Hz vs declared update_rate_hz=50.0 Hz (a ~2x reading here would indicate a second live publisher on the same topic)
+  samples matching the OLD broken-native-system signature (|mag|~0.32 T) = 0/100
+  legacy altmag world (still declares the dead gz-sim-magnetometer-system plugin line): 60 samples, observed rate ~= 50.00 Hz, broken-signature count = 0/60
+  PART 4 VERDICT: PASS
+
+==============================================================================
+OVERALL MAGNETOMETER INDEPENDENT RE-CHECK VERDICT: PASS
+==============================================================================
