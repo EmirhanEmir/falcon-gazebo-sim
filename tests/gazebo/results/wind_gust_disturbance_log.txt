@@ -1,0 +1,120 @@
+FALCON V2 - WIND_GUST_DISTURBANCE_MODEL_AND_VALIDATION (gazebo-testing, 2026-08-27)
+Nominal trim (reused, NOT re-searched): throttle L=R=0.501 elevator_theta_deg=+4.50 U_HOLD=18.14534 W_HOLD=-0.78335
+
+==============================================================================
+PART 6: NO-ARTIFICIAL-FORCE QUICK CONFIRMATION (independent grep)
+==============================================================================
+grep hits for AddWorldForce/AddWorldWrench in plugins/wind/*.hh,*.cc: 4 total, 0 outside a // comment line (i.e. actual call sites).
+  /home/emirhan/Desktop/FalconV2/plugins/wind/WindSystem.cc:200:  // is ONLY ever a velocity-vector publish - no AddWorldForce()/
+  /home/emirhan/Desktop/FalconV2/plugins/wind/WindSystem.cc:201:  // AddWorldWrench() call exists anywhere in this file (task section 20
+  /home/emirhan/Desktop/FalconV2/plugins/wind/WindSystem.hh:20:// applies a direct force/wrench to any link - no AddWorldForce()/
+  /home/emirhan/Desktop/FalconV2/plugins/wind/WindSystem.hh:21:// AddWorldWrench() call exists anywhere in this class. Its only physical
+CONFIRMED: zero actual AddWorldForce/AddWorldWrench call sites in plugins/wind/: True
+
+==============================================================================
+PART 1 (partial) + PART 2: STATIC/HELD WIND SIGN TESTS
+==============================================================================
+[A_ZERO] wind_cmd=(0.0, 0.0, 0.0) wind_actual_avg=(0.0, 0.0, 0.0) | ground_vel_body=(18.1487,-0.0000,-0.7838) | mirror: V=18.1656 alpha=+2.4782deg beta=-0.0001deg | LIVE: V=18.1656 alpha=+2.4728deg beta=-0.0000deg qbar=202.1187(expected 202.1187, reldiff=0.00000) CL=0.63979 CD=0.05639 CY=-0.00004 Cl=0.00000 Cm=0.01690 Cn=0.00002 | Mx=+0.0000Nm Mz=+0.0038Nm any_nan=False
+[B_HEADWIND] wind_cmd=(-5.0, 0.0, 0.0) wind_actual_avg=(-5.0, 0.0, 0.0) | ground_vel_body=(18.1395,-0.0000,-0.7520) | mirror: V=23.1523 alpha=+1.9492deg beta=-0.0002deg | LIVE: V=23.1523 alpha=+1.9102deg beta=-0.0002deg qbar=328.3187(expected 328.3187, reldiff=0.00000) CL=0.58620 CD=0.05292 CY=-0.00004 Cl=0.00000 Cm=0.03330 Cn=0.00002 | Mx=+0.0000Nm Mz=+0.0062Nm any_nan=False
+[C_TAILWIND] wind_cmd=(5.0, 0.0, 0.0) wind_actual_avg=(5.0, 0.0, 0.0) | ground_vel_body=(18.1588,-0.0000,-0.8087) | mirror: V=13.1851 alpha=+3.5950deg beta=+0.0000deg | LIVE: V=13.1851 alpha=+3.6171deg beta=+0.0001deg qbar=106.4818(expected 106.4818, reldiff=0.00000) CL=0.74869 CD=0.06437 CY=-0.00004 Cl=0.00000 Cm=-0.01636 Cn=0.00002 | Mx=+0.0000Nm Mz=+0.0020Nm any_nan=False
+[D_CROSSWIND_PLUS_Y] wind_cmd=(0.0, 5.0, 0.0) wind_actual_avg=(0.0, 5.0, 0.0) | ground_vel_body=(18.1497,0.0055,-0.7791) | mirror: V=18.8570 alpha=+2.4468deg beta=-15.3392deg | LIVE: V=18.8572 alpha=+2.4410deg beta=-15.3584deg qbar=217.8006(expected 217.8006, reldiff=0.00000) CL=0.63676 CD=0.05618 CY=0.03538 Cl=0.00190 Cm=0.01783 Cn=-0.00951 | Mx=+0.3916Nm Mz=-1.9562Nm any_nan=False
+[E_CROSSWIND_MINUS_Y] wind_cmd=(0.0, -5.0, 0.0) wind_actual_avg=(0.0, -5.0, 0.0) | ground_vel_body=(18.1497,-0.0055,-0.7791) | mirror: V=18.8571 alpha=+2.4467deg beta=+15.3390deg | LIVE: V=18.8572 alpha=+2.4410deg beta=+15.3584deg qbar=217.8022(expected 217.8022, reldiff=0.00000) CL=0.63676 CD=0.05618 CY=-0.03546 Cl=-0.00190 Cm=0.01783 Cn=0.00955 | Mx=-0.3916Nm Mz=+1.9644Nm any_nan=False
+[F_VERTICAL_PLUS_Z] wind_cmd=(0.0, 0.0, 3.0) wind_actual_avg=(0.0, 0.0, 3.0) | ground_vel_body=(18.1692,-0.0000,-0.6992) | mirror: V=18.6549 alpha=+11.2250deg beta=-0.0001deg | LIVE: V=18.6558 alpha=+11.4296deg beta=-0.0000deg qbar=213.1728(expected 213.1728, reldiff=0.00000) CL=1.37447 CD=0.13452 CY=-0.00004 Cl=0.00000 Cm=-0.24322 Cn=0.00002 | Mx=+0.0000Nm Mz=+0.0040Nm any_nan=False
+[G_VERTICAL_MINUS_Z] wind_cmd=(0.0, 0.0, -3.0) wind_actual_avg=(0.0, 0.0, -3.0) | ground_vel_body=(18.1478,-0.0000,-0.8753) | mirror: V=18.3790 alpha=-6.4175deg beta=-0.0001deg | LIVE: V=18.3798 alpha=-6.6319deg beta=-0.0000deg qbar=206.9138(expected 206.9138, reldiff=0.00000) CL=-0.22647 CD=0.03748 CY=-0.00004 Cl=0.00000 Cm=0.28133 Cn=0.00002 | Mx=+0.0000Nm Mz=+0.0039Nm any_nan=False
+
+------------------------------------------------------------------------------
+PRE-REGISTERED SIGN-CHECK TABLE (delta relative to A_ZERO baseline)
+------------------------------------------------------------------------------
+  [B_HEADWIND] V_rel: delta=+4.986712 observed_sign=+ expected_sign=+ -> AGREE 
+  [B_HEADWIND] qbar: delta=+126.199938 observed_sign=+ expected_sign=+ -> AGREE 
+  [C_TAILWIND] V_rel: delta=-4.980483 observed_sign=- expected_sign=- -> AGREE 
+  [C_TAILWIND] qbar: delta=-95.636923 observed_sign=- expected_sign=- -> AGREE 
+  [D_CROSSWIND_PLUS_Y] beta: delta=-0.268055 observed_sign=- expected_sign=- -> AGREE 
+  [D_CROSSWIND_PLUS_Y] CY: delta=+0.035419 observed_sign=+ expected_sign=+ -> AGREE 
+  [D_CROSSWIND_PLUS_Y] Cn: delta=-0.009526 observed_sign=- expected_sign=- -> AGREE 
+  [D_CROSSWIND_PLUS_Y] Cl: delta=+0.001903 observed_sign=+ expected_sign=? -> N/A (NOT pre-registered - report only)
+  [E_CROSSWIND_MINUS_Y] beta: delta=+0.268054 observed_sign=+ expected_sign=+ -> AGREE 
+  [E_CROSSWIND_MINUS_Y] CY: delta=-0.035419 observed_sign=- expected_sign=- -> AGREE 
+  [E_CROSSWIND_MINUS_Y] Cn: delta=+0.009526 observed_sign=+ expected_sign=+ -> AGREE 
+  [E_CROSSWIND_MINUS_Y] Cl: delta=-0.001903 observed_sign=- expected_sign=? -> N/A (NOT pre-registered - report only)
+  [F_VERTICAL_PLUS_Z] alpha: delta=+0.156325 observed_sign=+ expected_sign=+ -> AGREE 
+  [F_VERTICAL_PLUS_Z] CL: delta=+0.734686 observed_sign=+ expected_sign=+ -> AGREE 
+  [G_VERTICAL_MINUS_Z] alpha: delta=-0.158907 observed_sign=- expected_sign=- -> AGREE 
+  [G_VERTICAL_MINUS_Z] CL: delta=-0.866261 observed_sign=- expected_sign=- -> AGREE 
+
+qbar = 0.5*rho*|V_rel|^2 scaling check (all cases):
+  [A_ZERO] qbar_reldiff=0.000000
+  [B_HEADWIND] qbar_reldiff=0.000000
+  [C_TAILWIND] qbar_reldiff=0.000000
+  [D_CROSSWIND_PLUS_Y] qbar_reldiff=0.000000
+  [E_CROSSWIND_MINUS_Y] qbar_reldiff=0.000000
+  [F_VERTICAL_PLUS_Z] qbar_reldiff=0.000000
+  [G_VERTICAL_MINUS_Z] qbar_reldiff=0.000000
+max qbar_reldiff across all 7 cases: 0.000000
+
+==============================================================================
+PART 1 (remainder): SHORT ZERO-WIND FREE-FLIGHT REGRESSION SNIPPET
+==============================================================================
+Wind plugin LOADED but never commanded (default state) - published wind must be exactly (0,0,0) at every tick (bit-identical to the prior always-zero default, WIND.md sec 8).
+[ZERO_WIND_REGRESSION] any_nan=False (first@None) | V_ground=[17.425,18.706] V_rel=[17.425,18.706] | max|roll|=0.052deg max|pitch|=6.063deg max|alpha_rel|=2.752deg max|beta_rel|=0.053deg alt_drift=+2.132m
+[ZERO_WIND_REGRESSION] TREND: p=NEGLIGIBLE_AMPLITUDE_SETTLED(ratio=None) q=AMPLITUDE_STEADY_OR_PLATEAU(ratio=0.7089808502781543) r=NEGLIGIBLE_AMPLITUDE_SETTLED(ratio=None)
+[ZERO_WIND_REGRESSION] ACTUATOR: elev_L_max_track_err=1.13074deg elev_R_max_track_err=1.13070deg any_clamp_ever=False all_finite=True
+[ZERO_WIND_REGRESSION] CLASSIFICATION: BOUNDED
+
+wind_actual_all_zero_throughout=True
+REGRESSION envelope check (broad margin around 2026-08-26 25s baseline): True
+
+==============================================================================
+PART 3: STEADY-WIND FREE-FLIGHT TESTS (~12-13s, from nominal trim, fully free 6-DOF)
+==============================================================================
+-- A_HEADWIND_5MPS: steady wind (world) = (-5.0, 0.0, 0.0) --
+[A_HEADWIND_5MPS_attempt0] any_nan=False (first@None) | V_ground=[9.825,18.154] V_rel=[14.783,23.152] | max|roll|=0.080deg max|pitch|=20.026deg max|alpha_rel|=2.980deg max|beta_rel|=0.056deg alt_drift=+13.070m
+[A_HEADWIND_5MPS_attempt0] TREND: p=NEGLIGIBLE_AMPLITUDE_SETTLED(ratio=None) q=AMPLITUDE_DECAYING(ratio=0.49839360586059905) r=NEGLIGIBLE_AMPLITUDE_SETTLED(ratio=None)
+[A_HEADWIND_5MPS_attempt0] ACTUATOR: elev_L_max_track_err=2.21435deg elev_R_max_track_err=2.21428deg any_clamp_ever=False all_finite=True
+[A_HEADWIND_5MPS_attempt0] CLASSIFICATION: BOUNDED
+
+-- B_TAILWIND_5MPS: steady wind (world) = (5.0, 0.0, 0.0) --
+[B_TAILWIND_5MPS_attempt0] any_nan=False (first@None) | V_ground=[18.179,26.025] V_rel=[13.186,21.041] | max|roll|=0.071deg max|pitch|=14.357deg max|alpha_rel|=4.050deg max|beta_rel|=0.050deg alt_drift=-8.843m
+[B_TAILWIND_5MPS_attempt0] TREND: p=NEGLIGIBLE_AMPLITUDE_SETTLED(ratio=None) q=AMPLITUDE_DECAYING(ratio=0.6913936473725666) r=NEGLIGIBLE_AMPLITUDE_SETTLED(ratio=None)
+[B_TAILWIND_5MPS_attempt0] ACTUATOR: elev_L_max_track_err=1.04838deg elev_R_max_track_err=1.04838deg any_clamp_ever=False all_finite=True
+[B_TAILWIND_5MPS_attempt0] CLASSIFICATION: BOUNDED
+
+-- C_CROSSWIND_5MPS: steady wind (world) = (0.0, 5.0, 0.0) --
+[C_CROSSWIND_5MPS_attempt0] any_nan=False (first@None) | V_ground=[17.253,18.649] V_rel=[17.259,19.037] | max|roll|=4.448deg max|pitch|=7.239deg max|alpha_rel|=2.766deg max|beta_rel|=15.355deg alt_drift=+4.235m
+[C_CROSSWIND_5MPS_attempt0] TREND: p=AMPLITUDE_DECAYING(ratio=0.25411367395414625) q=AMPLITUDE_DECAYING(ratio=0.5928385169566649) r=AMPLITUDE_DECAYING(ratio=0.3623785701230464)
+[C_CROSSWIND_5MPS_attempt0] ACTUATOR: elev_L_max_track_err=1.34263deg elev_R_max_track_err=1.30902deg any_clamp_ever=False all_finite=True
+[C_CROSSWIND_5MPS_attempt0] CLASSIFICATION: BOUNDED
+
+==============================================================================
+PART 4: GUST TESTS (1-cosine profile via /gust_cmd, ~12-13s window, from nominal trim)
+==============================================================================
+-- LONGITUDINAL_M5: gust dir=(1.0, 0.0, 0.0) amplitude=-5.0m/s target_start_s=2.00 duration=2.0s --
+[LONGITUDINAL_M5_attempt0] any_nan=False (first@None) | V_ground=[15.091,19.517] V_rel=[15.091,22.808] | max|roll|=0.076deg max|pitch|=16.262deg max|alpha_rel|=3.369deg max|beta_rel|=0.053deg alt_drift=+4.204m
+[LONGITUDINAL_M5_attempt0] TREND: p=NEGLIGIBLE_AMPLITUDE_SETTLED(ratio=None) q=AMPLITUDE_DECAYING(ratio=0.5080400844066816) r=NEGLIGIBLE_AMPLITUDE_SETTLED(ratio=None)
+[LONGITUDINAL_M5_attempt0] ACTUATOR: elev_L_max_track_err=1.13074deg elev_R_max_track_err=1.13070deg any_clamp_ever=False all_finite=True
+[LONGITUDINAL_M5_attempt0] CLASSIFICATION: BOUNDED
+
+-- LATERAL_P5: gust dir=(0.0, 1.0, 0.0) amplitude=+5.0m/s target_start_s=2.00 duration=2.0s --
+[LATERAL_P5_attempt0] any_nan=False (first@None) | V_ground=[17.448,18.708] V_rel=[17.448,19.225] | max|roll|=3.837deg max|pitch|=6.711deg max|alpha_rel|=2.772deg max|beta_rel|=15.952deg alt_drift=+3.061m
+[LATERAL_P5_attempt0] TREND: p=AMPLITUDE_DECAYING(ratio=0.23604158796041724) q=AMPLITUDE_DECAYING(ratio=0.5547942995533611) r=AMPLITUDE_DECAYING(ratio=0.17580023990046786)
+[LATERAL_P5_attempt0] ACTUATOR: elev_L_max_track_err=1.13074deg elev_R_max_track_err=1.13070deg any_clamp_ever=False all_finite=True
+[LATERAL_P5_attempt0] CLASSIFICATION: BOUNDED
+
+-- VERTICAL_P3: gust dir=(0.0, 0.0, 1.0) amplitude=+3.0m/s target_start_s=2.00 duration=2.0s --
+[VERTICAL_P3_attempt0] any_nan=False (first@None) | V_ground=[16.562,19.530] V_rel=[16.562,19.503] | max|roll|=0.071deg max|pitch|=10.693deg max|alpha_rel|=3.008deg max|beta_rel|=0.053deg alt_drift=+5.479m
+[VERTICAL_P3_attempt0] TREND: p=NEGLIGIBLE_AMPLITUDE_SETTLED(ratio=None) q=AMPLITUDE_DECAYING(ratio=0.5459968390426039) r=NEGLIGIBLE_AMPLITUDE_SETTLED(ratio=None)
+[VERTICAL_P3_attempt0] ACTUATOR: elev_L_max_track_err=1.13074deg elev_R_max_track_err=1.13070deg any_clamp_ever=False all_finite=True
+[VERTICAL_P3_attempt0] CLASSIFICATION: BOUNDED
+
+-- LONGITUDINAL_P8_SANITY: gust dir=(1.0, 0.0, 0.0) amplitude=+8.0m/s target_start_s=2.00 duration=2.0s --
+[LONGITUDINAL_P8_SANITY_attempt0] any_nan=False (first@None) | V_ground=[15.010,22.720] V_rel=[12.175,22.720] | max|roll|=0.076deg max|pitch|=18.836deg max|alpha_rel|=4.006deg max|beta_rel|=0.053deg alt_drift=-0.896m
+[LONGITUDINAL_P8_SANITY_attempt0] TREND: p=NEGLIGIBLE_AMPLITUDE_SETTLED(ratio=None) q=AMPLITUDE_STEADY_OR_PLATEAU(ratio=0.7645121757498159) r=NEGLIGIBLE_AMPLITUDE_SETTLED(ratio=None)
+[LONGITUDINAL_P8_SANITY_attempt0] ACTUATOR: elev_L_max_track_err=1.50914deg elev_R_max_track_err=1.50912deg any_clamp_ever=False all_finite=True
+[LONGITUDINAL_P8_SANITY_attempt0] CLASSIFICATION: BOUNDED
+
+==============================================================================
+OVERALL
+==============================================================================
+any_nan_overall=False
+part2_any_disagree_vs_preregistered_signs=False
+part6_no_artificial_force_ok=True

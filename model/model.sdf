@@ -1299,5 +1299,76 @@
       <diagnostics_rate_hz>20.0</diagnostics_rate_hz>
     </plugin>
 
+    <!-- ============================================================
+         WIND/GUST GENERATOR PLUGIN
+         Author (this addition): aerodynamics specialist agent, 2026-08-27,
+         task WIND_GUST_DISTURBANCE_MODEL_AND_VALIDATION. This is an
+         ADDITIVE change only: no link, joint, mass, CG, inertia, collision,
+         visual, hinge-geometry, or other <plugin> element above was
+         modified to add this block. Scope: publishes a world-frame wind
+         VELOCITY vector only - it is the FIRST publisher for the
+         PRE-EXISTING /model/falcon_v2/wind topic that
+         plugins/aerodynamics/AerodynamicsSystem.cc and
+         plugins/propulsion/PropulsionSystem.cc already subscribe to and
+         already correctly consume as Vrel = Vbody - Vwind (CONFIRMED by
+         direct read of both files for this task; NEITHER FILE WAS MODIFIED
+         by this task). This plugin NEVER applies a direct force/wrench to
+         any link (no AddWorldForce/AddWorldWrench anywhere in
+         plugins/wind/) - its only physical output is the published
+         velocity vector; all aerodynamic/propulsive effect of wind flows
+         exclusively through the pre-existing relative-airflow consumption
+         in the two files named above.
+
+         Build: plugins/wind/ (see plugins/wind/README.md). Full
+         convention/formula/scope record:
+         docs/source_of_truth/environment/WIND.md.
+
+         Convention: published vectors are the WORLD-FRAME VELOCITY OF THE
+         AIR MASS (not meteorological "wind coming from" phrasing) - see
+         WIND.md sec 2.
+
+         V1 command interface: a live-updatable steady-wind vector
+         (steady_cmd_topic) plus a single schedulable deterministic
+         1-cosine gust (gust_cmd_topic, fixed 6-field order - see WIND.md
+         sec 4/6). V1 LIMITATION (stated, not silent): only ONE gust may be
+         scheduled/in-progress at a time - a new gust command replaces any
+         existing one (WIND.md sec 5).
+         ============================================================ -->
+    <plugin filename="FalconV2Wind" name="falcon_v2_wind::WindSystem">
+      <!-- Constant wind component at startup, world frame, m/s. Default
+           zero vector: with this left at "0 0 0" and no gust ever
+           commanded, the published wind is bit-identical to the prior
+           always-zero behavior (WIND.md sec 8) - purely additive, no
+           existing validated result can change unless this plugin is
+           actively commanded. Live-overwritable via steady_cmd_topic
+           below. -->
+      <steady_wind_mps>0 0 0</steady_wind_mps>
+      <!-- gz.msgs.Vector3d topic, WORLD frame, m/s - the SAME pre-existing
+           topic plugins/aerodynamics/AerodynamicsSystem.cc and
+           plugins/propulsion/PropulsionSystem.cc already subscribe to.
+           Published every PreUpdate() tick (unthrottled), never as a
+           direct force. -->
+      <wind_topic>/model/falcon_v2/wind</wind_topic>
+      <!-- Live steady-wind command, gz.msgs.Vector3d, world frame, m/s.
+           Hold-last-valid-command failsafe; non-finite components
+           rejected. -->
+      <steady_cmd_topic>/model/falcon_v2/wind/steady_cmd</steady_cmd_topic>
+      <!-- Single deterministic 1-cosine gust command, gz.msgs.Double_V,
+           FIXED field order:
+             [0] dir_x, [1] dir_y, [2] dir_z   - raw direction (need not be
+                 pre-normalized; normalized internally; degenerate/near-
+                 zero direction rejected)
+             [3] amplitude_mps                 - peak gust speed, m/s (may
+                 be negative, flips sense relative to dir_x/y/z)
+             [4] start_delay_s                 - seconds from THIS
+                 COMMAND'S RECEIPT (not absolute sim time) - see WIND.md
+                 sec 7 for the exact reference-time mechanism/rationale
+             [5] duration_s                    - seconds, must be > 0
+           V1 LIMITATION: only one gust may be scheduled/in-progress at a
+           time - a new valid command replaces any existing one outright
+           (WIND.md sec 5). -->
+      <gust_cmd_topic>/model/falcon_v2/wind/gust_cmd</gust_cmd_topic>
+    </plugin>
+
   </model>
 </sdf>
