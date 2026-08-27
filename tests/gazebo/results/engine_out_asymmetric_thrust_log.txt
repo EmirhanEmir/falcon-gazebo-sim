@@ -1,0 +1,445 @@
+FALCON V2 - ENGINE_OUT_AND_ASYMMETRIC_THRUST_VALIDATION (gazebo-testing, 2026-08-27)
+World: /home/emirhan/Desktop/FalconV2/tests/gazebo/worlds/falcon_v2_freefall_world.sdf
+Reference trim: throttle=L=R=0.501, elevator physical +4.5deg L/R, V=18.166 m/s (reused, not re-searched)
+
+==============================================================================
+PART 0: ANALYTIC SIGN PRE-REGISTRATION CROSS-CHECK (no Gazebo)
+==============================================================================
+left_hub_m=(0.2951, 0.3, 0.1271) right_hub_m=(0.2951, -0.3, 0.1271) thrust_axis_body=(1.0, 0.0, 0.0)
+rotation_left_sign=1.0 rotation_right_sign=-1.0
+DZ_HUB_CG (hub_z - CG_z) = 0.0271 m (established convention, PREV/FE)
+SYMMETRIC (both @ throttle=0.501): thrust_each=2.7821N Qprop_each=0.13065Nm -> Mz_prop=+0.000000 Mx_reaction=+0.000000 (expect both ~0)
+LEFT_OUT (right alone @ throttle=0.501): Mz_prop=+0.834616 (expect POSITIVE=nose-left) Mx_reaction=+0.130651 (expect POSITIVE=roll right/left-wing-up)
+RIGHT_OUT (left alone @ throttle=0.501): Mz_prop=-0.834616 (expect NEGATIVE=nose-right) Mx_reaction=-0.130651 (expect NEGATIVE=roll left/left-wing-down)
+PRE-REGISTRATION SELF-CONSISTENCY: ALL PASS
+
+==============================================================================
+PART 1: STATIC/CONTROLLED DIFFERENTIAL-THRUST TEST (rudder neutral)
+==============================================================================
+------------------------------------------------------------
+  [A_BASELINE] thr(L/R)=0.5010/0.5010 rudder=+0.00deg elev=+4.50deg aile(L/R)=+0.00/+0.00deg
+    RPM(L/R)=6086.9/6086.9 Thrust(L/R)=2.7797/2.7797N (total=5.5593N) Current(L/R)=13.06/13.06A rpm_cap=False cur_lim=False
+    Mz_prop: LIVE-STATE(r x F, live thrust)=-0.00000Nm | INDEPENDENT-MIRROR(r x F, mirror thrust from live rpm)=+0.00000Nm (mirror thrust L/R=2.7796/2.7796N)
+    Mx_reaction: LIVE-STATE=-0.00000Nm | INDEPENDENT-MIRROR=+0.00000Nm
+    aero(live): CY=-3.995376383385887e-05 Cl=1.7899509690887708e-08 Cn=1.99877411045288e-05 qbar=202.11895245963498
+    Mz_total(prop_live+aero_live)=0.0038164727799019915 Mx_total=3.39245015201105e-06 My_total=-0.1700924850826639
+    tracking_err_deg={'left_aileron': 0.052767905986789994, 'right_aileron': 0.05276791507500838, 'left_elevator': 0.07303922051830071, 'right_elevator': 0.07303921977965346, 'rudder': 2.75864366679853e-07} any_target_clamp=False any_effort_clamp=False any_nan=False
+------------------------------------------------------------
+  [B_L40_R50] thr(L/R)=0.4000/0.5000 rudder=+0.00deg elev=+4.50deg aile(L/R)=+0.00/+0.00deg
+    RPM(L/R)=4976.9/6076.2 Thrust(L/R)=0.0000/2.7456N (total=2.7456N) Current(L/R)=5.15/12.97A rpm_cap=False cur_lim=False
+    Mz_prop: LIVE-STATE(r x F, live thrust)=+0.82368Nm | INDEPENDENT-MIRROR(r x F, mirror thrust from live rpm)=+0.82371Nm (mirror thrust L/R=0.0000/2.7457N)
+    Mx_reaction: LIVE-STATE=+0.08686Nm | INDEPENDENT-MIRROR=+0.08687Nm
+    aero(live): CY=-3.6279058112943524e-05 Cl=1.0460813757776763e-06 Cn=1.8705856821689406e-05 qbar=202.04824064418378
+    Mz_total(prop_live+aero_live)=0.8272505972387082 Mx_total=0.08706393192351485 My_total=-0.24563656274149326
+    tracking_err_deg={'left_aileron': 0.052882035547206156, 'right_aileron': 0.05289026062520044, 'left_elevator': 0.07303032065216433, 'right_elevator': 0.07303018011088273, 'rudder': 0.00021773569187810043} any_target_clamp=False any_effort_clamp=False any_nan=False
+------------------------------------------------------------
+  [C_L50_R40] thr(L/R)=0.5000/0.4000 rudder=+0.00deg elev=+4.50deg aile(L/R)=+0.00/+0.00deg
+    RPM(L/R)=6076.2/4976.9 Thrust(L/R)=2.7456/0.0000N (total=2.7456N) Current(L/R)=12.97/5.15A rpm_cap=False cur_lim=False
+    Mz_prop: LIVE-STATE(r x F, live thrust)=-0.82368Nm | INDEPENDENT-MIRROR(r x F, mirror thrust from live rpm)=-0.82371Nm (mirror thrust L/R=2.7457/0.0000N)
+    Mx_reaction: LIVE-STATE=-0.08686Nm | INDEPENDENT-MIRROR=-0.08687Nm
+    aero(live): CY=-4.36284890716105e-05 Cl=-1.0102887713731923e-06 Cn=2.1268406525857597e-05 qbar=202.04824067463207
+    Mz_total(prop_live+aero_live)=-0.81962020803677 Mx_total=-0.08705712496938245 My_total=-0.24563653183712625
+    tracking_err_deg={'left_aileron': 0.052890251305076394, 'right_aileron': 0.05288204433784122, 'left_elevator': 0.07303018096097263, 'right_elevator': 0.07303032003697667, 'rudder': 0.0002171857120381615} any_target_clamp=False any_effort_clamp=False any_nan=False
+------------------------------------------------------------
+  [D_L25_R50] thr(L/R)=0.2500/0.5000 rudder=+0.00deg elev=+4.50deg aile(L/R)=+0.00/+0.00deg
+    RPM(L/R)=3108.9/6076.2 Thrust(L/R)=0.0592/2.7456N (total=2.8048N) Current(L/R)=3.29/12.97A rpm_cap=False cur_lim=False
+    Mz_prop: LIVE-STATE(r x F, live thrust)=+0.80590Nm | INDEPENDENT-MIRROR(r x F, mirror thrust from live rpm)=+0.80592Nm (mirror thrust L/R=0.0592/2.7456N)
+    Mx_reaction: LIVE-STATE=+0.10748Nm | INDEPENDENT-MIRROR=+0.10748Nm
+    aero(live): CY=-3.6341249823765356e-05 Cl=3.7963105741282844e-07 Cn=1.8643521917155206e-05 qbar=202.0497283751738
+    Mz_total(prop_live+aero_live)=0.8094566893425669 Mx_total=0.10755333838204396 My_total=-0.2440475698175598
+    tracking_err_deg={'left_aileron': 0.05287900778761622, 'right_aileron': 0.05288868342023013, 'left_elevator': 0.07303063819956987, 'right_elevator': 0.07303042581679617, 'rudder': 0.0002461952383467902} any_target_clamp=False any_effort_clamp=False any_nan=False
+------------------------------------------------------------
+  [E_L50_R25] thr(L/R)=0.5000/0.2500 rudder=+0.00deg elev=+4.50deg aile(L/R)=+0.00/+0.00deg
+    RPM(L/R)=6076.2/3108.9 Thrust(L/R)=2.7456/0.0592N (total=2.8048N) Current(L/R)=12.97/3.29A rpm_cap=False cur_lim=False
+    Mz_prop: LIVE-STATE(r x F, live thrust)=-0.80590Nm | INDEPENDENT-MIRROR(r x F, mirror thrust from live rpm)=-0.80592Nm (mirror thrust L/R=2.7456/0.0592N)
+    Mx_reaction: LIVE-STATE=-0.10748Nm | INDEPENDENT-MIRROR=-0.10748Nm
+    aero(live): CY=-4.3566297057308076e-05 Cl=-3.438384369059533e-07 Cn=2.1330602252260256e-05 qbar=202.04972840584983
+    Mz_total(prop_live+aero_live)=-0.8018262705209979 Mx_total=-0.10754653137445275 My_total=-0.24404753890334585
+    tracking_err_deg={'left_aileron': 0.052888674050048885, 'right_aileron': 0.052879016529638244, 'left_elevator': 0.07303042669489483, 'right_elevator': 0.07303063761213176, 'rudder': 0.00024564522464033125} any_target_clamp=False any_effort_clamp=False any_nan=False
+------------------------------------------------------------
+  [F_LEFT_OUT] thr(L/R)=0.0000/0.5010 rudder=+0.00deg elev=+4.50deg aile(L/R)=+0.00/+0.00deg
+    RPM(L/R)=-28.8/6086.8 Thrust(L/R)=0.0000/2.7818N (total=2.7818N) Current(L/R)=1.30/13.07A rpm_cap=False cur_lim=False
+    Mz_prop: LIVE-STATE(r x F, live thrust)=+0.83454Nm | INDEPENDENT-MIRROR(r x F, mirror thrust from live rpm)=+0.83457Nm (mirror thrust L/R=0.0000/2.7819N)
+    Mx_reaction: LIVE-STATE=+0.13065Nm | INDEPENDENT-MIRROR=+0.13065Nm
+    aero(live): CY=-3.6198771506104955e-05 Cl=-1.6126320613655835e-07 Cn=1.85185442615095e-05 qbar=202.0491501351286
+    Mz_total(prop_live+aero_live)=0.838076528389049 Mx_total=0.13061755017669072 My_total=-0.24466449801621637
+    tracking_err_deg={'left_aileron': 0.052878886814480115, 'right_aileron': 0.05289022384621732, 'left_elevator': 0.07303045428494959, 'right_elevator': 0.07303015502683392, 'rudder': 0.0002827123341185674} any_target_clamp=False any_effort_clamp=False any_nan=False
+------------------------------------------------------------
+  [G_RIGHT_OUT] thr(L/R)=0.5010/0.0000 rudder=+0.00deg elev=+4.50deg aile(L/R)=+0.00/+0.00deg
+    RPM(L/R)=6086.8/-28.8 Thrust(L/R)=2.7818/0.0000N (total=2.7818N) Current(L/R)=13.07/1.30A rpm_cap=False cur_lim=False
+    Mz_prop: LIVE-STATE(r x F, live thrust)=-0.83454Nm | INDEPENDENT-MIRROR(r x F, mirror thrust from live rpm)=-0.83457Nm (mirror thrust L/R=2.7819/0.0000N)
+    Mx_reaction: LIVE-STATE=-0.13065Nm | INDEPENDENT-MIRROR=-0.13065Nm
+    aero(live): CY=-4.370877567435677e-05 Cl=1.9705562226331848e-07 Cn=2.1455393938117035e-05 qbar=202.0491501664019
+    Mz_total(prop_live+aero_live)=-0.8304461674487954 Mx_total=-0.13061074326092761 My_total=-0.24466446704304412
+    tracking_err_deg={'left_aileron': 0.052890214409858353, 'right_aileron': 0.05287889548982703, 'left_elevator': 0.07303015593850255, 'right_elevator': 0.07303045373114106, 'rudder': 0.00028216232481496635} any_target_clamp=False any_effort_clamp=False any_nan=False
+
+Left/right mirror symmetry checks:
+  B_L40_R50 Mz=+0.82368 vs C_L50_R40 Mz=-0.82368 : sum=-0.000000 (rel to larger magnitude=0.000%) OK
+  D_L25_R50 Mz=+0.80590 vs E_L50_R25 Mz=-0.80590 : sum=-0.000000 (rel to larger magnitude=0.000%) OK
+  F_LEFT_OUT Mz=+0.83454 vs G_RIGHT_OUT Mz=-0.83454 : sum=-0.000000 (rel to larger magnitude=0.000%) OK
+
+--- LEFT_OUT TRANSIENT (failed=left, survivor=right retains throttle=0.501) ---
+any_nan=False (first at step None)
+Failed-motor RPM: t=0 6086.9 -> t=4.98s 428.4 (max single-sample drop=228.87 RPM, smooth_decay=True)
+Yaw: start=+0.000 end=-6.964 (drift toward RIGHT(-)), max|r|=15.421deg/s
+Roll: start=+0.000 end=+13.897 max|roll_drift|=13.897deg, max|p|=5.535deg/s
+Beta: start=-0.000 end=-7.838
+Early Mz_prop (t=0+)=-1.2957206578789737e-06 Mx_reaction(t=0+)=-9.589152002997814e-08
+
+--- RIGHT_OUT TRANSIENT (failed=right, survivor=left retains throttle=0.501) ---
+any_nan=False (first at step None)
+Failed-motor RPM: t=0 6086.9 -> t=4.98s 428.4 (max single-sample drop=228.87 RPM, smooth_decay=True)
+Yaw: start=+0.000 end=+6.909 (drift toward LEFT(+)), max|r|=15.280deg/s
+Roll: start=+0.000 end=-13.816 max|roll_drift|=13.816deg, max|p|=5.492deg/s
+Beta: start=-0.000 end=+7.787
+Early Mz_prop (t=0+)=-1.2957206578789737e-06 Mx_reaction(t=0+)=-9.589152002997814e-08
+
+==============================================================================
+PART 5: SURVIVING-ENGINE THROTTLE ADEQUACY (rudder neutral, needed to pick a
+        realistic survivor throttle for Parts 3/4/6/7 - task order: run before
+        the rudder search is FINALIZED so the search reflects a sustainable throttle)
+==============================================================================
+--- LEFT_OUT: surviving-engine (right) throttle adequacy ---
+  baseline throttle=0.501: thrust_total=2.7818N vs Drag=5.1461N (T/D=0.5406)
+  Analytic (offline, pure-Python bisection) required throttle=0.5614 -> predicted thrust=5.1461N RPM=6724.9 current=18.96A (rpm_cap=11500.0, current_limit=65.0)
+  LIVE confirm @ throttle=0.5614: thrust_total=5.1436N (target Drag=5.1461N, T/D=0.9995) RPM=6725.0 current=18.95A rpm_cap=False cur_lim=False
+
+--- RIGHT_OUT: surviving-engine (left) throttle adequacy ---
+  baseline throttle=0.501: thrust_total=2.7818N vs Drag=5.1461N (T/D=0.5406)
+  Analytic (offline, pure-Python bisection) required throttle=0.5614 -> predicted thrust=5.1461N RPM=6724.9 current=18.96A (rpm_cap=11500.0, current_limit=65.0)
+  LIVE confirm @ throttle=0.5614: thrust_total=5.1436N (target Drag=5.1461N, T/D=0.9995) RPM=6725.0 current=18.95A rpm_cap=False cur_lim=False
+
+==============================================================================
+PART 3/4: RUDDER COMPENSATION SEARCH (at each side's Part-5 survivor throttle)
+==============================================================================
+-- LEFT_OUT --
+  rudder=+5.0deg -> actual_delta_r=+4.976deg Mz_prop=+1.54310 aero_Mz=-0.44672 Mz_total=+1.09639
+  rudder=+10.0deg -> actual_delta_r=+9.951deg Mz_prop=+1.54314 aero_Mz=-0.89853 Mz_total=+0.64461
+  rudder=+15.0deg -> actual_delta_r=+14.924deg Mz_prop=+1.54318 aero_Mz=-1.35214 Mz_total=+0.19105
+  rudder=+25.0deg -> actual_delta_r=+24.868deg Mz_prop=+1.54329 aero_Mz=-2.26475 Mz_total=-0.72146
+  REFINE rudder=+17.10deg (interpolated between +15/+25) -> Mz_total=-0.00058
+  BEST for LEFT_OUT: rudder=+17.10deg Mz_total_residual=-0.00058Nm
+
+-- RIGHT_OUT --
+  rudder=-5.0deg -> actual_delta_r=-4.976deg Mz_prop=-1.54310 aero_Mz=+0.45434 Mz_total=-1.08877
+  rudder=-10.0deg -> actual_delta_r=-9.951deg Mz_prop=-1.54314 aero_Mz=+0.90427 Mz_total=-0.63887
+  rudder=-15.0deg -> actual_delta_r=-14.924deg Mz_prop=-1.54318 aero_Mz=+1.35974 Mz_total=-0.18344
+  rudder=-25.0deg -> actual_delta_r=-24.868deg Mz_prop=-1.54329 aero_Mz=+2.27050 Mz_total=+0.72721
+  REFINE rudder=-17.00deg (interpolated between -25/-15) -> Mz_total=-0.00128
+  BEST for RIGHT_OUT: rudder=-17.00deg Mz_total_residual=-0.00128Nm
+
+==============================================================================
+PART 4 REPORT TABLE
+==============================================================================
+LEFT_OUT: survivor_throttle=0.5614 survivor_thrust=5.1440N Mz_prop=+1.54320Nm required_rudder_physical=+17.10deg actual_rudder_aero=+17.013deg aero_Mz=-1.54379Nm residual_Mz_total=-0.00058Nm
+RIGHT_OUT: survivor_throttle=0.5614 survivor_thrust=5.1440N Mz_prop=-1.54320Nm required_rudder_physical=-17.00deg actual_rudder_aero=-16.913deg aero_Mz=+1.54193Nm residual_Mz_total=-0.00128Nm
+Mirror symmetry: rudder sum (should be ~0, opposite sign)=+0.100deg, Mz_prop sum (should be ~0)=+0.00000Nm
+
+==============================================================================
+PART 6: SINGLE-ENGINE TRIM ATTEMPT
+==============================================================================
+--- LEFT_OUT: single-engine trim attempt (throttle=0.5614, rudder=+17.10deg, elevator=+4.50deg, aileron L/R=+0.00/+0.00deg) ---
+  Lift=58.411N Weight=58.860N ratio=0.9924 | Thrust=5.144N Drag=5.347N T/D=0.9620
+  My_total=-0.1812Nm Mz_total=-0.0006Nm Mx_total=+0.2342Nm
+
+  Roll-moment check (aileron-neutral attempt): |Mx_total|=0.2342Nm - for reference, ~5deg aileron authority is on the order of several N*m at this qbar (CONTROL_AUTHORITY_EFFECTIVENESS_VALIDATION, 2026-08-26), so this residual is judged SMALL relative to aileron authority; aileron kept neutral (rudder-only attempt sufficient, per task instruction to only add aileron if genuinely needed).
+--- RIGHT_OUT: single-engine trim attempt (throttle=0.5614, rudder=-17.00deg, elevator=+4.50deg, aileron L/R=+0.00/+0.00deg) ---
+  Lift=58.411N Weight=58.860N ratio=0.9924 | Thrust=5.144N Drag=5.345N T/D=0.9624
+  My_total=-0.1812Nm Mz_total=-0.0013Nm Mx_total=-0.2340Nm
+
+  Roll-moment check (aileron-neutral attempt): |Mx_total|=0.2340Nm - for reference, ~5deg aileron authority is on the order of several N*m at this qbar (CONTROL_AUTHORITY_EFFECTIVENESS_VALIDATION, 2026-08-26), so this residual is judged SMALL relative to aileron authority; aileron kept neutral (rudder-only attempt sufficient, per task instruction to only add aileron if genuinely needed).
+
+==============================================================================
+PART 7: SINGLE-ENGINE FREE 6-DOF FLIGHT
+==============================================================================
+--- LEFT_OUT SINGLE-ENGINE FREE FLIGHT (throttle_survivor=0.5614, rudder=+17.10deg) ---
+any_nan=False (first at step None)
+Airspeed: start=18.165 end=18.377 drift=+0.212 m/s
+Altitude: start=99.34 end=97.51 drift=-1.83 m
+Roll: start=+0.03 end=+18.38 max|roll|=18.38deg
+Pitch: start=+0.26 end=-3.51 max|pitch|=5.47deg
+Yaw drift: max|yaw-start|=65.24deg
+Beta: start=+0.01 end=+0.42 max|beta|=3.25deg
+CLASSIFICATION: PASS_WITH_DRIFT
+
+--- RIGHT_OUT SINGLE-ENGINE FREE FLIGHT (throttle_survivor=0.5614, rudder=-17.00deg) ---
+any_nan=False (first at step None)
+Airspeed: start=18.165 end=18.378 drift=+0.213 m/s
+Altitude: start=99.34 end=97.52 drift=-1.82 m
+Roll: start=-0.03 end=-18.39 max|roll|=18.39deg
+Pitch: start=+0.26 end=-3.51 max|pitch|=5.48deg
+Yaw drift: max|yaw-start|=65.30deg
+Beta: start=-0.01 end=-0.41 max|beta|=3.27deg
+CLASSIFICATION: PASS_WITH_DRIFT
+
+==============================================================================
+PART 8: SPEED DEPENDENCE (16 and 24 m/s, rudder-compensation-requirement only)
+==============================================================================
+-- V=16.0 m/s (from flight_envelope_result.json, read-only, not re-searched): two-engine throttle=0.4480 elevator=+9.547deg Drag(two-engine reference)=5.0129N --
+   LEFT_OUT: analytic survivor throttle=0.5179 -> thrust=5.0129N RPM=6201.4 current=17.57A
+  rudder=+5.0deg -> actual_delta_r=+4.953deg Mz_prop=+1.50266 aero_Mz=-0.34530 Mz_total=+1.15736
+  rudder=+10.0deg -> actual_delta_r=+9.903deg Mz_prop=+1.50268 aero_Mz=-0.69443 Mz_total=+0.80826
+  rudder=+15.0deg -> actual_delta_r=+14.851deg Mz_prop=+1.50272 aero_Mz=-1.04488 Mz_total=+0.45784
+  rudder=+25.0deg -> actual_delta_r=+24.741deg Mz_prop=+1.50279 aero_Mz=-1.74976 Mz_total=-0.24697
+  REFINE rudder=+21.50deg (interpolated between +15/+25) -> Mz_total=-0.00033
+  BEST for LEFT_OUT: rudder=+21.50deg Mz_total_residual=-0.00033Nm
+
+   RIGHT_OUT: analytic survivor throttle=0.5179 -> thrust=5.0129N RPM=6201.4 current=17.57A
+  rudder=-5.0deg -> actual_delta_r=-4.953deg Mz_prop=-1.50266 aero_Mz=+0.35120 Mz_total=-1.15145
+  rudder=-10.0deg -> actual_delta_r=-9.903deg Mz_prop=-1.50268 aero_Mz=+0.69890 Mz_total=-0.80378
+  rudder=-15.0deg -> actual_delta_r=-14.851deg Mz_prop=-1.50272 aero_Mz=+1.05076 Mz_total=-0.45196
+  rudder=-25.0deg -> actual_delta_r=-24.741deg Mz_prop=-1.50279 aero_Mz=+1.75424 Mz_total=+0.25145
+  REFINE rudder=-21.40deg (interpolated between -25/-15) -> Mz_total=-0.00171
+  BEST for RIGHT_OUT: rudder=-21.40deg Mz_total_residual=-0.00171Nm
+
+-- V=24.0 m/s (from flight_envelope_result.json, read-only, not re-searched): two-engine throttle=0.6319 elevator=-2.122deg Drag(two-engine reference)=6.8305N --
+   LEFT_OUT: analytic survivor throttle=0.7089 -> thrust=6.8305N RPM=8448.5 current=25.91A
+  rudder=+5.0deg -> actual_delta_r=+4.954deg Mz_prop=+2.04927 aero_Mz=-0.77620 Mz_total=+1.27307
+  rudder=+10.0deg -> actual_delta_r=+9.904deg Mz_prop=+2.04934 aero_Mz=-1.56085 Mz_total=+0.48849
+  rudder=+15.0deg -> actual_delta_r=+14.852deg Mz_prop=+2.04944 aero_Mz=-2.34846 Mz_total=-0.29902
+  rudder=+25.0deg -> actual_delta_r=+24.743deg Mz_prop=+2.04967 aero_Mz=-3.93261 Mz_total=-1.88294
+  REFINE rudder=+13.10deg (interpolated between +10/+15) -> Mz_total=+0.00022
+  BEST for LEFT_OUT: rudder=+13.10deg Mz_total_residual=+0.00022Nm
+
+   RIGHT_OUT: analytic survivor throttle=0.7089 -> thrust=6.8305N RPM=8448.5 current=25.91A
+  rudder=-5.0deg -> actual_delta_r=-4.954deg Mz_prop=-2.04927 aero_Mz=+0.78947 Mz_total=-1.25980
+  rudder=-10.0deg -> actual_delta_r=-9.904deg Mz_prop=-2.04935 aero_Mz=+1.57090 Mz_total=-0.47844
+  rudder=-15.0deg -> actual_delta_r=-14.852deg Mz_prop=-2.04944 aero_Mz=+2.36169 Mz_total=+0.31225
+  rudder=-25.0deg -> actual_delta_r=-24.743deg Mz_prop=-2.04967 aero_Mz=+3.94268 Mz_total=+1.89301
+  REFINE rudder=-13.00deg (interpolated between -15/-10) -> Mz_total=-0.00407
+  BEST for RIGHT_OUT: rudder=-13.00deg Mz_total_residual=-0.00407Nm
+
+
+==============================================================================
+PART 9: RUDDER YAW AUTHORITY MARGIN
+==============================================================================
+LEFT_OUT: Mz_prop(engine-out)=+1.54320Nm, required_rudder=+17.10deg, margins(|aero_Mz(delta)|/|Mz_prop|)={'5deg': 0.28947386654827983, '10deg': 0.5822488050743365, '15deg': 0.876187782300522, '25deg': 1.4675630056536237}, LOW_RUDDER_MARGIN=False, RUDDER_SATURATION_RISK=False
+RIGHT_OUT: Mz_prop(engine-out)=-1.54320Nm, required_rudder=-17.00deg, margins(|aero_Mz(delta)|/|Mz_prop|)={'25deg': 1.4712887023334056, '15deg': 0.881116370768824, '10deg': 0.5859699890153828, '5deg': 0.2944109283707458}, LOW_RUDDER_MARGIN=False, RUDDER_SATURATION_RISK=False
+LEFT_OUT@16.0: Mz_prop=+1.50277Nm required_rudder=+21.50deg margins={'5deg': 0.229776700530189, '10deg': 0.46209940879790184, '15deg': 0.6953026588463568, '25deg': 1.1643584704741985} LOW_RUDDER_MARGIN=False RUDDER_SATURATION_RISK=False
+RIGHT_OUT@16.0: Mz_prop=-1.50276Nm required_rudder=-21.40deg margins={'25deg': 1.1673409357738003, '15deg': 0.699218250545179, '10deg': 0.46507539248981433, '5deg': 0.23370563355322344} LOW_RUDDER_MARGIN=False RUDDER_SATURATION_RISK=False
+LEFT_OUT@24.0: Mz_prop=+2.04940Nm required_rudder=+13.10deg margins={'5deg': 0.37874215126964417, '10deg': 0.7616117320149913, '15deg': 1.1459248870693777, '25deg': 1.9189026922183718} LOW_RUDDER_MARGIN=False RUDDER_SATURATION_RISK=False
+RIGHT_OUT@24.0: Mz_prop=-2.04940Nm required_rudder=-13.00deg margins={'25deg': 1.9238180444868367, '15deg': 1.1523787272163015, '10deg': 0.7665159400791052, '5deg': 0.3852181051928988} LOW_RUDDER_MARGIN=False RUDDER_SATURATION_RISK=False
+
+==============================================================================
+PART 10: ACTUATOR/NUMERICAL SAFETY SUMMARY
+==============================================================================
+any_nan_overall=False
+any_target_clamp/effort_clamp seen in Part 1 static cases: False
+smooth (non-instantaneous) RPM decay confirmed both sides: True
+
+
+
+==============================================================================
+VALIDATION FOLLOW-UP RUN (appended, 2026-08-27)
+==============================================================================
+FALCON V2 - ENGINE_OUT_AND_ASYMMETRIC_THRUST_VALIDATION - VALIDATION FOLLOW-UP (gazebo-testing, 2026-08-27)
+Targeted re-run: (1) Part 2 decimated-RPM persistence (both sides, fresh quick re-run), (2) Part 7 extended ~30s single-engine free-flight (both sides, same conditions as the original run).
+Parts 1/3/4/5/6/8/9/10 are NOT re-run - loaded read-only from the existing result JSON.
+
+==============================================================================
+PART 2 RE-RUN (decimated RPM persistence only)
+==============================================================================
+--- LEFT_OUT TRANSIENT (failed=left, survivor=right retains throttle=0.501) ---
+any_nan=False (first at step None)
+Failed-motor RPM: t=0 6086.9 -> t=4.98s 428.4 (max single-sample drop=228.87 RPM, smooth_decay=True)
+Yaw: start=+0.000 end=-6.964 (drift toward RIGHT(-)), max|r|=15.421deg/s
+Roll: start=+0.000 end=+13.897 max|roll_drift|=13.897deg, max|p|=5.535deg/s
+Beta: start=-0.000 end=-7.838
+Early Mz_prop (t=0+)=-1.2957206578789737e-06 Mx_reaction(t=0+)=-9.589152002997814e-08
+
+--- RIGHT_OUT TRANSIENT (failed=right, survivor=left retains throttle=0.501) ---
+any_nan=False (first at step None)
+Failed-motor RPM: t=0 6086.9 -> t=4.98s 428.4 (max single-sample drop=228.87 RPM, smooth_decay=True)
+Yaw: start=+0.000 end=+6.909 (drift toward LEFT(+)), max|r|=15.280deg/s
+Roll: start=+0.000 end=-13.816 max|roll_drift|=13.816deg, max|p|=5.492deg/s
+Beta: start=-0.000 end=+7.787
+Early Mz_prop (t=0+)=-1.2957206578789737e-06 Mx_reaction(t=0+)=-9.589152002997814e-08
+
+==============================================================================
+PART 7 EXTENDED (~30s) SINGLE-ENGINE FREE 6-DOF FLIGHT
+==============================================================================
+-- LEFT_OUT: throttle_survivor=0.5614 (from existing Part 5 result, read-only), rudder=+17.10deg (from existing Part 4 result, read-only) --
+--- LEFT_OUT SINGLE-ENGINE FREE FLIGHT (throttle_survivor=0.5614, rudder=+17.10deg) ---
+any_nan=False (first at step None)
+Airspeed: start=18.165 end=18.855 drift=+0.690 m/s
+Altitude: start=99.34 end=92.87 drift=-6.47 m
+Roll: start=+0.03 end=+21.43 max|roll|=22.82deg
+Pitch: start=+0.26 end=-1.47 max|pitch|=5.47deg
+Yaw drift: max|yaw-start|=179.53deg
+Beta: start=+0.01 end=+1.84 max|beta|=3.25deg
+CLASSIFICATION: PASS_WITH_DRIFT
+
+TREND (last-third vs mid-third rate of change, window=29.1s): roll_rate mid=+0.417deg/s last=+0.077deg/s ratio=0.185 -> DECAYING_TOWARD_PLATEAU | yaw_rate mid=-9.684deg/s last=+26.259deg/s ratio=2.712 -> SUSTAINED_OR_ACCELERATING
+Roll at window end (+21.43deg) is still the window max (22.82deg): False
+
+-- RIGHT_OUT: throttle_survivor=0.5614 (from existing Part 5 result, read-only), rudder=-17.00deg (from existing Part 4 result, read-only) --
+--- RIGHT_OUT SINGLE-ENGINE FREE FLIGHT (throttle_survivor=0.5614, rudder=-17.00deg) ---
+any_nan=False (first at step None)
+Airspeed: start=18.165 end=18.856 drift=+0.691 m/s
+Altitude: start=99.34 end=92.88 drift=-6.46 m
+Roll: start=-0.03 end=-21.44 max|roll|=22.83deg
+Pitch: start=+0.26 end=-1.47 max|pitch|=5.48deg
+Yaw drift: max|yaw-start|=179.68deg
+Beta: start=-0.01 end=-1.83 max|beta|=3.27deg
+CLASSIFICATION: PASS_WITH_DRIFT
+
+TREND (last-third vs mid-third rate of change, window=29.1s): roll_rate mid=-0.417deg/s last=-0.077deg/s ratio=0.185 -> DECAYING_TOWARD_PLATEAU | yaw_rate mid=+9.692deg/s last=-26.250deg/s ratio=2.708 -> SUSTAINED_OR_ACCELERATING
+Roll at window end (-21.44deg) is still the window max (22.83deg): False
+
+==============================================================================
+SUMMARY: EXTENDED (~30s) vs ORIGINAL (~13s) Part 7 outcome
+==============================================================================
+LEFT_OUT: ORIGINAL(~65deg-yaw-window) end_roll=N/A end_yaw=N/A classification=PASS_WITH_DRIFT
+LEFT_OUT: EXTENDED(~29.1s) end_roll=+21.43deg end_yaw=+121.84deg max|roll|=22.82deg max|yaw_drift|=179.53deg classification=PASS_WITH_DRIFT
+LEFT_OUT: TREND VERDICT: roll=DECAYING_TOWARD_PLATEAU (rate ratio last/mid=0.185), yaw=SUSTAINED_OR_ACCELERATING (rate ratio last/mid=2.712)
+LEFT_OUT: OVERALL 30s VERDICT: (b) CONTINUED GROWTH / NOT YET SETTLED within 30s
+
+RIGHT_OUT: ORIGINAL(~65deg-yaw-window) end_roll=N/A end_yaw=N/A classification=PASS_WITH_DRIFT
+RIGHT_OUT: EXTENDED(~29.1s) end_roll=-21.44deg end_yaw=-121.65deg max|roll|=22.83deg max|yaw_drift|=179.68deg classification=PASS_WITH_DRIFT
+RIGHT_OUT: TREND VERDICT: roll=DECAYING_TOWARD_PLATEAU (rate ratio last/mid=0.185), yaw=SUSTAINED_OR_ACCELERATING (rate ratio last/mid=2.708)
+RIGHT_OUT: OVERALL 30s VERDICT: (b) CONTINUED GROWTH / NOT YET SETTLED within 30s
+
+
+
+==============================================================================
+VALIDATION FOLLOW-UP RUN (appended, 2026-08-27)
+==============================================================================
+FALCON V2 - ENGINE_OUT_AND_ASYMMETRIC_THRUST_VALIDATION - VALIDATION FOLLOW-UP (gazebo-testing, 2026-08-27)
+Targeted re-run: (1) Part 2 decimated-RPM persistence (both sides, fresh quick re-run), (2) Part 7 extended ~30s single-engine free-flight (both sides, same conditions as the original run).
+Parts 1/3/4/5/6/8/9/10 are NOT re-run - loaded read-only from the existing result JSON.
+
+==============================================================================
+PART 2 RE-RUN (decimated RPM persistence only)
+==============================================================================
+--- LEFT_OUT TRANSIENT (failed=left, survivor=right retains throttle=0.501) ---
+any_nan=False (first at step None)
+Failed-motor RPM: t=0 6086.9 -> t=4.98s 428.4 (max single-sample drop=228.87 RPM, smooth_decay=True)
+Yaw: start=+0.000 end=-6.964 (drift toward RIGHT(-)), max|r|=15.421deg/s
+Roll: start=+0.000 end=+13.897 max|roll_drift|=13.897deg, max|p|=5.535deg/s
+Beta: start=-0.000 end=-7.838
+Early Mz_prop (t=0+)=-1.2957206578789737e-06 Mx_reaction(t=0+)=-9.589152002997814e-08
+
+--- RIGHT_OUT TRANSIENT (failed=right, survivor=left retains throttle=0.501) ---
+any_nan=False (first at step None)
+Failed-motor RPM: t=0 6086.9 -> t=4.98s 428.4 (max single-sample drop=228.87 RPM, smooth_decay=True)
+Yaw: start=+0.000 end=+6.909 (drift toward LEFT(+)), max|r|=15.280deg/s
+Roll: start=+0.000 end=-13.816 max|roll_drift|=13.816deg, max|p|=5.492deg/s
+Beta: start=-0.000 end=+7.787
+Early Mz_prop (t=0+)=-1.2957206578789737e-06 Mx_reaction(t=0+)=-9.589152002997814e-08
+
+==============================================================================
+PART 7 EXTENDED (~30s) SINGLE-ENGINE FREE 6-DOF FLIGHT
+==============================================================================
+-- LEFT_OUT: throttle_survivor=0.5614 (from existing Part 5 result, read-only), rudder=+17.10deg (from existing Part 4 result, read-only) --
+--- LEFT_OUT SINGLE-ENGINE FREE FLIGHT (throttle_survivor=0.5614, rudder=+17.10deg) ---
+any_nan=False (first at step None)
+Airspeed: start=18.165 end=18.855 drift=+0.690 m/s
+Altitude: start=99.34 end=92.87 drift=-6.47 m
+Roll: start=+0.03 end=+21.43 max|roll|=22.82deg
+Pitch: start=+0.26 end=-1.47 max|pitch|=5.47deg
+Yaw drift: max|yaw-start|=179.53deg
+Beta: start=+0.01 end=+1.84 max|beta|=3.25deg
+CLASSIFICATION: PASS_WITH_DRIFT
+
+TREND (mean BODY RATE p/r over last-third vs mid-third of the window - NOT the wrap-prone Euler yaw ANGLE, see corrected-methodology comment above; window=29.1s): roll_rate(p) mid=+0.198deg/s last=-0.148deg/s ratio=0.748 -> RATE_LEVELED_OFF_STEADY_NONZERO | yaw_rate(r) mid=-9.099deg/s last=-10.039deg/s ratio=1.103 -> RATE_LEVELED_OFF_STEADY_NONZERO
+Roll ANGLE mean: mid-third=+19.58deg last-third=+21.78deg (bank angle settling check) | window-end roll (+21.43deg) still the window max (22.82deg): False
+
+-- RIGHT_OUT: throttle_survivor=0.5614 (from existing Part 5 result, read-only), rudder=-17.00deg (from existing Part 4 result, read-only) --
+--- RIGHT_OUT SINGLE-ENGINE FREE FLIGHT (throttle_survivor=0.5614, rudder=-17.00deg) ---
+any_nan=False (first at step None)
+Airspeed: start=18.165 end=18.856 drift=+0.691 m/s
+Altitude: start=99.34 end=92.88 drift=-6.46 m
+Roll: start=-0.03 end=-21.44 max|roll|=22.83deg
+Pitch: start=+0.26 end=-1.47 max|pitch|=5.48deg
+Yaw drift: max|yaw-start|=179.68deg
+Beta: start=-0.01 end=-1.83 max|beta|=3.27deg
+CLASSIFICATION: PASS_WITH_DRIFT
+
+TREND (mean BODY RATE p/r over last-third vs mid-third of the window - NOT the wrap-prone Euler yaw ANGLE, see corrected-methodology comment above; window=29.1s): roll_rate(p) mid=-0.197deg/s last=+0.149deg/s ratio=0.757 -> RATE_LEVELED_OFF_STEADY_NONZERO | yaw_rate(r) mid=+9.106deg/s last=+10.046deg/s ratio=1.103 -> RATE_LEVELED_OFF_STEADY_NONZERO
+Roll ANGLE mean: mid-third=-19.59deg last-third=-21.79deg (bank angle settling check) | window-end roll (-21.44deg) still the window max (22.83deg): False
+
+==============================================================================
+SUMMARY: EXTENDED (~30s) vs ORIGINAL (~13s) Part 7 outcome
+==============================================================================
+LEFT_OUT: ORIGINAL(~65deg-yaw-window) end_roll=N/A end_yaw=N/A classification=PASS_WITH_DRIFT
+LEFT_OUT: EXTENDED(~29.1s) end_roll=+21.43deg end_yaw=+121.84deg max|roll|=22.82deg max|yaw_drift|=179.53deg classification=PASS_WITH_DRIFT
+LEFT_OUT: TREND VERDICT: roll(p) rate=RATE_LEVELED_OFF_STEADY_NONZERO (mean-rate ratio last/mid=0.748, bank angle mid-3rd=+19.58deg -> last-3rd=+21.78deg), yaw(r) rate=RATE_LEVELED_OFF_STEADY_NONZERO (mean-rate ratio last/mid=1.103)
+LEFT_OUT: OVERALL 30s VERDICT: (b) CONTINUED GROWTH / NOT YET SETTLED: at least one axis's rate magnitude is still growing at 30s - a real, uncorrected slow roll/spiral divergence under rudder-only compensation.
+
+RIGHT_OUT: ORIGINAL(~65deg-yaw-window) end_roll=N/A end_yaw=N/A classification=PASS_WITH_DRIFT
+RIGHT_OUT: EXTENDED(~29.1s) end_roll=-21.44deg end_yaw=-121.65deg max|roll|=22.83deg max|yaw_drift|=179.68deg classification=PASS_WITH_DRIFT
+RIGHT_OUT: TREND VERDICT: roll(p) rate=RATE_LEVELED_OFF_STEADY_NONZERO (mean-rate ratio last/mid=0.757, bank angle mid-3rd=-19.59deg -> last-3rd=-21.79deg), yaw(r) rate=RATE_LEVELED_OFF_STEADY_NONZERO (mean-rate ratio last/mid=1.103)
+RIGHT_OUT: OVERALL 30s VERDICT: (b) CONTINUED GROWTH / NOT YET SETTLED: at least one axis's rate magnitude is still growing at 30s - a real, uncorrected slow roll/spiral divergence under rudder-only compensation.
+
+
+
+==============================================================================
+VALIDATION FOLLOW-UP RUN (appended, 2026-08-27)
+==============================================================================
+FALCON V2 - ENGINE_OUT_AND_ASYMMETRIC_THRUST_VALIDATION - VALIDATION FOLLOW-UP (gazebo-testing, 2026-08-27)
+Targeted re-run: (1) Part 2 decimated-RPM persistence (both sides, fresh quick re-run), (2) Part 7 extended ~30s single-engine free-flight (both sides, same conditions as the original run).
+Parts 1/3/4/5/6/8/9/10 are NOT re-run - loaded read-only from the existing result JSON.
+
+==============================================================================
+PART 2 RE-RUN (decimated RPM persistence only)
+==============================================================================
+--- LEFT_OUT TRANSIENT (failed=left, survivor=right retains throttle=0.501) ---
+any_nan=False (first at step None)
+Failed-motor RPM: t=0 6086.9 -> t=4.98s 428.4 (max single-sample drop=228.87 RPM, smooth_decay=True)
+Yaw: start=+0.000 end=-6.964 (drift toward RIGHT(-)), max|r|=15.421deg/s
+Roll: start=+0.000 end=+13.897 max|roll_drift|=13.897deg, max|p|=5.535deg/s
+Beta: start=-0.000 end=-7.838
+Early Mz_prop (t=0+)=-1.2957206578789737e-06 Mx_reaction(t=0+)=-9.589152002997814e-08
+
+--- RIGHT_OUT TRANSIENT (failed=right, survivor=left retains throttle=0.501) ---
+any_nan=False (first at step None)
+Failed-motor RPM: t=0 6086.9 -> t=4.98s 428.4 (max single-sample drop=228.87 RPM, smooth_decay=True)
+Yaw: start=+0.000 end=+6.909 (drift toward LEFT(+)), max|r|=15.280deg/s
+Roll: start=+0.000 end=-13.816 max|roll_drift|=13.816deg, max|p|=5.492deg/s
+Beta: start=-0.000 end=+7.787
+Early Mz_prop (t=0+)=-1.2957206578789737e-06 Mx_reaction(t=0+)=-9.589152002997814e-08
+
+==============================================================================
+PART 7 EXTENDED (~30s) SINGLE-ENGINE FREE 6-DOF FLIGHT
+==============================================================================
+-- LEFT_OUT: throttle_survivor=0.5614 (from existing Part 5 result, read-only), rudder=+17.10deg (from existing Part 4 result, read-only) --
+--- LEFT_OUT SINGLE-ENGINE FREE FLIGHT (throttle_survivor=0.5614, rudder=+17.10deg) ---
+any_nan=False (first at step None)
+Airspeed: start=18.165 end=18.855 drift=+0.690 m/s
+Altitude: start=99.34 end=92.87 drift=-6.47 m
+Roll: start=+0.03 end=+21.43 max|roll|=22.82deg
+Pitch: start=+0.26 end=-1.47 max|pitch|=5.47deg
+Yaw drift: max|yaw-start|=179.53deg
+Beta: start=+0.01 end=+1.84 max|beta|=3.25deg
+CLASSIFICATION: PASS_WITH_DRIFT
+
+TREND (mean BODY RATE p/r over last-third vs mid-third of the window - NOT the wrap-prone Euler yaw ANGLE, see corrected-methodology comment above; window=29.1s): roll_rate(p) mid=+0.198deg/s last=-0.148deg/s ratio=0.748 -> NEGLIGIBLE_RATE_SETTLED | yaw_rate(r) mid=-9.099deg/s last=-10.039deg/s ratio=1.103 -> RATE_LEVELED_OFF_STEADY_NONZERO
+Roll ANGLE mean: mid-third=+19.58deg last-third=+21.78deg (bank angle settling check) | window-end roll (+21.43deg) still the window max (22.82deg): False
+
+-- RIGHT_OUT: throttle_survivor=0.5614 (from existing Part 5 result, read-only), rudder=-17.00deg (from existing Part 4 result, read-only) --
+--- RIGHT_OUT SINGLE-ENGINE FREE FLIGHT (throttle_survivor=0.5614, rudder=-17.00deg) ---
+any_nan=False (first at step None)
+Airspeed: start=18.165 end=18.856 drift=+0.691 m/s
+Altitude: start=99.34 end=92.88 drift=-6.46 m
+Roll: start=-0.03 end=-21.44 max|roll|=22.83deg
+Pitch: start=+0.26 end=-1.47 max|pitch|=5.48deg
+Yaw drift: max|yaw-start|=179.68deg
+Beta: start=-0.01 end=-1.83 max|beta|=3.27deg
+CLASSIFICATION: PASS_WITH_DRIFT
+
+TREND (mean BODY RATE p/r over last-third vs mid-third of the window - NOT the wrap-prone Euler yaw ANGLE, see corrected-methodology comment above; window=29.1s): roll_rate(p) mid=-0.197deg/s last=+0.149deg/s ratio=0.757 -> NEGLIGIBLE_RATE_SETTLED | yaw_rate(r) mid=+9.106deg/s last=+10.046deg/s ratio=1.103 -> RATE_LEVELED_OFF_STEADY_NONZERO
+Roll ANGLE mean: mid-third=-19.59deg last-third=-21.79deg (bank angle settling check) | window-end roll (-21.44deg) still the window max (22.83deg): False
+
+==============================================================================
+SUMMARY: EXTENDED (~30s) vs ORIGINAL (~13s) Part 7 outcome
+==============================================================================
+LEFT_OUT: ORIGINAL(~65deg-yaw-window) end_roll=N/A end_yaw=N/A classification=PASS_WITH_DRIFT
+LEFT_OUT: EXTENDED(~29.1s) end_roll=+21.43deg end_yaw=+121.84deg max|roll|=22.82deg max|yaw_drift|=179.53deg classification=PASS_WITH_DRIFT
+LEFT_OUT: TREND VERDICT: roll(p) rate=NEGLIGIBLE_RATE_SETTLED (mean-rate ratio last/mid=0.748, bank angle mid-3rd=+19.58deg -> last-3rd=+21.78deg), yaw(r) rate=RATE_LEVELED_OFF_STEADY_NONZERO (mean-rate ratio last/mid=1.103)
+LEFT_OUT: OVERALL 30s VERDICT: (a) BOUNDED: roll settles to a steady bank angle (roll rate decaying toward zero) and yaw settles into a steady, non-growing turn rate (or stops) - a genuinely bounded engine-out flight condition (a steady, mildly-banked turn under rudder-only compensation), not a divergence.
+
+RIGHT_OUT: ORIGINAL(~65deg-yaw-window) end_roll=N/A end_yaw=N/A classification=PASS_WITH_DRIFT
+RIGHT_OUT: EXTENDED(~29.1s) end_roll=-21.44deg end_yaw=-121.65deg max|roll|=22.83deg max|yaw_drift|=179.68deg classification=PASS_WITH_DRIFT
+RIGHT_OUT: TREND VERDICT: roll(p) rate=NEGLIGIBLE_RATE_SETTLED (mean-rate ratio last/mid=0.757, bank angle mid-3rd=-19.59deg -> last-3rd=-21.79deg), yaw(r) rate=RATE_LEVELED_OFF_STEADY_NONZERO (mean-rate ratio last/mid=1.103)
+RIGHT_OUT: OVERALL 30s VERDICT: (a) BOUNDED: roll settles to a steady bank angle (roll rate decaying toward zero) and yaw settles into a steady, non-growing turn rate (or stops) - a genuinely bounded engine-out flight condition (a steady, mildly-banked turn under rudder-only compensation), not a divergence.
+
