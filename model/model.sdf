@@ -704,6 +704,143 @@
         -->
       </sensor>
 
+      <!-- ============================================================
+           ARDUPILOT-BRIDGE IMU RELAY SENSOR (additive, NOT a modification
+           of imu_sensor above). Author: controls-integration, 2026-08-27,
+           task ARDUPLANE_SITL_TRANSPORT_AND_ACTUATOR_MAPPING_VALIDATION.
+
+           WHY A SECOND IMU SENSOR INSTANCE: the installed
+           ardupilot_gazebo ArduPilotPlugin (LoadImuSensors()/PreUpdate()
+           in ArduPilotPlugin.cc) does NOT read the sensor's own SDF
+           <topic> value - it independently computes its OWN subscribe
+           topic as gz::sim::scopedName(imuEntity, ecm) + "/imu" (the
+           gz-sim AUTO-GENERATED default sensor topic form, i.e.
+           "/world/<world>/model/falcon_v2/link/base_link/sensor/<sensor
+           name>/imu"), confirmed by direct read of the installed plugin
+           source (/home/emirhan/gazebo_sim/ardupilot_gazebo/src/
+           ArduPilotPlugin.cc lines ~1160-1169). imu_sensor above declares
+           a CUSTOM <topic> (/model/falcon_v2/sensors/imu, already
+           validated/consumed elsewhere in this project) - per gz-sensors'
+           own behavior (EMPIRICALLY CONFIRMED this task via `gz topic -l`
+           against both a custom-topic sensor and a no-topic sensor in a
+           throwaway probe world: a sensor with an explicit <topic>
+           publishes ONLY on that custom topic, never additionally on the
+           auto-generated default), ArduPilotPlugin's computed topic would
+           NEVER match imu_sensor's real topic - imuMsgValid would never
+           become true and CreateStateJSON() would silently never build a
+           packet, i.e. the bridge would structurally never send ANY FDM
+           data to ArduPlane, not merely report wrong numbers. Per this
+           task's explicit instruction, imu_sensor above (prior-stage
+           READY output) is NOT modified to work around this - instead
+           this second, ArduPilot-bridge-ONLY sensor instance is added,
+           deliberately WITHOUT a <topic> element, so gz-sim's own Sensors
+           system assigns it the exact auto-generated default topic that
+           ArduPilotPlugin's own scopedName()+"/imu" computation expects
+           (CONFIRMED equal by construction - both use the same
+           gz::sim::scopedName() free function against the same entity
+           tree - and empirically verified this task by adding an
+           identical no-topic probe IMU sensor to a scratch copy of this
+           model in a throwaway world and reading its real topic via
+           `gz topic -l`: it exactly matched the
+           "/world/<world>/model/<model>/link/<link>/sensor/<name>/imu"
+           pattern). Mount point, orientation_reference_frame, update
+           rate, and zero-noise mode are all IDENTICAL to imu_sensor above
+           (same physical IMU, same already-validated FLU/world-orientation
+           convention - SENSORS.md sec 4.1 - this is a transport-layer
+           duplicate for ArduPilot's exclusive use, not a second physical
+           sensor model or a second set of validated numbers), EXCEPT for
+           its <pose> ROTATION component - see the
+           FLU->FRD GYRO/ACCEL FIX comment immediately below. Full record:
+           docs/source_of_truth/autopilot/
+           SITL_TRANSPORT_AND_ACTUATOR_MAPPING.md. -->
+
+      <!-- ============================================================
+           FLU->FRD GYRO/ACCEL FIX (controls-integration, 2026-08-27,
+           bug-fix follow-up to the above, same task). CRITICAL defect
+           found live by gazebo-testing (docs/test_results/
+           2026-08-27_ardupilot_sitl_transport_actuator_mapping_
+           validation.md sec 5): ArduPilotPlugin::CreateStateJSON()
+           (source-read, ArduPilotPlugin.cc, ~lines 1739-1856) writes this
+           sensor's raw imuMsg.angular_velocity()/linear_acceleration()
+           straight into the JSON "gyro"/"accel_body" fields with ZERO
+           rotation applied - modelXYZToAirplaneXForwardZDown (the
+           FLU->FRD body-frame transform, GZ_PI about X, see gazeboXYZToNED
+           discussion above) is composed and used ONLY for
+           position/velocity/quaternion in this plugin version, never for
+           the IMU message. Confirmed live: with a zero-rotation <pose>,
+           roll-axis gyro read back correctly (FLU +X = FRD +X, no flip
+           needed) but pitch/yaw showed NO sign flip at all - raw FLU
+           reaching ArduPlane's FRD-assuming AHRS/EKF unconverted (root
+           cause of the persistent "AHRS: DCM Roll/Pitch inconsistent"
+           prearm failure that session).
+
+           FIX: since ArduPilotPlugin never rotates the IMU message itself,
+           the correction is baked into THIS sensor's own mounting
+           ROTATION (position offset unchanged) instead - a 180 deg
+           rotation about body X, numerically IDENTICAL to
+           modelXYZToAirplaneXForwardZDown's own compiled default
+           (Pose3d(0,0,0,GZ_PI,0,0)) and to plugins/sensors/Frames.hh's
+           already-tested FluFrdSwap()/kQFluToFrdRot (same 180 deg-about-X
+           quaternion, reused here, not re-derived).
+
+           VERIFIED CORRECT against gz-sim8/gz-sensors8 source before
+           applying (not assumed) - this is NOT a cosmetic mounting
+           label, it genuinely changes the sensor's raw output:
+           - gz-sim Physics.cc (systems/physics/Physics.cc, "body angular
+             velocity"/"body linear acceleration" blocks, ~line 3807/3854):
+             for a non-link entity (e.g. a sensor) with a <pose> offset
+             from its parent link, the reported components::AngularVelocity/
+             LinearAcceleration are computed as
+             entityWorldPose.Rot().RotateVectorReverse(entityWorldVec) -
+             i.e. the WORLD-frame vector is rotated into the entity's OWN
+             FULLY-COMPOSED world orientation (parent link rotation
+             CHAINED WITH this sensor's own local <pose> rotation), not
+             just the parent link's orientation. So a rotation on this
+             <pose> element genuinely rotates the raw gyro/accel this
+             sensor reports, exactly like a physically re-oriented chip
+             would.
+           - gz-sensors ImuSensor::Update() (ImuSensor.cc ~line 231-235)
+             rotates gravity into this same fully-composed local frame
+             for the accelerometer's specific-force contribution
+             (worldPose.Rot().Inverse().RotateVector(gravity)) - i.e.
+             accel_body gets the SAME rotation consistently, gravity
+             compensation included.
+           - Algebra check: RotateVectorReverse by a pure 180 deg-about-X
+             rotation R (self-inverse, R=diag(1,-1,-1)) applied on top of
+             the already-FLU link-frame vector gives (x,-y,-z) -
+             EXACTLY FluFrdSwap(). For a pure body +X (roll) rate this
+             leaves X unchanged (matches the already-correct, must-not-
+             break roll-axis result); for pure +Y (pitch) or +Z (yaw)
+             rates it flips sign - matches the required FLU->FRD
+             conversion on those two axes.
+           - This sensor's own "orientation" quaternion output (gz.msgs.
+             IMU.orientation) DOES change as a side effect (its
+             orientationReference is captured at the new, rotated initial
+             pose) but is IRRELEVANT here: CreateStateJSON() (confirmed by
+             source read) never reads this sensor's orientation field at
+             all - ArduPilot's quaternion/position/velocity come from a
+             separate, already-validated wldAToBdyA-transformed pose
+             pipeline, untouched by this change.
+
+           Scope: this fix touches ONLY imu_sensor_ardupilot's <pose>
+           rotation. imu_sensor above (the original, prior-stage-validated
+           sensor feeding plugins/sensors/ diagnostics) is NOT touched -
+           its own FLU->FRD conversion (where needed) is handled entirely
+           in software via Frames.hh::FluFrdSwap(), a different, already-
+           validated mechanism appropriate for that sensor's own
+           consumers. -->
+      <sensor name="imu_sensor_ardupilot" type="imu">
+        <always_on>1</always_on>
+        <update_rate>100</update_rate>
+        <pose degrees="true">0.168309 0 0.100000 180 0 0</pose>
+        <imu>
+          <orientation_reference_frame>
+            <localization>CUSTOM</localization>
+            <custom_rpy parent_frame="world">0 0 0</custom_rpy>
+          </orientation_reference_frame>
+        </imu>
+      </sensor>
+
       <!-- GPS (navsat): reports lat/lon/alt (WGS84, per world
            spherical_coordinates) and velocity_east/north/up explicitly
            (gz.msgs.NavSat, CONFIRMED via navsat.proto) - i.e. ENU by
@@ -1635,6 +1772,302 @@
       <update_rate_hz>50.0</update_rate_hz>
       <!-- gz.msgs.Magnetometer, field_tesla (T), body FLU frame. -->
       <topic>/model/falcon_v2/sensors/mag</topic>
+    </plugin>
+
+    <!-- ============================================================
+         ARDUPILOT SITL TRANSPORT PLUGIN (official ardupilot_gazebo
+         ArduPilotPlugin - NOT this project's own code)
+         Author (this addition): controls-integration specialist agent,
+         2026-08-27, task
+         ARDUPLANE_SITL_TRANSPORT_AND_ACTUATOR_MAPPING_VALIDATION.
+
+         Purely additive: no link/joint/mass/CG/inertia/collision/visual
+         element, and no other <plugin> block above (aerodynamics/
+         propulsion/actuators/wind/pitot/magnetometer), is modified by this
+         block. Binary: /home/emirhan/gazebo_sim/ardupilot_gazebo/build/
+         libArduPilotPlugin.so (already built, already on
+         GZ_SIM_SYSTEM_PLUGIN_PATH - not built or modified by this task).
+
+         SCOPE (hard boundary, do not exceed - see task brief): transport +
+         command-mapping ONLY. Every one of the 7 <control> blocks below
+         uses type=COMMAND, which ArduPilotPlugin.cc's own
+         ApplyMotorForces() (confirmed by direct source read) handles by
+         publishing a gz.msgs.Double to <cmd_topic> and then
+         unconditionally `continue`-ing - it NEVER reaches the
+         JointForceCmd/JointVelocityCmd/PID-effort code path for a COMMAND
+         channel, i.e. ArduPlane NEVER drives any of these joints directly
+         via force/velocity/position PID. <useForce>0</useForce> is set
+         explicitly below on every block anyway (defense in depth): without
+         it, ArduPilotPlugin's own Reset() function (called on simulation
+         reset/seek, separate from ApplyMotorForces()) would still create a
+         zero-initialized JointForceCmd component on these joints, since
+         useForce defaults to true in the plugin's own source - harmless in
+         practice (COMMAND type never writes a nonzero value into it via
+         ApplyMotorForces()) but unnecessary, so it is disabled explicitly
+         to honor this project's "never useForce=1 on our control-surface/
+         motor joints" rule literally, not just in the common-case code
+         path. Full design record, sign-convention pre-registration, and
+         the GPS/baro/mag/airspeed architecture finding referenced below:
+         docs/source_of_truth/autopilot/
+         SITL_TRANSPORT_AND_ACTUATOR_MAPPING.md - not repeated in full
+         here.
+
+         TRANSPORT: UDP JSON, matching ArduPilotPlugin's own compiled
+         defaults exactly (restated explicitly here for documentation/
+         discoverability, not because the defaults were wrong).
+         connectionTimeoutMaxCount=10 = plugin's own compiled default
+         (ArduPilotPlugin.cc line ~509), not overridden - no project-
+         specific reason to change it this stage. lock_step=1 chosen
+         (matches ardupilot_gazebo's own zephyr_with_ardupilot reference
+         example, deterministic step-for-step sim<->SITL synchronization,
+         no free-running clock drift) - the appropriate choice for this
+         project's physically-defensible-simulation goal; lock_step=0 was
+         not chosen (would let ArduPlane's own wall-clock free-run ahead of
+         or behind Gazebo's physics steps, an unnecessary source of
+         nondeterminism this project has no reason to accept).
+
+         FRAME OVERRIDES - LIVE/EMPIRICAL FINDING (see design doc sec 4 for
+         the full derivation): modelXYZToAirplaneXForwardZDown is LEFT AT
+         ITS COMPILED DEFAULT (no override below) - CONFIRMED correct for
+         FALCON V2's own genuinely-FLU body frame (CLAUDE.md): the default
+         Pose3d(0,0,0,GZ_PI,0,0) (pure 180 deg roll about body X) maps
+         (X-fwd,Y-left,Z-up) -> (X-fwd,Y-right,Z-down) exactly, i.e. FLU ->
+         FRD, verified by direct computation with the exact gz.math7
+         Quaterniond/RotateVector API the plugin itself uses (not merely
+         asserted from the in-source comment, which this task's brief
+         correctly flagged as unreliable/copy-pasted).
+         gazeboXYZToNED IS EXPLICITLY OVERRIDDEN below, contrary to this
+         task's own initial "CONFIRMED FAVORABLE" hint - that hint did NOT
+         survive live verification: the compiled default
+         Pose3d(0,0,0,GZ_PI,0,0) is NOT a correct world-frame ENU->NED
+         conversion (it only flips Gazebo world Y/Z sign while leaving
+         Gazebo's own +X-world axis mapped into NED's NORTH slot, i.e. it
+         silently swaps "East" and "North" - confirmed numerically this
+         task via gz.math7's own Quaterniond.RotateVector, the exact API
+         the plugin calls: rotating a pure +X-world/"East" unit vector by
+         the default override yields (1,0,0), i.e. it reads out as pure
+         NED-North, not NED-East). The override used here,
+         "0 0 0 180 0 90" (matching ardupilot_gazebo's own
+         zephyr_with_ardupilot reference example's choice for this SAME
+         tag), was verified with the identical method to correctly map a
+         pure Gazebo-world +X/"East" vector to pure NED-East (0,1,0) and a
+         pure Gazebo-world +Y/"North" vector to pure NED-North (1,0,0).
+         This project's own world files all declare
+         <spherical_coordinates><world_frame_orientation>ENU</...>
+         (tests/gazebo/worlds/*.sdf, confirmed by grep for this task), so
+         this correction applies to every world this model is loaded into,
+         not a one-off. -->
+    <plugin name="ArduPilotPlugin" filename="ArduPilotPlugin">
+      <!-- Port settings - all restated explicitly even where they equal
+           the plugin's own compiled default, per this project's existing
+           documentation convention (see aerodynamics/propulsion plugin
+           blocks above). fdm_port_in=9002 matches ArduPilot's own JSON
+           backend compiled default control_port (SIM_JSON.h,
+           /home/emirhan/gazebo_sim/ardupilot/libraries/SITL/SIM_JSON.h
+           line 63) - confirmed by direct source read, not assumed: a bare
+           `-M json` / `-f json` SITL launch on localhost requires no
+           address/port arguments to connect to this plugin. -->
+      <fdm_addr>127.0.0.1</fdm_addr>
+      <fdm_port_in>9002</fdm_port_in>
+      <connectionTimeoutMaxCount>10</connectionTimeoutMaxCount>
+      <lock_step>1</lock_step>
+
+      <!-- Body-frame override: NONE (compiled default retained). See the
+           FRAME OVERRIDES header comment above for the live-verified
+           reasoning. -->
+
+      <!-- World-frame override: REQUIRED, live-verified - see the FRAME
+           OVERRIDES header comment above. -->
+      <gazeboXYZToNED degrees="true">0 0 0 180 0 90</gazeboXYZToNED>
+
+      <!-- Sensors: scoped name of the dedicated ArduPilot-bridge IMU relay
+           sensor added above under base_link - NOT imu_sensor (see that
+           new sensor block's own header comment for why a second instance
+           is required). "::"-delimited, LINK-RELATIVE-TO-MODEL form
+           (link::sensor, no leading model name) - LIVE-VERIFIED this task,
+           not copied blindly from zephyr_with_ardupilot's own
+           "zephyr::imu_link::imu_sensor" example: entitiesFromScopedName()
+           is called with _relativeTo=this model's own entity
+           (ArduPilotPlugin.cc ~line 1123), and per gz::sim::Util.hh's own
+           documented contract "The scoped name does not include the name
+           of [_relativeTo entity]" - zephyr's 3-segment name only works
+           because zephyr_with_ardupilot NESTS a separate sub-model named
+           "zephyr" via <include> (so "zephyr" there is an intermediate
+           model, not the relativeTo entity's own name); FALCON V2 is a
+           single flat (non-nested) <model name="falcon_v2">, so a leading
+           "falcon_v2::" prefix is NOT valid here - CONFIRMED empirically
+           this task: "falcon_v2::base_link::imu_sensor_ardupilot" and
+           "world::falcon_v2::base_link::imu_sensor_ardupilot" both FAILED
+           live ("imu_sensor [...] not found, abort ArduPilot plugin.");
+           "base_link::imu_sensor_ardupilot" (used below) and the bare
+           "imu_sensor_ardupilot" both resolved with no error. This is the
+           ONLY sensor genuinely in-the-loop through this bridge -
+           GPS/baro/magnetometer/airspeed are NOT read from any of this
+           project's native/custom Gazebo sensors through this plugin; see
+           the design doc's GPS/baro/mag/airspeed architecture finding
+           (this is standard ArduPilot JSON/FDM-backend behavior, not a
+           defect introduced by this project). -->
+      <imuName>base_link::imu_sensor_ardupilot</imuName>
+
+      <!-- ============================================================
+           SERVO/MOTOR COMMAND MAPPING - 7 COMMAND-type channels (2
+           aileron + 2 elevator + 1 rudder + 2 throttle), fanning out
+           ArduPlane's 5 logical SERVOx outputs onto this project's 7
+           existing actuator/propulsion command topics. Formula (confirmed
+           exact from ArduPilotPlugin.cc's UpdateMotorCommands(), not
+           assumed):
+             raw_cmd = clamp((pwm - servo_min) / (servo_max - servo_min), 0, 1)
+             cmd     = multiplier * (raw_cmd + offset)
+           servo_min/servo_max below are copied EXACTLY from the real
+           SERVOx_MIN/MAX values in config/ardupilot/falcon_v2_sitl.parm
+           (REAL_PARAM_CONFIGURATION, not invented). offset=-0.5 on every
+           angular (non-throttle) channel centers PWM=SERVOx_TRIM (=1500,
+           exact raw_cmd midpoint for MIN=800/MAX=2200) at cmd=0 rad
+           (neutral, matching plugins/actuators/ActuatorSystem.cc's own
+           0=neutral convention). multiplier = +/-1.5707963268 rad (= +/-pi/2,
+           NOT +/-45deg-in-radians directly - see derivation below) maps
+           ArduPlane's full raw_cmd [0,1] swing onto a +/-45 deg physical
+           target range. UPDATED (ARDUPLANE_CONTROL_SURFACE_TRAVEL_SCALING_
+           VALIDATION, 2026-08-28) from the prior stage's +/-0.3490658504 rad
+           (+/-10 deg) PROVISIONAL_INTERFACE_LIMIT - see
+           docs/source_of_truth/autopilot/
+           SITL_TRANSPORT_AND_ACTUATOR_MAPPING.md sec 11 for the full
+           derivation/rationale/TXT-cross-check record. Because cmd is only
+           ever evaluated at raw_cmd in [0,1] and offset=-0.5, the realized
+           output range is cmd in [-0.5*multiplier, +0.5*multiplier], i.e.
+           HALF the multiplier's own value, not the multiplier itself -
+           +/-45 deg therefore requires multiplier = 2*45deg-in-radians =
+           +/-1.5707963268 rad (=pi/2), NOT +/-0.7853981634 rad (45deg
+           itself, which would only realize +/-22.5 deg - do not make this
+           substitution). This now matches
+           docs/source_of_truth/controls/actuator_v1_config.yaml's own
+           +/-0.7853981634 rad (+/-45deg) MECHANICAL_ACTUATOR_LIMIT_V1 joint
+           <limit> exactly - the bridge no longer artificially restricts
+           ArduPlane's commanded range below the joint's own mechanical
+           ceiling; both layers now agree at +/-45 deg. Sign per
+           channel (multiplier sign only, UNCHANGED by this update - see the
+           design doc for the full pre-registered physical-direction
+           reasoning per surface, task section 36/37/38 requirement): NOT
+           re-derived in this comment, see docs/source_of_truth/autopilot/
+           SITL_TRANSPORT_AND_ACTUATOR_MAPPING.md sec 3.
+           useForce=0 on every block - see this plugin's own header comment
+           above. jointName is a formally-required-but-functionally-inert
+           reference for COMMAND type (ArduPilotPlugin.cc ~line 604-621:
+           parsed and validated to exist, never actually driven for
+           COMMAND type) - the actually-relevant joint per channel is used
+           for clarity. ============================================== -->
+
+      <!-- Aileron (SERVO1: FUNCTION=4, MIN=800, MAX=2200, TRIM=1500,
+           REVERSED=1 - config/ardupilot/falcon_v2_sitl.parm) -> LEFT
+           aileron. Y-split fan-out (PROVISIONAL_WIRING_ASSUMPTION, one
+           logical ArduPlane Aileron output feeds both physical servos -
+           SITL_PARAM_MIGRATION.md sec 2/14). multiplier sign: see design
+           doc sec 3 (left/right must be OPPOSITE per the verified
+           delta_a_aero = +0.5*(theta_right-theta_left) mapping,
+           CONTROLS.md sec 10). -->
+      <control channel="0">
+        <jointName>left_aileron_joint</jointName>
+        <useForce>0</useForce>
+        <type>COMMAND</type>
+        <cmd_topic>/model/falcon_v2/actuators/left_aileron/cmd_rad</cmd_topic>
+        <multiplier>1.5707963268</multiplier>
+        <offset>-0.5</offset>
+        <servo_min>800</servo_min>
+        <servo_max>2200</servo_max>
+      </control>
+
+      <!-- Aileron (SERVO1) -> RIGHT aileron, same channel, OPPOSITE sign
+           (differential Y-split - see design doc sec 3). -->
+      <control channel="0">
+        <jointName>right_aileron_joint</jointName>
+        <useForce>0</useForce>
+        <type>COMMAND</type>
+        <cmd_topic>/model/falcon_v2/actuators/right_aileron/cmd_rad</cmd_topic>
+        <multiplier>-1.5707963268</multiplier>
+        <offset>-0.5</offset>
+        <servo_min>800</servo_min>
+        <servo_max>2200</servo_max>
+      </control>
+
+      <!-- Elevator (SERVO2: FUNCTION=19, MIN=800, MAX=2200, TRIM=1500,
+           REVERSED=0) -> LEFT elevator. Y-split fan-out (same
+           PROVISIONAL_WIRING_ASSUMPTION as aileron). multiplier sign: SAME
+           sign as the right-elevator block below (left/right elevator
+           must move in the SAME physical direction - verified
+           delta_e_aero = -0.5*(theta_left+theta_right) mapping,
+           CONTROLS.md sec 10). -->
+      <control channel="1">
+        <jointName>left_elevator_joint</jointName>
+        <useForce>0</useForce>
+        <type>COMMAND</type>
+        <cmd_topic>/model/falcon_v2/actuators/left_elevator/cmd_rad</cmd_topic>
+        <multiplier>1.5707963268</multiplier>
+        <offset>-0.5</offset>
+        <servo_min>800</servo_min>
+        <servo_max>2200</servo_max>
+      </control>
+
+      <!-- Elevator (SERVO2) -> RIGHT elevator, same channel, SAME sign as
+           left (common-mode pitch, not differential - see design doc). -->
+      <control channel="1">
+        <jointName>right_elevator_joint</jointName>
+        <useForce>0</useForce>
+        <type>COMMAND</type>
+        <cmd_topic>/model/falcon_v2/actuators/right_elevator/cmd_rad</cmd_topic>
+        <multiplier>1.5707963268</multiplier>
+        <offset>-0.5</offset>
+        <servo_min>800</servo_min>
+        <servo_max>2200</servo_max>
+      </control>
+
+      <!-- Rudder (SERVO4: FUNCTION=21, MIN=800, MAX=2200, TRIM=1500,
+           REVERSED=1) -> rudder (single centerline surface, no split). -->
+      <control channel="3">
+        <jointName>rudder_joint</jointName>
+        <useForce>0</useForce>
+        <type>COMMAND</type>
+        <cmd_topic>/model/falcon_v2/actuators/rudder/cmd_rad</cmd_topic>
+        <multiplier>-1.5707963268</multiplier>
+        <offset>-0.5</offset>
+        <servo_min>800</servo_min>
+        <servo_max>2200</servo_max>
+      </control>
+
+      <!-- ThrottleLeft (SERVO3: FUNCTION=73, MIN=1000, MAX=2000,
+           TRIM=1000 [==MIN, idle-low, standard for a throttle-type
+           function, not a bug], REVERSED=0) -> left motor. multiplier=1,
+           offset=0 gives cmd directly in [0,1], matching
+           plugins/propulsion/PropulsionSystem.cc's OnThrottleLeft()
+           std::clamp(msg.data(),0.0,1.0) domain exactly (confirmed by
+           direct source read) - 1:1, no sign flip, per this task's own
+           instruction. jointName points at left_prop_joint (inert
+           placeholder requirement only for COMMAND type - see header
+           comment). -->
+      <control channel="2">
+        <jointName>left_prop_joint</jointName>
+        <useForce>0</useForce>
+        <type>COMMAND</type>
+        <cmd_topic>/model/falcon_v2/propulsion/left/throttle_cmd</cmd_topic>
+        <multiplier>1.0</multiplier>
+        <offset>0.0</offset>
+        <servo_min>1000</servo_min>
+        <servo_max>2000</servo_max>
+      </control>
+
+      <!-- ThrottleRight (SERVO5: FUNCTION=74, MIN=1000, MAX=2000,
+           TRIM=1000, REVERSED=0) -> right motor, independent of
+           ThrottleLeft (twin-motor independence preserved end-to-end, no
+           mixing/averaging - SITL_PARAM_MIGRATION.md sec 14). -->
+      <control channel="4">
+        <jointName>right_prop_joint</jointName>
+        <useForce>0</useForce>
+        <type>COMMAND</type>
+        <cmd_topic>/model/falcon_v2/propulsion/right/throttle_cmd</cmd_topic>
+        <multiplier>1.0</multiplier>
+        <offset>0.0</offset>
+        <servo_min>1000</servo_min>
+        <servo_max>2000</servo_max>
+      </control>
     </plugin>
 
   </model>

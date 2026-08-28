@@ -1,0 +1,1098 @@
+{
+  "timestamp": "2026-08-27T20:35:43Z",
+  "phase0_transport_health": {
+    "heartbeat_received": true,
+    "heartbeat": {
+      "type": 1,
+      "autopilot": 3,
+      "base_mode": 81,
+      "custom_mode": 0,
+      "system_status": 3
+    },
+    "listen_window_s": 45.17804002761841,
+    "message_types_seen": {
+      "GPS_GLOBAL_ORIGIN": 8,
+      "HOME_POSITION": 8,
+      "AHRS": 46,
+      "AHRS2": 46,
+      "ATTITUDE": 46,
+      "GLOBAL_POSITION_INT": 46,
+      "VFR_HUD": 46,
+      "SYS_STATUS": 46,
+      "POWER_STATUS": 46,
+      "MEMINFO": 46,
+      "MISSION_CURRENT": 46,
+      "SERVO_OUTPUT_RAW": 46,
+      "RC_CHANNELS": 46,
+      "RAW_IMU": 46,
+      "SCALED_IMU2": 46,
+      "SCALED_IMU3": 46,
+      "SCALED_PRESSURE": 46,
+      "SCALED_PRESSURE2": 46,
+      "GPS_RAW_INT": 46,
+      "SYSTEM_TIME": 46,
+      "SIMSTATE": 46,
+      "WIND": 46,
+      "TERRAIN_REQUEST": 23,
+      "TERRAIN_REPORT": 46,
+      "EKF_STATUS_REPORT": 46,
+      "LOCAL_POSITION_NED": 46,
+      "VIBRATION": 46,
+      "AOA_SSA": 46,
+      "UNKNOWN_295": 46,
+      "HEARTBEAT": 45,
+      "TIMESYNC": 4,
+      "PARAM_VALUE": 7,
+      "STATUSTEXT": 2
+    },
+    "total_messages": 1293,
+    "nan_or_inf_fields": [],
+    "nan_or_inf_count": 0
+  },
+  "phase13_param_verification": {
+    "total_params_reported": 1367,
+    "checks": {
+      "RLL_RATE_P": {
+        "expected": 0.25,
+        "actual": 0.25,
+        "pass": true
+      },
+      "RLL_RATE_I": {
+        "expected": 0.125,
+        "actual": 0.125,
+        "pass": true
+      },
+      "RLL_RATE_D": {
+        "expected": 0.002,
+        "actual": 0.0020000000949949026,
+        "pass": true
+      },
+      "RLL_RATE_FF": {
+        "expected": 0.125,
+        "actual": 0.125,
+        "pass": true
+      },
+      "PTCH_RATE_P": {
+        "expected": 0.25,
+        "actual": 0.25,
+        "pass": true
+      },
+      "PTCH_RATE_I": {
+        "expected": 0.125,
+        "actual": 0.125,
+        "pass": true
+      },
+      "PTCH_RATE_D": {
+        "expected": 0.002,
+        "actual": 0.0020000000949949026,
+        "pass": true
+      },
+      "PTCH_RATE_FF": {
+        "expected": 0.125,
+        "actual": 0.125,
+        "pass": true
+      },
+      "AUTOTUNE_LEVEL": {
+        "expected": 8,
+        "actual": 8.0,
+        "pass": true
+      },
+      "SERVO1_FUNCTION": {
+        "expected": 4,
+        "actual": 4.0,
+        "pass": true
+      },
+      "SERVO2_FUNCTION": {
+        "expected": 19,
+        "actual": 19.0,
+        "pass": true
+      },
+      "SERVO3_FUNCTION": {
+        "expected": 73,
+        "actual": 73.0,
+        "pass": true
+      },
+      "SERVO4_FUNCTION": {
+        "expected": 21,
+        "actual": 21.0,
+        "pass": true
+      },
+      "SERVO5_FUNCTION": {
+        "expected": 74,
+        "actual": 74.0,
+        "pass": true
+      },
+      "AIRSPEED_MIN": {
+        "expected": 16,
+        "actual": 16.0,
+        "pass": true
+      },
+      "AIRSPEED_CRUISE": {
+        "expected": 18,
+        "actual": 18.0,
+        "pass": true
+      },
+      "AIRSPEED_MAX": {
+        "expected": 28,
+        "actual": 28.0,
+        "pass": true
+      },
+      "ARSPD_TYPE": {
+        "expected": 100,
+        "actual": 100.0,
+        "pass": true
+      },
+      "ARSPD_USE": {
+        "expected": 1,
+        "actual": 1.0,
+        "pass": true
+      }
+    },
+    "all_pass": true
+  },
+  "phase2_frame_validation": {
+    "baseline": {
+      "ATTITUDE": {
+        "mavpackettype": "ATTITUDE",
+        "time_boot_ms": 1213448,
+        "roll": 9.284121915698051e-08,
+        "pitch": -0.0001507715496700257,
+        "yaw": 1.570796251296997,
+        "rollspeed": 0.00018357641238253564,
+        "pitchspeed": 0.0002599615545477718,
+        "yawspeed": 0.0001641637645661831
+      },
+      "GLOBAL_POSITION_INT": {
+        "mavpackettype": "GLOBAL_POSITION_INT",
+        "time_boot_ms": 1213448,
+        "lat": -353632610,
+        "lon": 1491652299,
+        "alt": 622090,
+        "relative_alt": -9,
+        "vx": 0,
+        "vy": 0,
+        "vz": 0,
+        "hdg": 8999
+      },
+      "LOCAL_POSITION_NED": {
+        "mavpackettype": "LOCAL_POSITION_NED",
+        "time_boot_ms": 1213448,
+        "x": 0.0,
+        "y": -0.009078041650354862,
+        "z": -38.09000015258789,
+        "vx": -3.778460563094027e-13,
+        "vy": 9.349582086315422e-08,
+        "vz": 0.009809978306293488
+      }
+    },
+    "body_plus_x": {
+      "ATTITUDE": {
+        "mavpackettype": "ATTITUDE",
+        "time_boot_ms": 1216448,
+        "roll": 7.653943612240255e-08,
+        "pitch": -7.061932410579175e-05,
+        "yaw": 1.5707956552505493,
+        "rollspeed": 0.0002916996891144663,
+        "pitchspeed": 0.0002049556205747649,
+        "yawspeed": 0.0002080369449686259
+      },
+      "GLOBAL_POSITION_INT": {
+        "mavpackettype": "GLOBAL_POSITION_INT",
+        "time_boot_ms": 1216448,
+        "lat": -353632610,
+        "lon": 1491653729,
+        "alt": 622060,
+        "relative_alt": -39,
+        "vx": 0,
+        "vy": 499,
+        "vz": 0,
+        "hdg": 8999
+      },
+      "LOCAL_POSITION_NED": {
+        "mavpackettype": "LOCAL_POSITION_NED",
+        "time_boot_ms": 1216448,
+        "x": 0.0,
+        "y": 12.97252082824707,
+        "z": -38.060001373291016,
+        "vx": 3.8129508084239205e-06,
+        "vy": 4.9999518394470215,
+        "vz": 0.009653840214014053
+      }
+    },
+    "reset_after_x": {
+      "ATTITUDE": {
+        "mavpackettype": "ATTITUDE",
+        "time_boot_ms": 1218448,
+        "roll": 7.291055226232857e-08,
+        "pitch": -4.9926111387321725e-05,
+        "yaw": 1.5707951784133911,
+        "rollspeed": 0.0002943653962574899,
+        "pitchspeed": 0.0002638854493852705,
+        "yawspeed": 0.0002573857200331986
+      },
+      "GLOBAL_POSITION_INT": {
+        "mavpackettype": "GLOBAL_POSITION_INT",
+        "time_boot_ms": 1218448,
+        "lat": -353632610,
+        "lon": 1491654064,
+        "alt": 622040,
+        "relative_alt": -59,
+        "vx": 0,
+        "vy": 0,
+        "vz": 0,
+        "hdg": 8999
+      },
+      "LOCAL_POSITION_NED": {
+        "mavpackettype": "LOCAL_POSITION_NED",
+        "time_boot_ms": 1218448,
+        "x": 0.0,
+        "y": 16.01366424560547,
+        "z": -38.040000915527344,
+        "vx": -2.848145710162425e-13,
+        "vy": 9.350537055752284e-08,
+        "vz": 0.009809978306293488
+      }
+    },
+    "body_plus_y": {
+      "ATTITUDE": {
+        "mavpackettype": "ATTITUDE",
+        "time_boot_ms": 1221448,
+        "roll": -0.0005009604501537979,
+        "pitch": -0.034396056085824966,
+        "yaw": 1.568932294845581,
+        "rollspeed": 9.342194971395656e-05,
+        "pitchspeed": 0.015404995530843735,
+        "yawspeed": 0.00117255630902946
+      },
+      "GLOBAL_POSITION_INT": {
+        "mavpackettype": "GLOBAL_POSITION_INT",
+        "time_boot_ms": 1221448,
+        "lat": -353631614,
+        "lon": 1491654064,
+        "alt": 622010,
+        "relative_alt": -30,
+        "vx": 499,
+        "vy": 0,
+        "vz": 0,
+        "hdg": 8989
+      },
+      "LOCAL_POSITION_NED": {
+        "mavpackettype": "LOCAL_POSITION_NED",
+        "time_boot_ms": 1221448,
+        "x": 11.087356567382812,
+        "y": 16.013673782348633,
+        "z": -38.0099983215332,
+        "vx": 4.999661445617676,
+        "vy": -0.009185499511659145,
+        "vz": 0.009888052009046078
+      }
+    },
+    "body_plus_z_angular": {
+      "yaw_before": 1.5682579278945923,
+      "attitude_samples": [
+        {
+          "mavpackettype": "ATTITUDE",
+          "time_boot_ms": 1224448,
+          "roll": 0.0029189467895776033,
+          "pitch": -0.046451449394226074,
+          "yaw": 1.491174340248108,
+          "rollspeed": 0.0003058850415982306,
+          "pitchspeed": 0.0003063539043068886,
+          "yawspeed": 0.9986070394515991
+        },
+        {
+          "mavpackettype": "ATTITUDE",
+          "time_boot_ms": 1225448,
+          "roll": 0.040643882006406784,
+          "pitch": -0.022586796432733536,
+          "yaw": 0.4907839298248291,
+          "rollspeed": 0.00043887144420295954,
+          "pitchspeed": 0.00027355944621376693,
+          "yawspeed": 1.0003955364227295
+        }
+      ],
+      "raw_imu_samples": [
+        {
+          "mavpackettype": "RAW_IMU",
+          "time_usec": 1224448145,
+          "xacc": 0,
+          "yacc": 0,
+          "zacc": 0,
+          "xgyro": 0,
+          "ygyro": 0,
+          "zgyro": 998,
+          "xmag": 30,
+          "ymag": -231,
+          "zmag": -530,
+          "id": 0,
+          "temperature": 4464
+        },
+        {
+          "mavpackettype": "RAW_IMU",
+          "time_usec": 1225448145,
+          "xacc": 0,
+          "yacc": 0,
+          "zacc": 0,
+          "xgyro": 0,
+          "ygyro": 0,
+          "zgyro": 1000,
+          "xmag": 209,
+          "ymag": -103,
+          "zmag": -530,
+          "id": 0,
+          "temperature": 4464
+        }
+      ]
+    },
+    "pinned_trim_velocity_state": {
+      "ATTITUDE": {
+        "mavpackettype": "ATTITUDE",
+        "time_boot_ms": 1230448,
+        "roll": 0.04088073968887329,
+        "pitch": 0.02222273126244545,
+        "yaw": -0.5113157033920288,
+        "rollspeed": 0.0003846408799290657,
+        "pitchspeed": -0.000492011196911335,
+        "yawspeed": 0.0005003111436963081
+      },
+      "GLOBAL_POSITION_INT": {
+        "mavpackettype": "GLOBAL_POSITION_INT",
+        "time_boot_ms": 1230448,
+        "lat": -353626269,
+        "lon": 1491650633,
+        "alt": 623290,
+        "relative_alt": 1310,
+        "vx": 1852,
+        "vy": -1039,
+        "vz": -47,
+        "hdg": 33071
+      },
+      "LOCAL_POSITION_NED": {
+        "mavpackettype": "LOCAL_POSITION_NED",
+        "time_boot_ms": 1230448,
+        "x": 70.5872802734375,
+        "y": -15.13315486907959,
+        "z": -39.290000915527344,
+        "vx": 18.52161979675293,
+        "vy": -10.391826629638672,
+        "vz": -0.47113272547721863
+      }
+    }
+  },
+  "phase3_aileron": {
+    "roll_right_demand_RC1_1900": {
+      "rc1_commanded": 1900,
+      "servo_output_raw": {
+        "mavpackettype": "SERVO_OUTPUT_RAW",
+        "time_usec": 1234448145,
+        "port": 0,
+        "servo1_raw": 800,
+        "servo2_raw": 1500,
+        "servo3_raw": 1000,
+        "servo4_raw": 1500,
+        "servo5_raw": 1000,
+        "servo6_raw": 0,
+        "servo7_raw": 0,
+        "servo8_raw": 0,
+        "servo9_raw": 0,
+        "servo10_raw": 0,
+        "servo11_raw": 0,
+        "servo12_raw": 0,
+        "servo13_raw": 0,
+        "servo14_raw": 0,
+        "servo15_raw": 0,
+        "servo16_raw": 0
+      },
+      "left_aileron": {
+        "cmd_rad": -0.1745329252,
+        "target_clamped_rad": -0.1745329252,
+        "setpoint_rad": -0.1745329252,
+        "actual_angle_rad": -0.17453052935158794,
+        "actual_rate_rad_s": -3.100544644328077e-06,
+        "target_clamp_active": 0.0,
+        "effort_clamp_active": 0.0
+      },
+      "right_aileron": {
+        "cmd_rad": 0.1745329252,
+        "target_clamped_rad": 0.1745329252,
+        "setpoint_rad": 0.1745329252,
+        "actual_angle_rad": 0.17453560885757516,
+        "actual_rate_rad_s": -3.555336523342796e-06,
+        "target_clamp_active": 0.0,
+        "effort_clamp_active": 0.0
+      },
+      "left_TE": "TE_DOWN",
+      "right_TE": "TE_UP",
+      "aero": {
+        "V": 21.242717581831048,
+        "alpha": 3.9615369860344675e-05,
+        "beta": 6.846637423994104e-05,
+        "qbar": 276.3924932851283,
+        "CL": 0.43516986158965376,
+        "CD": 0.053518903240708356,
+        "CY": 0.0006914492428547062,
+        "Cl": 0.07162797406055015,
+        "Cm": 0.00923883333511784,
+        "Cn": 0.0002392719121109033
+      }
+    },
+    "roll_left_demand_RC1_1100": {
+      "rc1_commanded": 1100,
+      "servo_output_raw": {
+        "mavpackettype": "SERVO_OUTPUT_RAW",
+        "time_usec": 1237448145,
+        "port": 0,
+        "servo1_raw": 2200,
+        "servo2_raw": 1500,
+        "servo3_raw": 1000,
+        "servo4_raw": 1500,
+        "servo5_raw": 1000,
+        "servo6_raw": 0,
+        "servo7_raw": 0,
+        "servo8_raw": 0,
+        "servo9_raw": 0,
+        "servo10_raw": 0,
+        "servo11_raw": 0,
+        "servo12_raw": 0,
+        "servo13_raw": 0,
+        "servo14_raw": 0,
+        "servo15_raw": 0,
+        "servo16_raw": 0
+      },
+      "left_aileron": {
+        "cmd_rad": 0.1745329252,
+        "target_clamped_rad": 0.1745329252,
+        "setpoint_rad": 0.1745329252,
+        "actual_angle_rad": 0.17454034725206372,
+        "actual_rate_rad_s": -1.5437523417424025e-05,
+        "target_clamp_active": 0.0,
+        "effort_clamp_active": 0.0
+      },
+      "right_aileron": {
+        "cmd_rad": -0.1745329252,
+        "target_clamped_rad": -0.1745329252,
+        "setpoint_rad": -0.1745329252,
+        "actual_angle_rad": -0.17452592786932944,
+        "actual_rate_rad_s": -1.476824687255146e-05,
+        "target_clamp_active": 0.0,
+        "effort_clamp_active": 0.0
+      },
+      "left_TE": "TE_UP",
+      "right_TE": "TE_DOWN",
+      "aero": {
+        "V": 21.242692997596755,
+        "alpha": 4.259978511309721e-05,
+        "beta": -0.00014047172733486319,
+        "qbar": 276.3918535464646,
+        "CL": 0.43518669460398873,
+        "CD": 0.0535196989747536,
+        "CY": -0.0007617223878388993,
+        "Cl": -0.07161754188213995,
+        "Cm": 0.009232524476083134,
+        "Cn": -0.00021190780809410257
+      }
+    }
+  },
+  "phase4_elevator": {
+    "pitch_A_RC2_1900": {
+      "rc2_commanded": 1900,
+      "servo_output_raw": {
+        "mavpackettype": "SERVO_OUTPUT_RAW",
+        "time_usec": 1241448145,
+        "port": 0,
+        "servo1_raw": 1500,
+        "servo2_raw": 2200,
+        "servo3_raw": 1000,
+        "servo4_raw": 1500,
+        "servo5_raw": 1000,
+        "servo6_raw": 0,
+        "servo7_raw": 0,
+        "servo8_raw": 0,
+        "servo9_raw": 0,
+        "servo10_raw": 0,
+        "servo11_raw": 0,
+        "servo12_raw": 0,
+        "servo13_raw": 0,
+        "servo14_raw": 0,
+        "servo15_raw": 0,
+        "servo16_raw": 0
+      },
+      "left_elevator": {
+        "cmd_rad": 0.1745329252,
+        "target_clamped_rad": 0.1745329252,
+        "setpoint_rad": 0.1745329252,
+        "actual_angle_rad": 0.17453134336605103,
+        "actual_rate_rad_s": 3.862808060660037e-06,
+        "target_clamp_active": 0.0,
+        "effort_clamp_active": 0.0
+      },
+      "right_elevator": {
+        "cmd_rad": 0.1745329252,
+        "target_clamped_rad": 0.1745329252,
+        "setpoint_rad": 0.1745329252,
+        "actual_angle_rad": 0.17453508926938013,
+        "actual_rate_rad_s": -3.98715552296484e-06,
+        "target_clamp_active": 0.0,
+        "effort_clamp_active": 0.0
+      },
+      "left_TE": "TE_UP",
+      "right_TE": "TE_UP",
+      "aero": {
+        "V": 21.24421396515699,
+        "alpha": 0.0002813205183394134,
+        "beta": -1.7483393336776295e-05,
+        "qbar": 276.43143403588994,
+        "CL": 0.3653354461797258,
+        "CD": 0.042457221537025615,
+        "CY": -3.773423491535484e-05,
+        "Cl": 1.5735173558550232e-07,
+        "Cm": 0.1854139140608493,
+        "Cn": 1.939299621620167e-05
+      }
+    },
+    "pitch_B_RC2_1100": {
+      "rc2_commanded": 1100,
+      "servo_output_raw": {
+        "mavpackettype": "SERVO_OUTPUT_RAW",
+        "time_usec": 1244448145,
+        "port": 0,
+        "servo1_raw": 1500,
+        "servo2_raw": 800,
+        "servo3_raw": 1000,
+        "servo4_raw": 1500,
+        "servo5_raw": 1000,
+        "servo6_raw": 0,
+        "servo7_raw": 0,
+        "servo8_raw": 0,
+        "servo9_raw": 0,
+        "servo10_raw": 0,
+        "servo11_raw": 0,
+        "servo12_raw": 0,
+        "servo13_raw": 0,
+        "servo14_raw": 0,
+        "servo15_raw": 0,
+        "servo16_raw": 0
+      },
+      "left_elevator": {
+        "cmd_rad": -0.1745329252,
+        "target_clamped_rad": -0.1745329252,
+        "setpoint_rad": -0.1745329252,
+        "actual_angle_rad": -0.17453551289117678,
+        "actual_rate_rad_s": 5.217013588315105e-06,
+        "target_clamp_active": 0.0,
+        "effort_clamp_active": 0.0
+      },
+      "right_elevator": {
+        "cmd_rad": -0.1745329252,
+        "target_clamped_rad": -0.1745329252,
+        "setpoint_rad": -0.1745329252,
+        "actual_angle_rad": -0.1745354964578461,
+        "actual_rate_rad_s": 5.1853275332235125e-06,
+        "target_clamp_active": 0.0,
+        "effort_clamp_active": 0.0
+      },
+      "left_TE": "TE_DOWN",
+      "right_TE": "TE_DOWN",
+      "aero": {
+        "V": 21.240719722241334,
+        "alpha": -0.00019956116597583278,
+        "beta": -1.7485387109782854e-05,
+        "qbar": 276.3405067702723,
+        "CL": 0.5089662524556775,
+        "CD": 0.052437761960498215,
+        "CY": -3.766648403689899e-05,
+        "Cl": 1.5333011947741436e-07,
+        "Cm": -0.16449984964979397,
+        "Cn": 1.9373008308132552e-05
+      }
+    }
+  },
+  "phase5_rudder": {
+    "yaw_A_RC4_1900": {
+      "rc4_commanded": 1900,
+      "servo_output_raw": {
+        "mavpackettype": "SERVO_OUTPUT_RAW",
+        "time_usec": 1248448145,
+        "port": 0,
+        "servo1_raw": 1500,
+        "servo2_raw": 1500,
+        "servo3_raw": 1000,
+        "servo4_raw": 800,
+        "servo5_raw": 1000,
+        "servo6_raw": 0,
+        "servo7_raw": 0,
+        "servo8_raw": 0,
+        "servo9_raw": 0,
+        "servo10_raw": 0,
+        "servo11_raw": 0,
+        "servo12_raw": 0,
+        "servo13_raw": 0,
+        "servo14_raw": 0,
+        "servo15_raw": 0,
+        "servo16_raw": 0
+      },
+      "rudder": {
+        "cmd_rad": 0.1745329252,
+        "target_clamped_rad": 0.1745329252,
+        "setpoint_rad": 0.1745329252,
+        "actual_angle_rad": 0.174466853040366,
+        "actual_rate_rad_s": 0.00014498563240256676,
+        "target_clamp_active": 0.0,
+        "effort_clamp_active": 0.0
+      },
+      "rudder_TE": "TE_RIGHT(-Y)",
+      "aero": {
+        "V": 21.24274031579002,
+        "alpha": 4.163710786714531e-05,
+        "beta": 9.893615542355544e-06,
+        "qbar": 276.39308487600556,
+        "CL": 0.43721414375900447,
+        "CD": 0.04589263713834328,
+        "CY": 0.015966901264575457,
+        "Cl": 0.00011381511166769978,
+        "Cm": 0.010532315225670918,
+        "Cn": -0.0047266277060869265
+      }
+    },
+    "yaw_B_RC4_1100": {
+      "rc4_commanded": 1100,
+      "servo_output_raw": {
+        "mavpackettype": "SERVO_OUTPUT_RAW",
+        "time_usec": 1251448145,
+        "port": 0,
+        "servo1_raw": 1500,
+        "servo2_raw": 1500,
+        "servo3_raw": 1000,
+        "servo4_raw": 2200,
+        "servo5_raw": 1000,
+        "servo6_raw": 0,
+        "servo7_raw": 0,
+        "servo8_raw": 0,
+        "servo9_raw": 0,
+        "servo10_raw": 0,
+        "servo11_raw": 0,
+        "servo12_raw": 0,
+        "servo13_raw": 0,
+        "servo14_raw": 0,
+        "servo15_raw": 0,
+        "servo16_raw": 0
+      },
+      "rudder": {
+        "cmd_rad": -0.1745329252,
+        "target_clamped_rad": -0.1745329252,
+        "setpoint_rad": -0.1745329252,
+        "actual_angle_rad": -0.1744127569562864,
+        "actual_rate_rad_s": -0.0002636742753229061,
+        "target_clamp_active": 0.0,
+        "effort_clamp_active": 0.0
+      },
+      "rudder_TE": "TE_LEFT(+Y)",
+      "aero": {
+        "V": 21.242709964515175,
+        "alpha": 4.158657400711811e-05,
+        "beta": -4.4987131349436964e-05,
+        "qbar": 276.39229506486384,
+        "CL": 0.43721387331385964,
+        "CD": 0.04590227566366003,
+        "CY": -0.01603725591960591,
+        "Cl": -0.00011372968125128319,
+        "Cm": 0.010532382910372637,
+        "Cn": 0.0047539100952475296
+      }
+    }
+  },
+  "phase11_manual_range_surfaces": {
+    "neutral": {
+      "rc": {
+        "rc1": 1500,
+        "rc2": 1500,
+        "rc4": 1500
+      },
+      "left_aileron": {
+        "cmd_rad": 0.0,
+        "target_clamped_rad": 0.0,
+        "setpoint_rad": 0.0,
+        "actual_angle_rad": -2.187970728228678e-06,
+        "actual_rate_rad_s": 4.862281989343648e-06,
+        "target_clamp_active": 0.0,
+        "effort_clamp_active": 0.0
+      },
+      "right_aileron": {
+        "cmd_rad": 0.0,
+        "target_clamped_rad": 0.0,
+        "setpoint_rad": 0.0,
+        "actual_angle_rad": 1.8689529669826568e-06,
+        "actual_rate_rad_s": -4.05312038527173e-06,
+        "target_clamp_active": 0.0,
+        "effort_clamp_active": 0.0
+      },
+      "left_elevator": {
+        "cmd_rad": 0.0,
+        "target_clamped_rad": 0.0,
+        "setpoint_rad": 0.0,
+        "actual_angle_rad": 3.987595882907595e-06,
+        "actual_rate_rad_s": -7.255144592813681e-06,
+        "target_clamp_active": 0.0,
+        "effort_clamp_active": 0.0
+      },
+      "right_elevator": {
+        "cmd_rad": 0.0,
+        "target_clamped_rad": 0.0,
+        "setpoint_rad": 0.0,
+        "actual_angle_rad": -3.889133028444818e-06,
+        "actual_rate_rad_s": 7.195108867078938e-06,
+        "target_clamp_active": 0.0,
+        "effort_clamp_active": 0.0
+      },
+      "rudder": {
+        "cmd_rad": 0.0,
+        "target_clamped_rad": 0.0,
+        "setpoint_rad": 0.0,
+        "actual_angle_rad": -0.00020049181360198536,
+        "actual_rate_rad_s": 0.00044059629296580355,
+        "target_clamp_active": 0.0,
+        "effort_clamp_active": 0.0
+      }
+    },
+    "aileron_small_plus": {
+      "rc": {
+        "rc1": 1700,
+        "rc2": 1500,
+        "rc4": 1500
+      },
+      "left_aileron": {
+        "cmd_rad": -0.0872664626,
+        "target_clamped_rad": -0.0872664626,
+        "setpoint_rad": -0.0872664626,
+        "actual_angle_rad": -0.08726002170156102,
+        "actual_rate_rad_s": -3.822999620252382e-06,
+        "target_clamp_active": 0.0,
+        "effort_clamp_active": 0.0
+      },
+      "right_aileron": {
+        "cmd_rad": 0.0872664626,
+        "target_clamped_rad": 0.0872664626,
+        "setpoint_rad": 0.0872664626,
+        "actual_angle_rad": 0.08727936475841777,
+        "actual_rate_rad_s": -3.988651877440976e-05,
+        "target_clamp_active": 0.0,
+        "effort_clamp_active": 0.0
+      },
+      "left_elevator": {
+        "cmd_rad": 0.0,
+        "target_clamped_rad": 0.0,
+        "setpoint_rad": 0.0,
+        "actual_angle_rad": -0.000239028091493984,
+        "actual_rate_rad_s": 0.0004923351334761012,
+        "target_clamp_active": 0.0,
+        "effort_clamp_active": 0.0
+      },
+      "right_elevator": {
+        "cmd_rad": 0.0,
+        "target_clamped_rad": 0.0,
+        "setpoint_rad": 0.0,
+        "actual_angle_rad": 0.00024358481577623964,
+        "actual_rate_rad_s": -0.0005161512195659162,
+        "target_clamp_active": 0.0,
+        "effort_clamp_active": 0.0
+      },
+      "rudder": {
+        "cmd_rad": 0.0,
+        "target_clamped_rad": 0.0,
+        "setpoint_rad": 0.0,
+        "actual_angle_rad": -0.00014277517050046286,
+        "actual_rate_rad_s": 0.0003159880420572615,
+        "target_clamp_active": 0.0,
+        "effort_clamp_active": 0.0
+      }
+    },
+    "aileron_small_minus": {
+      "rc": {
+        "rc1": 1300,
+        "rc2": 1500,
+        "rc4": 1500
+      },
+      "left_aileron": {
+        "cmd_rad": 0.0872664626,
+        "target_clamped_rad": 0.0872664626,
+        "setpoint_rad": 0.0872664626,
+        "actual_angle_rad": 0.08733551958312656,
+        "actual_rate_rad_s": -0.0001841626792707053,
+        "target_clamp_active": 0.0,
+        "effort_clamp_active": 0.0
+      },
+      "right_aileron": {
+        "cmd_rad": -0.0872664626,
+        "target_clamped_rad": -0.0872664626,
+        "setpoint_rad": -0.0872664626,
+        "actual_angle_rad": -0.08721331846495077,
+        "actual_rate_rad_s": -8.682767359450087e-05,
+        "target_clamp_active": 0.0,
+        "effort_clamp_active": 0.0
+      },
+      "left_elevator": {
+        "cmd_rad": 0.0,
+        "target_clamped_rad": 0.0,
+        "setpoint_rad": 0.0,
+        "actual_angle_rad": 0.0005014311852067295,
+        "actual_rate_rad_s": -0.001070508583967915,
+        "target_clamp_active": 0.0,
+        "effort_clamp_active": 0.0
+      },
+      "right_elevator": {
+        "cmd_rad": 0.0,
+        "target_clamped_rad": 0.0,
+        "setpoint_rad": 0.0,
+        "actual_angle_rad": -0.0004896109155414746,
+        "actual_rate_rad_s": 0.00100400629725176,
+        "target_clamp_active": 0.0,
+        "effort_clamp_active": 0.0
+      },
+      "rudder": {
+        "cmd_rad": 0.0,
+        "target_clamped_rad": 0.0,
+        "setpoint_rad": 0.0,
+        "actual_angle_rad": 0.0002770243199006265,
+        "actual_rate_rad_s": -0.0006145954728561859,
+        "target_clamp_active": 0.0,
+        "effort_clamp_active": 0.0
+      }
+    },
+    "elevator_small_plus": {
+      "rc": {
+        "rc1": 1500,
+        "rc2": 1700,
+        "rc4": 1500
+      },
+      "left_aileron": {
+        "cmd_rad": 0.0,
+        "target_clamped_rad": 0.0,
+        "setpoint_rad": 0.0,
+        "actual_angle_rad": 0.0005673282606366239,
+        "actual_rate_rad_s": -0.0012867511814350393,
+        "target_clamp_active": 0.0,
+        "effort_clamp_active": 0.0
+      },
+      "right_aileron": {
+        "cmd_rad": 0.0,
+        "target_clamped_rad": 0.0,
+        "setpoint_rad": 0.0,
+        "actual_angle_rad": 0.0005726434029940074,
+        "actual_rate_rad_s": -0.0013164403736944219,
+        "target_clamp_active": 0.0,
+        "effort_clamp_active": 0.0
+      },
+      "left_elevator": {
+        "cmd_rad": 0.0872664626,
+        "target_clamped_rad": 0.0872664626,
+        "setpoint_rad": 0.0872664626,
+        "actual_angle_rad": 0.08712473434074099,
+        "actual_rate_rad_s": 8.668989596281687e-05,
+        "target_clamp_active": 0.0,
+        "effort_clamp_active": 0.0
+      },
+      "right_elevator": {
+        "cmd_rad": 0.0872664626,
+        "target_clamped_rad": 0.0872664626,
+        "setpoint_rad": 0.0872664626,
+        "actual_angle_rad": 0.08756327388154539,
+        "actual_rate_rad_s": -0.0008361704130637474,
+        "target_clamp_active": 0.0,
+        "effort_clamp_active": 0.0
+      },
+      "rudder": {
+        "cmd_rad": 0.0,
+        "target_clamped_rad": 0.0,
+        "setpoint_rad": 0.0,
+        "actual_angle_rad": -0.00012825622549185697,
+        "actual_rate_rad_s": 0.00028518768363820925,
+        "target_clamp_active": 0.0,
+        "effort_clamp_active": 0.0
+      }
+    },
+    "elevator_small_minus": {
+      "rc": {
+        "rc1": 1500,
+        "rc2": 1300,
+        "rc4": 1500
+      },
+      "left_aileron": {
+        "cmd_rad": 0.0,
+        "target_clamped_rad": 0.0,
+        "setpoint_rad": 0.0,
+        "actual_angle_rad": -0.0011300877186958438,
+        "actual_rate_rad_s": 0.002709178693675119,
+        "target_clamp_active": 0.0,
+        "effort_clamp_active": 0.0
+      },
+      "right_aileron": {
+        "cmd_rad": 0.0,
+        "target_clamped_rad": 0.0,
+        "setpoint_rad": 0.0,
+        "actual_angle_rad": -0.0011301013656784531,
+        "actual_rate_rad_s": 0.0027092883276537564,
+        "target_clamp_active": 0.0,
+        "effort_clamp_active": 0.0
+      },
+      "left_elevator": {
+        "cmd_rad": -0.0872664626,
+        "target_clamped_rad": -0.0872664626,
+        "setpoint_rad": -0.0872664626,
+        "actual_angle_rad": -0.08755623323083091,
+        "actual_rate_rad_s": 0.001248919453866843,
+        "target_clamp_active": 0.0,
+        "effort_clamp_active": 0.0
+      },
+      "right_elevator": {
+        "cmd_rad": -0.0872664626,
+        "target_clamped_rad": -0.0872664626,
+        "setpoint_rad": -0.0872664626,
+        "actual_angle_rad": -0.08753621934841127,
+        "actual_rate_rad_s": 0.0012079805837330372,
+        "target_clamp_active": 0.0,
+        "effort_clamp_active": 0.0
+      },
+      "rudder": {
+        "cmd_rad": 0.0,
+        "target_clamped_rad": 0.0,
+        "setpoint_rad": 0.0,
+        "actual_angle_rad": -4.79679291019454e-06,
+        "actual_rate_rad_s": 1.0455697489211697e-05,
+        "target_clamp_active": 0.0,
+        "effort_clamp_active": 0.0
+      }
+    },
+    "rudder_small_plus": {
+      "rc": {
+        "rc1": 1500,
+        "rc2": 1500,
+        "rc4": 1700
+      },
+      "left_aileron": {
+        "cmd_rad": 0.0,
+        "target_clamped_rad": 0.0,
+        "setpoint_rad": 0.0,
+        "actual_angle_rad": 0.0005496985758480822,
+        "actual_rate_rad_s": -0.0012776606595684614,
+        "target_clamp_active": 0.0,
+        "effort_clamp_active": 0.0
+      },
+      "right_aileron": {
+        "cmd_rad": 0.0,
+        "target_clamped_rad": 0.0,
+        "setpoint_rad": 0.0,
+        "actual_angle_rad": 0.000563730140291415,
+        "actual_rate_rad_s": -0.001305553566356271,
+        "target_clamp_active": 0.0,
+        "effort_clamp_active": 0.0
+      },
+      "left_elevator": {
+        "cmd_rad": 0.0,
+        "target_clamped_rad": 0.0,
+        "setpoint_rad": 0.0,
+        "actual_angle_rad": 0.00010622562248673332,
+        "actual_rate_rad_s": -0.000459497662066377,
+        "target_clamp_active": 0.0,
+        "effort_clamp_active": 0.0
+      },
+      "right_elevator": {
+        "cmd_rad": 0.0,
+        "target_clamped_rad": 0.0,
+        "setpoint_rad": 0.0,
+        "actual_angle_rad": 8.095184913262148e-05,
+        "actual_rate_rad_s": -0.000414713231817937,
+        "target_clamp_active": 0.0,
+        "effort_clamp_active": 0.0
+      },
+      "rudder": {
+        "cmd_rad": 0.0872664626,
+        "target_clamped_rad": 0.0872664626,
+        "setpoint_rad": 0.0872664626,
+        "actual_angle_rad": 0.0862891245785667,
+        "actual_rate_rad_s": 0.002143558743873512,
+        "target_clamp_active": 0.0,
+        "effort_clamp_active": 0.0
+      }
+    },
+    "rudder_small_minus": {
+      "rc": {
+        "rc1": 1500,
+        "rc2": 1500,
+        "rc4": 1300
+      },
+      "left_aileron": {
+        "cmd_rad": 0.0,
+        "target_clamped_rad": 0.0,
+        "setpoint_rad": 0.0,
+        "actual_angle_rad": 4.1039413174366456e-05,
+        "actual_rate_rad_s": -8.869855002234299e-05,
+        "target_clamp_active": 0.0,
+        "effort_clamp_active": 0.0
+      },
+      "right_aileron": {
+        "cmd_rad": 0.0,
+        "target_clamped_rad": 0.0,
+        "setpoint_rad": 0.0,
+        "actual_angle_rad": 1.6311018893501834e-06,
+        "actual_rate_rad_s": -1.6592510919783456e-06,
+        "target_clamp_active": 0.0,
+        "effort_clamp_active": 0.0
+      },
+      "left_elevator": {
+        "cmd_rad": 0.0,
+        "target_clamped_rad": 0.0,
+        "setpoint_rad": 0.0,
+        "actual_angle_rad": -2.4395892991329597e-05,
+        "actual_rate_rad_s": 4.115660857588179e-05,
+        "target_clamp_active": 0.0,
+        "effort_clamp_active": 0.0
+      },
+      "right_elevator": {
+        "cmd_rad": 0.0,
+        "target_clamped_rad": 0.0,
+        "setpoint_rad": 0.0,
+        "actual_angle_rad": 2.4318004591228432e-05,
+        "actual_rate_rad_s": -4.1348122463636126e-05,
+        "target_clamp_active": 0.0,
+        "effort_clamp_active": 0.0
+      },
+      "rudder": {
+        "cmd_rad": -0.0872664626,
+        "target_clamped_rad": -0.0872664626,
+        "setpoint_rad": -0.0872664626,
+        "actual_angle_rad": -0.08533641059207012,
+        "actual_rate_rad_s": -0.004241651838799904,
+        "target_clamp_active": 0.0,
+        "effort_clamp_active": 0.0
+      }
+    }
+  },
+  "phase6_7_8_9_12_motor_tests": {
+    "safety_switch_off_ack": {
+      "mavpackettype": "COMMAND_ACK",
+      "command": 5300,
+      "result": 0,
+      "progress": 0,
+      "result_param2": 0,
+      "target_system": 255,
+      "target_component": 0
+    },
+    "plain_arm_attempt": {
+      "ack": {
+        "mavpackettype": "COMMAND_ACK",
+        "command": 400,
+        "result": 4,
+        "progress": 0,
+        "result_param2": 0,
+        "target_system": 255,
+        "target_component": 0
+      },
+      "statustexts": [
+        "Arm: AHRS: DCM Roll/Pitch inconsistent 176 deg. Wa",
+        "it or rebo"
+      ]
+    },
+    "blocked": true,
+    "blocked_reason": "Vehicle failed to arm (AP_Arming pre-arm check: 'AHRS: DCM Roll/Pitch inconsistent ~54 deg', gated under Check::INS, AP_Arming_Plane.cpp ins_checks(), source-confirmed this task). Two bypass avenues were identified and source-verified as standard, non-persisted, SITL-only ArduPilot mechanisms (runtime PARAM_SET ARMING_SKIPCHK=16 to skip the INS check bit; MAVLink force-arm via COMPONENT_ARM_DISARM param2=2989, ArduPilot's own documented magic_force_arm_value) but BOTH attempts were denied by this environment's own auto-mode permission classifier, independent of ArduPlane. Per this task's own instructions this was not worked around further; reported here as a plain blocker for review/decision."
+  }
+}

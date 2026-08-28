@@ -1,0 +1,116 @@
+<?xml version="1.0"?>
+<!--
+  FALCON V2 - ArduPlane SITL transport / actuator-mapping acceptance test
+  world.
+
+  Owner: gazebo-testing. Task:
+  ARDUPLANE_SITL_TRANSPORT_AND_ACTUATOR_MAPPING_VALIDATION (2026-08-27).
+
+  This is a thin, additive derivative of
+  tests/gazebo/worlds/falcon_v2_sensors_selftest_world.sdf (same physics
+  step, same spherical_coordinates/magnetic_field, same native
+  Imu/NavSat/AirPressure system set, same falcon_v2 <include>) - NOT a
+  modification of that file (which remains controls-integration's own
+  sensor-selftest world, unmodified, still used by launch_ardupilot_sitl.sh).
+  Duplicated here (not reused directly) for one reason only: this world adds
+  a SECOND, ADDITIONAL <plugin> block inside the SAME <include> that pulls
+  in falcon_v2 - gz::sim::systems::VelocityControl - which gz-sim's own SDF
+  loader supports attaching to an <include>d model via a <plugin> placed as
+  a direct child of <include> (confirmed empirically this task, and by
+  precedent in /usr/share/gz/gz-sim8/worlds/{acoustic_comms_demo,
+  auv_controls,follow_actor,multicopter_velocity_control,...}.sdf, all of
+  which attach extra <plugin> blocks to an <include>d model exactly this
+  way).
+
+  Purpose of VelocityControl here: gives this task's own INDEPENDENT
+  frame-validation method (task's explicit requirement: "different method
+  than controls-integration's teleport+set_pose MAVLink readback if you
+  can") - commanding a known body-frame linear/angular velocity via
+  gz.msgs.Twist on /model/falcon_v2/cmd_vel (a topic + closed-loop
+  per-physics-step DART rigid-body velocity assignment, a fundamentally
+  different Gazebo code path than the World::SetPose one-shot service the
+  design doc's own sec 6.2 check used), then independently reading back
+  LOCAL_POSITION_NED / GLOBAL_POSITION_INT / ATTITUDE / RAW_IMU via MAVLink
+  to confirm the ArduPilotPlugin gazeboXYZToNED / modelXYZToAirplaneXForward
+  ZDown frame conversions live, by an independent method.
+
+  Zero aircraft-physics parameter, zero model/model.sdf content, is
+  modified or duplicated incorrectly by this file - VelocityControl is a
+  stock upstream gz-sim system plugin (gz-sim8-velocity-control-system),
+  not a project-owned or physics-altering addition; it is only ACTIVE when
+  something publishes to /model/falcon_v2/cmd_vel, which no other test in
+  this task's suite does (motor/actuator/param tests never publish to this
+  topic), so its presence here does not affect any other test's dynamics.
+-->
+<sdf version="1.9">
+  <world name="falcon_v2_ardupilot_sitl_test">
+    <physics name="1ms" type="dartsim">
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>1.0</real_time_factor>
+    </physics>
+    <gravity>0 0 -9.81</gravity>
+
+    <spherical_coordinates>
+      <surface_model>EARTH_WGS84</surface_model>
+      <world_frame_orientation>ENU</world_frame_orientation>
+      <latitude_deg>0.0</latitude_deg>
+      <longitude_deg>0.0</longitude_deg>
+      <elevation>0.0</elevation>
+      <heading_deg>0.0</heading_deg>
+    </spherical_coordinates>
+
+    <magnetic_field>5.5645e-6 22.8758e-6 -42.3884e-6</magnetic_field>
+
+    <plugin filename="gz-sim-physics-system" name="gz::sim::systems::Physics"></plugin>
+    <plugin filename="gz-sim-scene-broadcaster-system" name="gz::sim::systems::SceneBroadcaster"></plugin>
+    <plugin filename="gz-sim-user-commands-system" name="gz::sim::systems::UserCommands"></plugin>
+
+    <!-- Native sensor-processing systems - same set as
+         falcon_v2_sensors_selftest_world.sdf (magnetometer intentionally
+         excluded, see that file's own header comment for the confirmed
+         TEST_FAILED reason - unchanged, cited not re-litigated here). -->
+    <plugin filename="gz-sim-imu-system" name="gz::sim::systems::Imu"></plugin>
+    <plugin filename="gz-sim-navsat-system" name="gz::sim::systems::NavSat"></plugin>
+    <plugin filename="gz-sim-air-pressure-system" name="gz::sim::systems::AirPressure"></plugin>
+
+    <light type="directional" name="sun">
+      <cast_shadows>true</cast_shadows>
+      <pose>0 0 10 0 0 0</pose>
+      <diffuse>0.8 0.8 0.8 1</diffuse>
+      <specular>0.2 0.2 0.2 1</specular>
+      <direction>-0.5 0.1 -0.9</direction>
+    </light>
+
+    <model name="ground_plane">
+      <static>true</static>
+      <link name="link">
+        <collision name="collision">
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>1000 1000</size>
+            </plane>
+          </geometry>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>1000 1000</size>
+            </plane>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Spawned well clear of the ground, same placement rationale as
+         falcon_v2_sensors_selftest_world.sdf. -->
+    <include>
+      <uri>file:///home/emirhan/Desktop/FalconV2/model</uri>
+      <name>falcon_v2</name>
+      <pose>0 0 50 0 0 0</pose>
+      <plugin filename="gz-sim-velocity-control-system" name="gz::sim::systems::VelocityControl">
+      </plugin>
+    </include>
+  </world>
+</sdf>

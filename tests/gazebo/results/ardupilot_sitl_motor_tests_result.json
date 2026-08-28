@@ -1,0 +1,210 @@
+{
+  "arm": {
+    "ack": {
+      "mavpackettype": "COMMAND_ACK",
+      "command": 400,
+      "result": 0,
+      "progress": 0,
+      "result_param2": 0,
+      "target_system": 255,
+      "target_component": 0
+    },
+    "statustexts": [
+      "Throttle armed"
+    ]
+  },
+  "armed_confirmed": true,
+  "baseline_diag": {
+    "left": {
+      "throttle": 0.0,
+      "current_A": 1.2993933977409025,
+      "Q_motor_Nm": -6.735610327401755e-06,
+      "omega_rad_s": -3.019169050923779,
+      "rpm": -28.830940709075144,
+      "J": 0.04755282807578623,
+      "Ct": 0.08560868457859194,
+      "Cp": 0.0381171362012593,
+      "thrust_N": 0.000287857343741328,
+      "Q_prop_Nm": -6.7356103273424235e-06,
+      "interpClamped": 1.0,
+      "rpmCapActive": 0.0,
+      "negativeCurrentClamped": 0.0,
+      "currentLimited": 0.0
+    },
+    "right": {
+      "throttle": 0.0,
+      "current_A": 1.2993933977409025,
+      "Q_motor_Nm": -6.735610327401755e-06,
+      "omega_rad_s": -3.019169050923779,
+      "rpm": -28.830940709075144,
+      "J": 0.0475528280757984,
+      "Ct": 0.085608684578591,
+      "Cp": 0.03811713620125935,
+      "thrust_N": 0.0002878573437413248,
+      "Q_prop_Nm": -6.735610327342434e-06,
+      "interpClamped": 1.0,
+      "rpmCapActive": 0.0,
+      "negativeCurrentClamped": 0.0,
+      "currentLimited": 0.0
+    }
+  },
+  "item8_dual_motor": {
+    "final_diag": {
+      "left": {
+        "throttle": 0.625,
+        "current_A": 31.85498189733754,
+        "Q_motor_Nm": 0.3392774236077662,
+        "omega_rad_s": 759.0299030671425,
+        "rpm": 7248.201661661874,
+        "J": 0.00018914936846383136,
+        "Ct": 0.09091197524315761,
+        "Cp": 0.03037773306144137,
+        "thrust_N": 19.32072830010283,
+        "Q_prop_Nm": 0.3392774236077513,
+        "interpClamped": 0.0,
+        "rpmCapActive": 0.0,
+        "negativeCurrentClamped": 0.0,
+        "currentLimited": 0.0
+      },
+      "right": {
+        "throttle": 0.625,
+        "current_A": 31.85498189733754,
+        "Q_motor_Nm": 0.3392774236077662,
+        "omega_rad_s": 759.0299030671425,
+        "rpm": 7248.201661661874,
+        "J": 0.00018914936846387977,
+        "Ct": 0.09091197524315761,
+        "Cp": 0.03037773306144137,
+        "thrust_N": 19.32072830010283,
+        "Q_prop_Nm": 0.3392774236077513,
+        "interpClamped": 0.0,
+        "rpmCapActive": 0.0,
+        "negativeCurrentClamped": 0.0,
+        "currentLimited": 0.0
+      }
+    },
+    "n_diag_samples": 80
+  },
+  "items6_7_9_differential_rc4_1900": {
+    "final_diag": {
+      "left": {
+        "throttle": 0.675,
+        "current_A": 36.46240326017686,
+        "Q_motor_Nm": 0.3904374620823994,
+        "omega_rad_s": 814.9681106636748,
+        "rpm": 7782.372196463198,
+        "J": 0.00017616643514234675,
+        "Ct": 0.09117949741854749,
+        "Cp": 0.03032413505567279,
+        "thrust_N": 22.3389652414379,
+        "Q_prop_Nm": 0.39043746208238417,
+        "interpClamped": 0.0,
+        "rpmCapActive": 0.0,
+        "negativeCurrentClamped": 0.0,
+        "currentLimited": 0.0
+      },
+      "right": {
+        "throttle": 0.575,
+        "current_A": 27.53880888432217,
+        "Q_motor_Nm": 0.2913513582407032,
+        "omega_rad_s": 702.41497354371,
+        "rpm": 6707.56890847466,
+        "J": 0.000204394883676858,
+        "Ct": 0.09066986855532494,
+        "Cp": 0.030461248311327727,
+        "thrust_N": 16.501945016161024,
+        "Q_prop_Nm": 0.29135135824068825,
+        "interpClamped": 0.0,
+        "rpmCapActive": 0.0,
+        "negativeCurrentClamped": 0.0,
+        "currentLimited": 0.0
+      }
+    },
+    "n_diag_samples": 80
+  },
+  "items6_7_9_differential_rc4_1100": {
+    "final_diag": {
+      "left": {
+        "throttle": 0.575,
+        "current_A": 27.53880888432217,
+        "Q_motor_Nm": 0.2913513582407032,
+        "omega_rad_s": 702.41497354371,
+        "rpm": 6707.56890847466,
+        "J": 0.00020439488367680572,
+        "Ct": 0.09066986855532495,
+        "Cp": 0.030461248311327727,
+        "thrust_N": 16.501945016161027,
+        "Q_prop_Nm": 0.29135135824068825,
+        "interpClamped": 0.0,
+        "rpmCapActive": 0.0,
+        "negativeCurrentClamped": 0.0,
+        "currentLimited": 0.0
+      },
+      "right": {
+        "throttle": 0.675,
+        "current_A": 36.46240326017686,
+        "Q_motor_Nm": 0.3904374620823994,
+        "omega_rad_s": 814.9681106636748,
+        "rpm": 7782.372196463198,
+        "J": 0.00017616643514239183,
+        "Ct": 0.09117949741854749,
+        "Cp": 0.03032413505567279,
+        "thrust_N": 22.3389652414379,
+        "Q_prop_Nm": 0.39043746208238417,
+        "interpClamped": 0.0,
+        "rpmCapActive": 0.0,
+        "negativeCurrentClamped": 0.0,
+        "currentLimited": 0.0
+      }
+    },
+    "n_diag_samples": 80
+  },
+  "item12_asymmetric_sanity": {
+    "yawspeed_before": 0.0035002019722014666,
+    "yawspeed_after": 0.003490487113595009,
+    "final_diag": {
+      "left": {
+        "throttle": 0.675,
+        "current_A": 36.4601069572143,
+        "Q_motor_Nm": 0.3904119643172369,
+        "omega_rad_s": 814.9734461739585,
+        "rpm": 7782.423146833331,
+        "J": 4.125656429473892e-10,
+        "Ct": 0.09119121154604277,
+        "Cp": 0.030321757690872315,
+        "thrust_N": 22.342127741416526,
+        "Q_prop_Nm": 0.39041196431722175,
+        "interpClamped": 0.0,
+        "rpmCapActive": 0.0,
+        "negativeCurrentClamped": 0.0,
+        "currentLimited": 0.0
+      },
+      "right": {
+        "throttle": 0.575,
+        "current_A": 27.53677493696376,
+        "Q_motor_Nm": 0.2913287736284186,
+        "omega_rad_s": 702.4196994649948,
+        "rpm": 6707.614037698648,
+        "J": 3.4717821857885363e-10,
+        "Ct": 0.09068304559272808,
+        "Cp": 0.03045847719715187,
+        "thrust_N": 16.50456532781048,
+        "Q_prop_Nm": 0.29132877362840304,
+        "interpClamped": 0.0,
+        "rpmCapActive": 0.0,
+        "negativeCurrentClamped": 0.0,
+        "currentLimited": 0.0
+      }
+    }
+  },
+  "disarm": {
+    "mavpackettype": "COMMAND_ACK",
+    "command": 400,
+    "result": 0,
+    "progress": 0,
+    "result_param2": 0,
+    "target_system": 255,
+    "target_component": 0
+  },
+  "armed_after_disarm": false
+}
