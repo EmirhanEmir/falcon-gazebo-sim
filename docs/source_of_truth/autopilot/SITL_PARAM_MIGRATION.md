@@ -189,7 +189,7 @@ ArduPlane normalized surface command (internal, -4500..+4500 centidegrees or -1.
 
 ## 15. Summary — file produced
 
-`config/ardupilot/falcon_v2_sitl.parm` contains exactly: the 8 manufacturer-initial PID gains (sec 1) + `AUTOTUNE_LEVEL=8` (not executed), the 5×5 real `SERVOx_FUNCTION/MIN/MAX/TRIM/REVERSED` values (sec 2), and the new simulated-pitot airspeed group (sec 4: `ARSPD_TYPE`, `ARSPD_USE`, `AIRSPEED_MIN/CRUISE/MAX/STALL`). Every other real-.param group discussed above (secs 3, 5–13) is explicitly excluded, with the reasoning recorded here rather than left as an unexplained omission.
+`config/ardupilot/falcon_v2_sitl.parm` contains exactly: the 8 manufacturer-initial PID gains (sec 1) + `AUTOTUNE_LEVEL=8` (not executed), the 5×5 real `SERVOx_FUNCTION/MIN/MAX/TRIM/REVERSED` values (sec 2), and the new simulated-pitot airspeed group (sec 4: `ARSPD_TYPE`, `ARSPD_USE`, `AIRSPEED_MIN/CRUISE/MAX/STALL`). Every other real-.param group discussed above (secs 3, 5–13) is explicitly excluded, with the reasoning recorded here rather than left as an unexplained omission. **Addendum 2026-08-28:** `PTCH_TRIM_DEG = 2.49` added — see sec 17.
 
 **Format note:** `falcon_v2_sitl.parm` uses ArduPilot's own `Tools/autotest/default_params/*.parm` convention — whitespace-separated `NAME VALUE` pairs with `#`-prefixed comment lines — confirmed by direct read of `pymavlink/mavparm.py`'s `load()` method (`line.split()` after skipping blank/`#`-prefixed lines), the actual parser ArduPilot SITL tooling (`sim_vehicle.py --add-param-file`) uses. This is deliberately **different** from the real aircraft's own `yeni_pixhawk.param` comma-CSV GCS-export format (which is a different, GCS-side export convention, not meant for `--add-param-file`) — not an inconsistency, a deliberate choice matching the file's actual intended consumer.
 
@@ -199,3 +199,36 @@ ArduPlane normalized surface command (internal, -4500..+4500 centidegrees or -1.
 - `REAL_PARAM_VS_SIM_PITOT_REVIEW_REQUIRED`: the exact `ARSPD_RATIO`/`ARSPD_OFFSET` calibration needed once `PitotSystem.cc`'s differential pressure is actually wired into `AP::sitl()->state.airspeed_raw_pressure` (sec 4) — next-stage work.
 - `DATA_REQUIRED`: `AIRSPEED_STALL` (no validated stall speed in this repository, sec 4); real battery capacity for SITL if structurally needed later (sec 5); `MAG_FIELD_SOURCE_REVIEW_REQUIRED` and `BARO_ALTITUDE_RESPONSE_REVIEW_REQUIRED` (both `docs/source_of_truth/sensors/SENSORS.md` sec 4.3/4.4 — live-observed, not yet explained).
 - Y-split ArduPlane→dual-Gazebo-topic broadcast mechanism (sec 14) and the PWM-domain↔radians-domain translation generally: unbuilt, next-stage (ArduPilotPlugin JSON bridge).
+
+---
+
+## 17. `PTCH_TRIM_DEG` — FBWA level-flight pitch reference (added 2026-08-28)
+
+**Task:** `ARDUPLANE_FBWA_LEVEL_PITCH_REFERENCE_CORRECTION` (controls-integration). This is the one deliberate, documented ArduPlane parameter addition since the sec 15 baseline. **No PID gain, aero/propulsion coefficient, actuator mapping, control-surface sign, joint limit, mass/CG/inertia, or sensor parameter was changed.**
+
+**Value written to `config/ardupilot/falcon_v2_sitl.parm`:**
+```
+PTCH_TRIM_DEG    2.49
+```
+
+**Why.** `docs/test_results/2026-08-28_ardupilot_longitudinal_equilibrium_and_sink_root_cause_validation.md` proved (classification `ARDUPLANE_FBWA_CONTROL_REFERENCE_MISMATCH`) that this airframe + current aero + current propulsion has a genuine steady straight-and-level equilibrium at **V 18.162 m/s, throttle 0.4957, elevator +4.092° physical, pitch +2.487° nose-up, α 2.472°** (C.2: world_vz +0.005 m/s, T−D +0.02 N, L/W 0.996, 14/14 acceptance; confirmed independently by pure Gazebo and by ArduPlane MANUAL). FBWA at neutral pitch stick was commanding `nav_pitch = 0.0°` and holding the nose ≈ 2.7° below that true +2.49° level attitude, with no TECS / altitude / airspeed loop, producing a self-sustaining ≈ 0.55 m/s powered descent. `PTCH_TRIM_DEG = +2.49` (C.2 `pitch*` = +2.487°, rounded) makes FBWA neutral-stick target the measured level attitude. **NOT +3.43°** — that was the C.1 stale-reference *settled* pitch (report §6.1, hypothesis i7), not the level point.
+
+**Semantics — verified from ArduPlane source** (V4.8.0-dev; `THISFIRMWARE "ArduPlane V4.8.0-dev"`, `FIRMWARE_VERSION 4,8,0,DEV`; `git` HEAD `409226a637a13bc2052c169d87adb83cd4b1125c`, `ArduPilot-4.6.0-beta1-7902-g409226a637`; installed `/home/emirhan/gazebo_sim/ardupilot`):
+
+| Aspect | Finding | Source |
+|---|---|---|
+| Parameter definition | `GSCALAR(pitch_trim, "PTCH_TRIM_DEG", 0.0f)` — `AP_Float`, units deg, range −45..45, `@User: Standard`. "Offset in degrees used for in-flight pitch trimming for level flight." | `ArduPlane/Parameters.cpp:651-657`, `Parameters.h:442` |
+| Legacy name | Old `TRIM_PITCH_CD` (int16 centideg) auto-converts to `PTCH_TRIM_DEG` on load. `TRIM_PITCH_CD` is **not** a separate param in this build. | `Parameters.cpp:1522` (`g.pitch_trim.convert_centi_parameter(AP_PARAM_INT16)`) |
+| Where it acts | `demanded_pitch = nav_pitch_cd + int32_t(g.pitch_trim * 100.0) + get_output_scaled(k_throttle) * g.kff_throttle_to_pitch` — a **local controller demand**, fed to `pitchController.run_angle_control()`. It is added to the *demand*, never to the AHRS/EKF attitude estimate. | `ArduPlane/Attitude.cpp:244`, in `Plane::stabilize_pitch_get_pitch_out()` |
+| Gating | **None.** Applied unconditionally inside `stabilize_pitch_get_pitch_out()` — no airspeed, mode, or `FBWA_TDRAG_CHAN` gate. `KFF_THR2PTCH` = 0 (ArduPlane default, not set in our file) so the throttle-feedforward term is exactly zero. | `Attitude.cpp:212-264`, `Parameters.cpp:62` (`KFF_THR2PTCH` default 0) |
+| FBWA call path | `ModeFBWA::run()` → `Mode::run()` → `plane.stabilize_pitch()` → `stabilize_pitch_get_pitch_out()`. FBWA neutral stick sets `nav_pitch_cd = 0` (`mode_fbwa.cpp:9-16`), so the controller then targets AHRS pitch = `PTCH_TRIM_DEG`. | `mode_fbwa.cpp:39-45`, `mode.cpp:274` |
+| TECS modes | TECS is passed `g.pitch_trim.get()` explicitly (`Plane.cpp:669-677`) so AUTO/CRUISE/FBWB handle the same offset consistently — not relevant to this stage (FBWA only) but confirms it is not a hidden double-count. | `ArduPlane/Plane.cpp:677` |
+| **MANUAL** | **Unaffected.** `ModeManual::run()` calls only `reset_controllers()`; `ModeManual::update()` sets servos directly from stick expo (`k_aileron/k_elevator` = `pitch_in_expo` etc.) and never calls `stabilize_pitch()`. `PTCH_TRIM_DEG` never enters the MANUAL elevator path. | `mode_manual.cpp:4-20` |
+| GCS reporting side-effect | `GCS_MAVLINK_Plane::send_attitude()` reports `ATTITUDE.pitch = ahrs_pitch − radians(PTCH_TRIM_DEG)` **unless** `FLIGHT_OPTIONS` bit 8 (`GCS_REMOVE_TRIM_PITCH`, `defines.h:158`) is set. `FLIGHT_OPTIONS` is not set in our file → default 0 → the offset **is** subtracted. So when the aircraft physically holds +2.49° nose-up, MAVLink `ATTITUDE.pitch` reads ≈ 0.0°. This is a **telemetry-reporting** effect only; the physical attitude, the elevator command, and the EKF state are unchanged. Same −2.49° subtraction also applies to the CTUN dataflash log pitch (`Log.cpp:132`) and OSD (`Plane.cpp:1048`, unless `OSD_REMOVE_TRIM_PITCH`). | `GCS_MAVLink_Plane.cpp:139-141` |
+| `NAV_CONTROLLER_OUTPUT.nav_pitch` | Reports raw `plane.nav_pitch_cd * 0.01` — **does not** include `PTCH_TRIM_DEG`. At FBWA neutral stick it stays `0.000°`. The effective attitude target = `nav_pitch + PTCH_TRIM_DEG` = +2.49°. | `GCS_MAVLink_Plane.cpp:233-236` |
+
+**Consequence for downstream test tooling** (routed to `gazebo-testing`): the prior FBWA invariant `pitch_mav ≈ −pitch_gz` becomes `pitch_mav ≈ −pitch_gz − PTCH_TRIM_DEG`. Acceptance on "measured pitch ≈ +2.49°" must be read from the **gz-transport ground-truth pose** (`−pitch_gz`), not from `ATTITUDE.pitch`. A `pitch_mav ≈ 0` in FBWA after this change is the *expected* signature of the controller correctly tracking the trimmed attitude.
+
+**Provenance of the value:** measured, `GAZEBO_VALIDATION` — C.2 equilibrium, `docs/test_results/2026-08-28_ardupilot_longitudinal_equilibrium_and_sink_root_cause_validation.md` §6.2 / §15.1. Not a manufacturer or real-.param value (the real `yeni_pixhawk.param` `AHRS_TRIM_*` / any pitch-trim is real-IMU-mounting-specific and explicitly `DROP_OR_DO_NOT_IMPORT`, sec 6 — this is a fresh simulation-measured value, not imported).
+
+**Not done this stage (explicitly out of scope):** TECS enable / throttle-managed mode, AUTOTUNE, navigation tuning, any PID change, `TRIM_THROTTLE`, `AHRS_TRIM_*`. The alternative fix in the root-cause report §15.2 (enable speed/energy control so throttle is not a dead pass-through) is deferred to a future stage.

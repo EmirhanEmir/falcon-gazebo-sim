@@ -1,0 +1,21 @@
+FALCON V2 - ARDUPLANE_BASIC_CLOSED_LOOP_FLIGHT_VALIDATION methodology-correction pass (2026-08-28, same day)
+Reproducible launch:
+  export GZ_SIM_SYSTEM_PLUGIN_PATH="/home/emirhan/Desktop/FalconV2/plugins/aerodynamics/build:/home/emirhan/Desktop/FalconV2/plugins/propulsion/build:/home/emirhan/Desktop/FalconV2/plugins/actuators/build:/home/emirhan/Desktop/FalconV2/plugins/wind/build:/home/emirhan/Desktop/FalconV2/plugins/sensors/build:/home/emirhan/gazebo_sim/ardupilot_gazebo/build"
+  gz sim -s -r --headless-rendering tests/gazebo/worlds/falcon_v2_ardupilot_basic_closed_loop_flight_world.sdf &
+  gdb -q -x gdbcmds.txt --args /home/emirhan/gazebo_sim/ardupilot/build/sitl/bin/arduplane -w -M json -O 0,0,0,0 --defaults /home/emirhan/Desktop/FalconV2/config/ardupilot/falcon_v2_sitl.parm -I 0 --speedup 1 &
+  python3 tests/gazebo/scripts/test_ardupilot_basic_closed_loop_flight.py
+
+FINAL SUCCESSFUL RUN CONSOLE OUTPUT (first-ever clean PHASE3->PHASE4 pass, all 3 methodology bugs fixed):
+
+PHASE 1 (mavlink connect/readiness/arm): ok=true, dcm_ekf_ready=true, armed_confirmed=true
+ground settle (pre-teleport, sustained near-zero velocity): {'settled': True, 'elapsed_s': 1.0008420944213867}
+PHASE 2 (teleport+verify): True ['clean']
+PHASE 3 (hold-to-trim): aborted = False reason = None loop_dt_ms = {'mean': 1.4817586414004522, 'min': 0.0057220458984375, 'max': 4.168987274169922, 'n': 539}
+PHASE 4 (FBWA handoff+observe): fbwa_confirmed = True aborted = False reason = None
+  start = {'t': 0.007628917694091797, 'pos_z': 89.37814081477708, 'v_body': [18.141242953801463, -2.5354050784821435e-05, -0.7900397151876297], 'av_body_deg': [8.701388177570814e-05, -1.9703787920686118, 0.0042680371747127605], 'att_deg': [4.959453699980007e-05, -0.5816396650938228, 0.0026970380450054418]}
+  end   = {'t': 9.981684923171997, 'pos_z': 79.75172900965195, 'v_body': [19.282596593148174, -0.03319489952131536, -0.5379558330860793], 'av_body_deg': [0.01660723467125455, -0.22128149080924991, 0.018144270299140553], 'att_deg': [-0.012182863946274356, 0.44290592201760237, 0.1334011889147403]}
+PRECONDITION MET: hold-to-trim released cleanly into a stable, bounded FBWA window.
+
+overall_result: PHASE3_4_PASSED_PRECONDITION_MET
+
+Full raw evidence: tests/gazebo/results/ardupilot_basic_closed_loop_ramp_result.json (phase2_teleport_verify, phase3_hold_to_trim.samples [539-sample trace], phase4_fbwa_handoff_and_observe.samples [490-sample trace over the 10s FBWA window]).

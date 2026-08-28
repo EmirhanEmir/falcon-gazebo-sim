@@ -1,0 +1,11 @@
+PHASE 1 (mavlink arm): {"ok": true, "heartbeat": {"mavpackettype": "HEARTBEAT", "type": 1, "autopilot": 3, "base_mode": 17, "custom_mode": 16, "system_status": 2, "mavlink_version": 3}, "dcm_ekf_ready": true, "dcm_ekf_droll_deg": 0.03581449705340656, "dcm_ekf_dpitch_deg": 0.02701512991825606, "arm_attempt_0": {"ack": {"mavpackettype": "COMMAND_ACK", "command": 400, "result": 4, "progress": 0, "result_param2": 0, "target
+ground settle: {'settled': True, 'elapsed_s': 1.0007152557373047}
+PHASE 2 (teleport+verify): True
+PHASE 3 (hold-to-trim): aborted = False reason = None
+Starting pitch_pid_phugoid_baseline command sequence (FBWA)...
+  segment neutral_stabilization: dur=10.0s commanded_pitch=0.0deg rc2=1500.0 n_samples=191 aborted=False
+  segment pitch_up_5: dur=5.0s commanded_pitch=5.0deg rc2=1600.0 n_samples=96 aborted=False
+  segment neutral_settle_1: dur=12.0s commanded_pitch=0.0deg rc2=1500.0 n_samples=229 aborted=False
+  segment pitch_down_5: dur=5.0s commanded_pitch=-5.0deg rc2=1420.0 n_samples=96 aborted=False
+  segment neutral_settle_2: dur=15.0s commanded_pitch=0.0deg rc2=1500.0 n_samples=286 aborted=False
+RESULT: FLIGHT_COMPLETED_NO_ABORT segments: [('neutral_stabilization', False, 191), ('pitch_up_5', False, 96), ('neutral_settle_1', False, 229), ('pitch_down_5', False, 96), ('neutral_settle_2', False, 286)] -> /home/emirhan/Desktop/FalconV2/tests/gazebo/results/ardupilot_pitch_pid_phugoid_baseline_result.json

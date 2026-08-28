@@ -1,0 +1,41 @@
+FALCON V2 - ARDUPLANE_LONGITUDINAL_EQUILIBRIUM_AND_SINK_ROOT_CAUSE_VALIDATION
+Part C.2 bounded iterative sweep. 2026-08-28T16:21:47Z
+World: /home/emirhan/Desktop/FalconV2/tests/gazebo/worlds/falcon_v2_freefall_world.sdf
+
+==========================================================================================
+PART C.2 - bounded iterative single-variable sweep (elevator -> throttle -> V, <= 3 V values)
+  sweep window = 30 s free (Part B: '>= 2 phugoid periods; use 30 s'); C.1 + final converged point use the full 60 s
+==========================================================================================
+------------------------------------------------------------------------------------------
+ITERATION 1: V = 18.166 m/s
+------------------------------------------------------------------------------------------
+[it1_elev+3.5] V_cmd=18.166 thr=0.5000 elev=+3.50deg | world_vz(fit/tail)=-0.0995/-0.0966 m/s q_tail=+0.0093 deg/s Vdot_tail=-0.00093 alpha_tail=+2.142 theta_tail=+1.844 | L/W=0.9961 T-D=-0.308N net_My=-0.0631 nan=False accept=False phug_T=9.00s zeta=0.223 wall=10s
+[it1_elev+4.5] V_cmd=18.166 thr=0.5000 elev=+4.50deg | world_vz(fit/tail)=+0.2146/+0.2121 m/s q_tail=-0.0064 deg/s Vdot_tail=+0.00067 alpha_tail=+2.678 theta_tail=+3.356 | L/W=0.9950 T-D=+0.707N net_My=-0.0626 nan=False accept=False phug_T=8.70s zeta=0.203 wall=9s
+[it1_elev+5.5] V_cmd=18.166 thr=0.5000 elev=+5.50deg | world_vz(fit/tail)=+0.4719/+0.4719 m/s q_tail=-0.0271 deg/s Vdot_tail=-0.00115 alpha_tail=+3.213 theta_tail=+4.771 | L/W=0.9937 T-D=+1.605N net_My=-0.0621 nan=False accept=False phug_T=8.40s zeta=0.197 wall=10s
+  step 1: q_tail(deg/s) vs elevator_phys = +3.5:+0.0093, +4.5:-0.0064, +5.5:-0.0271  -> elevator* = +4.092 deg (physical)
+          net_My_est vs elevator = +3.5:-0.0631, +4.5:-0.0626, +5.5:-0.0621
+[it1_thr0.47] V_cmd=18.166 thr=0.4700 elev=+4.09deg | world_vz(fit/tail)=-0.4955/-0.4925 m/s q_tail=-0.0075 deg/s Vdot_tail=-0.00266 alpha_tail=+2.544 theta_tail=+0.983 | L/W=0.9967 T-D=-1.616N net_My=-0.0634 nan=False accept=False phug_T=8.80s zeta=0.206 wall=9s
+[it1_thr0.50] V_cmd=18.166 thr=0.5000 elev=+4.09deg | world_vz(fit/tail)=+0.0932/+0.0927 m/s q_tail=+0.0011 deg/s Vdot_tail=+0.00044 alpha_tail=+2.460 theta_tail=+2.752 | L/W=0.9955 T-D=+0.308N net_My=-0.0628 nan=False accept=False phug_T=8.80s zeta=0.206 wall=9s
+[it1_thr0.53] V_cmd=18.166 thr=0.5300 elev=+4.09deg | world_vz(fit/tail)=+0.7425/+0.7405 m/s q_tail=+0.0123 deg/s Vdot_tail=+0.00389 alpha_tail=+2.370 theta_tail=+4.692 | L/W=0.9930 T-D=+2.415N net_My=-0.0621 nan=False accept=False phug_T=8.90s zeta=0.208 wall=9s
+  step 2: Vdot_tail(m/s^2) vs throttle = 0.47:-0.00266, 0.50:+0.00044, 0.53:+0.00389  -> throttle* = 0.4957
+[it1_confirm] V_cmd=18.166 thr=0.4957 elev=+4.09deg | world_vz(fit/tail)=+0.0049/+0.0049 m/s q_tail=-0.0002 deg/s Vdot_tail=-0.00002 alpha_tail=+2.472 theta_tail=+2.488 | L/W=0.9958 T-D=+0.021N net_My=-0.0629 nan=False accept=True phug_T=8.90s zeta=0.208 wall=9s
+  step 3: confirm (V=18.166, thr*=0.4957, elev*=+4.092): world_vz=+0.0049 q_tail=-0.0002 Vdot_tail=-0.00002  -> CONVERGED
+
+------------------------------------------------------------------------------------------
+FULL SWEEP RUN TABLE
+------------------------------------------------------------------------------------------
+      label |     V_cmd | elev_phys |   de_aero |   thr_cmd |   thr_act |  world_vz |   vz_tail |    q_tail | Vdot_tail |    V_tail |     alpha |     theta |  th_drift |       L/W |       T-D |    net_My |    accept
+  it1_elev+3.5 |    18.166 |     +3.50 |     -3.50 |    0.5000 |    0.5000 |   -0.0995 |   -0.0966 |   +0.0093 |  -0.00093 |    18.561 |    +2.142 |    +1.844 |    -0.445 |    0.9961 |    -0.308 |   -0.0631 |     False
+  it1_elev+4.5 |    18.166 |     +4.50 |     -4.50 |    0.5000 |    0.5000 |   +0.2146 |   +0.2121 |   -0.0064 |  +0.00067 |    17.925 |    +2.678 |    +3.356 |    +0.686 |    0.9950 |    +0.707 |   -0.0626 |     False
+  it1_elev+5.5 |    18.166 |     +5.50 |     -5.50 |    0.5000 |    0.5000 |   +0.4719 |   +0.4719 |   -0.0271 |  -0.00115 |    17.349 |    +3.213 |    +4.771 |    +1.668 |    0.9937 |    +1.605 |   -0.0621 |     False
+  it1_thr0.47 |    18.166 |     +4.09 |     -4.09 |    0.4700 |    0.4700 |   -0.4955 |   -0.4925 |   -0.0075 |  -0.00266 |    18.076 |    +2.544 |    +0.983 |    -1.607 |    0.9967 |    -1.616 |   -0.0634 |     False
+  it1_thr0.50 |    18.166 |     +4.09 |     -4.09 |    0.5000 |    0.5000 |   +0.0932 |   +0.0927 |   +0.0011 |  +0.00044 |    18.177 |    +2.460 |    +2.752 |    +0.241 |    0.9955 |    +0.308 |   -0.0628 |     False
+  it1_thr0.53 |    18.166 |     +4.09 |     -4.09 |    0.5300 |    0.5300 |   +0.7425 |   +0.7405 |   +0.0123 |  +0.00389 |    18.276 |    +2.370 |    +4.692 |    +2.263 |    0.9930 |    +2.415 |   -0.0621 |     False
+  it1_confirm |    18.166 |     +4.09 |     -4.09 |    0.4957 |    0.4957 |   +0.0049 |   +0.0049 |   -0.0002 |  -0.00002 |    18.162 |    +2.472 |    +2.488 |    -0.035 |    0.9958 |    +0.021 |   -0.0629 |      True
+
+CONVERGED sweep point: V=18.166  throttle=0.4957  elevator_phys=+4.092 deg. Re-running at the FULL 60 s window for the definitive (V*, throttle*, elevator*, pitch*).
+[final_60s] V_cmd=18.166 thr=0.4957 elev=+4.09deg | world_vz(fit/tail)=+0.0049/+0.0048 m/s q_tail=-0.0001 deg/s Vdot_tail=+0.00000 alpha_tail=+2.472 theta_tail=+2.487 | L/W=0.9958 T-D=+0.021N net_My=-0.0629 nan=False accept=True phug_T=8.90s zeta=0.221 wall=18s
+  (V*, throttle*, elevator*, pitch*, alpha*) = (18.162, 0.4957, +4.092 deg, +2.487 deg, +2.472 deg)
+  world_vz there (fit / tail) = +0.00485 / +0.00484 m/s
+  phugoid (world_vz fit): period = 8.900 s   zeta = 0.2210
+  acceptance ALL_PASS = True

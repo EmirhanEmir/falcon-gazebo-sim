@@ -81,6 +81,40 @@ SERVO5_TRIM       1000
 SERVO5_REVERSED   0
 
 # -----------------------------------------------------------------------------
+# PTCH_TRIM_DEG - ARDUPLANE_FBWA_LEVEL_PITCH_REFERENCE_CORRECTION (2026-08-28).
+# FBWA / stabilized-mode neutral-pitch-stick attitude-target OFFSET in degrees.
+# Semantics CONFIRMED from ArduPlane source (V4.8.0-dev, ArduPilot commit
+# 409226a637 / ArduPilot-4.6.0-beta1-7902-g409226a637, installed at
+# /home/emirhan/gazebo_sim/ardupilot):
+#   ArduPlane/Attitude.cpp:244  demanded_pitch = nav_pitch_cd
+#                                 + int32_t(g.pitch_trim * 100.0)
+#                                 + k_throttle_scaled * g.kff_throttle_to_pitch
+#   ArduPlane/Parameters.cpp:651-657  GSCALAR(pitch_trim,"PTCH_TRIM_DEG",0.0f)
+#                                      range -45..45, User:Standard
+# Applied UNCONDITIONALLY inside stabilize_pitch_get_pitch_out() (no airspeed
+# / mode / FBWA_TDRAG gate); KFF_THR2PTCH is 0 (ArduPlane default, not set in
+# this file) so the throttle term is zero. FBWA (ModeFBWA::run -> Mode::run
+# -> Plane::stabilize_pitch, mode.cpp:274) at neutral stick has
+# nav_pitch_cd = 0, so the pitch controller then targets AHRS pitch =
+# PTCH_TRIM_DEG. It is a CONTROLLER DEMAND OFFSET only - it does NOT touch the
+# AHRS/EKF attitude estimate. It does NOT affect MANUAL: ModeManual::run()
+# (mode_manual.cpp:17-20) calls only reset_controllers(), never
+# stabilize_pitch() - MANUAL stays pure stick->servo passthrough.
+# Note: with PTCH_TRIM_DEG != 0, GCS ATTITUDE.pitch is reported as
+# (true_pitch - PTCH_TRIM_DEG) unless FLIGHT_OPTIONS bit 8 GCS_REMOVE_TRIM_PITCH
+# is set (GCS_MAVLink_Plane.cpp:139-141) - reporting only, physics unchanged.
+# NAV_CONTROLLER_OUTPUT.nav_pitch stays raw nav_pitch_cd*0.01 (= 0 at neutral).
+# VALUE = +2.49 deg: the MEASURED straight-and-level nose-up pitch attitude of
+# this airframe+aero+propulsion model, C.2 pitch* = +2.487 deg from
+# docs/test_results/2026-08-28_ardupilot_longitudinal_equilibrium_and_sink_
+# root_cause_validation.md (V* 18.162 m/s, throttle* 0.4957, elevator* +4.092
+# deg, alpha* 2.472 deg, world_vz +0.005 m/s, 14/14 acceptance). NOT +3.43
+# (the C.1 stale-reference settled pitch - wrong). Full provenance:
+# docs/source_of_truth/autopilot/SITL_PARAM_MIGRATION.md sec 17.
+# -----------------------------------------------------------------------------
+PTCH_TRIM_DEG    2.49
+
+# -----------------------------------------------------------------------------
 # Simulated pitot - SITL_REQUIRED / SIMULATION_ADDED_PITOT_SENSOR. The real
 # Falcon V2 had NO pitot (old ARSPD_TYPE=0 in yeni_pixhawk.param) - this is a
 # NEW simulation-only capability, not a real-flight-proven sensor.

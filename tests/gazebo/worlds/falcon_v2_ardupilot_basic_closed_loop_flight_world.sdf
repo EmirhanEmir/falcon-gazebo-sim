@@ -1,0 +1,159 @@
+<?xml version="1.0"?>
+<!--
+  FALCON V2 - ArduPlane FBWA basic closed-loop flight validation world.
+
+  Owner: gazebo-testing. Task: ARDUPLANE_BASIC_CLOSED_LOOP_FLIGHT_VALIDATION
+  (2026-08-28), the FIRST-EVER closed-loop ArduPlane-controlled airborne
+  test of this aircraft.
+
+  This is a thin, ADDITIVE derivative of
+  tests/gazebo/worlds/falcon_v2_ardupilot_sitl_grounded_test_world.sdf
+  (itself unmodified, still used by prior-stage tests) - same ground_plane,
+  same real dartsim ground-contact ground-truth spawn (z=0.5m, level),
+  same spherical_coordinates/magnetic_field/native-sensor-system set. This
+  world exists only to satisfy this stage's OWN additional requirement: a
+  real, force-based (never kinematic) velocity-ramp primitive, reusing
+  tests/gazebo/scripts/aero_lib.py::hold_step()'s underlying mechanism
+  (Link::AddWorldForce/AddWorldWrench) but driven from an EXTERNAL,
+  already-running gz-sim server process (this stage talks to Gazebo over
+  live gz-transport + MAVLink, not via an in-process TestFixture/ECM
+  callback like aero_lib.py's own direct-ECM technique) - so the STOCK
+  upstream gz-sim `ApplyLinkWrench` system (gz-sim8-apply-link-wrench-
+  system, precedent: /usr/share/gz/gz-sim8/worlds/apply_link_wrench.sdf)
+  is attached at the WORLD level. It listens on
+  /world/<world>/wrench(/persistent|/clear) for gz.msgs.EntityWrench
+  messages and applies them via the identical AddWorldWrench-family
+  primitive the aerodynamics/propulsion plugins already use every physics
+  step (confirmed empirically this stage: force/torque fields in the
+  EntityWrench message are WORLD-frame, matching AddWorldForce/
+  AddWorldWrench's own documented semantics) - this is a REAL applied
+  force, continuously combined by the physics engine with whatever
+  aero/propulsion/gravity forces are also acting that step, never a
+  kinematic velocity/pose override. No aircraft-physics parameter is
+  touched by attaching this stock system; it applies zero force unless and
+  until this stage's own test script explicitly publishes a wrench.
+
+  Differences from falcon_v2_ardupilot_sitl_grounded_test_world.sdf:
+    1. + gz::sim::systems::ApplyLinkWrench (world-level, stock upstream,
+       no <persistent> preset in this file - the test script drives it
+       entirely via topic, so it applies zero force at load).
+    2. Everything else (ground_plane, falcon_v2 spawn at z=0.5m level,
+       physics step, spherical_coordinates, magnetic_field, native
+       Imu/NavSat/AirPressure systems) is IDENTICAL, so this world retains
+       the already-root-caused real-ground-contact DCM/EKF3 convergence
+       property (SITL_TRANSPORT_AND_ACTUATOR_MAPPING_VALIDATION report
+       sec 15.1/15.2) needed for a clean, first-attempt real arm.
+
+  Zero aircraft-physics parameter, zero model/model.sdf content, is
+  modified or duplicated incorrectly by this file.
+-->
+<sdf version="1.9">
+  <world name="falcon_v2_ardupilot_basic_closed_loop_flight">
+    <physics name="1ms" type="dartsim">
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>1.0</real_time_factor>
+    </physics>
+    <gravity>0 0 -9.81</gravity>
+
+    <spherical_coordinates>
+      <surface_model>EARTH_WGS84</surface_model>
+      <world_frame_orientation>ENU</world_frame_orientation>
+      <latitude_deg>0.0</latitude_deg>
+      <longitude_deg>0.0</longitude_deg>
+      <elevation>0.0</elevation>
+      <heading_deg>0.0</heading_deg>
+    </spherical_coordinates>
+
+    <magnetic_field>5.5645e-6 22.8758e-6 -42.3884e-6</magnetic_field>
+
+    <plugin filename="gz-sim-physics-system" name="gz::sim::systems::Physics"></plugin>
+    <plugin filename="gz-sim-scene-broadcaster-system" name="gz::sim::systems::SceneBroadcaster"></plugin>
+    <plugin filename="gz-sim-user-commands-system" name="gz::sim::systems::UserCommands"></plugin>
+
+    <plugin filename="gz-sim-imu-system" name="gz::sim::systems::Imu"></plugin>
+    <plugin filename="gz-sim-navsat-system" name="gz::sim::systems::NavSat"></plugin>
+    <plugin filename="gz-sim-air-pressure-system" name="gz::sim::systems::AirPressure"></plugin>
+
+    <!-- Stock upstream system, world-scoped - see file header. No
+         <persistent> block: applies zero force until this stage's test
+         script publishes to /world/falcon_v2_ardupilot_basic_closed_loop_
+         flight/wrench(/persistent|/clear). -->
+    <plugin filename="gz-sim-apply-link-wrench-system" name="gz::sim::systems::ApplyLinkWrench">
+    </plugin>
+
+    <light type="directional" name="sun">
+      <cast_shadows>true</cast_shadows>
+      <pose>0 0 10 0 0 0</pose>
+      <diffuse>0.8 0.8 0.8 1</diffuse>
+      <specular>0.2 0.2 0.2 1</specular>
+      <direction>-0.5 0.1 -0.9</direction>
+    </light>
+
+    <model name="ground_plane">
+      <static>true</static>
+      <link name="link">
+        <collision name="collision">
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>1000 1000</size>
+            </plane>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.8</mu>
+                <mu2>0.8</mu2>
+              </ode>
+            </friction>
+          </surface>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>1000 1000</size>
+            </plane>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Spawned 0.5 m above the ground plane, level - same rationale as
+         falcon_v2_ardupilot_sitl_grounded_test_world.sdf: settles onto
+         real dartsim ground contact within a couple of physics seconds,
+         giving the IMU a genuine, non-kinematic-override ~1g gravity
+         reference so ArduPlane's legacy DCM backend converges and the
+         aircraft arms on the first real, non-forceful attempt. This
+         stage's own test script teleports falcon_v2 to its airborne test
+         pose (via /world/<world>/set_pose, one-shot, AFTER a successful
+         ground arm) and force-ramps it up to trim airspeed before
+         switching to FBWA - see the test script's own module docstring. -->
+    <include>
+      <uri>file:///home/emirhan/Desktop/FalconV2/model</uri>
+      <name>falcon_v2</name>
+      <pose>0 0 0.5 0 0 0</pose>
+      <!-- Stock upstream gz-sim system (gz-sim8-odometry-publisher-system,
+           NOT a project-owned or physics-altering plugin), attached the
+           same way VelocityControl is attached in
+           falcon_v2_ardupilot_sitl_test_world.sdf (a <plugin> as a direct
+           child of <include>). Gives this stage's own force-ramp
+           controller a REAL, physics-engine-sourced body-frame twist
+           (angular velocity in particular) instead of a noisy Euler-
+           angle finite-difference reconstruction from pose alone - found
+           empirically this stage (see test report) that the finite-
+           difference approach is numerically unreliable near pitch
+           gimbal-lock and was actively destabilizing the ramp controller.
+           Publishes gz.msgs.Odometry on /model/falcon_v2/odometry:
+           pose in the odom(=world, no drift model) frame, twist in the
+           robot base (body) frame - exactly what a body-frame P
+           controller needs. Does not apply any force/torque itself. -->
+      <plugin filename="gz-sim-odometry-publisher-system" name="gz::sim::systems::OdometryPublisher">
+        <odom_frame>falcon_v2_ardupilot_basic_closed_loop_flight</odom_frame>
+        <robot_base_frame>falcon_v2</robot_base_frame>
+        <odom_publish_frequency>100</odom_publish_frequency>
+        <dimensions>3</dimensions>
+      </plugin>
+    </include>
+  </world>
+</sdf>

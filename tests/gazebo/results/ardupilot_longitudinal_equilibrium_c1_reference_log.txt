@@ -1,0 +1,51 @@
+FALCON V2 - ARDUPLANE_LONGITUDINAL_EQUILIBRIUM_AND_SINK_ROOT_CAUSE_VALIDATION
+Part C.1 pure-Gazebo reference-point reproduction. 2026-08-28T16:15:53Z
+World: /home/emirhan/Desktop/FalconV2/tests/gazebo/worlds/falcon_v2_freefall_world.sdf
+GZ_SIM_SYSTEM_PLUGIN_PATH = /home/emirhan/Desktop/FalconV2/plugins/propulsion/build:/home/emirhan/Desktop/FalconV2/plugins/aerodynamics/build
+
+==========================================================================================
+PART C.1 - reproduce the current reference point verbatim (pure Gazebo, 60 s free window)
+  V_target=18.166  throttle=0.501  elevator_physical=+4.50 deg (delta_e_aero=-4.50 deg), ailerons/rudder 0
+==========================================================================================
+[C1_reference] V_cmd=18.166 thr=0.5010 elev=+4.50deg | world_vz(fit/tail)=+0.2353/+0.2352 m/s q_tail=+0.0002 deg/s Vdot_tail=+0.00007 alpha_tail=+2.675 theta_tail=+3.427 | L/W=0.9948 T-D=+0.780N net_My=-0.0626 nan=False accept=False phug_T=8.70s zeta=0.203 wall=20s
+
+  measured weight at run start: total_mass=6.0000 kg -> weight=58.860 N (g=9.81); per-link: base_link=5.9348, left_aileron=0.0010, right_aileron=0.0010, left_elevator=0.0010, right_elevator=0.0010, rudder=0.0010, left_prop=0.0301, right_prop=0.0301
+  sign check (see scratchpad/pitchprobe.py): gz Euler / quat_rpy pitch is NOSE-DOWN-POSITIVE for this FLU freefall world; PHYSICAL pitch = -(gz pitch).
+    teleport Pose3d pitch arg = -2.531 deg (= -alpha_guess, i.e. genuine NOSE-UP), first free-tick: gz pitch = -2.685 deg -> physical pitch = +2.685 deg (expect ~ +alpha_guess +2.531 for a level nose-up IC)
+
+  Part D residual table (C.1):
+    world_vz:  fit_offset A = +0.23528 m/s   fit drift B*T = -0.00003 m/s   tail mean = +0.23519 +/- 0.00079   full mean = +0.24065
+    altitude slope:  tail = +0.23522 m/s   full = +0.23619 m/s
+    airspeed V:  tail mean = 17.9265   slope_full = -0.000346 m/s^2   slope_tail = +0.000021   drift_full = -0.2397 m/s   fit_offset = 17.9267
+    longitudinal accel du/dt:  mean = -0.004026   tail mean = +0.000070   max|.| = 0.13555 m/s^2
+    pitch rate q:  tail mean = +0.00022 +/- 0.00224 deg/s
+    pitch theta:  tail mean = +3.4272 deg   drift_full = +0.7419   drift_tail = -0.0099   fit_offset = +3.4271
+    alpha:  tail mean = +2.6754 deg
+    lateral:  roll = +0.1113 deg   p = -0.0030 deg/s   r = -0.0572 deg/s   beta = -0.0357 deg
+    aero (live diag tail mean):  CL=0.65900 CD=0.05770 CY=+0.000037 Cl=-0.000000 Cm=+0.011186 Cn=-0.000001  qbar=196.8334
+    Lift = 58.5522 N   Drag = 5.1270 N   Weight = 58.860 N   Lift/Weight = 0.99477
+    Thrust L/R = 2.9531/2.9535 N   total = 5.9066 N   Thrust_total - Drag = +0.7796 N
+    RPM L/R = 6079.2/6079.2   throttle_actual L/R = 0.50100/0.50100
+    My_aero (mirror) = -0.22265 N m   net_My (aero + dz*T) = -0.06258 N m
+    flight-path cross-check:  gamma(from world_vz) = +0.7517 deg   gamma(pitch_phys - alpha) = +0.7518 deg   (consistency -0.0001 deg)
+    along-path balance:  T-D = +0.7796 N   vs  W*sin(gamma) expected +0.7722 N
+    phugoid (world_vz fit):  period = 8.700 s   zeta = 0.2034   amp0 = 0.3480 m/s   rmse = 0.0006
+    phugoid (pitch fit):     period = 8.700 s   zeta = 0.2034   amp0 = 1.1230 deg
+    mirror vs live (tick-paired tail): CL mean|d|=0.00000 rel=0.00% (n=600), CD mean|d|=0.00000 rel=0.00% (n=600), Cm mean|d|=0.00000 rel=0.00% (n=600)
+
+  ACCEPTANCE (Part D table): ALL_PASS = False
+    FAIL  world_vz_abs_le_0p10
+    FAIL  world_vz_abs_le_0p05
+    FAIL  alt_slope_abs_le_0p10
+    PASS  q_mean_abs_le_0p3_degs
+    PASS  long_accel_abs_le_0p03
+    PASS  V_drift_abs_le_0p4
+    FAIL  pitch_drift_abs_le_0p5_deg
+    PASS  roll_mean_abs_le_0p5_deg
+    PASS  p_mean_abs_le_0p5_degs
+    PASS  r_mean_abs_le_0p5_degs
+    PASS  beta_abs_le_0p5_deg
+    PASS  lift_over_weight_1p00_pm0p01
+    FAIL  thrust_minus_drag_abs_le_0p3_N
+    PASS  any_nan_false
+  C.1 VERDICT: CLIMBS

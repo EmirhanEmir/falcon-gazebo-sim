@@ -1,0 +1,9 @@
+PHASE 1 (mavlink arm): {"ok": true, "heartbeat": {"mavpackettype": "HEARTBEAT", "type": 1, "autopilot": 3, "base_mode": 17, "custom_mode": 16, "system_status": 2, "mavlink_version": 3}, "dcm_ekf_ready": true, "dcm_ekf_droll_deg": 0.03623289283081612, "dcm_ekf_dpitch_deg": 0.027432788648885067, "arm_attempt_0": {"ack": {"mavpackettype": "COMMAND_ACK", "command": 400, "result": 4, "progress": 0, "result_param2": 0, "targe
+ground settle: {'settled': True, 'elapsed_s': 1.0011188983917236}
+PHASE 2 (teleport+verify): True
+PHASE 3 (hold-to-trim): aborted = False reason = None
+Starting trim_reference_correction_validation (25.0s neutral, FBWA)...
+  segment neutral_stabilization_corrected_trim: dur=25.0s rc3=1501.0 n_samples=476 aborted=False
+STABILIZED WINDOW sink (regression): 0.5526485895143229 m/s, (endpoint): 0.5475733731421234 m/s, n= 381
+PRIOR (stale trim) avg sink: 0.672 m/s
+RESULT: FLIGHT_COMPLETED_NO_ABORT -> /home/emirhan/Desktop/FalconV2/tests/gazebo/results/ardupilot_trim_reference_correction_validation_result.json
