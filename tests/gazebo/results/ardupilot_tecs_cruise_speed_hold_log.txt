@@ -1,0 +1,27 @@
+PHASE 1 (mavlink arm): {"ok": true, "heartbeat": {"mavpackettype": "HEARTBEAT", "type": 1, "autopilot": 3, "base_mode": 17, "custom_mode": 16, "system_status": 2, "mavlink_version": 3}, "dcm_ekf_ready": true, "dcm_ekf_droll_deg": 0.012620830486009522, "dcm_ekf_dpitch_deg": 2.5223318377442885, "arm_attempt_0": {"ack": {"ma
+param preconditions: {"arspd_use_1_tecs_uses_airspeed_path": true, "arspd_type_100_sitl_backend": true, "airspeed_min_16": true, "airspeed_cruise_18": true, "airspeed_max_28": true, "ptch_trim_deg_2p49": true, "kff_thr2ptch_zero": true, "flight_options_zero": true, "fbwb_elev_rev_zero": true, "cruise_alt_floor_zero": true, "min_groundspeed_zero": true, "rc3_not_reversed": true, "rc2_not_reversed": true, "sim_wind_zero": true, "pids_unchanged": true, "tecs_at_firmware_defaults": true}
+ground settle: {'settled': True, 'elapsed_s': 1.0007071495056152}
+PHASE 2 (teleport+verify): True
+PHASE 3 (hold-to-trim): aborted = False reason = None
+command derivation: {"v_target_ms": 18.0, "rc3_pwm_us": 1258.3333333333333, "rc3_pwm_us_rounded": 1258, "predicted_target_airspeed_ms": 18.0, "error": null, "rc2_up_us": 1900.0, "rc2_down_us": 1100.0, "rc2_neutral_us": 1500.0, "formula": "navigation.cpp:187-189 inverted through RC_Channel.cpp:388-402"}
+SEGMENT A: baseline level cruise, 45.0s (rc2=1500, rc3=1258 -> target 18.000 m/s)
+SEGMENT B: +10.0 m step, up-stick rc2=1900, cap 20.0s, target alt 99.31 m
+SEGMENT B: hold new altitude, 35.0s
+SEGMENT C: -10.0 m, down-stick rc2=1100, cap 20.0s
+SEGMENT C: hold return altitude, 30.0s
+--------------------------------------------------------------------------
+A_hold airspeed mean/std      : 17.926 / 0.187 m/s (target 18.0)
+A_hold TECS target airspeed   : 17.921 m/s
+A_hold vertical speed (reg)   : +0.0010 m/s (FBWA residual was 0.078)
+A_hold altitude p2p           : 1.296 m
+A_hold throttle mean          : 0.4911 (measured trim* 0.4957)
+TECS authority |delta|        : 0.2935944444444466 (manual passthrough would be 0.1975)
+A_hold physical pitch         : +2.663 deg
+level/climb/descent throttle  : 0.4910944444444466 / 0.5398353293413165 / 0.4251169590643275
+level/climb/descent pitch deg : 2.663215997839875 / 6.683487519117054 / -1.2532699912939662
+altitude step                 : {'commanded_step_m': 10.0, 'alt_A_hold_mean_m': 89.16232444169194, 'alt_B_hold_mean_m': 99.40154435878577, 'alt_C_hold_mean_m': 89.08795433867591, 'achieved_climb_m': 10.239219917093834, 'achieved_descent_m': -10.313590020109856, 'climb_ramp_duration_s': 8.669656991958618, 'descent_ramp_duration_s': 8.845332860946655, 'climb_ramp_stopped_early': True, 'descent_ramp_stopped_early': True}
+elevator max |deg| (flight)   : 6.36798433335563
+VERDICT: TECS_CRUISE_SPEED_HOLD_PASS  failed_checks=[]
+--------------------------------------------------------------------------
+RESULT: FLIGHT_COMPLETED_NO_ABORT TECS_CRUISE_SPEED_HOLD_PASS -> /home/emirhan/Desktop/FalconV2/tests/gazebo/results/ardupilot_tecs_cruise_speed_hold_result.json
+TIMESERIES: /home/emirhan/Desktop/FalconV2/tests/gazebo/results/ardupilot_tecs_cruise_speed_hold_timeseries.json

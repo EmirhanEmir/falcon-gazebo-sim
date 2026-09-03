@@ -1,0 +1,85 @@
+# FALCON V2 - controls-integration ground airspeed/wind transport probe (raw capture)
+# Stage SITL_ATMOSPHERE_AND_PITOT_INTEGRATION_VALIDATION, 2026-09-02.
+# Aircraft parked (groundspeed == 0). SIM_ARSPD_RND set to 0 over MAVLink at test time only.
+# Probe script: scratch (not a repo test) - the authoritative acceptance matrix is gazebo-testing's.
+
+== run A : firmware-default SIM_ARSPD_RND = 2.0 ==
+heartbeat sysid 1
+settling 30 s (zero wind, baro/airspeed ground calibration) ...
+GPS_GLOBAL_ORIGIN: {'lat': -35.3632621, 'lon': 149.1652374, 'alt_m': 0.0}
+ZERO WIND  airspeed= (0.579, 336)  groundspeed= (0.0, 336)
+           gpi_alt_m= (0.0, 336)  gpi_relalt_m= (-0.0414, 336)  vfr_alt= (0.0, 336)
+           press_abs_hPa= (1013.2497, 336)  temp_C= (30.235, 336)
+WIND x=+5.0 m/s  airspeed= (4.3408, 120)  groundspeed= (0.0, 120)
+WIND x=-5.0 m/s  airspeed= (4.8304, 120)  groundspeed= (0.0, 120)
+WIND back to 0    airspeed= (1.112, 120)  groundspeed= (0.0, 120)
+
+== run B : SIM_ARSPD_RND = 0 (deterministic) ==
+heartbeat sysid 1
+waiting 20 s for boot/param load ...
+SIM_ARSPD_RND before: 2.0  SIM_ARSPD_RATIO: 1.9900000095367432  ARSPD_RATIO: 2.0
+SIM_ARSPD_RND after : 0.0
+re-zeroing pitot offset (ARSPD_OFFSET) with noise off ...
+GPS_GLOBAL_ORIGIN: {'lat': -35.3632621, 'lon': 149.1652374, 'alt_m': 0.0}
+ZERO WIND : ap_airspeed=0.0238 gz_pitot=0.0 groundspeed=0.0 alt_amsl=0.0 press_hPa=1013.251
+WIND x=  +5.0 : ap_airspeed=4.7105 gz_pitot=5.0 groundspeed=0.0
+WIND x=  -5.0 : ap_airspeed=5.0 gz_pitot=5.0 groundspeed=0.0
+WIND x=  +0.0 : ap_airspeed=0.2895 gz_pitot=0.0 groundspeed=0.0
+WIND x= +12.0 : ap_airspeed=11.2599 gz_pitot=12.0 groundspeed=0.0271
+
+== ArduPlane boot banner + JSON key list (run B) ==
+Setting SIM_SPEEDUP=1.000000
+Starting SITL: JSON
+JSON control interface set to 127.0.0.1:9002
+Starting sketch 'ArduPlane'
+Starting SITL input
+Using Irlock at port : 9005
+Using \clock topic for DDS timing: disabled
+bind port 5760 for SERIAL0
+SERIAL0 on TCP port 5760
+Waiting for connection ....
+Connection on serial port 5760
+Loaded defaults from /home/emirhan/Desktop/FalconV2/config/ardupilot/falcon_v2_sitl.parm
+Home: -35.363262 149.165237 alt=0.000000m hdg=0.000000
+
+JSON received:
+	timestamp
+	imu: gyro
+	imu: accel_body
+	position
+	quaternion
+	velocity
+	velocity_wind
+	airspeed
+	no_time_sync
+	no_lockstep
+
+Forcing use_time_sync=0
+bind port 5762 for SERIAL1
+SERIAL1 on TCP port 5762
+bind port 5763 for SERIAL2
+
+== SIM_OPOS 0,0,0 PANIC reproduction (why lat/lng 0,0 cannot be used) ==
+Waiting for connection ....
+Connection on serial port 5760
+Loaded defaults from /home/emirhan/Desktop/FalconV2/config/ardupilot/falcon_v2_sitl.parm
+Home: 0.000000 0.000000 alt=0.000000m hdg=0.000000
+
+JSON received:
+	timestamp
+	imu: gyro
+	imu: accel_body
+	position
+	quaternion
+	velocity
+	velocity_wind
+	airspeed
+	no_time_sync
+	no_lockstep
+
+Forcing use_time_sync=0
+bind port 5762 for SERIAL1
+SERIAL1 on TCP port 5762
+bind port 5763 for SERIAL2
+SERIAL2 on TCP port 5763
+validate_structures:538: Validating structures

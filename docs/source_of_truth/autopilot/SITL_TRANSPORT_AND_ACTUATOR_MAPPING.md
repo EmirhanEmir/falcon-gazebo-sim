@@ -195,6 +195,23 @@ applies to every world this model is loaded into, not a one-off.
 
 ## 5. GPS / baro / mag / airspeed architecture finding
 
+> **SUPERSEDED IN PART — 2026-09-02, stage
+> `SITL_ATMOSPHERE_AND_PITOT_INTEGRATION_VALIDATION` (`controls-integration`).**
+> Everything below remains an accurate record of the **stock upstream**
+> `ardupilot_gazebo` bridge and of how this project ran up to and including the
+> TECS cruise-hold baseline. It is **no longer true for airspeed and wind.**
+> `ArduPilotPlugin.cc` has since been patched (patch tracked at
+> `docs/source_of_truth/autopilot/ardupilot_gazebo_airspeed_wind_bridge.patch`)
+> to emit the two OFFICIAL SIM_JSON keys `"airspeed"` (EAS, m/s) and
+> `"velocity_wind"` (NED airmass velocity, m/s), wired in `model/model.sdf` to
+> `FalconV2Pitot` and `FalconV2Wind` respectively. The `AIRSPEED` bit is now
+> set, so the `wind_ef.zero()` `else` branch described below is **no longer
+> taken**, and ArduPlane's airspeed is the pitot's wind-relative airspeed, not
+> ground speed. **GPS, barometer and magnetometer are still 100 % ArduPilot-side
+> synthesis** — that part of this section stands unchanged. Full record and
+> live before/after evidence:
+> `docs/source_of_truth/autopilot/SITL_ATMOSPHERE_AND_AIRSPEED.md`.
+
 Investigated per the task's explicit instruction, on both sides of the
 bridge:
 
@@ -556,13 +573,14 @@ arguments are required** for a same-host launch.
   figure / measured linkage ratio — flagged for `validation` to weigh,
   same as every other `V1_PROVISIONAL`/`ASSUMPTION` value in this
   project.
-- Wind is not communicated into SITL's airspeed synthesis by this bridge
-  version at all (§5) — out of scope this stage (task explicitly limited
-  this pass to transport + command-mapping), flagged for whoever later
-  needs wind-in-the-loop SITL behavior (would require either an
-  `<anemometer>` wiring into `AP_WindVane` — a different subsystem than
-  `AP_Airspeed` — or an upstream `ardupilot_gazebo`/ArduPilot-side change
-  neither of which exists today).
+- ~~Wind is not communicated into SITL's airspeed synthesis by this bridge
+  version at all (§5)~~ — **CLOSED 2026-09-02**, stage
+  `SITL_ATMOSPHERE_AND_PITOT_INTEGRATION_VALIDATION`. Resolved by the third
+  option this bullet did not consider: `ardupilot_gazebo`'s
+  `ArduPilotPlugin.cc` now emits the official SIM_JSON `"airspeed"` and
+  `"velocity_wind"` keys (no ArduPilot-side change, no protocol extension,
+  no `AP_WindVane` conflation). See
+  `docs/source_of_truth/autopilot/SITL_ATMOSPHERE_AND_AIRSPEED.md`.
 
 ---
 

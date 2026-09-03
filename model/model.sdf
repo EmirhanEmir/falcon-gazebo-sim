@@ -1902,12 +1902,73 @@
            "base_link::imu_sensor_ardupilot" (used below) and the bare
            "imu_sensor_ardupilot" both resolved with no error. This is the
            ONLY sensor genuinely in-the-loop through this bridge -
-           GPS/baro/magnetometer/airspeed are NOT read from any of this
+           GPS/baro/magnetometer are NOT read from any of this
            project's native/custom Gazebo sensors through this plugin; see
            the design doc's GPS/baro/mag/airspeed architecture finding
            (this is standard ArduPilot JSON/FDM-backend behavior, not a
-           defect introduced by this project). -->
+           defect introduced by this project).
+           AIRSPEED CORRECTION (2026-09-02, stage SITL_ATMOSPHERE_AND_
+           PITOT_INTEGRATION_VALIDATION): the sentence above USED to include
+           "airspeed". It no longer does - FalconV2Pitot IS now in the loop
+           through the <airspeed_topic> element added immediately below, so
+           the IMU is no longer the only in-the-loop sensor. -->
       <imuName>base_link::imu_sensor_ardupilot</imuName>
+
+      <!-- ============================================================
+           AIRSPEED / WIND BRIDGE INTO ArduPlane SITL
+           Author (this addition): controls-integration specialist agent,
+           2026-09-02, stage SITL_ATMOSPHERE_AND_PITOT_INTEGRATION_
+           VALIDATION. Closes validation MAJOR-2
+           (docs/validation/2026-09-02_ardupilot_tecs_and_cruise_speed_
+           hold_validation.md sec 2): before this stage NOTHING consumed
+           FalconV2Pitot's output, so ArduPlane's airspeed was derived from
+           GROUND velocity and SITL/SIM_JSON.cpp:445 executed
+           `wind_ef.zero()` on EVERY frame.
+
+           These two elements are a FALCON V2 ADDITION to the upstream
+           ardupilot_gazebo ArduPilotPlugin (source change recorded in
+           docs/source_of_truth/autopilot/
+           ardupilot_gazebo_airspeed_wind_bridge.patch). They populate two
+           keys that are already part of the OFFICIAL ArduPilot SIM_JSON
+           FDM protocol - no protocol extension is invented:
+             "airspeed"      SIM_JSON.h:139 keytable / :167 DataKey::AIRSPEED
+             "velocity_wind" SIM_JSON.h:136 keytable / :165 DataKey::WIND_VEL
+
+           UNITS/SEMANTICS - airspeed_topic: ArduPilot consumes the
+           "airspeed" key as EQUIVALENT airspeed (EAS), NOT true airspeed:
+           SIM_JSON.cpp:439-440 assigns it to `airspeed`/`airspeed_pitot`,
+           which SIM_Aircraft.cpp:1411 otherwise fills as
+           `velocity_air_ef.length()/eas2tas`, and which reaches the sensor
+           model via SITL_State.cpp:112 ->
+           sitl_airspeed.cpp:30 `_update_airspeed(float eas)`.
+           FalconV2Pitot publishes |V_rel| computed against the SAME fixed
+           rho = 1.225 kg/m^3 (ISA sea level) that
+           docs/source_of_truth/aerodynamics/aero_v1_config.yaml
+           environment.air_density_rho_kg_m3 uses for every aerodynamic
+           force in this simulation. Under that project-wide constant-
+           density assumption EAS = TAS*sqrt(rho/rho_SSL) = TAS exactly, so
+           the pitot's scalar output IS the correct EAS to publish here.
+           This equality is a CONSEQUENCE of the documented constant-density
+           assumption, not an independent claim - see
+           docs/source_of_truth/autopilot/SITL_ATMOSPHERE_AND_AIRSPEED.md.
+
+           UNITS/SEMANTICS - wind_topic: gz.msgs.Vector3d, GAZEBO WORLD
+           frame, m/s, VELOCITY OF THE AIR MASS (WIND.md sec 2 convention -
+           the exact same topic and exact same convention that
+           AerodynamicsSystem.cc, PropulsionSystem.cc and PitotSystem.cc
+           already consume; NO new wind source and NO second wind-
+           consumption path is created). The plugin rotates it into
+           ArduPilot's NED world frame using the SAME <gazeboXYZToNED>
+           transform already applied to the vehicle velocity - no second
+           frame convention is introduced. ArduPilot's `wind_ef` uses the
+           identical airmass-velocity sign convention
+           (SIM_Aircraft.cpp:1068 velocity_air_ef = velocity_ef - wind_ef).
+
+           FAILSAFE: hold-last-valid; non-finite values are rejected; before
+           the first message on either topic the FDM packet is byte-
+           identical to upstream ardupilot_gazebo. ============ -->
+      <airspeed_topic>/model/falcon_v2/sensors/pitot/airspeed_mps</airspeed_topic>
+      <wind_topic>/model/falcon_v2/wind</wind_topic>
 
       <!-- ============================================================
            SERVO/MOTOR COMMAND MAPPING - 7 COMMAND-type channels (2

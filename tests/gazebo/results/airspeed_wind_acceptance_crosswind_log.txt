@@ -1,0 +1,13 @@
+pitot msgs: 5  wind msgs: 544
+param preconditions: {"arspd_use_1_tecs_uses_airspeed_path": true, "arspd_type_100_sitl_backend": true, "airspeed_min_16": true, "airspeed_cruise_18": true, "airspeed_max_28": true, "ptch_trim_deg_2p49": true, "kff_thr2ptch_zero": true, "flight_options_zero": true, "fbwb_elev_rev_zero": true, "cruise_alt_floor_zero": true, "min_groundspeed_zero": true, "rc3_not_reversed": true, "rc2_not_reversed": true, "sim_wind_zero": true, "sim_opos_alt_zero_atmosphere_datum": true, "pids_unchanged": true, "tecs_at_firmware_defaults": true}
+SIM_ARSPD_RND: {'before': 2.0, 'set_to': 0.0, 'readback': 0.0, 'rationale': 'firmware default 2.0 is rectified by sqrt(|ratio*(q+noise)|) (sitl_airspeed.cpp:37-39) into a positive airspeed bias; set to 0 at TEST TIME ONLY over MAVLink. config/ardupilot/falcon_v2_sitl.parm is NOT modified - that would perturb the validated TECS baseline.', 'applied': True}
+command derivation: {"CRUISE": {"nominal_ms": 18.0, "rc3_pwm_us": 1258, "control_in_int16": 16, "achieved_demand_ms": 17.92, "quantisation_error_ms": -0.0799999999999983}}
+SEGMENT P0_zero_wind_ref_cruise: 40s  rc3=1258  wind=(0.0, 0.0, 0.0)
+SEGMENT P2_wind_on_cruise: 55s  rc3=1258  wind=(0.0, 5.0, 0.0)
+------------------------------------------------------------------------------
+CASE crosswind   wind(world ENU) = (0.0, 5.0, 0.0)
+P0_zero_wind_ref_cruise    pitot=17.924  vfr_as=17.929  gs(gz)=17.923  gsX(gz)=17.920  vfr_gs=17.922  thr=0.4847  alt=89.15
+P2_wind_on_cruise          pitot=17.922  vfr_as=17.919  gs(gz)=17.392  gsX(gz)=17.380  vfr_gs=17.392  thr=0.4866  alt=89.15
+VERDICT: AIRSPEED_WIND_ACCEPTANCE_PASS  failed_checks=[]
+------------------------------------------------------------------------------
+RESULT: FLIGHT_COMPLETED_NO_ABORT AIRSPEED_WIND_ACCEPTANCE_PASS -> /home/emirhan/Desktop/FalconV2/tests/gazebo/results/airspeed_wind_acceptance_crosswind_result.json

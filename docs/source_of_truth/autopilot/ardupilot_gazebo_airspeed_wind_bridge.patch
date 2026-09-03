@@ -1,0 +1,186 @@
+diff --git a/src/ArduPilotPlugin.cc b/src/ArduPilotPlugin.cc
+index 8309c37..e007535 100755
+--- a/src/ArduPilotPlugin.cc
++++ b/src/ArduPilotPlugin.cc
+@@ -19,11 +19,14 @@
+ #include <rapidjson/stringbuffer.h>
+ #include <rapidjson/writer.h>
+ 
++#include <gz/msgs/double.pb.h>
+ #include <gz/msgs/imu.pb.h>
+ #include <gz/msgs/laserscan.pb.h>
++#include <gz/msgs/vector3d.pb.h>
+ 
+ #include <algorithm>
+ #include <chrono>
++#include <cmath>
+ #include <functional>
+ #include <memory>
+ #include <mutex>
+@@ -333,6 +336,92 @@ class gz::sim::systems::ArduPilotPluginPrivate
+     anemometerMsg = _msg;
+   }
+ 
++  // ---------------------------------------------------------------------
++  // FALCON V2 ADDITION (controls-integration, 2026-09-02, stage
++  // SITL_ATMOSPHERE_AND_PITOT_INTEGRATION_VALIDATION).
++  //
++  // Optional airspeed / wind bridge. Both are OFF unless the corresponding
++  // SDF element is present, in which case the emitted JSON is bit-identical
++  // to upstream. Rationale (verified at ArduPilot source, commit
++  // 409226a637):
++  //   * SIM_JSON.h:139/167  keytable entry {"", "airspeed", ..., DATA_FLOAT}
++  //     and DataKey::AIRSPEED (1ULL<<19) are part of the OFFICIAL JSON FDM
++  //     protocol - no protocol extension is invented here.
++  //   * SIM_JSON.cpp:437-453 - if the AIRSPEED bit is NOT set, SITL executes
++  //     `wind_ef.zero()` UNCONDITIONALLY and derives airspeed from
++  //     ground velocity via Aircraft::update_eas_airspeed()
++  //     (SIM_Aircraft.cpp:1409-1411). Emitting the airspeed key is therefore
++  //     the only way to get a wind-relative airspeed into ArduPilot over this
++  //     transport.
++  //   * UNITS/SEMANTICS: SITL treats the value as EQUIVALENT airspeed (EAS).
++  //     SIM_Aircraft.cpp:1411 `airspeed = velocity_air_ef.length()/eas2tas`
++  //     and SITL_State.cpp:112 -> sitl_airspeed.cpp:30
++  //     `_update_airspeed(float eas)`. The publisher on <airspeed_topic> is
++  //     responsible for supplying EAS in m/s.
++  //   * SIM_JSON.h:136/165 {"", "velocity_wind", ..., DATA_VECTOR3F} /
++  //     DataKey::WIND_VEL (1ULL<<16); SIM_JSON.cpp:456-458 sets
++  //     `wind_ef = state.velocity_wind` (earth-frame NED airmass VELOCITY,
++  //     per SIM_Aircraft.cpp:899-924 where velocity_air_ef = velocity_ef -
++  //     wind_ef). Supplied so that SITL's own wind truth is no longer a
++  //     silent zero.
++  // ---------------------------------------------------------------------
++
++  /// \brief Gazebo topic carrying scalar EQUIVALENT airspeed in m/s
++  /// (gz.msgs.Double). Empty => feature disabled (upstream behaviour).
++  public: std::string airspeedTopic;
++
++  /// \brief Mutex guarding airspeedMps / airspeedValid.
++  public: std::mutex airspeedMsgMutex;
++
++  /// \brief True once at least one airspeed message has been received.
++  public: bool airspeedValid{false};
++
++  /// \brief Most recently received scalar equivalent airspeed [m/s].
++  public: double airspeedMps{0.0};
++
++  /// \brief Callback for the scalar airspeed topic.
++  public: void AirspeedCb(const gz::msgs::Double &_msg)
++  {
++    if (!std::isfinite(_msg.data()))
++    {
++      // Reject non-finite values outright rather than poisoning the FDM
++      // packet (hold-last-valid failsafe, same convention as the FALCON V2
++      // wind plugin).
++      return;
++    }
++    std::lock_guard<std::mutex> lock(this->airspeedMsgMutex);
++    this->airspeedMps = _msg.data();
++    this->airspeedValid = true;
++  }
++
++  /// \brief Gazebo topic carrying the world-frame (Gazebo world frame, as
++  /// configured by <gazeboXYZToNED>) VELOCITY OF THE AIR MASS in m/s
++  /// (gz.msgs.Vector3d). Empty => feature disabled (upstream behaviour).
++  public: std::string windTopic;
++
++  /// \brief Mutex guarding windVelWldG / windValid.
++  public: std::mutex windMsgMutex;
++
++  /// \brief True once at least one wind message has been received.
++  public: bool windValid{false};
++
++  /// \brief Most recently received airmass velocity, Gazebo world frame.
++  public: gz::math::Vector3d windVelWldG{0.0, 0.0, 0.0};
++
++  /// \brief Callback for the world-frame wind velocity topic.
++  public: void WindCb(const gz::msgs::Vector3d &_msg)
++  {
++    if (!std::isfinite(_msg.x()) ||
++        !std::isfinite(_msg.y()) ||
++        !std::isfinite(_msg.z()))
++    {
++      return;
++    }
++    std::lock_guard<std::mutex> lock(this->windMsgMutex);
++    this->windVelWldG.Set(_msg.x(), _msg.y(), _msg.z());
++    this->windValid = true;
++  }
++
+   /// \brief Pointer to an GPS sensor [optional]
+   //  public: sensors::GpsSensorPtr gpsSensor;
+ 
+@@ -1008,6 +1097,34 @@ void gz::sim::systems::ArduPilotPlugin::LoadWindSensors(
+ {
+     this->dataPtr->anemometerName =
+         _sdf->Get("anemometer", static_cast<std::string>("")).first;
++
++    // FALCON V2 ADDITION - optional airspeed / wind topic bridge.
++    // See the ArduPilotPluginPrivate member declarations for the full
++    // source-cited rationale. Both default to "" (disabled) so that a model
++    // that does not declare them behaves exactly as upstream.
++    this->dataPtr->airspeedTopic =
++        _sdf->Get("airspeed_topic", static_cast<std::string>("")).first;
++    if (!this->dataPtr->airspeedTopic.empty())
++    {
++        this->dataPtr->node.Subscribe(this->dataPtr->airspeedTopic,
++            &gz::sim::systems::ArduPilotPluginPrivate::AirspeedCb,
++            this->dataPtr.get());
++        gzmsg << "[" << this->dataPtr->modelName << "] subscribing to "
++              << "airspeed (EAS, m/s) on ["
++              << this->dataPtr->airspeedTopic << "]\n";
++    }
++
++    this->dataPtr->windTopic =
++        _sdf->Get("wind_topic", static_cast<std::string>("")).first;
++    if (!this->dataPtr->windTopic.empty())
++    {
++        this->dataPtr->node.Subscribe(this->dataPtr->windTopic,
++            &gz::sim::systems::ArduPilotPluginPrivate::WindCb,
++            this->dataPtr.get());
++        gzmsg << "[" << this->dataPtr->modelName << "] subscribing to "
++              << "airmass velocity (world frame, m/s) on ["
++              << this->dataPtr->windTopic << "]\n";
++    }
+ }
+ 
+ /////////////////////////////////////////////////
+@@ -1962,6 +2079,38 @@ void gz::sim::systems::ArduPilotPlugin::CreateStateJSON(
+     writer.Double(velWldA.Z());
+     writer.EndArray();
+ 
++    // FALCON V2 ADDITION - official SIM_JSON "airspeed" (EAS, m/s) and
++    // "velocity_wind" (earth-frame NED airmass velocity, m/s) keys.
++    // Emitted only when the corresponding topic is configured AND at least
++    // one message has been received; before that the packet is upstream-
++    // identical and ArduPilot falls back to its ground-velocity default.
++    {
++        std::lock_guard<std::mutex> lock(this->dataPtr->airspeedMsgMutex);
++        if (this->dataPtr->airspeedValid)
++        {
++            writer.Key("airspeed");
++            writer.Double(this->dataPtr->airspeedMps);
++        }
++    }
++    {
++        std::lock_guard<std::mutex> lock(this->dataPtr->windMsgMutex);
++        if (this->dataPtr->windValid)
++        {
++            // Rotate the airmass velocity from the Gazebo world frame into
++            // the ArduPilot world (NED) frame using the SAME transform
++            // already applied to the vehicle velocity above (wldAToWldG) -
++            // no second/independent frame convention is introduced here.
++            const gz::math::Vector3d windWldA =
++                wldAToWldG.Rot() * this->dataPtr->windVelWldG;
++            writer.Key("velocity_wind");
++            writer.StartArray();
++            writer.Double(windWldA.X());
++            writer.Double(windWldA.Y());
++            writer.Double(windWldA.Z());
++            writer.EndArray();
++        }
++    }
++
+     // Range sensor
+     {
+       // Aquire lock on this->dataPtr->ranges

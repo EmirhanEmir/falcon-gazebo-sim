@@ -1,0 +1,3290 @@
+{
+  "stage": "SITL_ATMOSPHERE_AND_PITOT_INTEGRATION_VALIDATION__AIRSPEED_WIND_MATRIX",
+  "cases": {
+    "zero": {
+      "case": "zero",
+      "wind_world_enu_mps": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "verdict": "AIRSPEED_WIND_ACCEPTANCE_PASS",
+      "failed_checks": [],
+      "command_derivation": {
+        "commands": {
+          "CRUISE": {
+            "nominal_ms": 18.0,
+            "rc3_pwm_us": 1258,
+            "control_in_int16": 16,
+            "achieved_demand_ms": 17.92,
+            "quantisation_error_ms": -0.0799999999999983
+          },
+          "MG_LOW": {
+            "nominal_ms": 16.0,
+            "rc3_pwm_us": 1130,
+            "control_in_int16": 0,
+            "achieved_demand_ms": 16.0,
+            "quantisation_error_ms": 0.0
+          },
+          "MG_HIGH": {
+            "nominal_ms": 21.0,
+            "rc3_pwm_us": 1451,
+            "control_in_int16": 41,
+            "achieved_demand_ms": 20.92,
+            "quantisation_error_ms": -0.0799999999999983
+          }
+        },
+        "demand_grid_ms": 0.12,
+        "formula": "navigation.cpp:187-189 inverted through RC_Channel.cpp:388-402, with the RC_Channel.cpp:316 int16_t control_in truncation modelled"
+      },
+      "sim_arspd_rnd": {
+        "before": 2.0,
+        "set_to": 0.0,
+        "readback": 0.0,
+        "rationale": "firmware default 2.0 is rectified by sqrt(|ratio*(q+noise)|) (sitl_airspeed.cpp:37-39) into a positive airspeed bias; set to 0 at TEST TIME ONLY over MAVLink. config/ardupilot/falcon_v2_sitl.parm is NOT modified - that would perturb the validated TECS baseline.",
+        "applied": true,
+        "restored_to": 2.0
+      },
+      "param_preconditions_all_ok": true,
+      "live": {
+        "P0_zero_wind_ref_cruise": {
+          "label": "P0_zero_wind_ref_cruise",
+          "n_total": 762,
+          "n_window": 286,
+          "settle_s": 25.0,
+          "insufficient_samples": false,
+          "pitot_airspeed_mps": {
+            "n": 286,
+            "mean": 17.94149868640395,
+            "std": 0.17290403489818934,
+            "min": 17.669832336320002,
+            "max": 18.27395555656028
+          },
+          "vfr_airspeed_mps": {
+            "n": 286,
+            "mean": 17.930140401933578,
+            "std": 0.17007233971285046,
+            "min": 17.66062355041504,
+            "max": 18.24151039123535
+          },
+          "vfr_groundspeed_mps": {
+            "n": 286,
+            "mean": 17.938716188177363,
+            "std": 0.17354142295980401,
+            "min": 17.667070388793945,
+            "max": 18.276586532592773
+          },
+          "gz_groundspeed_mps": {
+            "n": 286,
+            "mean": 17.940134397611235,
+            "std": 0.17345416096391092,
+            "min": 17.66737128021643,
+            "max": 18.276884468656963
+          },
+          "gz_groundspeed_x_mps": {
+            "n": 286,
+            "mean": 17.93778449802897,
+            "std": 0.17329251208778934,
+            "min": 17.666917062019856,
+            "max": 18.27650694987152
+          },
+          "altitude_m": {
+            "n": 286,
+            "mean": 89.23367854406419,
+            "std": 0.2387937165821584,
+            "min": 88.77052755203157,
+            "max": 89.6168974463361
+          },
+          "throttle": {
+            "n": 286,
+            "mean": 0.48538461538461475,
+            "std": 0.009480877387714803,
+            "min": 0.47,
+            "max": 0.5
+          },
+          "pitch_phys_deg": {
+            "n": 286,
+            "mean": 2.7622705752937446,
+            "std": 0.7986909831095047,
+            "min": 1.3752946825148957,
+            "max": 4.091977430749092
+          },
+          "nav_aspd_error_cms": {
+            "n": 286,
+            "mean": -1.2867394027176438,
+            "std": 17.092089535522202,
+            "min": -32.13081359863281,
+            "max": 25.93364715576172
+          },
+          "vertical_speed_regression_ms": 0.006679918245270716,
+          "altitude_p2p_m": 0.8463698943045301,
+          "pitot_slope_per_s": -0.0068482987478177765,
+          "wind_world_applied": {
+            "x": {
+              "n": 286,
+              "mean": 0.0,
+              "std": 0.0,
+              "min": 0.0,
+              "max": 0.0
+            },
+            "y": {
+              "n": 286,
+              "mean": 0.0,
+              "std": 0.0,
+              "min": 0.0,
+              "max": 0.0
+            },
+            "z": {
+              "n": 286,
+              "mean": 0.0,
+              "std": 0.0,
+              "min": 0.0,
+              "max": 0.0
+            },
+            "expected": [
+              0.0,
+              0.0,
+              0.0
+            ]
+          },
+          "wind_matches_command": true,
+          "vfr_minus_pitot_ms": {
+            "n": 286,
+            "mean": -0.01135828447036343,
+            "std": 0.055867025119294055,
+            "min": -0.11321952407708125,
+            "max": 0.08736700301806621
+          },
+          "ap_wind_speed_ms": {
+            "n": 286,
+            "mean": 0.0,
+            "std": 0.0,
+            "min": 0.0,
+            "max": 0.0
+          },
+          "ap_wind_direction_deg": {
+            "n": 286,
+            "mean": -180.0,
+            "std": 0.0,
+            "min": -180.0,
+            "max": -180.0
+          },
+          "ap_airspeed_minus_gz_groundspeed_x_ms": {
+            "n": 286,
+            "mean": -0.007644096095394383,
+            "std": 0.0637510559766865,
+            "min": -0.12825238157726915,
+            "max": 0.11421357754582928
+          },
+          "nan_inf_count": 0,
+          "throttle_sat_high_longest_run_s": 0,
+          "throttle_sat_low_longest_run_s": 0,
+          "actuator_clamp": {
+            "target_clamp_active_samples": 0,
+            "effort_clamp_active_samples": 0
+          }
+        },
+        "P2_wind_on_cruise": {
+          "label": "P2_wind_on_cruise",
+          "n_total": 1048,
+          "n_window": 572,
+          "settle_s": 25.0,
+          "insufficient_samples": false,
+          "pitot_airspeed_mps": {
+            "n": 572,
+            "mean": 17.940603174599,
+            "std": 0.023435181634155585,
+            "min": 17.891674714864834,
+            "max": 17.994230486631356
+          },
+          "vfr_airspeed_mps": {
+            "n": 572,
+            "mean": 17.921153985537014,
+            "std": 0.023104308753933683,
+            "min": 17.873817443847656,
+            "max": 17.974369049072266
+          },
+          "vfr_groundspeed_mps": {
+            "n": 572,
+            "mean": 17.940500642869857,
+            "std": 0.023582295631827024,
+            "min": 17.891183853149414,
+            "max": 17.993715286254883
+          },
+          "gz_groundspeed_mps": {
+            "n": 572,
+            "mean": 17.94050536795869,
+            "std": 0.023555625259107836,
+            "min": 17.891169898487313,
+            "max": 17.992879961927915
+          },
+          "gz_groundspeed_x_mps": {
+            "n": 572,
+            "mean": 17.93308084651185,
+            "std": 0.02357412011939512,
+            "min": 17.886954776323737,
+            "max": 17.98909865711515
+          },
+          "altitude_m": {
+            "n": 572,
+            "mean": 89.22497088300526,
+            "std": 0.032763718926186985,
+            "min": 89.15682152829412,
+            "max": 89.29287452689647
+          },
+          "throttle": {
+            "n": 572,
+            "mean": 0.48760489510489863,
+            "std": 0.004267847407358119,
+            "min": 0.48,
+            "max": 0.49
+          },
+          "pitch_phys_deg": {
+            "n": 572,
+            "mean": 2.673474454651851,
+            "std": 0.11512779061630302,
+            "min": 2.4397767002323647,
+            "max": 2.9200440874172147
+          },
+          "nav_aspd_error_cms": {
+            "n": 572,
+            "mean": -0.13552879120086456,
+            "std": 2.3293677625253966,
+            "min": -5.439567565917969,
+            "max": 4.60357666015625
+          },
+          "vertical_speed_regression_ms": -0.0001839008441733949,
+          "altitude_p2p_m": 0.1360529986023522,
+          "pitot_slope_per_s": 7.792934012204926e-05,
+          "wind_world_applied": {
+            "x": {
+              "n": 572,
+              "mean": 0.0,
+              "std": 0.0,
+              "min": 0.0,
+              "max": 0.0
+            },
+            "y": {
+              "n": 572,
+              "mean": 0.0,
+              "std": 0.0,
+              "min": 0.0,
+              "max": 0.0
+            },
+            "z": {
+              "n": 572,
+              "mean": 0.0,
+              "std": 0.0,
+              "min": 0.0,
+              "max": 0.0
+            },
+            "expected": [
+              0.0,
+              0.0,
+              0.0
+            ]
+          },
+          "wind_matches_command": true,
+          "vfr_minus_pitot_ms": {
+            "n": 572,
+            "mean": -0.01944918906199789,
+            "std": 0.008432795283968553,
+            "min": -0.03658069521801366,
+            "max": -0.0011102864907392984
+          },
+          "ap_wind_speed_ms": {
+            "n": 572,
+            "mean": 0.0,
+            "std": 0.0,
+            "min": 0.0,
+            "max": 0.0
+          },
+          "ap_wind_direction_deg": {
+            "n": 572,
+            "mean": -180.0,
+            "std": 0.0,
+            "min": -180.0,
+            "max": -180.0
+          },
+          "ap_airspeed_minus_gz_groundspeed_x_ms": {
+            "n": 572,
+            "mean": -0.0119268609748276,
+            "std": 0.00972327665046398,
+            "min": -0.035735196603045694,
+            "max": 0.006554700137964886
+          },
+          "nan_inf_count": 0,
+          "throttle_sat_high_longest_run_s": 0,
+          "throttle_sat_low_longest_run_s": 0,
+          "actuator_clamp": {
+            "target_clamp_active_samples": 0,
+            "effort_clamp_active_samples": 0
+          }
+        },
+        "P1_MG_LOW": {
+          "label": "P1_MG_LOW",
+          "n_total": 1048,
+          "n_window": 571,
+          "settle_s": 25.0,
+          "insufficient_samples": false,
+          "pitot_airspeed_mps": {
+            "n": 571,
+            "mean": 16.029563385418765,
+            "std": 0.014886759861385861,
+            "min": 16.014762148940566,
+            "max": 16.085059406669842
+          },
+          "vfr_airspeed_mps": {
+            "n": 571,
+            "mean": 15.99719822344137,
+            "std": 0.015008007239263198,
+            "min": 15.983468055725098,
+            "max": 16.050996780395508
+          },
+          "vfr_groundspeed_mps": {
+            "n": 571,
+            "mean": 16.02952970514782,
+            "std": 0.014939448093668685,
+            "min": 16.014341354370117,
+            "max": 16.085599899291992
+          },
+          "gz_groundspeed_mps": {
+            "n": 571,
+            "mean": 16.02950833462626,
+            "std": 0.01490943075394545,
+            "min": 16.014343023391667,
+            "max": 16.085587503346154
+          },
+          "gz_groundspeed_x_mps": {
+            "n": 571,
+            "mean": 15.992781918277176,
+            "std": 0.019242394980293166,
+            "min": 15.97592002331602,
+            "max": 16.060589220296137
+          },
+          "altitude_m": {
+            "n": 571,
+            "mean": 89.13264962370971,
+            "std": 0.031166050952619897,
+            "min": 89.04186389747504,
+            "max": 89.17449776349031
+          },
+          "throttle": {
+            "n": 571,
+            "mean": 0.44996497373029304,
+            "std": 0.0005907925671955462,
+            "min": 0.44,
+            "max": 0.45
+          },
+          "pitch_phys_deg": {
+            "n": 571,
+            "mean": 4.6659046986198005,
+            "std": 0.05233681534473801,
+            "min": 4.49097010920976,
+            "max": 4.822892587233105
+          },
+          "nav_aspd_error_cms": {
+            "n": 571,
+            "mean": 0.2708112713334439,
+            "std": 1.5074394964402056,
+            "min": -5.105018615722656,
+            "max": 1.6608238220214844
+          },
+          "vertical_speed_regression_ms": 0.003106393432836642,
+          "altitude_p2p_m": 0.1326338660152686,
+          "pitot_slope_per_s": -0.0007616194929750927,
+          "wind_world_applied": {
+            "x": {
+              "n": 571,
+              "mean": 0.0,
+              "std": 0.0,
+              "min": 0.0,
+              "max": 0.0
+            },
+            "y": {
+              "n": 571,
+              "mean": 0.0,
+              "std": 0.0,
+              "min": 0.0,
+              "max": 0.0
+            },
+            "z": {
+              "n": 571,
+              "mean": 0.0,
+              "std": 0.0,
+              "min": 0.0,
+              "max": 0.0
+            },
+            "expected": [
+              0.0,
+              0.0,
+              0.0
+            ]
+          },
+          "wind_matches_command": true,
+          "vfr_minus_pitot_ms": {
+            "n": 571,
+            "mean": -0.032365161977393905,
+            "std": 0.00367796121049897,
+            "min": -0.045672106477432806,
+            "max": -0.017817052130649103
+          },
+          "ap_wind_speed_ms": {
+            "n": 571,
+            "mean": 0.0,
+            "std": 0.0,
+            "min": 0.0,
+            "max": 0.0
+          },
+          "ap_wind_direction_deg": {
+            "n": 571,
+            "mean": -180.0,
+            "std": 0.0,
+            "min": -180.0,
+            "max": -180.0
+          },
+          "ap_airspeed_minus_gz_groundspeed_x_ms": {
+            "n": 571,
+            "mean": 0.004416305164186362,
+            "std": 0.008054684923612974,
+            "min": -0.02323572184662126,
+            "max": 0.018665013915425632
+          },
+          "nan_inf_count": 0,
+          "throttle_sat_high_longest_run_s": 0,
+          "throttle_sat_low_longest_run_s": 0,
+          "actuator_clamp": {
+            "target_clamp_active_samples": 0,
+            "effort_clamp_active_samples": 0
+          }
+        },
+        "P1_MG_HIGH": {
+          "label": "P1_MG_HIGH",
+          "n_total": 1047,
+          "n_window": 570,
+          "settle_s": 25.0,
+          "insufficient_samples": false,
+          "pitot_airspeed_mps": {
+            "n": 570,
+            "mean": 20.917802493698023,
+            "std": 2.1349535275510427,
+            "min": 18.007234585469224,
+            "max": 24.422073612128887
+          },
+          "vfr_airspeed_mps": {
+            "n": 570,
+            "mean": 20.947351365340385,
+            "std": 2.0718315709833752,
+            "min": 18.0778751373291,
+            "max": 24.28874969482422
+          },
+          "vfr_groundspeed_mps": {
+            "n": 570,
+            "mean": 20.644853491532174,
+            "std": 2.1536099899892447,
+            "min": 17.920419692993164,
+            "max": 24.439300537109375
+          },
+          "gz_groundspeed_mps": {
+            "n": 570,
+            "mean": 20.91598475159727,
+            "std": 2.1493471509487936,
+            "min": 17.984419907265185,
+            "max": 24.452012780721443
+          },
+          "gz_groundspeed_x_mps": {
+            "n": 570,
+            "mean": 20.507986542454447,
+            "std": 2.1380599189836524,
+            "min": 17.819649863809868,
+            "max": 24.315455002930694
+          },
+          "altitude_m": {
+            "n": 570,
+            "mean": 89.01430479448445,
+            "std": 3.2184885336028493,
+            "min": 83.82120801516413,
+            "max": 93.73861162913178
+          },
+          "throttle": {
+            "n": 570,
+            "mean": 0.5301929824561402,
+            "std": 0.12050827133241114,
+            "min": 0.34,
+            "max": 0.71
+          },
+          "pitch_phys_deg": {
+            "n": 570,
+            "mean": 0.29633744800047196,
+            "std": 9.044226108995227,
+            "min": -13.274236155639723,
+            "max": 15.426742052113658
+          },
+          "nav_aspd_error_cms": {
+            "n": 570,
+            "mean": -3.0191132930287146,
+            "std": 207.4163642844192,
+            "min": -336.9178771972656,
+            "max": 284.2454833984375
+          },
+          "vertical_speed_regression_ms": 0.01576451787391947,
+          "altitude_p2p_m": 9.91740361396765,
+          "pitot_slope_per_s": -0.022608949985579427,
+          "wind_world_applied": {
+            "x": {
+              "n": 570,
+              "mean": 0.0,
+              "std": 0.0,
+              "min": 0.0,
+              "max": 0.0
+            },
+            "y": {
+              "n": 570,
+              "mean": 0.0,
+              "std": 0.0,
+              "min": 0.0,
+              "max": 0.0
+            },
+            "z": {
+              "n": 570,
+              "mean": 0.0,
+              "std": 0.0,
+              "min": 0.0,
+              "max": 0.0
+            },
+            "expected": [
+              0.0,
+              0.0,
+              0.0
+            ]
+          },
+          "wind_matches_command": true,
+          "vfr_minus_pitot_ms": {
+            "n": 570,
+            "mean": 0.029548871642371504,
+            "std": 0.7347439928843965,
+            "min": -1.3723563315961869,
+            "max": 1.400869036024293
+          },
+          "ap_wind_speed_ms": {
+            "n": 570,
+            "mean": 0.0,
+            "std": 0.0,
+            "min": 0.0,
+            "max": 0.0
+          },
+          "ap_wind_direction_deg": {
+            "n": 570,
+            "mean": -180.0,
+            "std": 0.0,
+            "min": -180.0,
+            "max": -180.0
+          },
+          "ap_airspeed_minus_gz_groundspeed_x_ms": {
+            "n": 570,
+            "mean": 0.4393648228859546,
+            "std": 0.8571787963660858,
+            "min": -0.9393813780149749,
+            "max": 2.1660442657507986
+          },
+          "nan_inf_count": 0,
+          "throttle_sat_high_longest_run_s": 0,
+          "throttle_sat_low_longest_run_s": 0,
+          "actuator_clamp": {
+            "target_clamp_active_samples": 0,
+            "effort_clamp_active_samples": 0
+          }
+        }
+      },
+      "windows": {
+        "P0_zero_wind_ref_cruise": {
+          "airspeed_osc_growth_ratio": 0.7321428747513868,
+          "airspeed_std_first_half": 0.19207709514956647,
+          "airspeed_std_second_half": 0.14062787661669926,
+          "pitot_minus_gz_predicted_airspeed_ms": {
+            "n": 286,
+            "mean": 0.0013642887927125132,
+            "std": 0.00961636400750076,
+            "min": -0.02365238145084092,
+            "max": 0.030687907067008524
+          },
+          "gz_predicted_airspeed_ms": {
+            "n": 286,
+            "mean": 17.940134397611235,
+            "std": 0.17375820004205486,
+            "min": 17.667371280216425,
+            "max": 18.276884468656963
+          },
+          "df_window_flight_s": [
+            28.304819107055664,
+            37.2951934337616
+          ],
+          "ARSP_Airspeed_ms": {
+            "n": 180,
+            "mean": 17.929636594984267,
+            "std": 0.16903564298540433,
+            "min": 17.64801597595215,
+            "max": 18.17251968383789
+          },
+          "ARSP_used_frac": 1.0,
+          "ARSP_healthy_frac": 1.0,
+          "TECS_sp_TAS_ms": {
+            "n": 180,
+            "mean": 17.99153603447808,
+            "std": 0.15621230232292116,
+            "min": 17.75165367126465,
+            "max": 18.225101470947266
+          },
+          "TECS_spdem_TAS_ms": {
+            "n": 180,
+            "mean": 17.997038459777833,
+            "std": 0.00022669264686507598,
+            "min": 17.996614456176758,
+            "max": 17.99746322631836
+          },
+          "TECS_th_demand": {
+            "n": 180,
+            "mean": 0.49285431653261186,
+            "std": 0.00821627452311857,
+            "min": 0.4788101613521576,
+            "max": 0.5044065117835999
+          },
+          "TECS_ph_demand_deg": {
+            "n": 180,
+            "mean": 0.006218417322250187,
+            "std": 0.01391834235951573,
+            "min": -0.01789107173681259,
+            "max": 0.025574110448360443
+          },
+          "GPS_Spd_ms": {
+            "n": 180,
+            "mean": 17.946800825330946,
+            "std": 0.16903376944716658,
+            "min": 17.66900062561035,
+            "max": 18.190000534057617
+          },
+          "EAS2TAS_TECSsp_over_ARSP": 1.0034523532680595,
+          "EAS2TAS_pointwise_mean": 1.0034638197291603,
+          "ARSP_minus_pitot_ms": {
+            "n": 180,
+            "mean": -0.021172380898980415,
+            "std": 0.009037280743350565,
+            "min": -0.05010442482806354,
+            "max": 0.0061268321821685845
+          }
+        },
+        "P2_wind_on_cruise": {
+          "airspeed_osc_growth_ratio": 0.5039546736949021,
+          "airspeed_std_first_half": 0.029537606238677946,
+          "airspeed_std_second_half": 0.01488561471374145,
+          "pitot_minus_gz_predicted_airspeed_ms": {
+            "n": 572,
+            "mean": 9.78066403325801e-05,
+            "std": 0.0014299175596886372,
+            "min": -0.004696255914605985,
+            "max": 0.005471646495315952
+          },
+          "gz_predicted_airspeed_ms": {
+            "n": 572,
+            "mean": 17.940505367958693,
+            "std": 0.023576242878161336,
+            "min": 17.891169898487313,
+            "max": 17.992879961927915
+          },
+          "df_window_flight_s": [
+            68.31203508377075,
+            92.2559278011322
+          ],
+          "ARSP_Airspeed_ms": {
+            "n": 479,
+            "mean": 17.92048602412787,
+            "std": 0.022309541922033924,
+            "min": 17.87929344177246,
+            "max": 17.964513778686523
+          },
+          "ARSP_used_frac": 1.0,
+          "ARSP_healthy_frac": 1.0,
+          "TECS_sp_TAS_ms": {
+            "n": 479,
+            "mean": 17.996870419177732,
+            "std": 0.020556493719305582,
+            "min": 17.954975128173828,
+            "max": 18.03818702697754
+          },
+          "TECS_spdem_TAS_ms": {
+            "n": 479,
+            "mean": 17.997068480808203,
+            "std": 0.00010692540793521432,
+            "min": 17.996858596801758,
+            "max": 17.99727439880371
+          },
+          "TECS_th_demand": {
+            "n": 479,
+            "mean": 0.49118417812538545,
+            "std": 0.0012598483667636178,
+            "min": 0.4881511628627777,
+            "max": 0.49393001198768616
+          },
+          "TECS_ph_demand_deg": {
+            "n": 479,
+            "mean": 0.004133178932701154,
+            "std": 0.0019065126736555686,
+            "min": 0.00029904479742981493,
+            "max": 0.007883298210799694
+          },
+          "GPS_Spd_ms": {
+            "n": 479,
+            "mean": 17.939938228662925,
+            "std": 0.022296536908994576,
+            "min": 17.89900016784668,
+            "max": 17.98400115966797
+          },
+          "EAS2TAS_TECSsp_over_ARSP": 1.004262406440708,
+          "EAS2TAS_pointwise_mean": 1.0042626345286056,
+          "ARSP_minus_pitot_ms": {
+            "n": 479,
+            "mean": -0.0200617735710581,
+            "std": 0.0018897668573202493,
+            "min": -0.025247571251117762,
+            "max": -0.014861375265887489
+          }
+        },
+        "P1_MG_LOW": {
+          "airspeed_osc_growth_ratio": 0.10343042563520827,
+          "airspeed_std_first_half": 0.020215481898480367,
+          "airspeed_std_second_half": 0.0020908958971806724,
+          "pitot_minus_gz_predicted_airspeed_ms": {
+            "n": 571,
+            "mean": 5.505079250137495e-05,
+            "std": 0.000621216735441706,
+            "min": -0.0021097100326912255,
+            "max": 0.003138007227956763
+          },
+          "gz_predicted_airspeed_ms": {
+            "n": 571,
+            "mean": 16.02950833462626,
+            "std": 0.014922503470839956,
+            "min": 16.014343023391667,
+            "max": 16.085587503346154
+          },
+          "df_window_flight_s": [
+            123.32610607147217,
+            147.2725055217743
+          ],
+          "ARSP_Airspeed_ms": {
+            "n": 479,
+            "mean": 15.992404195112575,
+            "std": 0.006867844811194896,
+            "min": 15.981926918029785,
+            "max": 16.014036178588867
+          },
+          "ARSP_used_frac": 1.0,
+          "ARSP_healthy_frac": 1.0,
+          "TECS_sp_TAS_ms": {
+            "n": 479,
+            "mean": 16.061211134048495,
+            "std": 0.0063173620247191685,
+            "min": 16.052234649658203,
+            "max": 16.0814151763916
+          },
+          "TECS_spdem_TAS_ms": {
+            "n": 479,
+            "mean": 16.068732112335013,
+            "std": 9.003122158787798e-05,
+            "min": 16.06856918334961,
+            "max": 16.068904876708984
+          },
+          "TECS_th_demand": {
+            "n": 479,
+            "mean": 0.45152747736843246,
+            "std": 0.00041872601539213653,
+            "min": 0.44952648878097534,
+            "max": 0.45230481028556824
+          },
+          "TECS_ph_demand_deg": {
+            "n": 479,
+            "mean": 0.0393657765675935,
+            "std": 0.0007852077201735397,
+            "min": 0.035818956792354584,
+            "max": 0.040950942784547806
+          },
+          "GPS_Spd_ms": {
+            "n": 479,
+            "mean": 16.024664606082414,
+            "std": 0.006936793624582619,
+            "min": 16.013999938964844,
+            "max": 16.046001434326172
+          },
+          "EAS2TAS_TECSsp_over_ARSP": 1.0043024762316193,
+          "EAS2TAS_pointwise_mean": 1.004302503828397,
+          "ARSP_minus_pitot_ms": {
+            "n": 479,
+            "mean": -0.03276541908720361,
+            "std": 0.0006474719175120878,
+            "min": -0.03511882282375467,
+            "max": -0.03035555228680309
+          }
+        },
+        "P1_MG_HIGH": {
+          "airspeed_osc_growth_ratio": 0.9281658744373894,
+          "airspeed_std_first_half": 2.2059747951644577,
+          "airspeed_std_second_half": 2.0475105247406598,
+          "pitot_minus_gz_predicted_airspeed_ms": {
+            "n": 570,
+            "mean": 0.0018177421007561359,
+            "std": 0.12205027384885093,
+            "min": -0.2983363966341521,
+            "max": 0.3834510399146289
+          },
+          "gz_predicted_airspeed_ms": {
+            "n": 570,
+            "mean": 20.91598475159727,
+            "std": 2.1512350275981755,
+            "min": 17.98441990726519,
+            "max": 24.45201278072145
+          },
+          "df_window_flight_s": [
+            178.35793685913086,
+            202.26432418823242
+          ],
+          "ARSP_Airspeed_ms": {
+            "n": 479,
+            "mean": 20.94615531316132,
+            "std": 2.1368131821890723,
+            "min": 17.987510681152344,
+            "max": 24.209779739379883
+          },
+          "ARSP_used_frac": 1.0,
+          "ARSP_healthy_frac": 1.0,
+          "TECS_sp_TAS_ms": {
+            "n": 479,
+            "mean": 21.035030217658502,
+            "std": 1.955338890780248,
+            "min": 18.211458206176758,
+            "max": 23.95574951171875
+          },
+          "TECS_spdem_TAS_ms": {
+            "n": 479,
+            "mean": 21.00969333688501,
+            "std": 0.0032297091838204123,
+            "min": 21.004688262939453,
+            "max": 21.01468276977539
+          },
+          "TECS_th_demand": {
+            "n": 479,
+            "mean": 0.5390367012058768,
+            "std": 0.12012990536557146,
+            "min": 0.359502375125885,
+            "max": 0.7153987288475037
+          },
+          "TECS_ph_demand_deg": {
+            "n": 479,
+            "mean": -0.04218419110412187,
+            "std": 0.17293222864252714,
+            "min": -0.289896696805954,
+            "max": 0.223924919962883
+          },
+          "GPS_Spd_ms": {
+            "n": 479,
+            "mean": 20.677134555665337,
+            "std": 2.139162465815567,
+            "min": 17.9320011138916,
+            "max": 24.168001174926758
+          },
+          "EAS2TAS_TECSsp_over_ARSP": 1.00424301754515,
+          "EAS2TAS_pointwise_mean": 1.0057324073130618,
+          "ARSP_minus_pitot_ms": {
+            "n": 479,
+            "mean": -0.003304639538699413,
+            "std": 0.17462104080859817,
+            "min": -0.35273414910317413,
+            "max": 0.3396543536494754
+          }
+        }
+      },
+      "dataflash": {
+        "file": "/home/emirhan/Desktop/FalconV2/tests/gazebo/results/airspeed_wind_acceptance_zero_dataflash/00000001.BIN",
+        "align_offset_s": 43.29066100000158,
+        "align_rms_ms": 0.20732597008168185,
+        "align_n": 3905,
+        "align_railed": false,
+        "align_ok": true,
+        "align_rms_max_ms": 0.5,
+        "fbwb_entry_dataflash_s": 43.290661,
+        "flight_t0_minus_fbwb_entry_s": 1.5774048733874224e-12,
+        "align_method": "minimise RMS(GPS.Spd vs Gazebo ground-truth groundspeed); NOT aligned on airspeed, so it cannot manufacture ARSP-vs-pitot agreement",
+        "guard_band_s": 3.0,
+        "orgn_alt_m": 0.0,
+        "baro_press_pa": 100371.6216025608,
+        "pos_alt_m": 79.69761398956977
+      }
+    },
+    "headwind": {
+      "case": "headwind",
+      "wind_world_enu_mps": [
+        -5.0,
+        0.0,
+        0.0
+      ],
+      "verdict": "AIRSPEED_WIND_ACCEPTANCE_PASS",
+      "failed_checks": [],
+      "command_derivation": {
+        "commands": {
+          "CRUISE": {
+            "nominal_ms": 18.0,
+            "rc3_pwm_us": 1258,
+            "control_in_int16": 16,
+            "achieved_demand_ms": 17.92,
+            "quantisation_error_ms": -0.0799999999999983
+          },
+          "MG_HIGH": {
+            "nominal_ms": 21.0,
+            "rc3_pwm_us": 1451,
+            "control_in_int16": 41,
+            "achieved_demand_ms": 20.92,
+            "quantisation_error_ms": -0.0799999999999983
+          }
+        },
+        "demand_grid_ms": 0.12,
+        "formula": "navigation.cpp:187-189 inverted through RC_Channel.cpp:388-402, with the RC_Channel.cpp:316 int16_t control_in truncation modelled"
+      },
+      "sim_arspd_rnd": {
+        "before": 2.0,
+        "set_to": 0.0,
+        "readback": 0.0,
+        "rationale": "firmware default 2.0 is rectified by sqrt(|ratio*(q+noise)|) (sitl_airspeed.cpp:37-39) into a positive airspeed bias; set to 0 at TEST TIME ONLY over MAVLink. config/ardupilot/falcon_v2_sitl.parm is NOT modified - that would perturb the validated TECS baseline.",
+        "applied": true,
+        "restored_to": 2.0
+      },
+      "param_preconditions_all_ok": true,
+      "live": {
+        "P0_zero_wind_ref_cruise": {
+          "label": "P0_zero_wind_ref_cruise",
+          "n_total": 763,
+          "n_window": 286,
+          "settle_s": 25.0,
+          "insufficient_samples": false,
+          "pitot_airspeed_mps": {
+            "n": 286,
+            "mean": 17.941135053535877,
+            "std": 0.20215741380288282,
+            "min": 17.62404757740272,
+            "max": 18.338056775521544
+          },
+          "vfr_airspeed_mps": {
+            "n": 286,
+            "mean": 17.927433013916016,
+            "std": 0.2010809036634721,
+            "min": 17.61159896850586,
+            "max": 18.29888343811035
+          },
+          "vfr_groundspeed_mps": {
+            "n": 286,
+            "mean": 17.937501513874615,
+            "std": 0.20307600611775314,
+            "min": 17.62076187133789,
+            "max": 18.3402042388916
+          },
+          "gz_groundspeed_mps": {
+            "n": 286,
+            "mean": 17.93966690808566,
+            "std": 0.20299758380048824,
+            "min": 17.62109541582951,
+            "max": 18.340193688561566
+          },
+          "gz_groundspeed_x_mps": {
+            "n": 286,
+            "mean": 17.93635877809107,
+            "std": 0.2026999721130558,
+            "min": 17.62044647135,
+            "max": 18.33910439291043
+          },
+          "altitude_m": {
+            "n": 286,
+            "mean": 89.14647790651391,
+            "std": 0.2772426459271642,
+            "min": 88.60924290118501,
+            "max": 89.58535151314922
+          },
+          "throttle": {
+            "n": 286,
+            "mean": 0.4848251748251741,
+            "std": 0.010699529226500434,
+            "min": 0.47,
+            "max": 0.5
+          },
+          "pitch_phys_deg": {
+            "n": 286,
+            "mean": 2.760733696649434,
+            "std": 0.9491803146443294,
+            "min": 1.1470600204596555,
+            "max": 4.338459040145576
+          },
+          "nav_aspd_error_cms": {
+            "n": 286,
+            "mean": -1.0792358771904365,
+            "std": 20.244506783506736,
+            "min": -37.87517547607422,
+            "max": 30.83648681640625
+          },
+          "vertical_speed_regression_ms": 0.006799502290278907,
+          "altitude_p2p_m": 0.9761086119642073,
+          "pitot_slope_per_s": -0.007035493971230069,
+          "wind_world_applied": {
+            "x": {
+              "n": 286,
+              "mean": 0.0,
+              "std": 0.0,
+              "min": 0.0,
+              "max": 0.0
+            },
+            "y": {
+              "n": 286,
+              "mean": 0.0,
+              "std": 0.0,
+              "min": 0.0,
+              "max": 0.0
+            },
+            "z": {
+              "n": 286,
+              "mean": 0.0,
+              "std": 0.0,
+              "min": 0.0,
+              "max": 0.0
+            },
+            "expected": [
+              0.0,
+              0.0,
+              0.0
+            ]
+          },
+          "wind_matches_command": true,
+          "vfr_minus_pitot_ms": {
+            "n": 286,
+            "mean": -0.013702039619860426,
+            "std": 0.07238616977867357,
+            "min": -0.16981072158013788,
+            "max": 0.13485212568659222
+          },
+          "ap_wind_speed_ms": {
+            "n": 286,
+            "mean": 0.0,
+            "std": 0.0,
+            "min": 0.0,
+            "max": 0.0
+          },
+          "ap_wind_direction_deg": {
+            "n": 286,
+            "mean": -180.0,
+            "std": 0.0,
+            "min": -180.0,
+            "max": -180.0
+          },
+          "ap_airspeed_minus_gz_groundspeed_x_ms": {
+            "n": 286,
+            "mean": -0.008925764175061343,
+            "std": 0.08249784280129899,
+            "min": -0.1681873759362169,
+            "max": 0.14682598307723183
+          },
+          "nan_inf_count": 0,
+          "throttle_sat_high_longest_run_s": 0,
+          "throttle_sat_low_longest_run_s": 0,
+          "actuator_clamp": {
+            "target_clamp_active_samples": 0,
+            "effort_clamp_active_samples": 0
+          }
+        },
+        "P2_wind_on_cruise": {
+          "label": "P2_wind_on_cruise",
+          "n_total": 1049,
+          "n_window": 572,
+          "settle_s": 25.0,
+          "insufficient_samples": false,
+          "pitot_airspeed_mps": {
+            "n": 572,
+            "mean": 17.940917588299634,
+            "std": 0.13491970639934905,
+            "min": 17.69708216417258,
+            "max": 18.24436018596866
+          },
+          "vfr_airspeed_mps": {
+            "n": 572,
+            "mean": 17.915721609875874,
+            "std": 0.1295833996687995,
+            "min": 17.683597564697266,
+            "max": 18.20795440673828
+          },
+          "vfr_groundspeed_mps": {
+            "n": 572,
+            "mean": 12.942624415551032,
+            "std": 0.1358793246999607,
+            "min": 12.695891380310059,
+            "max": 13.248823165893555
+          },
+          "gz_groundspeed_mps": {
+            "n": 572,
+            "mean": 12.944380253561002,
+            "std": 0.13595270950151483,
+            "min": 12.69615502560926,
+            "max": 13.249187909770068
+          },
+          "gz_groundspeed_x_mps": {
+            "n": 572,
+            "mean": 12.931842420861928,
+            "std": 0.13588351016653397,
+            "min": 12.69041351828104,
+            "max": 13.242480478143369
+          },
+          "altitude_m": {
+            "n": 572,
+            "mean": 89.09265851627269,
+            "std": 0.19367209333863616,
+            "min": 88.58588716121614,
+            "max": 89.3709668855937
+          },
+          "throttle": {
+            "n": 572,
+            "mean": 0.4859440559440574,
+            "std": 0.007685947784074972,
+            "min": 0.47,
+            "max": 0.5
+          },
+          "pitch_phys_deg": {
+            "n": 572,
+            "mean": 2.6431134817522977,
+            "std": 0.6188881149024551,
+            "min": 1.34264177235197,
+            "max": 3.9369943565395857
+          },
+          "nav_aspd_error_cms": {
+            "n": 572,
+            "mean": 0.3982917412177666,
+            "std": 12.955731086057277,
+            "min": -28.789901733398438,
+            "max": 23.627853393554688
+          },
+          "vertical_speed_regression_ms": 0.0058931862168360525,
+          "altitude_p2p_m": 0.7850797243775673,
+          "pitot_slope_per_s": -7.949154309837477e-05,
+          "wind_world_applied": {
+            "x": {
+              "n": 572,
+              "mean": -5.0,
+              "std": 0.0,
+              "min": -5.0,
+              "max": -5.0
+            },
+            "y": {
+              "n": 572,
+              "mean": 0.0,
+              "std": 0.0,
+              "min": 0.0,
+              "max": 0.0
+            },
+            "z": {
+              "n": 572,
+              "mean": 0.0,
+              "std": 0.0,
+              "min": 0.0,
+              "max": 0.0
+            },
+            "expected": [
+              -5.0,
+              0.0,
+              0.0
+            ]
+          },
+          "wind_matches_command": true,
+          "vfr_minus_pitot_ms": {
+            "n": 572,
+            "mean": -0.02519597842377723,
+            "std": 0.05181614548263329,
+            "min": -0.15286051015765878,
+            "max": 0.0960057283420035
+          },
+          "ap_wind_speed_ms": {
+            "n": 572,
+            "mean": 5.0,
+            "std": 0.0,
+            "min": 5.0,
+            "max": 5.0
+          },
+          "ap_wind_direction_deg": {
+            "n": 572,
+            "mean": 90.0,
+            "std": 0.0,
+            "min": 90.0,
+            "max": 90.0
+          },
+          "ap_airspeed_minus_gz_groundspeed_x_ms": {
+            "n": 572,
+            "mean": 4.983879189013946,
+            "std": 0.058611214882646735,
+            "min": 4.848434727076786,
+            "max": 5.107687268663261
+          },
+          "nan_inf_count": 0,
+          "throttle_sat_high_longest_run_s": 0,
+          "throttle_sat_low_longest_run_s": 0,
+          "actuator_clamp": {
+            "target_clamp_active_samples": 0,
+            "effort_clamp_active_samples": 0
+          }
+        },
+        "P1_MG_HIGH": {
+          "label": "P1_MG_HIGH",
+          "n_total": 1052,
+          "n_window": 574,
+          "settle_s": 25.0,
+          "insufficient_samples": false,
+          "pitot_airspeed_mps": {
+            "n": 574,
+            "mean": 20.940853772039624,
+            "std": 1.9720895173088924,
+            "min": 18.22110738765582,
+            "max": 23.864282035184544
+          },
+          "vfr_airspeed_mps": {
+            "n": 574,
+            "mean": 20.938453867045013,
+            "std": 1.8993729109946635,
+            "min": 18.292905807495117,
+            "max": 23.74410057067871
+          },
+          "vfr_groundspeed_mps": {
+            "n": 574,
+            "mean": 15.724732874162521,
+            "std": 1.9888514636307477,
+            "min": 13.163187026977539,
+            "max": 18.88594627380371
+          },
+          "gz_groundspeed_mps": {
+            "n": 574,
+            "mean": 16.028214976389044,
+            "std": 1.9828417198313117,
+            "min": 13.223870796308377,
+            "max": 18.905906902436076
+          },
+          "gz_groundspeed_x_mps": {
+            "n": 574,
+            "mean": 15.663664112924174,
+            "std": 1.9869338508866423,
+            "min": 13.122474291682988,
+            "max": 18.834792890830744
+          },
+          "altitude_m": {
+            "n": 574,
+            "mean": 88.93330558560558,
+            "std": 2.9534566644240763,
+            "min": 84.56299886763496,
+            "max": 92.9858825149789
+          },
+          "throttle": {
+            "n": 574,
+            "mean": 0.5399825783972123,
+            "std": 0.10669161514282133,
+            "min": 0.38,
+            "max": 0.7
+          },
+          "pitch_phys_deg": {
+            "n": 574,
+            "mean": 0.2888346639783711,
+            "std": 8.328475618406907,
+            "min": -11.626759061597049,
+            "max": 14.174107430585456
+          },
+          "nav_aspd_error_cms": {
+            "n": 574,
+            "mean": -1.80505833642408,
+            "std": 189.9394027841227,
+            "min": -282.4563903808594,
+            "max": 262.7271728515625
+          },
+          "vertical_speed_regression_ms": 0.018498423148662804,
+          "altitude_p2p_m": 8.422883647343937,
+          "pitot_slope_per_s": -0.02090620207923046,
+          "wind_world_applied": {
+            "x": {
+              "n": 574,
+              "mean": -5.0,
+              "std": 0.0,
+              "min": -5.0,
+              "max": -5.0
+            },
+            "y": {
+              "n": 574,
+              "mean": 0.0,
+              "std": 0.0,
+              "min": 0.0,
+              "max": 0.0
+            },
+            "z": {
+              "n": 574,
+              "mean": 0.0,
+              "std": 0.0,
+              "min": 0.0,
+              "max": 0.0
+            },
+            "expected": [
+              -5.0,
+              0.0,
+              0.0
+            ]
+          },
+          "wind_matches_command": true,
+          "vfr_minus_pitot_ms": {
+            "n": 574,
+            "mean": -0.002399904994589832,
+            "std": 0.6827890135838015,
+            "min": -1.2757929551338094,
+            "max": 1.2261866862764101
+          },
+          "ap_wind_speed_ms": {
+            "n": 574,
+            "mean": 5.0,
+            "std": 0.0,
+            "min": 5.0,
+            "max": 5.0
+          },
+          "ap_wind_direction_deg": {
+            "n": 574,
+            "mean": 90.0,
+            "std": 0.0,
+            "min": 90.0,
+            "max": 90.0
+          },
+          "ap_airspeed_minus_gz_groundspeed_x_ms": {
+            "n": 574,
+            "mean": 5.274789754120851,
+            "std": 0.783635669994787,
+            "min": 3.9431744065588497,
+            "max": 6.820999538958528
+          },
+          "nan_inf_count": 0,
+          "throttle_sat_high_longest_run_s": 0,
+          "throttle_sat_low_longest_run_s": 0,
+          "actuator_clamp": {
+            "target_clamp_active_samples": 0,
+            "effort_clamp_active_samples": 0
+          }
+        }
+      },
+      "windows": {
+        "P0_zero_wind_ref_cruise": {
+          "airspeed_osc_growth_ratio": 0.7580963089617628,
+          "airspeed_std_first_half": 0.22302359647989295,
+          "airspeed_std_second_half": 0.16907336530278444,
+          "pitot_minus_gz_predicted_airspeed_ms": {
+            "n": 286,
+            "mean": 0.001468145450204701,
+            "std": 0.011916114596796088,
+            "min": -0.031281726301269686,
+            "max": 0.034008526528086946
+          },
+          "gz_predicted_airspeed_ms": {
+            "n": 286,
+            "mean": 17.939666908085666,
+            "std": 0.2033534080591921,
+            "min": 17.62109541582951,
+            "max": 18.340193688561566
+          },
+          "df_window_flight_s": [
+            28.33066463470459,
+            37.280524015426636
+          ],
+          "ARSP_Airspeed_ms": {
+            "n": 179,
+            "mean": 17.94389564897761,
+            "std": 0.19645162910062247,
+            "min": 17.606304168701172,
+            "max": 18.221914291381836
+          },
+          "ARSP_used_frac": 1.0,
+          "ARSP_healthy_frac": 1.0,
+          "TECS_sp_TAS_ms": {
+            "n": 179,
+            "mean": 18.001852621579303,
+            "std": 0.1833238674691094,
+            "min": 17.705909729003906,
+            "max": 18.268306732177734
+          },
+          "TECS_spdem_TAS_ms": {
+            "n": 179,
+            "mean": 17.996861186107445,
+            "std": 0.0002414331532168291,
+            "min": 17.996442794799805,
+            "max": 17.997364044189453
+          },
+          "TECS_th_demand": {
+            "n": 179,
+            "mean": 0.4937223156071242,
+            "std": 0.009666059471017681,
+            "min": 0.4768243134021759,
+            "max": 0.5071812272071838
+          },
+          "TECS_ph_demand_deg": {
+            "n": 179,
+            "mean": 0.0074886998489132285,
+            "std": 0.01592525767396007,
+            "min": -0.019117901101708412,
+            "max": 0.029797734692692757
+          },
+          "GPS_Spd_ms": {
+            "n": 179,
+            "mean": 17.964514727033052,
+            "std": 0.19704540387446887,
+            "min": 17.631999969482422,
+            "max": 18.2450008392334
+          },
+          "EAS2TAS_TECSsp_over_ARSP": 1.003229899110843,
+          "EAS2TAS_pointwise_mean": 1.003244837635796,
+          "ARSP_minus_pitot_ms": {
+            "n": 179,
+            "mean": -0.024107606960589688,
+            "std": 0.011310216208490678,
+            "min": -0.056991587578266945,
+            "max": 0.00954176687060837
+          }
+        },
+        "P2_wind_on_cruise": {
+          "airspeed_osc_growth_ratio": 0.5355627281758888,
+          "airspeed_std_first_half": 0.16847073550395048,
+          "airspeed_std_second_half": 0.09022664672429428,
+          "pitot_minus_gz_predicted_airspeed_ms": {
+            "n": 572,
+            "mean": 3.1155554658898335e-05,
+            "std": 0.008187794959689477,
+            "min": -0.024801310309165103,
+            "max": 0.02663486859013986
+          },
+          "gz_predicted_airspeed_ms": {
+            "n": 572,
+            "mean": 17.940886432744986,
+            "std": 0.13606568587893142,
+            "min": 17.69454505397943,
+            "max": 18.24735008295262
+          },
+          "df_window_flight_s": [
+            68.33018970489502,
+            92.30068731307983
+          ],
+          "ARSP_Airspeed_ms": {
+            "n": 480,
+            "mean": 17.93110134601593,
+            "std": 0.13509878997658403,
+            "min": 17.683984756469727,
+            "max": 18.220745086669922
+          },
+          "ARSP_used_frac": 1.0,
+          "ARSP_healthy_frac": 1.0,
+          "TECS_sp_TAS_ms": {
+            "n": 480,
+            "mean": 18.008769075075787,
+            "std": 0.12312707936333436,
+            "min": 17.785287857055664,
+            "max": 18.268159866333008
+          },
+          "TECS_spdem_TAS_ms": {
+            "n": 480,
+            "mean": 17.99689005215963,
+            "std": 0.0002105921954871094,
+            "min": 17.996288299560547,
+            "max": 17.997270584106445
+          },
+          "TECS_th_demand": {
+            "n": 480,
+            "mean": 0.49152011970678966,
+            "std": 0.006847762347115572,
+            "min": 0.47769027948379517,
+            "max": 0.5073363780975342
+          },
+          "TECS_ph_demand_deg": {
+            "n": 480,
+            "mean": 0.00489300455240785,
+            "std": 0.01097383235395981,
+            "min": -0.015396223403513432,
+            "max": 0.029034001752734184
+          },
+          "GPS_Spd_ms": {
+            "n": 480,
+            "mean": 12.958161012331646,
+            "std": 0.1346605410748602,
+            "min": 12.712000846862793,
+            "max": 13.245000839233398
+          },
+          "EAS2TAS_TECSsp_over_ARSP": 1.0043314533536511,
+          "EAS2TAS_pointwise_mean": 1.0043398644631347,
+          "ARSP_minus_pitot_ms": {
+            "n": 480,
+            "mean": -0.025808913007367946,
+            "std": 0.009808939157439888,
+            "min": -0.05477838803628998,
+            "max": 0.0004173301022838416
+          }
+        },
+        "P1_MG_HIGH": {
+          "airspeed_osc_growth_ratio": 0.9714714922691826,
+          "airspeed_std_first_half": 1.9929322900852624,
+          "airspeed_std_second_half": 1.9360769058405694,
+          "pitot_minus_gz_predicted_airspeed_ms": {
+            "n": 574,
+            "mean": -0.00012932250610050438,
+            "std": 0.11028521349710436,
+            "min": -0.2777773728309896,
+            "max": 0.33928958191286185
+          },
+          "gz_predicted_airspeed_ms": {
+            "n": 574,
+            "mean": 20.940983094545714,
+            "std": 1.988490242111646,
+            "min": 18.200632673399568,
+            "max": 23.890529796229227
+          },
+          "df_window_flight_s": [
+            123.34520030021667,
+            147.2589259147644
+          ],
+          "ARSP_Airspeed_ms": {
+            "n": 479,
+            "mean": 20.90896303817972,
+            "std": 1.982344642324695,
+            "min": 18.19734764099121,
+            "max": 23.860902786254883
+          },
+          "ARSP_used_frac": 1.0,
+          "ARSP_healthy_frac": 1.0,
+          "TECS_sp_TAS_ms": {
+            "n": 479,
+            "mean": 21.00670900125842,
+            "std": 1.807531435068027,
+            "min": 18.470596313476562,
+            "max": 23.637174606323242
+          },
+          "TECS_spdem_TAS_ms": {
+            "n": 479,
+            "mean": 21.00959423439488,
+            "std": 0.002989391491177813,
+            "min": 21.005016326904297,
+            "max": 21.013864517211914
+          },
+          "TECS_th_demand": {
+            "n": 479,
+            "mean": 0.5458656051711399,
+            "std": 0.10655723483513463,
+            "min": 0.3857055604457855,
+            "max": 0.7017507553100586
+          },
+          "TECS_ph_demand_deg": {
+            "n": 479,
+            "mean": -0.04268654811221305,
+            "std": 0.16377951431533114,
+            "min": -0.2729465365409851,
+            "max": 0.20321017503738403
+          },
+          "GPS_Spd_ms": {
+            "n": 479,
+            "mean": 15.698645852552824,
+            "std": 1.9605587530276731,
+            "min": 13.1850004196167,
+            "max": 18.852001190185547
+          },
+          "EAS2TAS_TECSsp_over_ARSP": 1.0046748355191129,
+          "EAS2TAS_pointwise_mean": 1.0059880464753865,
+          "ARSP_minus_pitot_ms": {
+            "n": 479,
+            "mean": -0.03095908082620561,
+            "std": 0.24314307827119133,
+            "min": -0.6028458110120702,
+            "max": 0.5814193830455068
+          }
+        }
+      },
+      "dataflash": {
+        "file": "/home/emirhan/Desktop/FalconV2/tests/gazebo/results/airspeed_wind_acceptance_headwind_dataflash/00000001.BIN",
+        "align_offset_s": 54.259700000003136,
+        "align_rms_ms": 0.24859764958479696,
+        "align_n": 2864,
+        "align_railed": false,
+        "align_ok": true,
+        "align_rms_max_ms": 0.5,
+        "fbwb_entry_dataflash_s": 54.1997,
+        "flight_t0_minus_fbwb_entry_s": 0.06000000000313577,
+        "align_method": "minimise RMS(GPS.Spd vs Gazebo ground-truth groundspeed); NOT aligned on airspeed, so it cannot manufacture ARSP-vs-pitot agreement",
+        "guard_band_s": 3.0,
+        "orgn_alt_m": 0.0,
+        "baro_press_pa": 100371.96350023674,
+        "pos_alt_m": 79.68020634971131
+      }
+    },
+    "tailwind": {
+      "case": "tailwind",
+      "wind_world_enu_mps": [
+        5.0,
+        0.0,
+        0.0
+      ],
+      "verdict": "AIRSPEED_WIND_ACCEPTANCE_PASS",
+      "failed_checks": [],
+      "command_derivation": {
+        "commands": {
+          "CRUISE": {
+            "nominal_ms": 18.0,
+            "rc3_pwm_us": 1258,
+            "control_in_int16": 16,
+            "achieved_demand_ms": 17.92,
+            "quantisation_error_ms": -0.0799999999999983
+          },
+          "MG_LOW": {
+            "nominal_ms": 16.0,
+            "rc3_pwm_us": 1130,
+            "control_in_int16": 0,
+            "achieved_demand_ms": 16.0,
+            "quantisation_error_ms": 0.0
+          }
+        },
+        "demand_grid_ms": 0.12,
+        "formula": "navigation.cpp:187-189 inverted through RC_Channel.cpp:388-402, with the RC_Channel.cpp:316 int16_t control_in truncation modelled"
+      },
+      "sim_arspd_rnd": {
+        "before": 2.0,
+        "set_to": 0.0,
+        "readback": 0.0,
+        "rationale": "firmware default 2.0 is rectified by sqrt(|ratio*(q+noise)|) (sitl_airspeed.cpp:37-39) into a positive airspeed bias; set to 0 at TEST TIME ONLY over MAVLink. config/ardupilot/falcon_v2_sitl.parm is NOT modified - that would perturb the validated TECS baseline.",
+        "applied": true,
+        "restored_to": 2.0
+      },
+      "param_preconditions_all_ok": true,
+      "live": {
+        "P0_zero_wind_ref_cruise": {
+          "label": "P0_zero_wind_ref_cruise",
+          "n_total": 765,
+          "n_window": 289,
+          "settle_s": 25.0,
+          "insufficient_samples": false,
+          "pitot_airspeed_mps": {
+            "n": 289,
+            "mean": 17.928756384670173,
+            "std": 0.1756372256042029,
+            "min": 17.65289990721248,
+            "max": 18.270676260956435
+          },
+          "vfr_airspeed_mps": {
+            "n": 289,
+            "mean": 17.929965946501103,
+            "std": 0.1738628738782254,
+            "min": 17.654983520507812,
+            "max": 18.248626708984375
+          },
+          "vfr_groundspeed_mps": {
+            "n": 289,
+            "mean": 17.925869476423955,
+            "std": 0.17660438613525845,
+            "min": 17.64973258972168,
+            "max": 18.273609161376953
+          },
+          "gz_groundspeed_mps": {
+            "n": 289,
+            "mean": 17.927214731386183,
+            "std": 0.1764691864849939,
+            "min": 17.64997928754878,
+            "max": 18.27386149989979
+          },
+          "gz_groundspeed_x_mps": {
+            "n": 289,
+            "mean": 17.924479146908322,
+            "std": 0.17628467261862363,
+            "min": 17.649309039013144,
+            "max": 18.273330199274582
+          },
+          "altitude_m": {
+            "n": 289,
+            "mean": 89.19690300331925,
+            "std": 0.2424686544813339,
+            "min": 88.72587118957418,
+            "max": 89.58695702812827
+          },
+          "throttle": {
+            "n": 289,
+            "mean": 0.4847750865051895,
+            "std": 0.009738870965952847,
+            "min": 0.47,
+            "max": 0.5
+          },
+          "pitch_phys_deg": {
+            "n": 289,
+            "mean": 2.7755506828351377,
+            "std": 0.8200656359030126,
+            "min": 1.36036864923143,
+            "max": 4.130711061115048
+          },
+          "nav_aspd_error_cms": {
+            "n": 289,
+            "mean": -1.2921435610233294,
+            "std": 17.487046537255466,
+            "min": -32.85636901855469,
+            "max": 26.497840881347656
+          },
+          "vertical_speed_regression_ms": 0.006002187056878183,
+          "altitude_p2p_m": 0.8610858385540894,
+          "pitot_slope_per_s": -0.006611907523325965,
+          "wind_world_applied": {
+            "x": {
+              "n": 289,
+              "mean": 0.0,
+              "std": 0.0,
+              "min": 0.0,
+              "max": 0.0
+            },
+            "y": {
+              "n": 289,
+              "mean": 0.0,
+              "std": 0.0,
+              "min": 0.0,
+              "max": 0.0
+            },
+            "z": {
+              "n": 289,
+              "mean": 0.0,
+              "std": 0.0,
+              "min": 0.0,
+              "max": 0.0
+            },
+            "expected": [
+              0.0,
+              0.0,
+              0.0
+            ]
+          },
+          "wind_matches_command": true,
+          "vfr_minus_pitot_ms": {
+            "n": 289,
+            "mean": 0.001209561830925295,
+            "std": 0.0604435100953427,
+            "min": -0.10528350861234159,
+            "max": 0.10111517880933363
+          },
+          "ap_wind_speed_ms": {
+            "n": 289,
+            "mean": 0.0,
+            "std": 0.0,
+            "min": 0.0,
+            "max": 0.0
+          },
+          "ap_wind_direction_deg": {
+            "n": 289,
+            "mean": -180.0,
+            "std": 0.0,
+            "min": -180.0,
+            "max": -180.0
+          },
+          "ap_airspeed_minus_gz_groundspeed_x_ms": {
+            "n": 289,
+            "mean": 0.005486799592775433,
+            "std": 0.06919581347070762,
+            "min": -0.12167910595938736,
+            "max": 0.12918687434087417
+          },
+          "nan_inf_count": 0,
+          "throttle_sat_high_longest_run_s": 0,
+          "throttle_sat_low_longest_run_s": 0,
+          "actuator_clamp": {
+            "target_clamp_active_samples": 0,
+            "effort_clamp_active_samples": 0
+          }
+        },
+        "P2_wind_on_cruise": {
+          "label": "P2_wind_on_cruise",
+          "n_total": 1050,
+          "n_window": 572,
+          "settle_s": 25.0,
+          "insufficient_samples": false,
+          "pitot_airspeed_mps": {
+            "n": 572,
+            "mean": 17.936230244536727,
+            "std": 0.46536705368383424,
+            "min": 16.95264713382401,
+            "max": 19.00531597292181
+          },
+          "vfr_airspeed_mps": {
+            "n": 572,
+            "mean": 17.940658682709806,
+            "std": 0.46080702164401166,
+            "min": 16.982725143432617,
+            "max": 18.975215911865234
+          },
+          "vfr_groundspeed_mps": {
+            "n": 572,
+            "mean": 22.916803319971045,
+            "std": 0.4687565335505134,
+            "min": 21.938404083251953,
+            "max": 23.99260902404785
+          },
+          "gz_groundspeed_mps": {
+            "n": 572,
+            "mean": 22.928289982323815,
+            "std": 0.4681180893657895,
+            "min": 21.94081701387917,
+            "max": 24.001455752178263
+          },
+          "gz_groundspeed_x_mps": {
+            "n": 572,
+            "mean": 22.90583243755213,
+            "std": 0.4670641842796041,
+            "min": 21.932302363409114,
+            "max": 23.982208058083703
+          },
+          "altitude_m": {
+            "n": 572,
+            "mean": 89.1451198343676,
+            "std": 0.6444862010197944,
+            "min": 87.63837718727899,
+            "max": 90.46018587644733
+          },
+          "throttle": {
+            "n": 572,
+            "mean": 0.4843006993006997,
+            "std": 0.024338100713985972,
+            "min": 0.43,
+            "max": 0.53
+          },
+          "pitch_phys_deg": {
+            "n": 572,
+            "mean": 2.8289533677316836,
+            "std": 2.251873804063892,
+            "min": -1.8098109901690507,
+            "max": 7.660423579564711
+          },
+          "nav_aspd_error_cms": {
+            "n": 572,
+            "mean": -2.4114968893411275,
+            "std": 46.42140328681222,
+            "min": -105.53302764892578,
+            "max": 93.73149871826172
+          },
+          "vertical_speed_regression_ms": -0.0010531092850104267,
+          "altitude_p2p_m": 2.8218086891683356,
+          "pitot_slope_per_s": 0.0018012702702113728,
+          "wind_world_applied": {
+            "x": {
+              "n": 572,
+              "mean": 5.0,
+              "std": 0.0,
+              "min": 5.0,
+              "max": 5.0
+            },
+            "y": {
+              "n": 572,
+              "mean": 0.0,
+              "std": 0.0,
+              "min": 0.0,
+              "max": 0.0
+            },
+            "z": {
+              "n": 572,
+              "mean": 0.0,
+              "std": 0.0,
+              "min": 0.0,
+              "max": 0.0
+            },
+            "expected": [
+              5.0,
+              0.0,
+              0.0
+            ]
+          },
+          "wind_matches_command": true,
+          "vfr_minus_pitot_ms": {
+            "n": 572,
+            "mean": 0.004428438173103191,
+            "std": 0.17595416343230547,
+            "min": -0.415881100068475,
+            "max": 0.46666362097856506
+          },
+          "ap_wind_speed_ms": {
+            "n": 572,
+            "mean": 5.0,
+            "std": 0.0,
+            "min": 5.0,
+            "max": 5.0
+          },
+          "ap_wind_direction_deg": {
+            "n": 572,
+            "mean": -89.99999237060547,
+            "std": 0.0,
+            "min": -89.99999237060547,
+            "max": -89.99999237060547
+          },
+          "ap_airspeed_minus_gz_groundspeed_x_ms": {
+            "n": 572,
+            "mean": -4.96517375484232,
+            "std": 0.20171085329452582,
+            "min": -5.384803714213604,
+            "max": -4.469203042421679
+          },
+          "nan_inf_count": 0,
+          "throttle_sat_high_longest_run_s": 0,
+          "throttle_sat_low_longest_run_s": 0,
+          "actuator_clamp": {
+            "target_clamp_active_samples": 0,
+            "effort_clamp_active_samples": 0
+          }
+        },
+        "P1_MG_LOW": {
+          "label": "P1_MG_LOW",
+          "n_total": 1049,
+          "n_window": 573,
+          "settle_s": 25.0,
+          "insufficient_samples": false,
+          "pitot_airspeed_mps": {
+            "n": 573,
+            "mean": 16.015746536022625,
+            "std": 0.014955796263561803,
+            "min": 15.997561607812933,
+            "max": 16.071656174219882
+          },
+          "vfr_airspeed_mps": {
+            "n": 573,
+            "mean": 15.99604001968943,
+            "std": 0.015147330758324536,
+            "min": 15.978144645690918,
+            "max": 16.049951553344727
+          },
+          "vfr_groundspeed_mps": {
+            "n": 573,
+            "mean": 21.003208982590813,
+            "std": 0.016005066087926796,
+            "min": 20.986480712890625,
+            "max": 21.063461303710938
+          },
+          "gz_groundspeed_mps": {
+            "n": 573,
+            "mean": 21.003184271643075,
+            "std": 0.015969472708008102,
+            "min": 20.98647042842459,
+            "max": 21.063424819562197
+          },
+          "gz_groundspeed_x_mps": {
+            "n": 573,
+            "mean": 20.96311668316579,
+            "std": 0.020701773527562455,
+            "min": 20.9439551525685,
+            "max": 21.03510778492317
+          },
+          "altitude_m": {
+            "n": 573,
+            "mean": 89.07938581866927,
+            "std": 0.03475842769803655,
+            "min": 88.98209370288015,
+            "max": 89.12508773648133
+          },
+          "throttle": {
+            "n": 573,
+            "mean": 0.44991273996509124,
+            "std": 0.0009300462544135481,
+            "min": 0.44,
+            "max": 0.45
+          },
+          "pitch_phys_deg": {
+            "n": 573,
+            "mean": 4.684304926013862,
+            "std": 0.051375941541436626,
+            "min": 4.51380826121244,
+            "max": 4.836382728406608
+          },
+          "nav_aspd_error_cms": {
+            "n": 573,
+            "mean": 0.38700852718652856,
+            "std": 1.5221404453515142,
+            "min": -5.001640319824219,
+            "max": 2.1818161010742188
+          },
+          "vertical_speed_regression_ms": 0.0035936382425239073,
+          "altitude_p2p_m": 0.1429940336011839,
+          "pitot_slope_per_s": -0.0006903187183695472,
+          "wind_world_applied": {
+            "x": {
+              "n": 573,
+              "mean": 5.0,
+              "std": 0.0,
+              "min": 5.0,
+              "max": 5.0
+            },
+            "y": {
+              "n": 573,
+              "mean": 0.0,
+              "std": 0.0,
+              "min": 0.0,
+              "max": 0.0
+            },
+            "z": {
+              "n": 573,
+              "mean": 0.0,
+              "std": 0.0,
+              "min": 0.0,
+              "max": 0.0
+            },
+            "expected": [
+              5.0,
+              0.0,
+              0.0
+            ]
+          },
+          "wind_matches_command": true,
+          "vfr_minus_pitot_ms": {
+            "n": 573,
+            "mean": -0.019706516333201026,
+            "std": 0.003772107667471098,
+            "min": -0.03378554486749863,
+            "max": -0.005121698081090642
+          },
+          "ap_wind_speed_ms": {
+            "n": 573,
+            "mean": 5.0,
+            "std": 0.0,
+            "min": 5.0,
+            "max": 5.0
+          },
+          "ap_wind_direction_deg": {
+            "n": 573,
+            "mean": -89.99999237060547,
+            "std": 0.0,
+            "min": -89.99999237060547,
+            "max": -89.99999237060547
+          },
+          "ap_airspeed_minus_gz_groundspeed_x_ms": {
+            "n": 573,
+            "mean": -4.967076663476349,
+            "std": 0.010050648334387355,
+            "min": -4.99962841924566,
+            "max": -4.948775976237933
+          },
+          "nan_inf_count": 0,
+          "throttle_sat_high_longest_run_s": 0,
+          "throttle_sat_low_longest_run_s": 0,
+          "actuator_clamp": {
+            "target_clamp_active_samples": 0,
+            "effort_clamp_active_samples": 0
+          }
+        }
+      },
+      "windows": {
+        "P0_zero_wind_ref_cruise": {
+          "airspeed_osc_growth_ratio": 0.7417682735610007,
+          "airspeed_std_first_half": 0.19460307421512058,
+          "airspeed_std_second_half": 0.14435038639021328,
+          "pitot_minus_gz_predicted_airspeed_ms": {
+            "n": 289,
+            "mean": 0.0015416532839893783,
+            "std": 0.010118859060691375,
+            "min": -0.023568288922966474,
+            "max": 0.024101138110129483
+          },
+          "gz_predicted_airspeed_ms": {
+            "n": 289,
+            "mean": 17.927214731386183,
+            "std": 0.17677529111485127,
+            "min": 17.64997928754878,
+            "max": 18.27386149989979
+          },
+          "df_window_flight_s": [
+            28.313812732696533,
+            37.29881572723389
+          ],
+          "ARSP_Airspeed_ms": {
+            "n": 180,
+            "mean": 17.936740896436902,
+            "std": 0.17001828252702908,
+            "min": 17.645790100097656,
+            "max": 18.17821502685547
+          },
+          "ARSP_used_frac": 1.0,
+          "ARSP_healthy_frac": 1.0,
+          "TECS_sp_TAS_ms": {
+            "n": 180,
+            "mean": 17.997822125752766,
+            "std": 0.15846683924691662,
+            "min": 17.74672508239746,
+            "max": 18.229768753051758
+          },
+          "TECS_spdem_TAS_ms": {
+            "n": 180,
+            "mean": 17.996962218814424,
+            "std": 0.00022150360796857548,
+            "min": 17.996564865112305,
+            "max": 17.997398376464844
+          },
+          "TECS_th_demand": {
+            "n": 180,
+            "mean": 0.4928621298736996,
+            "std": 0.008305207690330196,
+            "min": 0.4783760905265808,
+            "max": 0.5045881271362305
+          },
+          "TECS_ph_demand_deg": {
+            "n": 180,
+            "mean": 0.00703063358766182,
+            "std": 0.01393506888933304,
+            "min": -0.015848157927393913,
+            "max": 0.02662767842411995
+          },
+          "GPS_Spd_ms": {
+            "n": 180,
+            "mean": 17.941034009721545,
+            "std": 0.170793869517414,
+            "min": 17.6510009765625,
+            "max": 18.185001373291016
+          },
+          "EAS2TAS_TECSsp_over_ARSP": 1.0034053694407772,
+          "EAS2TAS_pointwise_mean": 1.0034164350954893,
+          "ARSP_minus_pitot_ms": {
+            "n": 180,
+            "mean": -0.005194000407898376,
+            "std": 0.015371683657999255,
+            "min": -0.03558283812861518,
+            "max": 0.02163876470525139
+          }
+        },
+        "P2_wind_on_cruise": {
+          "airspeed_osc_growth_ratio": 0.5145907639195331,
+          "airspeed_std_first_half": 0.5838603760087646,
+          "airspeed_std_second_half": 0.300449156912696,
+          "pitot_minus_gz_predicted_airspeed_ms": {
+            "n": 572,
+            "mean": 0.0016836082186445958,
+            "std": 0.028222158576896764,
+            "min": -0.09048872777305661,
+            "max": 0.10362809128396222
+          },
+          "gz_predicted_airspeed_ms": {
+            "n": 572,
+            "mean": 17.934546636318075,
+            "std": 0.468735262729481,
+            "min": 16.943329885309986,
+            "max": 19.006519871952733
+          },
+          "df_window_flight_s": [
+            68.3550877571106,
+            92.28499937057495
+          ],
+          "ARSP_Airspeed_ms": {
+            "n": 479,
+            "mean": 17.92475231704234,
+            "std": 0.44159704541958744,
+            "min": 17.060937881469727,
+            "max": 18.799884796142578
+          },
+          "ARSP_used_frac": 1.0,
+          "ARSP_healthy_frac": 1.0,
+          "TECS_sp_TAS_ms": {
+            "n": 479,
+            "mean": 17.989279024287406,
+            "std": 0.40900582124214924,
+            "min": 17.11834716796875,
+            "max": 18.786848068237305
+          },
+          "TECS_spdem_TAS_ms": {
+            "n": 479,
+            "mean": 17.996960311443672,
+            "std": 0.0005336368738151844,
+            "min": 17.995784759521484,
+            "max": 17.997926712036133
+          },
+          "TECS_th_demand": {
+            "n": 479,
+            "mean": 0.49190989018482056,
+            "std": 0.023043368919228886,
+            "min": 0.44893598556518555,
+            "max": 0.5373260974884033
+          },
+          "TECS_ph_demand_deg": {
+            "n": 479,
+            "mean": 0.005425033587073477,
+            "std": 0.037292116741750314,
+            "min": -0.06342259794473648,
+            "max": 0.07979488372802734
+          },
+          "GPS_Spd_ms": {
+            "n": 479,
+            "mean": 22.914771368707644,
+            "std": 0.44234906039268795,
+            "min": 22.052001953125,
+            "max": 23.79800033569336
+          },
+          "EAS2TAS_TECSsp_over_ARSP": 1.003599866045776,
+          "EAS2TAS_pointwise_mean": 1.0036850731730464,
+          "ARSP_minus_pitot_ms": {
+            "n": 479,
+            "mean": -0.004589429318025161,
+            "std": 0.05100273434197543,
+            "min": -0.15053546471302326,
+            "max": 0.09554118126030176
+          }
+        },
+        "P1_MG_LOW": {
+          "airspeed_osc_growth_ratio": 0.16611517925712604,
+          "airspeed_std_first_half": 0.020383886673780115,
+          "airspeed_std_second_half": 0.0033860729887719267,
+          "pitot_minus_gz_predicted_airspeed_ms": {
+            "n": 573,
+            "mean": 4.7548851930257316e-05,
+            "std": 0.0006146349586854429,
+            "min": -0.0025560350071742732,
+            "max": 0.003381674601339313
+          },
+          "gz_predicted_airspeed_ms": {
+            "n": 573,
+            "mean": 16.0156989871707,
+            "std": 0.014969449143049188,
+            "min": 15.997268432740771,
+            "max": 16.072236536341702
+          },
+          "df_window_flight_s": [
+            123.32258439064026,
+            147.2603578567505
+          ],
+          "ARSP_Airspeed_ms": {
+            "n": 479,
+            "mean": 15.991155393437204,
+            "std": 0.007301119692533003,
+            "min": 15.977349281311035,
+            "max": 16.0111026763916
+          },
+          "ARSP_used_frac": 1.0,
+          "ARSP_healthy_frac": 1.0,
+          "TECS_sp_TAS_ms": {
+            "n": 479,
+            "mean": 16.059856032528806,
+            "std": 0.00675535846062024,
+            "min": 16.047971725463867,
+            "max": 16.078706741333008
+          },
+          "TECS_spdem_TAS_ms": {
+            "n": 479,
+            "mean": 16.06866783588067,
+            "std": 9.446294054069915e-05,
+            "min": 16.068471908569336,
+            "max": 16.068822860717773
+          },
+          "TECS_th_demand": {
+            "n": 479,
+            "mean": 0.45124576273442313,
+            "std": 0.0004053945250083195,
+            "min": 0.44971764087677,
+            "max": 0.45227158069610596
+          },
+          "TECS_ph_demand_deg": {
+            "n": 479,
+            "mean": 0.03979148190771861,
+            "std": 0.0007774553870815065,
+            "min": 0.036464761942625046,
+            "max": 0.04155848175287247
+          },
+          "GPS_Spd_ms": {
+            "n": 479,
+            "mean": 20.998264077809758,
+            "std": 0.0074862448462319885,
+            "min": 20.986000061035156,
+            "max": 21.0210018157959
+          },
+          "EAS2TAS_TECSsp_over_ARSP": 1.004296164811193,
+          "EAS2TAS_pointwise_mean": 1.00429619321021,
+          "ARSP_minus_pitot_ms": {
+            "n": 479,
+            "mean": -0.020108200224342405,
+            "std": 0.0008812986876037977,
+            "min": -0.024785629141714338,
+            "max": -0.016854476822640407
+          }
+        }
+      },
+      "dataflash": {
+        "file": "/home/emirhan/Desktop/FalconV2/tests/gazebo/results/airspeed_wind_acceptance_tailwind_dataflash/00000001.BIN",
+        "align_offset_s": 60.266735000003145,
+        "align_rms_ms": 0.07136772476222843,
+        "align_n": 2864,
+        "align_railed": false,
+        "align_ok": true,
+        "align_rms_max_ms": 0.5,
+        "fbwb_entry_dataflash_s": 60.166735,
+        "flight_t0_minus_fbwb_entry_s": 0.10000000000314202,
+        "align_method": "minimise RMS(GPS.Spd vs Gazebo ground-truth groundspeed); NOT aligned on airspeed, so it cannot manufacture ARSP-vs-pitot agreement",
+        "guard_band_s": 3.0,
+        "orgn_alt_m": 0.0,
+        "baro_press_pa": 100361.10664560844,
+        "pos_alt_m": 80.59527583398342
+      }
+    },
+    "crosswind": {
+      "case": "crosswind",
+      "wind_world_enu_mps": [
+        0.0,
+        5.0,
+        0.0
+      ],
+      "verdict": "AIRSPEED_WIND_ACCEPTANCE_PASS",
+      "failed_checks": [],
+      "command_derivation": {
+        "commands": {
+          "CRUISE": {
+            "nominal_ms": 18.0,
+            "rc3_pwm_us": 1258,
+            "control_in_int16": 16,
+            "achieved_demand_ms": 17.92,
+            "quantisation_error_ms": -0.0799999999999983
+          }
+        },
+        "demand_grid_ms": 0.12,
+        "formula": "navigation.cpp:187-189 inverted through RC_Channel.cpp:388-402, with the RC_Channel.cpp:316 int16_t control_in truncation modelled"
+      },
+      "sim_arspd_rnd": {
+        "before": 2.0,
+        "set_to": 0.0,
+        "readback": 0.0,
+        "rationale": "firmware default 2.0 is rectified by sqrt(|ratio*(q+noise)|) (sitl_airspeed.cpp:37-39) into a positive airspeed bias; set to 0 at TEST TIME ONLY over MAVLink. config/ardupilot/falcon_v2_sitl.parm is NOT modified - that would perturb the validated TECS baseline.",
+        "applied": true,
+        "restored_to": 2.0
+      },
+      "param_preconditions_all_ok": true,
+      "live": {
+        "P0_zero_wind_ref_cruise": {
+          "label": "P0_zero_wind_ref_cruise",
+          "n_total": 765,
+          "n_window": 286,
+          "settle_s": 25.0,
+          "insufficient_samples": false,
+          "pitot_airspeed_mps": {
+            "n": 286,
+            "mean": 17.924347598180763,
+            "std": 0.17917861063720342,
+            "min": 17.64121466044144,
+            "max": 18.275407531254913
+          },
+          "vfr_airspeed_mps": {
+            "n": 286,
+            "mean": 17.92920173298229,
+            "std": 0.17612790225366956,
+            "min": 17.64956283569336,
+            "max": 18.258464813232422
+          },
+          "vfr_groundspeed_mps": {
+            "n": 286,
+            "mean": 17.921577346908464,
+            "std": 0.17999719182759696,
+            "min": 17.637819290161133,
+            "max": 18.278091430664062
+          },
+          "gz_groundspeed_mps": {
+            "n": 286,
+            "mean": 17.92300455750455,
+            "std": 0.17982867616175843,
+            "min": 17.638225660557225,
+            "max": 18.278461812400217
+          },
+          "gz_groundspeed_x_mps": {
+            "n": 286,
+            "mean": 17.92046112816541,
+            "std": 0.17961323189701067,
+            "min": 17.637758605244205,
+            "max": 18.277994770805115
+          },
+          "altitude_m": {
+            "n": 286,
+            "mean": 89.15062502346066,
+            "std": 0.25406285168394954,
+            "min": 88.64570879447773,
+            "max": 89.55648849748415
+          },
+          "throttle": {
+            "n": 286,
+            "mean": 0.484685314685314,
+            "std": 0.009593426931268583,
+            "min": 0.47,
+            "max": 0.5
+          },
+          "pitch_phys_deg": {
+            "n": 286,
+            "mean": 2.7910391892906836,
+            "std": 0.8511929949274197,
+            "min": 1.3052183556899295,
+            "max": 4.220387177998902
+          },
+          "nav_aspd_error_cms": {
+            "n": 286,
+            "mean": -1.227529565771143,
+            "std": 17.736544583157766,
+            "min": -33.832740783691406,
+            "max": 27.02465057373047
+          },
+          "vertical_speed_regression_ms": 0.007217760790560939,
+          "altitude_p2p_m": 0.9107797030064262,
+          "pitot_slope_per_s": -0.006710787701584594,
+          "wind_world_applied": {
+            "x": {
+              "n": 286,
+              "mean": 0.0,
+              "std": 0.0,
+              "min": 0.0,
+              "max": 0.0
+            },
+            "y": {
+              "n": 286,
+              "mean": 0.0,
+              "std": 0.0,
+              "min": 0.0,
+              "max": 0.0
+            },
+            "z": {
+              "n": 286,
+              "mean": 0.0,
+              "std": 0.0,
+              "min": 0.0,
+              "max": 0.0
+            },
+            "expected": [
+              0.0,
+              0.0,
+              0.0
+            ]
+          },
+          "wind_matches_command": true,
+          "vfr_minus_pitot_ms": {
+            "n": 286,
+            "mean": 0.004854134801517592,
+            "std": 0.047392076225525125,
+            "min": -0.1008501441905203,
+            "max": 0.10899761525826435
+          },
+          "ap_wind_speed_ms": {
+            "n": 286,
+            "mean": 0.0,
+            "std": 0.0,
+            "min": 0.0,
+            "max": 0.0
+          },
+          "ap_wind_direction_deg": {
+            "n": 286,
+            "mean": -180.0,
+            "std": 0.0,
+            "min": -180.0,
+            "max": -180.0
+          },
+          "ap_airspeed_minus_gz_groundspeed_x_ms": {
+            "n": 286,
+            "mean": 0.008740604816878996,
+            "std": 0.05569252335551114,
+            "min": -0.09998814751900653,
+            "max": 0.11591046428313945
+          },
+          "nan_inf_count": 0,
+          "throttle_sat_high_longest_run_s": 0,
+          "throttle_sat_low_longest_run_s": 0,
+          "actuator_clamp": {
+            "target_clamp_active_samples": 0,
+            "effort_clamp_active_samples": 0
+          }
+        },
+        "P2_wind_on_cruise": {
+          "label": "P2_wind_on_cruise",
+          "n_total": 1049,
+          "n_window": 572,
+          "settle_s": 25.0,
+          "insufficient_samples": false,
+          "pitot_airspeed_mps": {
+            "n": 572,
+            "mean": 17.922402669130786,
+            "std": 0.027763102661194274,
+            "min": 17.862591767213665,
+            "max": 17.981459848336012
+          },
+          "vfr_airspeed_mps": {
+            "n": 572,
+            "mean": 17.91859205285986,
+            "std": 0.02695939629272876,
+            "min": 17.86136817932129,
+            "max": 17.97532844543457
+          },
+          "vfr_groundspeed_mps": {
+            "n": 572,
+            "mean": 17.391555102555067,
+            "std": 0.035661981946552526,
+            "min": 17.295778274536133,
+            "max": 17.444766998291016
+          },
+          "gz_groundspeed_mps": {
+            "n": 572,
+            "mean": 17.391675069244638,
+            "std": 0.035602584115010584,
+            "min": 17.295726170724635,
+            "max": 17.444758968039302
+          },
+          "gz_groundspeed_x_mps": {
+            "n": 572,
+            "mean": 17.380184291592666,
+            "std": 0.033988994754191836,
+            "min": 17.28819948757595,
+            "max": 17.429834868496247
+          },
+          "altitude_m": {
+            "n": 572,
+            "mean": 89.14540114272367,
+            "std": 0.03979602200475744,
+            "min": 89.05990296677139,
+            "max": 89.23633505743413
+          },
+          "throttle": {
+            "n": 572,
+            "mean": 0.48664335664335867,
+            "std": 0.004722221822694877,
+            "min": 0.48,
+            "max": 0.49
+          },
+          "pitch_phys_deg": {
+            "n": 572,
+            "mean": 2.668373778837798,
+            "std": 0.13359207553262062,
+            "min": 2.3759135454627143,
+            "max": 2.9453263241641134
+          },
+          "nav_aspd_error_cms": {
+            "n": 572,
+            "mean": 0.15291267341667122,
+            "std": 2.705526072981669,
+            "min": -5.539703369140625,
+            "max": 5.885124206542969
+          },
+          "vertical_speed_regression_ms": 9.1124435157425e-05,
+          "altitude_p2p_m": 0.17643209066274324,
+          "pitot_slope_per_s": 5.1782651582197695e-05,
+          "wind_world_applied": {
+            "x": {
+              "n": 572,
+              "mean": 0.0,
+              "std": 0.0,
+              "min": 0.0,
+              "max": 0.0
+            },
+            "y": {
+              "n": 572,
+              "mean": 5.0,
+              "std": 0.0,
+              "min": 5.0,
+              "max": 5.0
+            },
+            "z": {
+              "n": 572,
+              "mean": 0.0,
+              "std": 0.0,
+              "min": 0.0,
+              "max": 0.0
+            },
+            "expected": [
+              0.0,
+              5.0,
+              0.0
+            ]
+          },
+          "wind_matches_command": true,
+          "vfr_minus_pitot_ms": {
+            "n": 572,
+            "mean": -0.0038106162709389897,
+            "std": 0.007893453170376553,
+            "min": -0.02477110311385644,
+            "max": 0.01626642173230408
+          },
+          "ap_wind_speed_ms": {
+            "n": 572,
+            "mean": 5.0,
+            "std": 0.0,
+            "min": 5.0,
+            "max": 5.0
+          },
+          "ap_wind_direction_deg": {
+            "n": 572,
+            "mean": 180.0,
+            "std": 0.0,
+            "min": 180.0,
+            "max": 180.0
+          },
+          "ap_airspeed_minus_gz_groundspeed_x_ms": {
+            "n": 572,
+            "mean": 0.5384077612672141,
+            "std": 0.021492437630719664,
+            "min": 0.49414042998195384,
+            "max": 0.5841770074623724
+          },
+          "nan_inf_count": 0,
+          "throttle_sat_high_longest_run_s": 0,
+          "throttle_sat_low_longest_run_s": 0,
+          "actuator_clamp": {
+            "target_clamp_active_samples": 0,
+            "effort_clamp_active_samples": 0
+          }
+        }
+      },
+      "windows": {
+        "P0_zero_wind_ref_cruise": {
+          "airspeed_osc_growth_ratio": 0.7107399605656792,
+          "airspeed_std_first_half": 0.20114212085518918,
+          "airspeed_std_second_half": 0.14295974304471423,
+          "pitot_minus_gz_predicted_airspeed_ms": {
+            "n": 286,
+            "mean": 0.0013430406762155824,
+            "std": 0.010150224745841593,
+            "min": -0.027239891387068838,
+            "max": 0.03163326969132996
+          },
+          "gz_predicted_airspeed_ms": {
+            "n": 286,
+            "mean": 17.92300455750455,
+            "std": 0.18014388880710613,
+            "min": 17.638225660557225,
+            "max": 18.278461812400217
+          },
+          "df_window_flight_s": [
+            28.344787120819092,
+            37.28640127182007
+          ],
+          "ARSP_Airspeed_ms": {
+            "n": 179,
+            "mean": 17.938771988426506,
+            "std": 0.17060621864472028,
+            "min": 17.64794158935547,
+            "max": 18.18287467956543
+          },
+          "ARSP_used_frac": 1.0,
+          "ARSP_healthy_frac": 1.0,
+          "TECS_sp_TAS_ms": {
+            "n": 179,
+            "mean": 18.000181507131906,
+            "std": 0.1605939051556717,
+            "min": 17.740070343017578,
+            "max": 18.23598861694336
+          },
+          "TECS_spdem_TAS_ms": {
+            "n": 179,
+            "mean": 17.997035394167767,
+            "std": 0.0002307790932621274,
+            "min": 17.99662208557129,
+            "max": 17.997528076171875
+          },
+          "TECS_th_demand": {
+            "n": 179,
+            "mean": 0.49272152964629273,
+            "std": 0.00823319676969133,
+            "min": 0.478680282831192,
+            "max": 0.5051395297050476
+          },
+          "TECS_ph_demand_deg": {
+            "n": 179,
+            "mean": 0.007121973236575306,
+            "std": 0.014586937239072898,
+            "min": -0.016671815887093544,
+            "max": 0.027844317257404327
+          },
+          "GPS_Spd_ms": {
+            "n": 179,
+            "mean": 17.93560977488257,
+            "std": 0.172526426033162,
+            "min": 17.642000198364258,
+            "max": 18.18400001525879
+          },
+          "EAS2TAS_TECSsp_over_ARSP": 1.0034232844224242,
+          "EAS2TAS_pointwise_mean": 1.0034333636677297,
+          "ARSP_minus_pitot_ms": {
+            "n": 179,
+            "mean": 0.003979867462241235,
+            "std": 0.03003542209719561,
+            "min": -0.05802677766873643,
+            "max": 0.05751571059887439
+          }
+        },
+        "P2_wind_on_cruise": {
+          "airspeed_osc_growth_ratio": 0.5068479469302968,
+          "airspeed_std_first_half": 0.0350602978552248,
+          "airspeed_std_second_half": 0.017770239986685376,
+          "pitot_minus_gz_predicted_airspeed_ms": {
+            "n": 572,
+            "mean": -0.00010511985225025644,
+            "std": 0.0016390284812701995,
+            "min": -0.006214066686563768,
+            "max": 0.005383526555835516
+          },
+          "gz_predicted_airspeed_ms": {
+            "n": 572,
+            "mean": 17.922507788983033,
+            "std": 0.027952287497091065,
+            "min": 17.861711355834583,
+            "max": 17.982099843722587
+          },
+          "df_window_flight_s": [
+            68.35672783851624,
+            92.30508852005005
+          ],
+          "ARSP_Airspeed_ms": {
+            "n": 479,
+            "mean": 17.921178411591278,
+            "std": 0.026149986461317564,
+            "min": 17.868974685668945,
+            "max": 17.97825813293457
+          },
+          "ARSP_used_frac": 1.0,
+          "ARSP_healthy_frac": 1.0,
+          "TECS_sp_TAS_ms": {
+            "n": 479,
+            "mean": 17.99875694227119,
+            "std": 0.024360725620081472,
+            "min": 17.95065689086914,
+            "max": 18.049837112426758
+          },
+          "TECS_spdem_TAS_ms": {
+            "n": 479,
+            "mean": 17.997062949895362,
+            "std": 0.00010392377793306587,
+            "min": 17.99684715270996,
+            "max": 17.997285842895508
+          },
+          "TECS_th_demand": {
+            "n": 479,
+            "mean": 0.49077663746407735,
+            "std": 0.001376634553343618,
+            "min": 0.48783358931541443,
+            "max": 0.4940805435180664
+          },
+          "TECS_ph_demand_deg": {
+            "n": 479,
+            "mean": 0.004244727956113541,
+            "std": 0.0022677606024086444,
+            "min": -0.000513667706400156,
+            "max": 0.008555357344448566
+          },
+          "GPS_Spd_ms": {
+            "n": 479,
+            "mean": 17.393140749045354,
+            "std": 0.031753812883895165,
+            "min": 17.319000244140625,
+            "max": 17.444000244140625
+          },
+          "EAS2TAS_TECSsp_over_ARSP": 1.0043288744131766,
+          "EAS2TAS_pointwise_mean": 1.0043291445510951,
+          "ARSP_minus_pitot_ms": {
+            "n": 479,
+            "mean": -0.003819211208941293,
+            "std": 0.005109925717619273,
+            "min": -0.016317440160552366,
+            "max": 0.0077099291900921685
+          }
+        }
+      },
+      "dataflash": {
+        "file": "/home/emirhan/Desktop/FalconV2/tests/gazebo/results/airspeed_wind_acceptance_crosswind_dataflash/00000001.BIN",
+        "align_offset_s": 40.53172200000109,
+        "align_rms_ms": 0.022237216552906627,
+        "align_n": 1814,
+        "align_railed": false,
+        "align_ok": true,
+        "align_rms_max_ms": 0.5,
+        "fbwb_entry_dataflash_s": 40.431722,
+        "flight_t0_minus_fbwb_entry_s": 0.10000000000108855,
+        "align_method": "minimise RMS(GPS.Spd vs Gazebo ground-truth groundspeed); NOT aligned on airspeed, so it cannot manufacture ARSP-vs-pitot agreement",
+        "guard_band_s": 3.0,
+        "orgn_alt_m": 0.0,
+        "baro_press_pa": 100428.91776842948,
+        "pos_alt_m": 74.95838449962103
+      }
+    }
+  },
+  "thresholds": {
+    "TH_AP_VS_PITOT_MS": 0.25,
+    "TH_MG_DELTA_TOL_MS": 0.6,
+    "TH_MG_IDENTITY_TOL_MS": 0.35,
+    "TH_MG_GS_MISMATCH_MS": 1.0,
+    "TH_HOLD_MEAN_TOL_MS": 0.5,
+    "TH_HOLD_STD_MAX_MS": 0.5,
+    "TH_GS_SHIFT_TOL_MS": 0.6,
+    "TH_EAS2TAS_MAX": 1.015,
+    "TH_SAT_RUN_MAX_S": 2.0,
+    "TH_ARSP_USED_FRAC_MIN": 0.99,
+    "TH_AP_WIND_TOL_MS": 0.3
+  },
+  "note": "All numbers are means over the SETTLED window of each segment. Live columns (Gazebo pitot, VFR_HUD, Gazebo groundspeed) are from the 20 Hz live capture; ARSP/TECS columns are from ArduPlane's own dataflash, time-aligned on groundspeed and guard-banded.",
+  "table": [
+    {
+      "case": "zero",
+      "segment": "P0_zero_wind_ref_cruise",
+      "wind_x_ms": 0.0,
+      "wind_y_ms": 0.0,
+      "demand_ms": 17.92,
+      "gazebo_pitot_ms": 17.94149868640395,
+      "gazebo_pitot_std": 0.17290403489818934,
+      "arduplane_ARSP_ms": 17.929636594984267,
+      "arduplane_VFR_ms": 17.930140401933578,
+      "tecs_sp_TAS_ms": 17.99153603447808,
+      "tecs_spdem_TAS_ms": 17.997038459777833,
+      "eas2tas": 1.0034523532680595,
+      "groundspeed_gz_ms": 17.940134397611235,
+      "groundspeed_gz_x_ms": 17.93778449802897,
+      "groundspeed_vfr_ms": 17.938716188177363,
+      "groundspeed_gps_ms": 17.946800825330946,
+      "throttle": 0.48538461538461475,
+      "ap_wind_speed_ms": 0.0,
+      "arsp_used_frac": 1.0,
+      "ARSP_minus_pitot_ms": -0.021172380898980415,
+      "osc_growth_ratio": 0.7321428747513868,
+      "pitot_minus_gz_pred_ms": 0.0013642887927125132
+    },
+    {
+      "case": "zero",
+      "segment": "P2_wind_on_cruise",
+      "wind_x_ms": 0.0,
+      "wind_y_ms": 0.0,
+      "demand_ms": 17.92,
+      "gazebo_pitot_ms": 17.940603174599,
+      "gazebo_pitot_std": 0.023435181634155585,
+      "arduplane_ARSP_ms": 17.92048602412787,
+      "arduplane_VFR_ms": 17.921153985537014,
+      "tecs_sp_TAS_ms": 17.996870419177732,
+      "tecs_spdem_TAS_ms": 17.997068480808203,
+      "eas2tas": 1.004262406440708,
+      "groundspeed_gz_ms": 17.94050536795869,
+      "groundspeed_gz_x_ms": 17.93308084651185,
+      "groundspeed_vfr_ms": 17.940500642869857,
+      "groundspeed_gps_ms": 17.939938228662925,
+      "throttle": 0.48760489510489863,
+      "ap_wind_speed_ms": 0.0,
+      "arsp_used_frac": 1.0,
+      "ARSP_minus_pitot_ms": -0.0200617735710581,
+      "osc_growth_ratio": 0.5039546736949021,
+      "pitot_minus_gz_pred_ms": 9.78066403325801e-05
+    },
+    {
+      "case": "zero",
+      "segment": "P1_MG_LOW",
+      "wind_x_ms": 0.0,
+      "wind_y_ms": 0.0,
+      "demand_ms": 16.0,
+      "gazebo_pitot_ms": 16.029563385418765,
+      "gazebo_pitot_std": 0.014886759861385861,
+      "arduplane_ARSP_ms": 15.992404195112575,
+      "arduplane_VFR_ms": 15.99719822344137,
+      "tecs_sp_TAS_ms": 16.061211134048495,
+      "tecs_spdem_TAS_ms": 16.068732112335013,
+      "eas2tas": 1.0043024762316193,
+      "groundspeed_gz_ms": 16.02950833462626,
+      "groundspeed_gz_x_ms": 15.992781918277176,
+      "groundspeed_vfr_ms": 16.02952970514782,
+      "groundspeed_gps_ms": 16.024664606082414,
+      "throttle": 0.44996497373029304,
+      "ap_wind_speed_ms": 0.0,
+      "arsp_used_frac": 1.0,
+      "ARSP_minus_pitot_ms": -0.03276541908720361,
+      "osc_growth_ratio": 0.10343042563520827,
+      "pitot_minus_gz_pred_ms": 5.505079250137495e-05
+    },
+    {
+      "case": "zero",
+      "segment": "P1_MG_HIGH",
+      "wind_x_ms": 0.0,
+      "wind_y_ms": 0.0,
+      "demand_ms": 20.92,
+      "gazebo_pitot_ms": 20.917802493698023,
+      "gazebo_pitot_std": 2.1349535275510427,
+      "arduplane_ARSP_ms": 20.94615531316132,
+      "arduplane_VFR_ms": 20.947351365340385,
+      "tecs_sp_TAS_ms": 21.035030217658502,
+      "tecs_spdem_TAS_ms": 21.00969333688501,
+      "eas2tas": 1.00424301754515,
+      "groundspeed_gz_ms": 20.91598475159727,
+      "groundspeed_gz_x_ms": 20.507986542454447,
+      "groundspeed_vfr_ms": 20.644853491532174,
+      "groundspeed_gps_ms": 20.677134555665337,
+      "throttle": 0.5301929824561402,
+      "ap_wind_speed_ms": 0.0,
+      "arsp_used_frac": 1.0,
+      "ARSP_minus_pitot_ms": -0.003304639538699413,
+      "osc_growth_ratio": 0.9281658744373894,
+      "pitot_minus_gz_pred_ms": 0.0018177421007561359
+    },
+    {
+      "case": "headwind",
+      "segment": "P0_zero_wind_ref_cruise",
+      "wind_x_ms": -5.0,
+      "wind_y_ms": 0.0,
+      "demand_ms": 17.92,
+      "gazebo_pitot_ms": 17.941135053535877,
+      "gazebo_pitot_std": 0.20215741380288282,
+      "arduplane_ARSP_ms": 17.94389564897761,
+      "arduplane_VFR_ms": 17.927433013916016,
+      "tecs_sp_TAS_ms": 18.001852621579303,
+      "tecs_spdem_TAS_ms": 17.996861186107445,
+      "eas2tas": 1.003229899110843,
+      "groundspeed_gz_ms": 17.93966690808566,
+      "groundspeed_gz_x_ms": 17.93635877809107,
+      "groundspeed_vfr_ms": 17.937501513874615,
+      "groundspeed_gps_ms": 17.964514727033052,
+      "throttle": 0.4848251748251741,
+      "ap_wind_speed_ms": 0.0,
+      "arsp_used_frac": 1.0,
+      "ARSP_minus_pitot_ms": -0.024107606960589688,
+      "osc_growth_ratio": 0.7580963089617628,
+      "pitot_minus_gz_pred_ms": 0.001468145450204701
+    },
+    {
+      "case": "headwind",
+      "segment": "P2_wind_on_cruise",
+      "wind_x_ms": -5.0,
+      "wind_y_ms": 0.0,
+      "demand_ms": 17.92,
+      "gazebo_pitot_ms": 17.940917588299634,
+      "gazebo_pitot_std": 0.13491970639934905,
+      "arduplane_ARSP_ms": 17.93110134601593,
+      "arduplane_VFR_ms": 17.915721609875874,
+      "tecs_sp_TAS_ms": 18.008769075075787,
+      "tecs_spdem_TAS_ms": 17.99689005215963,
+      "eas2tas": 1.0043314533536511,
+      "groundspeed_gz_ms": 12.944380253561002,
+      "groundspeed_gz_x_ms": 12.931842420861928,
+      "groundspeed_vfr_ms": 12.942624415551032,
+      "groundspeed_gps_ms": 12.958161012331646,
+      "throttle": 0.4859440559440574,
+      "ap_wind_speed_ms": 5.0,
+      "arsp_used_frac": 1.0,
+      "ARSP_minus_pitot_ms": -0.025808913007367946,
+      "osc_growth_ratio": 0.5355627281758888,
+      "pitot_minus_gz_pred_ms": 3.1155554658898335e-05
+    },
+    {
+      "case": "headwind",
+      "segment": "P1_MG_HIGH",
+      "wind_x_ms": -5.0,
+      "wind_y_ms": 0.0,
+      "demand_ms": 20.92,
+      "gazebo_pitot_ms": 20.940853772039624,
+      "gazebo_pitot_std": 1.9720895173088924,
+      "arduplane_ARSP_ms": 20.90896303817972,
+      "arduplane_VFR_ms": 20.938453867045013,
+      "tecs_sp_TAS_ms": 21.00670900125842,
+      "tecs_spdem_TAS_ms": 21.00959423439488,
+      "eas2tas": 1.0046748355191129,
+      "groundspeed_gz_ms": 16.028214976389044,
+      "groundspeed_gz_x_ms": 15.663664112924174,
+      "groundspeed_vfr_ms": 15.724732874162521,
+      "groundspeed_gps_ms": 15.698645852552824,
+      "throttle": 0.5399825783972123,
+      "ap_wind_speed_ms": 5.0,
+      "arsp_used_frac": 1.0,
+      "ARSP_minus_pitot_ms": -0.03095908082620561,
+      "osc_growth_ratio": 0.9714714922691826,
+      "pitot_minus_gz_pred_ms": -0.00012932250610050438
+    },
+    {
+      "case": "tailwind",
+      "segment": "P0_zero_wind_ref_cruise",
+      "wind_x_ms": 5.0,
+      "wind_y_ms": 0.0,
+      "demand_ms": 17.92,
+      "gazebo_pitot_ms": 17.928756384670173,
+      "gazebo_pitot_std": 0.1756372256042029,
+      "arduplane_ARSP_ms": 17.936740896436902,
+      "arduplane_VFR_ms": 17.929965946501103,
+      "tecs_sp_TAS_ms": 17.997822125752766,
+      "tecs_spdem_TAS_ms": 17.996962218814424,
+      "eas2tas": 1.0034053694407772,
+      "groundspeed_gz_ms": 17.927214731386183,
+      "groundspeed_gz_x_ms": 17.924479146908322,
+      "groundspeed_vfr_ms": 17.925869476423955,
+      "groundspeed_gps_ms": 17.941034009721545,
+      "throttle": 0.4847750865051895,
+      "ap_wind_speed_ms": 0.0,
+      "arsp_used_frac": 1.0,
+      "ARSP_minus_pitot_ms": -0.005194000407898376,
+      "osc_growth_ratio": 0.7417682735610007,
+      "pitot_minus_gz_pred_ms": 0.0015416532839893783
+    },
+    {
+      "case": "tailwind",
+      "segment": "P2_wind_on_cruise",
+      "wind_x_ms": 5.0,
+      "wind_y_ms": 0.0,
+      "demand_ms": 17.92,
+      "gazebo_pitot_ms": 17.936230244536727,
+      "gazebo_pitot_std": 0.46536705368383424,
+      "arduplane_ARSP_ms": 17.92475231704234,
+      "arduplane_VFR_ms": 17.940658682709806,
+      "tecs_sp_TAS_ms": 17.989279024287406,
+      "tecs_spdem_TAS_ms": 17.996960311443672,
+      "eas2tas": 1.003599866045776,
+      "groundspeed_gz_ms": 22.928289982323815,
+      "groundspeed_gz_x_ms": 22.90583243755213,
+      "groundspeed_vfr_ms": 22.916803319971045,
+      "groundspeed_gps_ms": 22.914771368707644,
+      "throttle": 0.4843006993006997,
+      "ap_wind_speed_ms": 5.0,
+      "arsp_used_frac": 1.0,
+      "ARSP_minus_pitot_ms": -0.004589429318025161,
+      "osc_growth_ratio": 0.5145907639195331,
+      "pitot_minus_gz_pred_ms": 0.0016836082186445958
+    },
+    {
+      "case": "tailwind",
+      "segment": "P1_MG_LOW",
+      "wind_x_ms": 5.0,
+      "wind_y_ms": 0.0,
+      "demand_ms": 16.0,
+      "gazebo_pitot_ms": 16.015746536022625,
+      "gazebo_pitot_std": 0.014955796263561803,
+      "arduplane_ARSP_ms": 15.991155393437204,
+      "arduplane_VFR_ms": 15.99604001968943,
+      "tecs_sp_TAS_ms": 16.059856032528806,
+      "tecs_spdem_TAS_ms": 16.06866783588067,
+      "eas2tas": 1.004296164811193,
+      "groundspeed_gz_ms": 21.003184271643075,
+      "groundspeed_gz_x_ms": 20.96311668316579,
+      "groundspeed_vfr_ms": 21.003208982590813,
+      "groundspeed_gps_ms": 20.998264077809758,
+      "throttle": 0.44991273996509124,
+      "ap_wind_speed_ms": 5.0,
+      "arsp_used_frac": 1.0,
+      "ARSP_minus_pitot_ms": -0.020108200224342405,
+      "osc_growth_ratio": 0.16611517925712604,
+      "pitot_minus_gz_pred_ms": 4.7548851930257316e-05
+    },
+    {
+      "case": "crosswind",
+      "segment": "P0_zero_wind_ref_cruise",
+      "wind_x_ms": 0.0,
+      "wind_y_ms": 5.0,
+      "demand_ms": 17.92,
+      "gazebo_pitot_ms": 17.924347598180763,
+      "gazebo_pitot_std": 0.17917861063720342,
+      "arduplane_ARSP_ms": 17.938771988426506,
+      "arduplane_VFR_ms": 17.92920173298229,
+      "tecs_sp_TAS_ms": 18.000181507131906,
+      "tecs_spdem_TAS_ms": 17.997035394167767,
+      "eas2tas": 1.0034232844224242,
+      "groundspeed_gz_ms": 17.92300455750455,
+      "groundspeed_gz_x_ms": 17.92046112816541,
+      "groundspeed_vfr_ms": 17.921577346908464,
+      "groundspeed_gps_ms": 17.93560977488257,
+      "throttle": 0.484685314685314,
+      "ap_wind_speed_ms": 0.0,
+      "arsp_used_frac": 1.0,
+      "ARSP_minus_pitot_ms": 0.003979867462241235,
+      "osc_growth_ratio": 0.7107399605656792,
+      "pitot_minus_gz_pred_ms": 0.0013430406762155824
+    },
+    {
+      "case": "crosswind",
+      "segment": "P2_wind_on_cruise",
+      "wind_x_ms": 0.0,
+      "wind_y_ms": 5.0,
+      "demand_ms": 17.92,
+      "gazebo_pitot_ms": 17.922402669130786,
+      "gazebo_pitot_std": 0.027763102661194274,
+      "arduplane_ARSP_ms": 17.921178411591278,
+      "arduplane_VFR_ms": 17.91859205285986,
+      "tecs_sp_TAS_ms": 17.99875694227119,
+      "tecs_spdem_TAS_ms": 17.997062949895362,
+      "eas2tas": 1.0043288744131766,
+      "groundspeed_gz_ms": 17.391675069244638,
+      "groundspeed_gz_x_ms": 17.380184291592666,
+      "groundspeed_vfr_ms": 17.391555102555067,
+      "groundspeed_gps_ms": 17.393140749045354,
+      "throttle": 0.48664335664335867,
+      "ap_wind_speed_ms": 5.0,
+      "arsp_used_frac": 1.0,
+      "ARSP_minus_pitot_ms": -0.003819211208941293,
+      "osc_growth_ratio": 0.5068479469302968,
+      "pitot_minus_gz_pred_ms": -0.00010511985225025644
+    }
+  ],
+  "matched_groundspeed_comparisons": [
+    {
+      "name": "MG_HEADWIND_at_gs16",
+      "reference": "zero/P1_MG_LOW",
+      "case": "headwind/P1_MG_HIGH",
+      "airspeed_ref_ms": 16.029563385418765,
+      "airspeed_case_ms": 20.940853772039624,
+      "groundspeed_ref_ms": 16.02950833462626,
+      "groundspeed_case_ms": 16.028214976389044,
+      "arduplane_airspeed_ref_ms": 15.992404195112575,
+      "arduplane_airspeed_case_ms": 20.90896303817972,
+      "groundspeed_mismatch_ms": -0.0012933582372163244,
+      "delta_airspeed_ms": 4.911290386620859,
+      "delta_airspeed_arduplane_ms": 4.916558843067145,
+      "expected_delta_airspeed_ms": 5.0,
+      "identity_delta_air_minus_delta_ground_ms": 4.912583744858075,
+      "identity_expected_ms": 5.0,
+      "delta_airspeed_error_ms": -0.08870961337914096,
+      "identity_error_ms": -0.08741625514192464,
+      "delta_TECS_sp_TAS_ms": 4.945497867209927,
+      "delta_TECS_sp_expected_ms": 5.0233741775955645,
+      "delta_TECS_sp_error_ms": -0.07787631038563791
+    },
+    {
+      "name": "MG_TAILWIND_at_gs21",
+      "reference": "zero/P1_MG_HIGH",
+      "case": "tailwind/P1_MG_LOW",
+      "airspeed_ref_ms": 20.917802493698023,
+      "airspeed_case_ms": 16.015746536022625,
+      "groundspeed_ref_ms": 20.91598475159727,
+      "groundspeed_case_ms": 21.003184271643075,
+      "arduplane_airspeed_ref_ms": 20.94615531316132,
+      "arduplane_airspeed_case_ms": 15.991155393437204,
+      "groundspeed_mismatch_ms": 0.08719952004580378,
+      "delta_airspeed_ms": -4.9020559576753975,
+      "delta_airspeed_arduplane_ms": -4.954999919724116,
+      "expected_delta_airspeed_ms": -5.0,
+      "identity_delta_air_minus_delta_ground_ms": -4.989255477721201,
+      "identity_expected_ms": -5.0,
+      "delta_airspeed_error_ms": 0.09794404232460252,
+      "identity_error_ms": 0.01074452227879874,
+      "delta_TECS_sp_TAS_ms": -4.975174185129696,
+      "delta_TECS_sp_expected_ms": -5.021480824055965,
+      "delta_TECS_sp_error_ms": 0.04630663892626963
+    }
+  ],
+  "closed_loop_cruise": {
+    "zero": {
+      "wind_x_ms": 0.0,
+      "airspeed_ms": 17.940603174599,
+      "airspeed_std": 0.023435181634155585,
+      "arduplane_ARSP_ms": 17.92048602412787,
+      "tecs_sp_TAS_ms": 17.996870419177732,
+      "tecs_spdem_TAS_ms": 17.997068480808203,
+      "groundspeed_ms": 17.94050536795869,
+      "groundspeed_ref_zero_wind_ms": 17.940134397611235,
+      "throttle": 0.48760489510489863,
+      "eas2tas": 1.004262406440708,
+      "groundspeed_shift_ms": 0.00037097034745414703,
+      "groundspeed_shift_expected_ms": 0.0,
+      "groundspeed_shift_error_ms": 0.00037097034745414703,
+      "demand_ms": 17.92,
+      "airspeed_error_vs_demand_ms": 0.02060317459899963
+    },
+    "headwind": {
+      "wind_x_ms": -5.0,
+      "airspeed_ms": 17.940917588299634,
+      "airspeed_std": 0.13491970639934905,
+      "arduplane_ARSP_ms": 17.93110134601593,
+      "tecs_sp_TAS_ms": 18.008769075075787,
+      "tecs_spdem_TAS_ms": 17.99689005215963,
+      "groundspeed_ms": 12.944380253561002,
+      "groundspeed_ref_zero_wind_ms": 17.93966690808566,
+      "throttle": 0.4859440559440574,
+      "eas2tas": 1.0043314533536511,
+      "groundspeed_shift_ms": -4.995286654524657,
+      "groundspeed_shift_expected_ms": -5.0,
+      "groundspeed_shift_error_ms": 0.004713345475343189,
+      "demand_ms": 17.92,
+      "airspeed_error_vs_demand_ms": 0.020917588299631973
+    },
+    "tailwind": {
+      "wind_x_ms": 5.0,
+      "airspeed_ms": 17.936230244536727,
+      "airspeed_std": 0.46536705368383424,
+      "arduplane_ARSP_ms": 17.92475231704234,
+      "tecs_sp_TAS_ms": 17.989279024287406,
+      "tecs_spdem_TAS_ms": 17.996960311443672,
+      "groundspeed_ms": 22.928289982323815,
+      "groundspeed_ref_zero_wind_ms": 17.927214731386183,
+      "throttle": 0.4843006993006997,
+      "eas2tas": 1.003599866045776,
+      "groundspeed_shift_ms": 5.001075250937632,
+      "groundspeed_shift_expected_ms": 5.0,
+      "groundspeed_shift_error_ms": 0.001075250937631722,
+      "demand_ms": 17.92,
+      "airspeed_error_vs_demand_ms": 0.01623024453672528
+    }
+  },
+  "closed_loop_airspeed_spread_ms": 0.004687343762906693,
+  "ap_wind_frame_sanity": {
+    "zero": {
+      "commanded_wind_world_enu": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "expected_ap_bearing_deg": null,
+      "observed_ap_bearing_deg": -180.0,
+      "expected_ap_speed_ms": 0.0,
+      "observed_ap_speed_ms": 0.0
+    },
+    "headwind": {
+      "commanded_wind_world_enu": [
+        -5.0,
+        0.0,
+        0.0
+      ],
+      "expected_ap_bearing_deg": 90.0,
+      "observed_ap_bearing_deg": 90.0,
+      "expected_ap_speed_ms": 5.0,
+      "observed_ap_speed_ms": 5.0,
+      "bearing_error_deg": 0.0
+    },
+    "tailwind": {
+      "commanded_wind_world_enu": [
+        5.0,
+        0.0,
+        0.0
+      ],
+      "expected_ap_bearing_deg": -90.0,
+      "observed_ap_bearing_deg": -89.99999237060547,
+      "expected_ap_speed_ms": 5.0,
+      "observed_ap_speed_ms": 5.0,
+      "bearing_error_deg": 7.62939453125e-06
+    },
+    "crosswind": {
+      "commanded_wind_world_enu": [
+        0.0,
+        5.0,
+        0.0
+      ],
+      "expected_ap_bearing_deg": 180.0,
+      "observed_ap_bearing_deg": 180.0,
+      "expected_ap_speed_ms": 5.0,
+      "observed_ap_speed_ms": 5.0,
+      "bearing_error_deg": 0.0
+    }
+  },
+  "worst_ARSP_minus_pitot_ms": 0.03276541908720361,
+  "dataflash_alignment_ok_all_cases": true,
+  "eas2tas_range": [
+    1.003229899110843,
+    1.0046748355191129
+  ],
+  "min_arsp_used_frac": 1.0,
+  "checks": {
+    "MG1_headwind_groundspeeds_actually_matched": true,
+    "MG1_headwind_airspeed_delta_correct": true,
+    "MG1_headwind_identity_exact": true,
+    "MG1_headwind_arduplane_delta_matches_gazebo": true,
+    "MG2_tailwind_groundspeeds_actually_matched": true,
+    "MG2_tailwind_airspeed_delta_correct": true,
+    "MG2_tailwind_identity_exact": true,
+    "MG2_tailwind_arduplane_delta_matches_gazebo": true,
+    "CL_zero_tecs_holds_airspeed": true,
+    "CL_zero_groundspeed_shifts_by_wind": true,
+    "CL_headwind_tecs_holds_airspeed": true,
+    "CL_headwind_groundspeed_shifts_by_wind": true,
+    "CL_tailwind_tecs_holds_airspeed": true,
+    "CL_tailwind_groundspeed_shifts_by_wind": true,
+    "CL_airspeed_identical_across_all_three_cases": true,
+    "FRAME_headwind_ap_wind_bearing_correct": true,
+    "FRAME_tailwind_ap_wind_bearing_correct": true,
+    "FRAME_crosswind_ap_wind_bearing_correct": true,
+    "SANITY_crosswind_tecs_holds_airspeed": true,
+    "AP1_arduplane_dataflash_agrees_with_gazebo_pitot": true,
+    "E2T1_eas2tas_is_post_fix_datum": true,
+    "dataflash_time_alignment_ok": true,
+    "ARSP_sensor_used_in_flight": true,
+    "TE1_MG1_headwind_tecs_sees_the_change": true,
+    "TE1_MG2_tailwind_tecs_sees_the_change": true,
+    "per_case_zero_passed": true,
+    "per_case_headwind_passed": true,
+    "per_case_tailwind_passed": true,
+    "per_case_crosswind_passed": true
+  },
+  "failed_checks": [],
+  "verdict": "AIRSPEED_WIND_ACCEPTANCE_MATRIX_PASS"
+}

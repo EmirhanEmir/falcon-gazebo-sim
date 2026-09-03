@@ -140,3 +140,102 @@ AIRSPEED_MAX      28
 # matching the real .param's own value (also 0) - not a regression, not a
 # fabricated number.
 AIRSPEED_STALL    0
+
+# =============================================================================
+# SIMULATION ENVIRONMENT - SITL ORIGIN / ALTITUDE DATUM
+# =============================================================================
+# Owner: controls-integration. Stage:
+# SITL_ATMOSPHERE_AND_PITOT_INTEGRATION_VALIDATION (2026-09-02).
+# Closes validation MAJOR-1
+# (docs/validation/2026-09-02_ardupilot_tecs_and_cruise_speed_hold_validation.md
+# sec 2). Full derivation + live before/after evidence:
+# docs/source_of_truth/autopilot/SITL_ATMOSPHERE_AND_AIRSPEED.md
+#
+# These are SITL-simulator parameters (SIM_*), NOT aircraft parameters. They
+# exist only inside the simulator and have no counterpart on the real vehicle.
+# They set NO PID, NO TECS value, NO aerodynamic/propulsion quantity.
+#
+# ROOT CAUSE THEY FIX (source-cited, ArduPilot commit 409226a637):
+#   The launch scripts passed `-O 0,0,0,0`. That flag IS parsed
+#   (SITL_cmdline.cpp:471-472 -> :646-658), but
+#   libraries/AP_HAL_SITL/SITL_cmdline.cpp:761-766 inside parse_home()
+#   contains:
+#       if (loc.lat == 0 && loc.lng == 0) {
+#           // default to CMAC instead of middle of the ocean...
+#           loc.lat = -35.363261*1e7; loc.lng = 149.165230*1e7;
+#           loc.alt = 584*100;
+#       }
+#   i.e. a lat/lng of exactly 0,0 SILENTLY REWRITES THE ALTITUDE TOO, to the
+#   584 m CMAC field elevation. The requested alt=0 was discarded. Yaw is
+#   parsed after the guard, which is why the banner read
+#   "Home: -35.363261 149.165230 alt=584.000000m hdg=0.000000".
+#
+# Consequence chain that produced the observed 673 m / EAS2TAS 1.033:
+#   1. SIM_Aircraft.cpp:80-95 set_start_location() -> home/origin alt = 584 m
+#   2. AP_Baro.cpp:1015-1024 update_field_elevation() auto-sets
+#      _field_elevation_active = origin.alt*0.01 = 584 m
+#   3. AP_Baro.h:106 get_altitude_AMSL() = (height above boot ground) +
+#      _field_elevation_active = 89 + 584 = 673 m
+#   4. AP_Baro_atmosphere.cpp:299-304 _get_EAS2TAS() ->
+#      get_air_density_for_alt_amsl(673) = 1.148 kg/m^3 -> EAS2TAS = 1.033
+#   while the Gazebo aerodynamics plugin uses a FIXED rho = 1.225 kg/m^3
+#   (docs/source_of_truth/aerodynamics/aero_v1_config.yaml, ISA sea level)
+#   and the test worlds declare <elevation>0.0</elevation>.
+#
+# FIX: do NOT pass -O at all. With no -O, home_is_set stays false and
+# SIM_Aircraft.cpp:694-707 Aircraft::update_home() builds the origin directly
+# from these SIM_OPOS_* parameters - a code path with NO CMAC substitution,
+# so lat=0/lng=0/alt=0 is honoured exactly.
+#
+# VALUES:
+#
+#   SIM_OPOS_ALT = 0  -- THE VALUE THIS STAGE ACTUALLY CHANGES.
+#     Taken verbatim from the test worlds' own <spherical_coordinates>
+#     <elevation>0.0</elevation> (e.g. tests/gazebo/worlds/
+#     falcon_v2_ardupilot_basic_closed_loop_flight_world.sdf:64), and
+#     consistent with the fixed rho = 1.225 kg/m^3 (ISA SEA LEVEL) that
+#     docs/source_of_truth/aerodynamics/aero_v1_config.yaml uses for every
+#     aerodynamic force. This establishes the datum relationship, which is now
+#     explicit and checkable:
+#         ArduPlane altitude AMSL (m)  ==  Gazebo world z (m, ENU, +up)
+#     LIVE-VERIFIED 2026-09-02: SITL banner "Home: -35.363261 149.165230
+#     alt=0.000000m hdg=0.000000" (was alt=584.000000m).
+#     Provenance class: SIMULATION_DATUM_ALIGNMENT (read off the world file,
+#     not invented).
+#
+#   SIM_OPOS_LAT / SIM_OPOS_LNG = CMAC (-35.363261, 149.165230)
+#     DELIBERATELY UNCHANGED from the value every prior validated stage
+#     actually ran at, so that this stage changes the ALTITUDE datum ONLY and
+#     nothing else (SITL's synthetic compass field and declination are derived
+#     from home lat/lng; moving them would perturb the EKF for no physical
+#     gain). The horizontal datum has NO effect on any Falcon V2 physics: the
+#     aerodynamics, propulsion, actuator and pitot plugins are all local-frame,
+#     and no Gazebo GPS/NavSat output is in the ArduPilot loop (the JSON FDM
+#     backend synthesises GPS from home + local position - see
+#     docs/source_of_truth/autopilot/SITL_TRANSPORT_AND_ACTUATOR_MAPPING.md).
+#     WHY NOT 0,0 (which is what the world declares): ArduPilot cannot
+#     represent a vehicle at exactly lat=0/lng=0/alt=0 -
+#     AP_Common/Location.h:198 `initialised()` returns
+#     (lat != 0 || lng != 0 || alt != 0), and AP_AHRS.cpp:492-494 raises
+#     `AP_HAL::panic("uninitialised location returned by _get_location")` on a
+#     SITL build. This was LIVE-REPRODUCED on 2026-09-02 with
+#     SIM_OPOS_LAT/LNG/ALT all 0: ArduPlane booted, printed
+#     "Home: 0.000000 0.000000 alt=0.000000m hdg=0.000000", then panicked.
+#     KNOWN, RECORDED, HARMLESS DISCREPANCY: the worlds declare
+#     latitude_deg/longitude_deg 0.0 while SITL uses CMAC. Only the ALTITUDE
+#     datum is physically meaningful here and it is now aligned exactly.
+#     No real Falcon V2 flight-site georeference exists - DATA_REQUIRED; when
+#     one is supplied, set these three and the worlds' <spherical_coordinates>
+#     from it together.
+#
+#   SIM_OPOS_HDG = 0
+#     Matches the worlds' <heading_deg>0.0</heading_deg> AND the heading every
+#     prior run actually used (the old `-O 0,0,0,0` yaw field WAS honoured -
+#     it is parsed after the CMAC guard - so all prior stages ran at hdg 0,
+#     not at the SIM_OPOS_HDG firmware default of 353). Explicitly restated
+#     here so dropping -O changes nothing about heading.
+# -----------------------------------------------------------------------------
+SIM_OPOS_LAT    -35.363261
+SIM_OPOS_LNG    149.165230
+SIM_OPOS_ALT    0
+SIM_OPOS_HDG    0

@@ -1,0 +1,15 @@
+pitot msgs: 6  wind msgs: 534
+param preconditions: {"arspd_use_1_tecs_uses_airspeed_path": true, "arspd_type_100_sitl_backend": true, "airspeed_min_16": true, "airspeed_cruise_18": true, "airspeed_max_28": true, "ptch_trim_deg_2p49": true, "kff_thr2ptch_zero": true, "flight_options_zero": true, "fbwb_elev_rev_zero": true, "cruise_alt_floor_zero": true, "min_groundspeed_zero": true, "rc3_not_reversed": true, "rc2_not_reversed": true, "sim_wind_zero": true, "sim_opos_alt_zero_atmosphere_datum": true, "pids_unchanged": true, "tecs_at_firmware_defaults": true}
+SIM_ARSPD_RND: {'before': 2.0, 'set_to': 0.0, 'readback': 0.0, 'rationale': 'firmware default 2.0 is rectified by sqrt(|ratio*(q+noise)|) (sitl_airspeed.cpp:37-39) into a positive airspeed bias; set to 0 at TEST TIME ONLY over MAVLink. config/ardupilot/falcon_v2_sitl.parm is NOT modified - that would perturb the validated TECS baseline.', 'applied': True}
+command derivation: {"CRUISE": {"nominal_ms": 18.0, "rc3_pwm_us": 1258, "control_in_int16": 16, "achieved_demand_ms": 17.92, "quantisation_error_ms": -0.0799999999999983}, "MG_LOW": {"nominal_ms": 16.0, "rc3_pwm_us": 1130, "control_in_int16": 0, "achieved_demand_ms": 16.0, "quantisation_error_ms": 0.0}}
+SEGMENT P0_zero_wind_ref_cruise: 40s  rc3=1258  wind=(0.0, 0.0, 0.0)
+SEGMENT P2_wind_on_cruise: 55s  rc3=1258  wind=(5.0, 0.0, 0.0)
+SEGMENT P1_MG_LOW: 55s  rc3=1130  wind=(5.0, 0.0, 0.0)
+------------------------------------------------------------------------------
+CASE tailwind   wind(world ENU) = (5.0, 0.0, 0.0)
+P0_zero_wind_ref_cruise    pitot=17.929  vfr_as=17.930  gs(gz)=17.927  gsX(gz)=17.924  vfr_gs=17.926  thr=0.4848  alt=89.20
+P2_wind_on_cruise          pitot=17.936  vfr_as=17.941  gs(gz)=22.928  gsX(gz)=22.906  vfr_gs=22.917  thr=0.4843  alt=89.15
+P1_MG_LOW                  pitot=16.016  vfr_as=15.996  gs(gz)=21.003  gsX(gz)=20.963  vfr_gs=21.003  thr=0.4499  alt=89.08
+VERDICT: AIRSPEED_WIND_ACCEPTANCE_PASS  failed_checks=[]
+------------------------------------------------------------------------------
+RESULT: FLIGHT_COMPLETED_NO_ABORT AIRSPEED_WIND_ACCEPTANCE_PASS -> /home/emirhan/Desktop/FalconV2/tests/gazebo/results/airspeed_wind_acceptance_tailwind_result.json

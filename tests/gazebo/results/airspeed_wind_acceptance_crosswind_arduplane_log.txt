@@ -1,0 +1,39 @@
+Reading symbols from /home/emirhan/gazebo_sim/ardupilot/build/sitl/bin/arduplane...
+(No debugging symbols found in /home/emirhan/gazebo_sim/ardupilot/build/sitl/bin/arduplane)
+[Thread debugging using libthread_db enabled]
+Using host libthread_db library "/lib/x86_64-linux-gnu/libthread_db.so.1".
+Setting SIM_SPEEDUP=1.000000
+Starting SITL: JSON
+JSON control interface set to 127.0.0.1:9002
+Starting sketch 'ArduPlane'
+Starting SITL input
+Using Irlock at port : 9005
+Using \clock topic for DDS timing: disabled
+bind port 5760 for SERIAL0
+SERIAL0 on TCP port 5760
+Waiting for connection ....
+Connection on serial port 5760
+Loaded defaults from /home/emirhan/Desktop/FalconV2/config/ardupilot/falcon_v2_sitl.parm
+Home: -35.363262 149.165237 alt=0.000000m hdg=0.000000
+
+JSON received:
+	timestamp
+	imu: gyro
+	imu: accel_body
+	position
+	quaternion
+	velocity
+	velocity_wind
+	airspeed
+	no_time_sync
+	no_lockstep
+
+Forcing use_time_sync=0
+bind port 5762 for SERIAL1
+SERIAL1 on TCP port 5762
+bind port 5763 for SERIAL2
+SERIAL2 on TCP port 5763
+validate_structures:538: Validating structures
+[New Thread 0x7ffff77ff640 (LWP 13382)]
+Loaded defaults from /home/emirhan/Desktop/FalconV2/config/ardupilot/falcon_v2_sitl.parm
+Closed connection on SERIAL0

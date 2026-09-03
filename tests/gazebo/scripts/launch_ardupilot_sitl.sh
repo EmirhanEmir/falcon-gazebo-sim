@@ -168,10 +168,18 @@ sleep 5
 # -w wipes any stale eeprom.bin/parameter state from a prior run in this
 # working directory (this script's own working directory only - never the
 # checked-in falcon_v2_sitl.parm, which is read-only input here).
-# -O 0,0,0,0 gives a fixed, arbitrary local home (no real georeferencing
-# exists for Falcon V2 yet - DATA_REQUIRED, unrelated to this task).
+# NOTE (controls-integration, 2026-09-02, stage
+# SITL_ATMOSPHERE_AND_PITOT_INTEGRATION_VALIDATION): `-O 0,0,0,0` was REMOVED
+# here. It never worked: SITL_cmdline.cpp:761-766 (parse_home) silently
+# replaces a lat/lng of exactly 0,0 with the CMAC default AND overwrites the
+# requested altitude with 584 m, which propagated into ArduPlane's atmosphere
+# model (EAS2TAS 1.033). The origin is now set exactly, via SIM_OPOS_LAT/LNG/
+# ALT/HDG in config/ardupilot/falcon_v2_sitl.parm, through
+# SIM_Aircraft.cpp:694-707 update_home() - a path with no CMAC substitution.
+# Do NOT re-add -O. See docs/source_of_truth/autopilot/
+# SITL_ATMOSPHERE_AND_AIRSPEED.md.
 "$ARDUPLANE_BIN" \
-  -w -M json -O 0,0,0,0 \
+  -w -M json \
   --defaults "$SITL_PARM" \
   -I 0 --speedup 1 &
 AP_PID=$!

@@ -1,0 +1,95 @@
+FALCON V2 - AIRSPEED / WIND ACCEPTANCE MATRIX
+stage: SITL_ATMOSPHERE_AND_PITOT_INTEGRATION_VALIDATION
+
+Wind = velocity of the AIR MASS, world ENU (WIND.md sec 2). Nose is +X,
+so wind_x = -5 is a HEADWIND and wind_x = +5 is a TAILWIND. wind_y is the
+lateral (ENU North) component, non-zero only in the crosswind sanity case.
+NOTE: the P0 segment of EVERY case is flown at ZERO wind by design (it is the
+common reference); the case's wind is applied from P2 onward. The wndX/wndY
+columns show the CASE's wind, not the segment's - read P0 rows as zero wind.
+All values are means over the settled window. AIRSPEED columns are EAS
+except TECS.sp/spdem which are TAS.
+
+case      segment                 wndX  wndY    dem   gzPitot      ARSP    VFR_as   TECS.sp   TECSdem  EAS2TAS    GS(gz)   GS(gps)   GS(vfr)    thr  APwind
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+zero      P0_zero_wind_ref_cruise   0.0   0.0  17.92    17.941    17.930    17.930    17.992    17.997  1.00345    17.940    17.947    17.939 0.4854   0.000
+zero      P2_wind_on_cruise        0.0   0.0  17.92    17.941    17.920    17.921    17.997    17.997  1.00426    17.941    17.940    17.941 0.4876   0.000
+zero      P1_MG_LOW                0.0   0.0  16.00    16.030    15.992    15.997    16.061    16.069  1.00430    16.030    16.025    16.030 0.4500   0.000
+zero      P1_MG_HIGH               0.0   0.0  20.92    20.918    20.946    20.947    21.035    21.010  1.00424    20.916    20.677    20.645 0.5302   0.000
+headwind  P0_zero_wind_ref_cruise  -5.0   0.0  17.92    17.941    17.944    17.927    18.002    17.997  1.00323    17.940    17.965    17.938 0.4848   0.000
+headwind  P2_wind_on_cruise       -5.0   0.0  17.92    17.941    17.931    17.916    18.009    17.997  1.00433    12.944    12.958    12.943 0.4859   5.000
+headwind  P1_MG_HIGH              -5.0   0.0  20.92    20.941    20.909    20.938    21.007    21.010  1.00467    16.028    15.699    15.725 0.5400   5.000
+tailwind  P0_zero_wind_ref_cruise   5.0   0.0  17.92    17.929    17.937    17.930    17.998    17.997  1.00341    17.927    17.941    17.926 0.4848   0.000
+tailwind  P2_wind_on_cruise        5.0   0.0  17.92    17.936    17.925    17.941    17.989    17.997  1.00360    22.928    22.915    22.917 0.4843   5.000
+tailwind  P1_MG_LOW                5.0   0.0  16.00    16.016    15.991    15.996    16.060    16.069  1.00430    21.003    20.998    21.003 0.4499   5.000
+crosswind P0_zero_wind_ref_cruise   0.0   5.0  17.92    17.924    17.939    17.929    18.000    17.997  1.00342    17.923    17.936    17.922 0.4847   0.000
+crosswind P2_wind_on_cruise        0.0   5.0  17.92    17.922    17.921    17.919    17.999    17.997  1.00433    17.392    17.393    17.392 0.4866   5.000
+
+MATCHED-GROUNDSPEED COMPARISONS (the owner's literal criterion)
+------------------------------------------------------------------------------
+MG_HEADWIND_at_gs16:  zero/P1_MG_LOW  ->  headwind/P1_MG_HIGH
+    groundspeed  16.030 -> 16.028   (mismatch -0.001 m/s)
+    airspeed     16.030 -> 20.941   delta +4.911 m/s   (expected +5.000, err -0.089)
+    ArduPlane    15.992 -> 20.909   delta +4.917 m/s
+    identity  (dV_air - dV_ground) = +4.9126   expected +5.000   err -0.0874
+    TECS.sp   delta +4.945 TAS m/s   expected +5.023   err -0.078
+
+MG_TAILWIND_at_gs21:  zero/P1_MG_HIGH  ->  tailwind/P1_MG_LOW
+    groundspeed  20.916 -> 21.003   (mismatch +0.087 m/s)
+    airspeed     20.918 -> 16.016   delta -4.902 m/s   (expected -5.000, err +0.098)
+    ArduPlane    20.946 -> 15.991   delta -4.955 m/s
+    identity  (dV_air - dV_ground) = -4.9893   expected -5.000   err +0.0107
+    TECS.sp   delta -4.975 TAS m/s   expected -5.021   err +0.046
+
+CLOSED-LOOP CRUISE (TECS holds AIRSPEED; GROUNDSPEED moves)
+------------------------------------------------------------------------------
+case        wndX  demand  airspeed     err     ARSP  TECS.sp       GS  GSshift     err     thr
+zero         0.0   17.92    17.941   0.021   17.920   17.997   17.941    0.000   0.000  0.4876
+headwind    -5.0   17.92    17.941   0.021   17.931   18.009   12.944   -4.995   0.005  0.4859
+tailwind     5.0   17.92    17.936   0.016   17.925   17.989   22.928    5.001   0.001  0.4843
+
+closed-loop airspeed spread across all 3 cases: 0.0047 m/s
+worst |ARSP - gazebo pitot|: 0.0328 m/s
+EAS2TAS range: [1.003229899110843, 1.0046748355191129]
+min ARSP used fraction: 1.0
+
+ArduPlane WIND-ESTIMATE FRAME SANITY (bearing = wind is coming FROM)
+------------------------------------------------------------------------------
+  zero       commanded ENU [0.0, 0.0, 0.0]  ->  ArduPlane  0.000 m/s @ -180.00 deg   (zero wind)
+  headwind   commanded ENU [-5.0, 0.0, 0.0]  ->  ArduPlane  5.000 m/s @   90.00 deg   (expected 90.0 deg, err +0.00)
+  tailwind   commanded ENU [5.0, 0.0, 0.0]  ->  ArduPlane  5.000 m/s @  -90.00 deg   (expected -90.0 deg, err +0.00)
+  crosswind  commanded ENU [0.0, 5.0, 0.0]  ->  ArduPlane  5.000 m/s @  180.00 deg   (expected 180.0 deg, err +0.00)
+
+CHECKS
+------------------------------------------------------------------------------
+  PASS  MG1_headwind_groundspeeds_actually_matched
+  PASS  MG1_headwind_airspeed_delta_correct
+  PASS  MG1_headwind_identity_exact
+  PASS  MG1_headwind_arduplane_delta_matches_gazebo
+  PASS  MG2_tailwind_groundspeeds_actually_matched
+  PASS  MG2_tailwind_airspeed_delta_correct
+  PASS  MG2_tailwind_identity_exact
+  PASS  MG2_tailwind_arduplane_delta_matches_gazebo
+  PASS  CL_zero_tecs_holds_airspeed
+  PASS  CL_zero_groundspeed_shifts_by_wind
+  PASS  CL_headwind_tecs_holds_airspeed
+  PASS  CL_headwind_groundspeed_shifts_by_wind
+  PASS  CL_tailwind_tecs_holds_airspeed
+  PASS  CL_tailwind_groundspeed_shifts_by_wind
+  PASS  CL_airspeed_identical_across_all_three_cases
+  PASS  FRAME_headwind_ap_wind_bearing_correct
+  PASS  FRAME_tailwind_ap_wind_bearing_correct
+  PASS  FRAME_crosswind_ap_wind_bearing_correct
+  PASS  SANITY_crosswind_tecs_holds_airspeed
+  PASS  AP1_arduplane_dataflash_agrees_with_gazebo_pitot
+  PASS  E2T1_eas2tas_is_post_fix_datum
+  PASS  dataflash_time_alignment_ok
+  PASS  ARSP_sensor_used_in_flight
+  PASS  TE1_MG1_headwind_tecs_sees_the_change
+  PASS  TE1_MG2_tailwind_tecs_sees_the_change
+  PASS  per_case_zero_passed
+  PASS  per_case_headwind_passed
+  PASS  per_case_tailwind_passed
+  PASS  per_case_crosswind_passed
+
+VERDICT: AIRSPEED_WIND_ACCEPTANCE_MATRIX_PASS   failed=[]

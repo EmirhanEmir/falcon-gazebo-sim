@@ -1,0 +1,239 @@
+# =============================================================================
+# FALCON V2 - ArduPlane FBWB / TECS command-mapping + baseline-parameter table
+# =============================================================================
+# Owner: controls-integration.
+# Stage: ARDUPLANE_TECS_AND_CRUISE_SPEED_HOLD_VALIDATION (2026-09-02).
+#
+# WHAT THIS FILE IS
+#   The authoritative, provenance-carrying table for
+#     (a) which ArduPlane mode is used to exercise TECS on Falcon V2,
+#     (b) how an RC command becomes a TECS speed/height DEMAND in that mode,
+#     (c) what TECS actually runs with (baseline = ArduPlane firmware
+#         defaults, because config/ardupilot/falcon_v2_sitl.parm deliberately
+#         sets NO TECS_* value - see SITL_PARAM_MIGRATION.md sec 3).
+#
+#   It exists so the RC-PWM <-> demand conversions used by
+#   tests/gazebo/scripts/test_ardupilot_tecs_cruise_speed_hold.py are NOT
+#   undocumented magic numbers inside test code. The test still RE-READS every
+#   parameter live over MAVLink and RE-DERIVES the PWM from the live values -
+#   this file is the documented reference, not a hardcoded substitute.
+#
+#   NOTHING in this file changes any parameter. No TECS_* value is written to
+#   config/ardupilot/falcon_v2_sitl.parm by this stage. Baseline-first.
+#
+# FIRMWARE UNDER TEST
+#   ArduPlane V4.8.0-dev, ArduPilot commit 409226a637, installed at
+#   /home/emirhan/gazebo_sim/ardupilot  (ArduPlane/version.h:10).
+#   Launched as: arduplane -w -M json --defaults config/ardupilot/falcon_v2_sitl.parm
+#   `-w` wipes the scratch EEPROM, so every parameter NOT present in
+#   falcon_v2_sitl.parm is at its COMPILED FIRMWARE DEFAULT.
+# =============================================================================
+
+mode_selection:
+  chosen_mode: FBWB
+  mavlink_custom_mode: 6           # ArduPlane/mode.h:45  FLY_BY_WIRE_B = 6
+  rationale: >-
+    FBWB is the only mode in which TECS drives BOTH throttle (speed) and pitch
+    (height) while NO navigation controller runs at all. Verified in source,
+    not assumed.
+  source_evidence:
+    tecs_is_the_only_speed_height_controller:
+      - "ArduPlane/Plane.cpp:635  bool should_run_tecs = control_mode->does_auto_throttle();"
+      - "ArduPlane/Plane.cpp:669-677  TECS_controller.update_pitch_throttle(...) - the ONLY call site of update_pitch_throttle in the whole vehicle (grep: 1 hit)."
+      - "ArduPlane/mode.h:654  ModeFBWB::does_auto_throttle() const override { return true; }"
+    tecs_output_reaches_throttle_and_pitch:
+      - "ArduPlane/Attitude.cpp:510-511  calc_throttle(): SRV_Channels::set_output_scaled(k_throttle, TECS_controller.get_throttle_demand())"
+      - "ArduPlane/Attitude.cpp:635-639  calc_nav_pitch(): nav_pitch_cd = constrain(TECS_controller.get_pitch_demand(), pitch_limit_min*100, PTCH_LIM_MAX_DEG*100)"
+      - "ArduPlane/navigation.cpp:450-451  update_fbwb_speed_height() ends with calc_throttle(); calc_nav_pitch();"
+      - "ArduPlane/mode_fbwb.cpp:21  ModeFBWB::update() -> plane.update_fbwb_speed_height()"
+    no_navigation_controller_in_fbwb:
+      - "ArduPlane/mode.h:639-663  ModeFBWB does NOT override does_auto_navigation(); base is ArduPlane/mode.h:134 `virtual bool does_auto_navigation() const { return false; }`"
+      - "ArduPlane/mode_fbwb.cpp:18-22  ModeFBWB::update() sets nav_roll_cd DIRECTLY from the roll stick (channel_roll->norm_input() * roll_limit_cd) and never calls nav_controller->update_waypoint() or calc_nav_roll()."
+      - "ArduPlane/mode.h  ModeFBWB declares no navigate() override -> no L1/NAVL1 path."
+    no_stick_mixing_contamination_in_fbwb:
+      - "ArduPlane/Attitude.cpp:293-301  stabilize_stick_mixing_fbw() returns early for control_mode == &mode_fbwb, so STICK_MIXING (default 1 = FBW) cannot inject pitch/roll stick into the TECS demand."
+  why_not_cruise:
+    - "ArduPlane/mode_cruise.cpp:88  ModeCruise::navigate() calls plane.nav_controller->update_waypoint(prev_WP_loc, next_WP_loc) once heading locks - that IS the L1 navigation controller, i.e. exactly what this stage must exclude."
+    - "ArduPlane/mode_cruise.cpp:75-86  heading auto-locks after 0.5 s of zero roll/rudder input, which is the normal state for this wings-level test - so CRUISE would silently become a navigating mode."
+  why_not_loiter_auto_rtl:
+    - "Explicitly excluded by the stage constraints (waypoint navigation). ModeLoiter/ModeAuto/ModeRTL all set does_auto_navigation()==true (ArduPlane/mode.h:371,415,448,533)."
+  roll_axis_handling:
+    demand: "wings level (zero bank demand)"
+    how: "RC1 held at RC1_TRIM (1500 us) -> channel_roll->norm_input() == 0 -> nav_roll_cd == 0 (mode_fbwb.cpp:19)."
+
+# -----------------------------------------------------------------------------
+# COMMAND MAPPING - how an RC PWM becomes a TECS DEMAND in FBWB.
+# These are ArduPlane's own formulas, cited to source. The live test recomputes
+# them from live-read RC*_MIN/MAX/TRIM/DZ/REVERSED and AIRSPEED_* values.
+# -----------------------------------------------------------------------------
+command_mapping:
+
+  throttle_stick_to_target_airspeed:
+    applies_when: "control_mode == FBWB or CRUISE, and FLIGHT_OPTIONS bits CRUISE_TRIM_AIRSPEED / CRUISE_TRIM_THROTTLE are BOTH clear (FLIGHT_OPTIONS default 0)."
+    formula_source: "ArduPlane/navigation.cpp:187-189"
+    formula: "target_airspeed_cm = (AIRSPEED_MAX - AIRSPEED_MIN) * get_throttle_input() + AIRSPEED_MIN*100"
+    get_throttle_input_source: "ArduPlane/reverse_thrust.cpp:132-149 -> RC_Channel::get_control_in() (WITH dead zone, no_deadzone=false at navigation.cpp:188)"
+    control_in_source: "libraries/RC_Channel/RC_Channel.cpp:388-402 pwm_to_range_dz(); ArduPlane/radio.cpp:29 channel_throttle->set_range(100); ArduPlane/radio.cpp:76 channel_throttle->set_default_dead_zone(30)"
+    control_in_formula: "control_in = 100 * (pwm - (RC3_MIN + RC3_DZ)) / (RC3_MAX - (RC3_MIN + RC3_DZ)), clamped to [0,100]; 0 below RC3_MIN+RC3_DZ"
+    inverse_used_by_the_test: "rc3_pwm = (RC3_MIN + RC3_DZ) + ((V_target - AIRSPEED_MIN)/(AIRSPEED_MAX - AIRSPEED_MIN)) * (RC3_MAX - (RC3_MIN + RC3_DZ))"
+    worked_example_at_firmware_defaults:
+      inputs: {V_target_ms: 18.0, AIRSPEED_MIN: 16, AIRSPEED_MAX: 28, RC3_MIN: 1100, RC3_MAX: 1900, RC3_DZ: 30, RC3_REVERSED: 0}
+      control_in_pct: 16.667
+      rc3_pwm_us: 1258
+      resulting_target_airspeed_ms: 17.995
+      status: EXPECTED_VALUE_ONLY
+      note: >-
+        NOT hardcoded in the test. The test reads RC3_MIN/RC3_MAX/RC3_DZ/
+        RC3_REVERSED and AIRSPEED_MIN/MAX live, recomputes the PWM, and then
+        CROSS-CHECKS the achieved demand against ArduPlane's own reported TECS
+        target airspeed (VFR_HUD.airspeed + NAV_CONTROLLER_OUTPUT.aspd_error/100).
+    throttle_nudge_guard:
+      source: "ArduPlane/radio.cpp:143-152; THROTTLE_NUDGE default 1 (Parameters.cpp:436)"
+      behaviour: "airspeed_nudge_cm is only non-zero when channel_throttle->get_control_in() > 50."
+      consequence: "At the ~16.7 % control_in needed for 18 m/s the nudge is inactive, so the commanded demand is exactly the mapping above. VERIFIED-BY-CONSTRUCTION and re-checked live by the test."
+    important_note: >-
+      In FBWB the throttle stick does NOT set throttle. Throttle is TECS output
+      (Attitude.cpp:510). The stick only selects the TARGET AIRSPEED. This is the
+      basis of the test's TECS_IS_ACTUALLY_DRIVING_THROTTLE check: the measured
+      motor throttle must differ substantially from the manual-passthrough value
+      that the same RC3 PWM would produce in FBWA/MANUAL.
+
+  pitch_stick_to_altitude_demand:
+    formula_source: "ArduPlane/navigation.cpp:402-447 Plane::update_fbwb_speed_height()"
+    elevator_input: "channel_pitch->get_control_in() * (1/4500)   [navigation.cpp:414]"
+    sign_reversal_param: "FBWB_ELEV_REV (Parameters.cpp:319, default 0) - navigation.cpp:416-418 negates elevator_input when set"
+    climb_rate_demand: "climb_rate = FBWB_CLIMB_RATE * elevator_input, clamped to [-TECS_SINK_MAX, +TECS_CLMB_MAX]  [navigation.cpp:427-428]"
+    target_altitude_integration: "alt_change_cm = climb_rate * dt * 100, dt clamped to [0.10, 0.15] s, evaluated at 10 Hz  [navigation.cpp:406-410, 430-431]"
+    stick_release_behaviour: "when the pitch stick returns THROUGH zero, set_target_altitude_current() locks the target at the CURRENT altitude  [navigation.cpp:421-426]"
+    control_in_source: "libraries/RC_Channel/RC_Channel.cpp:346-381 pwm_to_angle_dz_trim(); ArduPlane/radio.cpp:25 channel_pitch->set_angle(4500); ArduPlane/radio.cpp:74 set_default_dead_zone(30)"
+    sign_convention_status: DIRECTION_MUST_BE_TEST_VERIFIED
+    sign_convention_note: >-
+      RC2 > RC2_TRIM is EXPECTED to be nose-up / climb-demand (FBWB_ELEV_REV=0),
+      consistent with the live-verified FBWA behaviour recorded in
+      test_ardupilot_basic_closed_loop_flight_campaign.py (rc2_for_pitch_deg:
+      RC2 = 1500 + 400*norm, positive norm = commanded nose-up). This is NOT
+      treated as known-good here: test_ardupilot_tecs_cruise_speed_hold.py
+      encodes it as a GATING acceptance check (up-stick must produce a positive
+      measured altitude rate, down-stick a negative one). If it fails, that is
+      reported as a control-direction finding - nothing is "adapted" to hide it.
+
+  altitude_target_readback_over_mavlink:
+    - "NAV_CONTROLLER_OUTPUT.alt_error = Plane::calc_altitude_error_cm()*0.01 = (target_amsl_cm - current_amsl_cm)*0.01, in METRES, int16 -> 1 m resolution  [ArduPlane/GCS_MAVLink_Plane.cpp:240, ArduPlane/altitude.cpp:389-398]"
+    - "NAV_CONTROLLER_OUTPUT.aspd_error = plane.airspeed_error*100 (field is cm/s despite the name; see the in-source comment 'incorrect units; see PR#7933')  [GCS_MAVLink_Plane.cpp:241]"
+    - "plane.airspeed_error = TECS_controller.get_target_airspeed() - airspeed_measured  [ArduPlane/navigation.cpp:297]"
+    - "NAV_CONTROLLER_OUTPUT.nav_pitch = plane.nav_pitch_cd*0.01 = the RAW TECS pitch demand, in degrees, WITHOUT PTCH_TRIM_DEG  [GCS_MAVLink_Plane.cpp:236]"
+
+  pitch_demand_vs_ptch_trim_deg:
+    status: IMPORTANT_INTERPRETATION_NOTE
+    detail: >-
+      The physical pitch attitude ArduPlane actually demands in FBWB is
+      (NAV_CONTROLLER_OUTPUT.nav_pitch + PTCH_TRIM_DEG), because
+      ArduPlane/Attitude.cpp:244 adds g.pitch_trim*100 to nav_pitch_cd
+      unconditionally. TECS itself does NOT add PTCH_TRIM_DEG to its own pitch
+      demand: AP_TECS.h:66-68 get_pitch_demand() returns raw _pitch_dem, and the
+      pitch_trim_deg argument passed at Plane.cpp:677 is only consumed by
+      AP_TECS.cpp:919-940 _update_throttle_without_airspeed(), a path NOT taken
+      here because ARSPD_USE=1. This is NOT a double count: with PTCH_TRIM_DEG =
+      2.49 the airframe's known level-flight attitude is supplied as a
+      feed-forward, so TECS's own SEB integrator converges toward
+      nav_pitch ~= 0 in level cruise instead of ~= +2.49 deg.
+    also_note: >-
+      GCS-reported ATTITUDE.pitch = (true_pitch - PTCH_TRIM_DEG) while
+      FLIGHT_OPTIONS bit 8 (GCS_REMOVE_TRIM_PITCH) is clear
+      [ArduPlane/GCS_MAVLink_Plane.cpp:139-141]. The test therefore takes TRUE
+      physical pitch from Gazebo ground truth, not from MAVLink.
+
+# -----------------------------------------------------------------------------
+# TECS BASELINE PARAMETERS
+# provenance for EVERY row below = "ArduPlane 4.8.0-dev compiled firmware
+# default" because config/ardupilot/falcon_v2_sitl.parm sets NO TECS_* value
+# and arduplane is launched with -w (wiped EEPROM).
+# The live test re-reads all of these over MAVLink and records the measured
+# values in its result JSON - these are the EXPECTED values, not a substitute
+# for the live dump.
+# -----------------------------------------------------------------------------
+tecs_baseline_parameters:
+  provenance_class: ARDUPLANE_FIRMWARE_DEFAULT_NOT_FALCON_DERIVED
+  values:
+    TECS_CLMB_MAX:   {value: 5.0,  units: "m/s",    source: "libraries/AP_TECS/AP_TECS.cpp:27"}
+    TECS_SINK_MIN:   {value: 2.0,  units: "m/s",    source: "libraries/AP_TECS/AP_TECS.cpp:35"}
+    TECS_SINK_MAX:   {value: 5.0,  units: "m/s",    source: "libraries/AP_TECS/AP_TECS.cpp:115"}
+    TECS_TIME_CONST: {value: 5.0,  units: s,        source: "libraries/AP_TECS/AP_TECS.cpp:43"}
+    TECS_THR_DAMP:   {value: 0.5,  units: "-",      source: "libraries/AP_TECS/AP_TECS.cpp:51"}
+    TECS_INTEG_GAIN: {value: 0.3,  units: "-",      source: "libraries/AP_TECS/AP_TECS.cpp:59"}
+    TECS_VERT_ACC:   {value: 7.0,  units: "m/s^2",  source: "libraries/AP_TECS/AP_TECS.cpp:67"}
+    TECS_HGT_OMEGA:  {value: 3.0,  units: "rad/s",  source: "libraries/AP_TECS/AP_TECS.cpp:75"}
+    TECS_SPD_OMEGA:  {value: 2.0,  units: "rad/s",  source: "libraries/AP_TECS/AP_TECS.cpp:83"}
+    TECS_RLL2THR:    {value: 10.0, units: "-",      source: "libraries/AP_TECS/AP_TECS.cpp:91"}
+    TECS_SPDWEIGHT:  {value: 1.0,  units: "-",      source: "libraries/AP_TECS/AP_TECS.cpp:99"}
+    TECS_PTCH_DAMP:  {value: 0.3,  units: "-",      source: "libraries/AP_TECS/AP_TECS.cpp:107"}
+    TECS_PITCH_MAX:  {value: 15,   units: deg,      source: "libraries/AP_TECS/AP_TECS.cpp:147"}
+    TECS_PITCH_MIN:  {value: 0,    units: deg,      source: "libraries/AP_TECS/AP_TECS.cpp:155 (0 => fall back to PTCH_LIM_MIN_DEG, AP_TECS.cpp:1498)"}
+    TECS_SYNAIRSPEED: {value: 0,    units: bool,     source: "libraries/AP_TECS/AP_TECS.cpp:244"}
+    TECS_OPTIONS:    {value: 0,    units: bitmask,  source: "libraries/AP_TECS/AP_TECS.cpp:251"}
+    TECS_PTCH_FF_V0: {value: 12.0, units: "m/s",    source: "libraries/AP_TECS/AP_TECS.cpp:258"}
+    TECS_PTCH_FF_K:  {value: 0.0,  units: "rad/(m/s)", source: "libraries/AP_TECS/AP_TECS.cpp:265 (0 = pitch feed-forward disabled)"}
+    TECS_HDEM_TCONST: {value: 3.0,  units: s,        source: "libraries/AP_TECS/AP_TECS.cpp:292"}
+    TECS_THR_ERATE:  {value: 20,   units: "%/s",    source: "libraries/AP_TECS/AP_TECS.cpp:275"}
+
+surrounding_parameters_tecs_depends_on:
+  values:
+    THR_MIN:          {value: 0,    units: "%",  source: "ArduPlane/Parameters.cpp:354 + ArduPlane/config.h:139 THROTTLE_MIN"}
+    THR_MAX:          {value: 100,  units: "%",  source: "ArduPlane/Parameters.cpp:363 + ArduPlane/config.h:148 THROTTLE_MAX"}
+    TRIM_THROTTLE:    {value: 45,   units: "%",  source: "ArduPlane/Parameters.cpp:429 + ArduPlane/config.h:145 AP_PLANE_TRIM_THROTTLE_DEFAULT"}
+    THR_SLEWRATE:     {value: 100,  units: "%/s", source: "ArduPlane/Parameters.cpp:381"}
+    THROTTLE_NUDGE:   {value: 1,    units: bool, source: "ArduPlane/Parameters.cpp:436"}
+    FBWB_CLIMB_RATE:  {value: 2.0,  units: "m/s", source: "ArduPlane/Parameters.cpp:345"}
+    FBWB_ELEV_REV:    {value: 0,    units: bool, source: "ArduPlane/Parameters.cpp:319"}
+    PTCH_LIM_MAX_DEG: {value: 20,   units: deg,  source: "ArduPlane/Parameters.cpp:535 + config.h:158 PITCH_MAX"}
+    PTCH_LIM_MIN_DEG: {value: -25,  units: deg,  source: "ArduPlane/Parameters.cpp:544 + config.h:161 PITCH_MIN"}
+    ROLL_LIMIT_DEG:   {value: 45,   units: deg,  source: "ArduPlane/Parameters.cpp:526 + config.h:155"}
+    STICK_MIXING:     {value: 1,    units: enum, source: "ArduPlane/Parameters.cpp:96 (irrelevant in FBWB - Attitude.cpp:293-301 excludes FBWB)"}
+    MIN_GROUNDSPEED:  {value: 0,    units: "m/s", source: "ArduPlane/Parameters.cpp:649 + config.h:116 (0 disables the groundspeed-undershoot airspeed bump at navigation.cpp:246-274)"}
+    CRUISE_ALT_FLOOR: {value: 0,    units: m,    source: "ArduPlane/Parameters.cpp:671 + config.h:131 (0 => check_fbwb_altitude() applies no floor, altitude.cpp:424-432)"}
+    FLIGHT_OPTIONS:   {value: 0,    units: bitmask, source: "ArduPlane/Parameters.cpp:1078"}
+    RC2_MIN/TRIM/MAX/DZ: {value: "1100 / 1500 / 1900 / 30", units: us, source: "libraries/RC_Channel/RC_Channel.cpp:74,83,92 + ArduPlane/radio.cpp:74"}
+    RC3_MIN/TRIM/MAX/DZ: {value: "1100 / 1500 / 1900 / 30", units: us, source: "libraries/RC_Channel/RC_Channel.cpp:74,83,92 + ArduPlane/radio.cpp:76"}
+  falcon_specific_values_already_set:
+    AIRSPEED_MIN:    {value: 16, units: m/s, source: "config/ardupilot/falcon_v2_sitl.parm (GAZEBO_VALIDATION / flight-envelope derived)"}
+    AIRSPEED_CRUISE: {value: 18, units: m/s, source: "config/ardupilot/falcon_v2_sitl.parm"}
+    AIRSPEED_MAX:    {value: 28, units: m/s, source: "config/ardupilot/falcon_v2_sitl.parm"}
+    AIRSPEED_STALL:  {value: 0,  units: m/s, source: "config/ardupilot/falcon_v2_sitl.parm - DATA_REQUIRED, no validated stall speed exists"}
+    ARSPD_TYPE:      {value: 100, units: enum, source: "config/ardupilot/falcon_v2_sitl.parm (SITL backend)"}
+    ARSPD_USE:       {value: 1,   units: bool, source: "config/ardupilot/falcon_v2_sitl.parm - so TECS runs its WITH-AIRSPEED path (AP_TECS.cpp:1360 else-branch)"}
+    PTCH_TRIM_DEG:   {value: 2.49, units: deg, source: "config/ardupilot/falcon_v2_sitl.parm (measured level-flight attitude, see SITL_PARAM_MIGRATION.md sec 17)"}
+
+# -----------------------------------------------------------------------------
+# DEFAULTS THAT ARE NOT FALCON-DERIVED AND SHOULD BE REVIEWED **AFTER** THE
+# BASELINE RUN. Deliberately NOT changed for this stage (baseline first).
+# -----------------------------------------------------------------------------
+open_items:
+  - id: TECS_CLMB_MAX_NOT_AIRFRAME_DERIVED
+    severity: ASSUMPTION
+    detail: >-
+      TECS_CLMB_MAX = 5.0 m/s and TECS_SINK_MIN = 2.0 m/s are generic ArduPlane
+      defaults. They are NOT measured for a 6.000 kg Falcon V2 with 2 x
+      SunnySky X2820 860KV / 2 x APC 13x6.5E on 4S. They matter because
+      AP_TECS.cpp:759 derives the throttle-loop gain
+      K_thr2STE = (_STEdot_max - _STEdot_min)/(_THRmaxf - _THRminf) directly
+      from them, so a wrong value directly mis-scales the TECS throttle loop.
+    required_data: >-
+      DATA_REQUIRED - measured maximum steady climb rate at AIRSPEED_CRUISE and
+      THR_MAX, and measured sink rate at THR_MIN and AIRSPEED_CRUISE, both from
+      a dedicated Gazebo climb/sink-performance run. The baseline TECS run
+      records achieved climb/sink so a follow-up stage can size these properly.
+    action_this_stage: NONE - baseline first, do not pre-emptively tune.
+  - id: TRIM_THROTTLE_DEFAULT_VS_MEASURED_TRIM
+    severity: INFO
+    detail: >-
+      TRIM_THROTTLE = 45 % (firmware default) is TECS's feed-forward nominal
+      throttle (nomThr, AP_TECS.cpp:760) and its throttle-demand reset value
+      (AP_TECS.cpp:1186). Falcon V2's MEASURED level-cruise equilibrium throttle
+      is 49.57 % at V* = 18.162 m/s (docs/test_results/2026-08-28_ardupilot_
+      longitudinal_equilibrium_and_sink_root_cause_validation.md sec 6.2). The
+      4.6 percentage-point difference is a feed-forward offset that TECS's
+      integrator (TECS_INTEG_GAIN 0.3) is designed to trim out, so it is NOT a
+      defect - but it IS the single most defensible, provenance-backed
+      adjustment available if the baseline run shows a slow throttle/altitude
+      settling transient.
+    action_this_stage: NONE - reported only. Not changed. Not a TECS_* parameter.
