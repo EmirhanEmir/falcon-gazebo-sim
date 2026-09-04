@@ -118,7 +118,21 @@ command_mapping:
       reported as a control-direction finding - nothing is "adapted" to hide it.
 
   altitude_target_readback_over_mavlink:
-    - "NAV_CONTROLLER_OUTPUT.alt_error = Plane::calc_altitude_error_cm()*0.01 = (target_amsl_cm - current_amsl_cm)*0.01, in METRES, int16 -> 1 m resolution  [ArduPlane/GCS_MAVLink_Plane.cpp:240, ArduPlane/altitude.cpp:389-398]"
+    # CORRECTION (controls-integration, 2026-09-03, stage ARDUPLANE_TECS_CLIMB_
+    # DESCENT_AND_ENERGY_VALIDATION): the original line here said alt_error was
+    # "int16 -> 1 m resolution". THAT WAS WRONG. In NAV_CONTROLLER_OUTPUT only
+    # nav_bearing and target_bearing are int16; alt_error, aspd_error,
+    # xtrack_error, nav_roll and nav_pitch are all MAVLink `float`. Confirmed
+    # live: pymavlink MAVLink_nav_controller_output_message.fieldtypes ==
+    # ['float','float','int16_t','int16_t','uint16_t','float','float','float'].
+    # The underlying int32 centimetre value gives ~0.01 m resolution. This
+    # matters because the full-precision field is what allows ArduPlane's OWN
+    # height demand to be reconstructed and the commanded +/-10 m step to be
+    # VERIFIED rather than assumed. Full derivation:
+    # docs/source_of_truth/controls/ardupilot_tecs_energy_management.yaml
+    # section target_altitude_readback.
+    - "NAV_CONTROLLER_OUTPUT.alt_error = Plane::calc_altitude_error_cm()*0.01 = (target_amsl_cm - adjusted_altitude_cm)*0.01, a MAVLink FLOAT in METRES with ~0.01 m resolution (NOT int16)  [ArduPlane/GCS_MAVLink_Plane.cpp:240, ArduPlane/altitude.cpp:389-398]"
+    - "=> ArduPlane's own height demand above home = GLOBAL_POSITION_INT.relative_alt/1000 + NAV_CONTROLLER_OUTPUT.alt_error, valid while ALT_OFFSET == 0 (Parameters.cpp:236) and TERRAIN_FOLLOW == 0"
     - "NAV_CONTROLLER_OUTPUT.aspd_error = plane.airspeed_error*100 (field is cm/s despite the name; see the in-source comment 'incorrect units; see PR#7933')  [GCS_MAVLink_Plane.cpp:241]"
     - "plane.airspeed_error = TECS_controller.get_target_airspeed() - airspeed_measured  [ArduPlane/navigation.cpp:297]"
     - "NAV_CONTROLLER_OUTPUT.nav_pitch = plane.nav_pitch_cd*0.01 = the RAW TECS pitch demand, in degrees, WITHOUT PTCH_TRIM_DEG  [GCS_MAVLink_Plane.cpp:236]"

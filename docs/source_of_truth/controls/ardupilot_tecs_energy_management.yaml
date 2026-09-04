@@ -1,0 +1,829 @@
+# =============================================================================
+# FALCON V2 - ArduPlane TECS ENERGY-MANAGEMENT definitions, campaign plan and
+# acceptance-threshold provenance table
+# =============================================================================
+# Owner: controls-integration.
+# Stage: ARDUPLANE_TECS_CLIMB_DESCENT_AND_ENERGY_VALIDATION (2026-09-03).
+#
+# WHAT THIS FILE IS
+#   The provenance-carrying reference for
+#     (a) the energy quantities this stage measures and how each maps to
+#         ArduPlane's own TECS implementation,
+#     (b) how ArduPlane's OWN target altitude is read back over MAVLink,
+#     (c) the five-phase campaign and why each phase lasts as long as it does,
+#     (d) EVERY acceptance threshold, marked INHERITED or DERIVED, with the
+#         reasoning that produced it.
+#
+#   It exists so the numbers inside
+#   tests/gazebo/scripts/test_ardupilot_tecs_climb_descent_energy.py are not
+#   undocumented magic numbers. The test still imports every INHERITED
+#   threshold directly from the 2026-09-02 cruise-stage module and re-reads
+#   every ArduPlane parameter live over MAVLink; this file is the documented
+#   reference, not a hardcoded substitute.
+#
+#   NOTHING in this file changes any parameter. NO TECS_* value, NO PID, NO
+#   PTCH_TRIM_DEG, NO control-surface mapping is written by this stage.
+#
+# COMPANION FILE (read first)
+#   docs/source_of_truth/controls/ardupilot_fbwb_tecs_baseline.yaml
+#     - mode selection (FBWB), the proof that TECS drives both throttle and
+#       pitch, the RC -> demand command mapping, and the TECS baseline
+#       parameter table with per-value firmware-source provenance.
+#
+# FIRMWARE UNDER TEST
+#   ArduPlane V4.8.0-dev, ArduPilot commit 409226a637, installed at
+#   /home/emirhan/gazebo_sim/ardupilot  (ArduPlane/version.h:10).
+#   Launched as: arduplane -w -M json --defaults config/ardupilot/falcon_v2_sitl.parm
+# =============================================================================
+
+stage:
+  id: ARDUPLANE_TECS_CLIMB_DESCENT_AND_ENERGY_VALIDATION
+  date: 2026-09-03
+  mode: FBWB
+  mavlink_custom_mode: 6              # ArduPlane/mode.h:45 FLY_BY_WIRE_B
+  wind: "ZERO WIND is the acceptance condition (FalconV2Wind <steady_wind_mps>0 0 0)."
+  airspeed_path: >-
+    Official SIM_JSON path. model/model.sdf wires <airspeed_topic>
+    (FalconV2Pitot, EAS) and <wind_topic> (FalconV2Wind) into ArduPilotPlugin;
+    ARSPD_TYPE=100 / ARSPD_USE=1 feed that EAS to TECS. NO physics bypass.
+  test: tests/gazebo/scripts/test_ardupilot_tecs_climb_descent_energy.py
+  runner: tests/gazebo/scripts/run_ardupilot_tecs_climb_descent_energy.sh
+  parameters_written_by_this_stage: NONE
+  revisions:
+    - date: 2026-09-03
+      change: "Original stage entry, plus the validation V-1 settling-criterion correction (section 4A)."
+    - date: 2026-09-04
+      change: >-
+        DOCUMENTATION ONLY, validation finding V-10 (MINOR). Rewrote
+        settling_criterion_correction.limitation_falsifiability: the withdrawn
+        text mis-described this test's own acceptance code (it claimed a
+        settling time in (30.0, 32.502] s would be scored "never settled"). The
+        gate is falsifiable inside its own segment; the real limitation is that
+        for a settling time beyond ~30 s the tail-mean SETTLED REFERENCE would
+        be defined from a not-yet-settled state. Verified against
+        settling_analysis() and by driving the real function with synthetic
+        traces on the real segment. NO threshold, band, K, segment length,
+        parameter or flight datum changed; verdict and all settling numbers
+        unchanged.
+
+# -----------------------------------------------------------------------------
+# 1. ENERGY DEFINITIONS - taken from ArduPlane's own TECS, not invented
+# -----------------------------------------------------------------------------
+energy_definitions:
+  specific_potential_energy:
+    symbol: SPE
+    units: J/kg
+    formula: "SPE = h * g"
+    ardupilot_source: "libraries/AP_TECS/AP_TECS.cpp:689  _SPE_est = _height * GRAVITY_MSS"
+  specific_kinetic_energy:
+    symbol: SKE
+    units: J/kg
+    formula: "SKE = 0.5 * TAS^2"
+    ardupilot_source: "libraries/AP_TECS/AP_TECS.cpp:690  _SKE_est = 0.5f*_TAS_state*_TAS_state"
+  specific_total_energy:
+    symbol: STE
+    units: J/kg
+    formula: "STE = SPE + SKE"
+    controlled_by: >-
+      THE THROTTLE LOOP. AP_TECS.cpp:738-772 forms _STE_error and STEdot_error
+      and drives _throttle_dem from them; AP_TECS.cpp:759 sets the loop gain
+      K_thr2STE = (_STEdot_max - _STEdot_min)/(_THRmaxf - _THRminf).
+  specific_energy_balance:
+    symbol: SEB
+    units: J/kg
+    formula: "SEB = SPE*w_SPE - SKE*w_SKE"
+    weights:
+      w_SKE: "min(constrain(TECS_SPDWEIGHT, 0, 2), 1)   [AP_TECS.cpp:1003, 1028]"
+      w_SPE: "min(2 - w_SKE, 1)                         [AP_TECS.cpp:1024, 1027]"
+      at_this_baseline: "TECS_SPDWEIGHT = 1.0 -> w_SPE = w_SKE = 1.0"
+      note: >-
+        The landing/approach weighting branches (AP_TECS.cpp:1005-1020) cannot
+        apply in FBWB - no landing or approach stage is ever entered. The test
+        reads TECS_SPDWEIGHT LIVE and computes the weights from it.
+    ardupilot_source: "libraries/AP_TECS/AP_TECS.cpp:1031-1032"
+    controlled_by: >-
+      THE PITCH LOOP. AP_TECS.cpp:1031-1096 forms SEB_error/SEBdot_error and
+      drives _pitch_dem from them.
+  rates:
+    SPEdot: {formula: "SPEdot = climb_rate * g", ardupilot_source: "AP_TECS.cpp:694"}
+    SKEdot: {formula: "SKEdot = TAS * dTAS/dt",  ardupilot_source: "AP_TECS.cpp:695"}
+    STEdot: "SPEdot + SKEdot"
+    SEBdot: "SPEdot*w_SPE - SKEdot*w_SKE"
+
+  declared_differences_from_the_ardupilot_internal_state:
+    - id: SKEDOT_FILTERING
+      severity: INFO
+      detail: >-
+        AP_TECS computes _SKEdot = _TAS_state * (_vel_dot - _vel_dot_lpf), i.e.
+        a HIGH-PASSED longitudinal acceleration, to reject complementary-filter
+        bias (AP_TECS.cpp:695). This test computes the RAW kinematic rate
+        dTAS/dt by linear regression over the analysis window. Over a window
+        long compared with the TECS filters the two agree in the mean but not
+        sample-by-sample. The values this stage reports are therefore the
+        AIRFRAME'S PHYSICAL energy rates, not a bit-exact replica of the TECS
+        internal state. TECS's own internal SPE/SKE/SPEdot/SKEdot are recorded
+        in the dataflash `TECS` log message, which the runner copies out for
+        independent cross-checking by `validation`.
+    - id: GRAVITY_CONSTANT
+      severity: INFO
+      detail: >-
+        Energies derived from Gazebo ground truth use the WORLD value
+        g = 9.81 m/s^2 (tests/gazebo/worlds/falcon_v2_ardupilot_basic_closed_
+        loop_flight_world.sdf:56, consistent with CLAUDE.md). ArduPlane
+        internally uses GRAVITY_MSS = 9.80665 (libraries/AP_Math/
+        definitions.h:45). The 0.034 % difference is RECORDED in the result
+        JSON (gravity_used_m_s2 / gravity_ardupilot_internal_m_s2), not
+        corrected away.
+    - id: AIRSPEED_EAS_VS_TAS
+      severity: INFO
+      detail: >-
+        TECS works in TAS. The primary V used for SKE here is the aerodynamics
+        plugin's own true airspeed (Gazebo ground truth); this is a ZERO-WIND
+        run, so TAS is unambiguous. VFR_HUD.airspeed (EAS, from the pitot path)
+        is recorded alongside for every window so the EAS/TAS scaling stays
+        visible instead of being silently conflated.
+
+# -----------------------------------------------------------------------------
+# 2. ARDUPLANE'S OWN TARGET ALTITUDE, READ BACK OVER MAVLINK
+#    (new this stage - the commanded step is VERIFIED, not assumed)
+# -----------------------------------------------------------------------------
+target_altitude_readback:
+  quantity: ap_target_alt_rel_m
+  formula: "GLOBAL_POSITION_INT.relative_alt/1000 + NAV_CONTROLLER_OUTPUT.alt_error"
+  derivation:
+    - "NAV_CONTROLLER_OUTPUT.alt_error = Plane::calc_altitude_error_cm() * 0.01   [ArduPlane/GCS_MAVLink_Plane.cpp:240]"
+    - "calc_altitude_error_cm() = target_altitude.amsl_cm - adjusted_altitude_cm()   [ArduPlane/altitude.cpp:389-398]"
+    - "adjusted_altitude_cm() = current_loc.alt - ALT_OFFSET*100"
+    - "GLOBAL_POSITION_INT.relative_alt = current AMSL - home AMSL"
+  preconditions_gated_by_the_test:
+    ALT_OFFSET: "must be 0 (firmware default, ArduPlane/Parameters.cpp:236) - otherwise the readback is offset"
+    TERRAIN_FOLLOW: "must be 0 - otherwise calc_altitude_error_cm() takes the terrain branch (altitude.cpp:390-396)"
+    FBWB_CLIMB_RATE: "must be 2.0 m/s (firmware default, ArduPlane/Parameters.cpp:345) - the ramp rate the step verification assumes"
+  units_correction:
+    supersedes: >-
+      docs/source_of_truth/controls/ardupilot_fbwb_tecs_baseline.yaml, section
+      command_mapping.altitude_target_readback_over_mavlink, which stated that
+      NAV_CONTROLLER_OUTPUT.alt_error is "int16 -> 1 m resolution". THAT WAS
+      WRONG and has been corrected in that file.
+    correct_statement: >-
+      alt_error is a MAVLink `float` in metres. Only nav_bearing and
+      target_bearing are int16 in NAV_CONTROLLER_OUTPUT (pymavlink fieldtypes:
+      ['float','float','int16_t','int16_t','uint16_t','float','float','float']).
+      The underlying int32 cm value gives ~0.01 m resolution.
+    why_it_matters: >-
+      The full-precision field is what makes it possible to verify that the
+      FBWB stick ramp really moved ArduPlane's height DEMAND by ~+/-10 m,
+      rather than only observing that the aircraft moved.
+    empirical_confirmation: >-
+      Re-analysing the 2026-09-02 cruise-stage raw timeseries with this
+      derivation gives ap_target hold-window means of 89.18 / 99.42 / 89.17 m
+      (a 0.01 m grid, i.e. centimetre resolution) and an ap_target climb step
+      of +10.240 m against an ACHIEVED climb of +10.239 m - a 0.0008 m gap.
+      A 1 m-resolution field could not produce that agreement.
+  fbwb_ramp_semantics:
+    source_lines:
+    - "climb_rate = FBWB_CLIMB_RATE * elevator_input, clamped to [-TECS_SINK_MAX, +TECS_CLMB_MAX]   [ArduPlane/navigation.cpp:427-428]"
+    - "alt_change_cm = climb_rate*dt*100, dt clamped to [0.10,0.15] s, evaluated at 10 Hz   [navigation.cpp:406-410, 430-431]"
+    - "when the pitch stick returns THROUGH zero, set_target_altitude_current() LOCKS the target to the CURRENT altitude   [navigation.cpp:419-426, altitude.cpp:191-195]"
+    consequence_for_the_campaign: >-
+      Because the release LOCKS to the CURRENT altitude (not to the ramped
+      demand), the correct way to command an exact +10 m step is to ramp until
+      the AIRCRAFT has climbed 10 m and then release. That is what the test
+      does; the target readback then independently confirms the demand landed
+      where intended.
+
+# -----------------------------------------------------------------------------
+# 3. CAMPAIGN
+# -----------------------------------------------------------------------------
+campaign:
+  reference_altitude: >-
+    z_ref = mean Gazebo z over the SETTLED part of P1 (t_seg >= 12 s), not the
+    last P1 sample, so the phugoid phase at the instant P1 ends cannot bias
+    either the commanded step or the return-to-origin criterion.
+  phases:
+    - {id: P1_cruise,   duration_s: 45, transient_cutoff_s: 12, stick: "RC2 = RC2_TRIM", goal: "level cruise ~18 m/s + altitude hold"}
+    - {id: P2_climb,    duration_s: "<=20", stick: "RC2 = RC2_MAX (up)",   stop: "Gazebo z >= z_ref + 10 m for 3 consecutive samples"}
+    - {id: P3_settle,   duration_s: 40, transient_cutoff_s: 10, stick: "RC2 = RC2_TRIM", goal: "level off at the new altitude and SETTLE"}
+    - {id: P4_descent,  duration_s: "<=20", stick: "RC2 = RC2_MIN (down)", stop: "Gazebo z <= z_ref for 3 consecutive samples (return to the ORIGINAL altitude)"}
+    - {id: P5_resettle, duration_s: 40, transient_cutoff_s: 10, stick: "RC2 = RC2_TRIM", goal: "hold near the ORIGINAL altitude and SETTLE"}
+  max_flight_time_s: 165
+  duration_rationale:
+    airframe_and_controller_time_constants:
+      phugoid_period_s: "~8.2  (pi*sqrt(2)*V/g at V 18.162; FBWA stage observed ~9 s, zeta ~0.2)"
+      TECS_TIME_CONST_s: "5.0  (firmware default, AP_TECS.cpp:43)"
+      TECS_HDEM_TCONST_s: "3.0 (firmware default, AP_TECS.cpp:292)"
+      THR_SLEWRATE: "100 %/s -> <= 1.0 s for a full-range throttle move"
+    P1: "INHERITED UNCHANGED from the cruise stage (45 s / 12 s transient) -> 33 s analysed = 4 phugoid periods = 6.6 x TECS_TIME_CONST."
+    P2: "INHERITED cap (20 s). The +10 m ramp needed 8.67 s in the 2026-09-02 run; the cap only bounds a failure to achieve the demand."
+    P3: "LENGTHENED 35 -> 40 s. 30 s analysed = 6 x TECS_TIME_CONST. Required because this stage measures a SETTLING TIME bounded at 5 x TECS_TIME_CONST = 25 s AND still needs a 10 s steady tail to define the settled value."
+    P4: "mirror of P2."
+    P5: "LENGTHENED 30 -> 40 s, same reason as P3, and because this window now carries a GATING return-to-original-altitude criterion that must distinguish a settled recapture from a slow drift."
+  ramp_stop_debounce: >-
+    3 consecutive samples (0.15 s at 20 Hz) past the threshold, so a single-
+    sample spike cannot end a ramp early. The ramps run at ~1.3 m/s, so a
+    genuine crossing lasts far longer than 0.15 s.
+
+# -----------------------------------------------------------------------------
+# 4. ACCEPTANCE THRESHOLDS
+#    INHERITED = imported directly from the 2026-09-02 cruise-stage module
+#                (tests/gazebo/scripts/test_ardupilot_tecs_cruise_speed_hold.py)
+#                so the two stages cannot silently diverge.
+#    DERIVED    = produced here from an INHERITED value or a documented
+#                 physical quantity. Reasoning given for every one.
+# -----------------------------------------------------------------------------
+thresholds:
+  inherited:
+    TH_SPEED_MEAN_TOL_MS:            {value: 0.5,   units: m/s}
+    TH_SPEED_STD_MAX_MS:             {value: 0.5,   units: m/s}
+    TH_SPEED_MIN_MS:                 {value: 16.0,  units: m/s, note: "= AIRSPEED_MIN"}
+    TH_SPEED_HARD_FLOOR_MS:          {value: 14.4,  units: m/s, note: "= 0.9*TASmin, ArduPlane's own underspeed trigger, AP_TECS.cpp:660"}
+    TH_SPEED_SLOPE_MAX_MS_PER_S:     {value: 0.02,  units: m/s^2}
+    TH_TECS_TARGET_TOL_MS:           {value: 0.4,   units: m/s}
+    TH_ALT_SLOPE_MAX_MS:             {value: 0.10,  units: m/s}
+    TH_ALT_SLOPE_TIGHT_MS:           {value: 0.02,  units: m/s, note: "preferred, non-gating"}
+    TH_ALT_P2P_MAX_M:                {value: 5.0,   units: m}
+    TH_SINK_CLOSED_MS:               {value: 0.078, units: m/s, note: "the FBWA residual sink this must not regress past"}
+    TH_THROTTLE_TOL:                 {value: 0.05,  units: "-"}
+    TH_SAT_RUN_MAX_S:                {value: 2.0,   units: s}
+    TH_SAT_MARGIN:                   {value: 0.01,  units: "-"}
+    TH_TECS_AUTHORITY_MIN_DELTA:     {value: 0.10,  units: "-"}
+    TH_THROTTLE_MODULATION_MIN:      {value: 0.05,  units: "-"}
+    TH_SURF_HOLD_MAX_DEG:            {value: 10.0,  units: deg}
+    TH_SURF_FLIGHT_MAX_DEG:          {value: 15.0,  units: deg}
+    TH_LATERAL_SURF_MAX_DEG:         {value: 10.0,  units: deg}
+    TH_COORD_THROTTLE_DELTA:         {value: 0.01,  units: "-"}
+    TH_COORD_PITCH_DELTA_DEG:        {value: 0.5,   units: deg}
+    TH_PITCH_ALPHA_GAMMA_RESID_DEG:  {value: 1.5,   units: deg}
+    TH_GS_VS_AS_MAX_MS:              {value: 1.0,   units: m/s}
+    TH_RAMP_DIRECTION_MIN_MS:        {value: 0.2,   units: m/s}
+    TH_ALT_STEP_ACHIEVED_FRAC:       {value: 0.7,   units: "-"}
+
+  derived_this_stage:
+    TH_TARGET_STEP_TOL_M:
+      value: 3.0
+      units: m
+      derivation: >-
+        The two-sided form of the INHERITED 70 %-of-step criterion:
+        (1 - 0.7) * 10 m = 3.0 m. Physical error sources are far smaller: the
+        FBWB integrator granularity is FBWB_CLIMB_RATE * dt_max = 2.0*0.15 =
+        0.30 m per update, and the altitude travelled between the stop trigger
+        and the stick-release lock is at most peak_vz * (RC refresh 0.1 s +
+        FBWB check period 0.1 s) = 1.95*0.2 = 0.39 m. So this only fails on a
+        genuine ramp-integration or lock failure.
+    TH_TARGET_VS_ACTUAL_TOL_M:
+      value: 2.0
+      units: m
+      derivation: >-
+        ArduPlane's own demand and the achieved altitude must agree. 2 m is
+        20 % of the step and ~4x the settled hold-window half-amplitude
+        (2026-09-02 measured p2p 2.179 m). A larger gap means the aircraft is
+        not tracking its own demand.
+    TH_RESETTLE_TOL_M:
+      value: 2.0
+      units: m
+      derivation: >-
+        Same reasoning as TH_TARGET_VS_ACTUAL_TOL_M. The 2026-09-02 run closed
+        a full +10/-10 m round trip to -0.074 m, so this gate is ~27x the
+        demonstrated performance and can only fail on a real failure to
+        recapture the original altitude.
+    TH_RESETTLE_TIGHT_M: {value: 0.5, units: m, note: "preferred, non-gating"}
+    TH_LEVEL_STEDOT_MAX_W_PER_KG:
+      value: 1.0
+      units: W/kg
+      derivation: >-
+        g x the INHERITED 0.10 m/s altitude-hold slope limit = 0.981 -> 1.0.
+        i.e. exactly the total-energy rate a just-acceptable altitude drift
+        would produce. (2026-09-02 measured 0.03-0.07 W/kg in the three hold
+        windows.)
+    TH_RAMP_STEDOT_MIN_W_PER_KG:
+      value: 2.0
+      units: W/kg
+      derivation: >-
+        2.0 W/kg = g * 0.204 m/s = 2x the altitude-hold slope limit, so a climb
+        or descent that clears it cannot be confused with hold-window noise.
+        (2026-09-02 measured +10.37 / -9.60 W/kg.)
+    TH_KINETIC_FRACTION_MAX:
+      value: 0.25
+      units: "-"
+      quantity: "|SKEdot| / |SPEdot| during a ramp"
+      derivation: >-
+        On a speed-holding climb or descent essentially all of the total-energy
+        rate must appear as POTENTIAL energy rate. Holding airspeed to the
+        INHERITED 0.5 m/s band over the ~8.7 s ramp gives |SKEdot| <=
+        18*0.5/8.7 = 1.03 W/kg against |SPEdot| ~ g*1.3 = 12.8 W/kg, a ratio of
+        0.08. 0.25 is 3x that, so it is a genuine bound on speed bleed /
+        runaway rather than a restatement of the speed test.
+    TH_STE_ROUNDTRIP_MAX_J_PER_KG:
+      value: 20.0
+      units: J/kg
+      derivation: "the 2.0 m re-settle tolerance expressed as specific potential energy: g*2.0 = 19.6 -> 20."
+    TH_DESCENT_SPEED_OVERSHOOT_MAX_MS:
+      value: 2.0
+      units: m/s
+      derivation: >-
+        Maximum airspeed above the TECS demand during P4 plus the first 10 s of
+        P5. 2.0 m/s equals the whole AIRSPEED_MIN -> AIRSPEED_CRUISE span
+        (16 -> 18) and is 11 % of cruise; the 2026-09-02 run peaked at
+        +1.42 m/s over demand, so this bounds the observed behaviour without
+        being tuned to it. Guards against a descent flown by trading altitude
+        into SPEED instead of reducing throttle.
+    TH_SETTLE_BAND_M:
+      value: 1.5
+      units: m
+      derivation: >-
+        Above the 2026-09-02 settled hold-window half-amplitude (p2p 2.179 m ->
+        1.09 m) and 15 % of the commanded step, so "settled" means the commanded
+        transient is gone, not that the residual phugoid has vanished entirely.
+    TH_SETTLE_SPEED_BAND_MS: {value: 0.5, units: m/s, note: "= INHERITED TH_SPEED_MEAN_TOL_MS"}
+    TH_SETTLE_TIME_MAX_S:
+      status: WITHDRAWN
+      withdrawn_on: 2026-09-03
+      withdrawn_cause: >-
+        validation finding V-1 (MAJOR, stage-blocking),
+        docs/validation/2026-09-03_ardupilot_tecs_climb_descent_energy_validation.md
+        section 9. Replaced by TH_SETTLE_TAU_MARGIN_K and the per-phase derived
+        limit documented in section 4A settling_criterion_correction.
+      withdrawn_value: 25.0
+      units: s
+      original_derivation: >-
+        5 x TECS_TIME_CONST (5.0 s, AP_TECS.cpp:43), which is also ~3 phugoid
+        periods. Must fit inside the 40 s settle segment with the 10 s tail
+        still available to define the settled value.
+      why_it_was_wrong: >-
+        TECS_TIME_CONST parameterises the FIRST-order demand-tracking loops
+        (AP_TECS.cpp:735, :760). It does not appear in, and cannot bound, the
+        decay envelope of the lightly damped SECOND-order longitudinal energy
+        mode that actually settles here. A fixed time limit also gates the SIZE
+        of the initial excursion A0, which is set by the FBWB command lag at
+        stick release, not by the aircraft.
+      no_longer_used_by: tests/gazebo/scripts/test_ardupilot_tecs_climb_descent_energy.py
+    TH_SETTLE_TAU_MARGIN_K:
+      value: 1.0
+      units: "-"
+      replaces: TH_SETTLE_TIME_MAX_S
+      criterion: >-
+        Per channel c (altitude, airspeed):
+        t_limit_c = t_peak_c + T/2 + K * TAU_REF * ln(A0_c / B_c), equivalently
+        tau_implied_c = (t_settle_c - t_peak_c - T/2)/ln(A0_c/B_c) <= K*TAU_REF,
+        with TAU_REF = V*(L/D)/g from THAT PHASE'S OWN measured trim state.
+      derivation: >-
+        K = 1.0 means NO margin: with TECS engaged, a longitudinal energy
+        transient must decay at least as fast as the SAME airframe's own
+        uncontrolled Lanchester phugoid envelope. A closed-loop energy
+        controller that decays energy transients more slowly than no controller
+        at all is not managing energy acceptably. K was fixed at 1.0 BEFORE the
+        corrected metric was ever evaluated on any run.
+      why_not_larger: >-
+        DATA_REQUIRED. Any K > 1 would need a Falcon V2 handling-qualities
+        basis (an acceptable damping ratio or settling time). None exists in
+        docs/source_of_truth/. Inventing a K would reintroduce exactly the
+        magic number this correction removes.
+      full_derivation_and_crosscheck: "section 4A settling_criterion_correction"
+    TH_DECAY_RATIO_MAX:
+      value: 0.90
+      units: "-"
+      quantity: "second-half / first-half detrended residual std, per channel"
+      derivation: >-
+        STRICTLY STRONGER than the previous stage, which only required
+        "not growing" (ratio < 1.3). This stage requires ACTUAL decay. The
+        2026-09-02 run measured 0.405-0.653 across all channels and windows;
+        0.90 sits above that entire measured range yet still fails a sustained
+        limit cycle (ratio ~ 1.0).
+    TH_SURF_LIMIT_MARGIN_DEG:
+      value: 5.0
+      units: deg
+      derivation: >-
+        The elevator must never come within 5 deg of the +/-45 deg mechanical
+        travel limit (ARDUPLANE_CONTROL_SURFACE_TRAVEL_SCALING stage), i.e.
+        |deflection| <= 40 deg. 5 deg is ~11 % of travel and ~1 deg less than
+        the entire deflection the 2026-09-02 flight ever used (6.368 deg), so
+        this can only trip on a real control-authority problem.
+    TH_PROPULSIVE_POWER_RESID_W_PER_KG:
+      value: 3.0
+      units: W/kg
+      gating: false
+      derivation: >-
+        NON-GATING cross-check of (T - D)*V/m against STEdot. 3.0 W/kg is 30 %
+        of the observed ramp energy rate. Deliberately not gating because D is
+        the aero plugin's qbar*S*CD diagnostic and because the descent is
+        affected by PROPULSION_HIGH_J_WINDMILLING (below), which biases exactly
+        this comparison.
+
+# -----------------------------------------------------------------------------
+# 4A. SETTLING-CRITERION CORRECTION (cause: validation finding V-1)
+# -----------------------------------------------------------------------------
+# Owner: controls-integration. Documentation + test-metric change ONLY.
+# NO aircraft parameter, NO TECS_* parameter, NO PID, NO PTCH_TRIM_DEG, NO aero,
+# propulsion, actuator, sensor, mass, CG or inertia value was changed by this
+# correction, and no flight was re-flown for it. The 2026-09-03 verdict change
+# comes from RE-ANALYSING the already-recorded raw timeseries with the
+# corrected metric (result overall_result: REANALYZED).
+# -----------------------------------------------------------------------------
+settling_criterion_correction:
+  id: SETTLE_CRITERION_V1_CORRECTION
+  date: 2026-09-03
+  owner: controls-integration
+  cause: >-
+    validation finding V-1 (MAJOR, stage-blocking) in
+    docs/validation/2026-09-03_ardupilot_tecs_climb_descent_energy_validation.md:
+    "settles_after_climb gates on a criterion that is not physically
+    well-founded". V-1's three independent confirmations were (i) the threshold
+    25.0 s lies INSIDE the 21-33 s physically predicted settling range, (ii) the
+    last-exit statistic is quantised on a ~2.73 s half-period grid so the
+    reported 0.269 s exceedance is 10 % of the metric's own resolution, and
+    (iii) the same metric gave 20.138 s on the 2026-09-02 run vs 25.269 s here.
+  parameters_changed: NONE
+  reflown: false
+  applies_to_checks: [settles_after_climb, settles_after_descent]
+
+  derivation:
+    mode_being_measured: >-
+      The quantity that settles after level-off is the closed-loop longitudinal
+      ENERGY (phugoid-like) mode: measured T = 5.633 s, zeta ~ 0.035 (P3) and
+      T = 5.614 s, zeta ~ 0.028 (P5) by log decrement. A second-order lightly
+      damped envelope decays as exp(-t/tau) with tau = 1/(zeta*omega_n), so
+      settling into a band B from a peak excursion A0 takes
+      t = t_peak + tau*ln(A0/B). This expression contains NO controller time
+      constant and DOES contain A0.
+    reference_envelope: >-
+      TAU_REF = V*(L/D)/g, the FREE-AIRFRAME Lanchester phugoid envelope time
+      constant: omega_n = sqrt(2)*g/V, zeta = CD/(sqrt(2)*CL) = 1/(sqrt(2)*L/D),
+      hence 1/(zeta*omega_n) = V*(L/D)/g. V, CL, CD are the aero-plugin
+      diagnostics averaged over the phase's own post-transient window
+      (t_seg >= 10 s), so the reference is derived from the aircraft, per phase,
+      and contains no controller parameter and no initial amplitude.
+    half_period_allowance: >-
+      + T/2 is the quantisation allowance of the "last exit from the band"
+      statistic, which can only land on an oscillation peak. T is the MEASURED
+      closed-loop period (log-decrement extrema spacing); the Lanchester T_REF
+      = pi*sqrt(2)*V/g is used only as a fallback if no period is resolvable.
+    final_form: "t_limit_c = t_peak_c + T/2 + K*TAU_REF*ln(A0_c/B_c),  K = 1.0"
+    equivalent_form: "tau_implied_c <= K*TAU_REF   (amplitude-normalised)"
+    engineering_meaning: >-
+      With TECS engaged, a longitudinal energy transient must decay at least as
+      fast as the same airframe's own uncontrolled phugoid envelope.
+    assumption:
+      id: PHUGOID_REFERENCE_IS_LANCHESTER
+      status: ASSUMPTION
+      detail: >-
+        The Lanchester form neglects thrust/airspeed dependence and
+        short-period coupling, so TAU_REF is an ESTIMATE of the free-airframe
+        phugoid, not a measurement of it. It is used because it is the only
+        free-airframe longitudinal energy-mode reference derivable from data
+        this project actually holds.
+      required_data: >-
+        DATA_REQUIRED - a measured Falcon V2 stick-fixed phugoid (period +
+        damping) would replace TAU_REF directly.
+    applied_identically_to: >-
+      P3_settle and P5_resettle, with no per-phase special-casing, and to the
+      2026-09-02 cross-check runs below.
+
+  old_vs_new:
+    old_criterion: "t_settle <= TH_SETTLE_TIME_MAX_S = 25.0 s (fixed, from 5 x TECS_TIME_CONST)"
+    new_criterion: "t_settle_c <= t_peak_c + T/2 + K*TAU_REF*ln(A0_c/B_c) per channel, K = 1.0"
+    what_changed: "the acceptance criterion in the test module only"
+    what_did_not_change:
+      - "the measurement itself: same last-exit-from-band statistic, same tail-mean settled value"
+      - "the bands: TH_SETTLE_BAND_M = 1.5 m and TH_SETTLE_SPEED_BAND_MS = 0.5 m/s are UNCHANGED"
+      - "the recorded flight data (no re-fly)"
+      - "every other acceptance threshold in this file"
+      - "every ArduPlane parameter, every aircraft parameter"
+
+  # ---------------------------------------------------------------------------
+  # CROSS-CHECK requested by validation V-1: does the CORRECTED metric classify
+  # the two runs CONSISTENTLY, where the old fixed limit did not?
+  # Method: the corrected settling_analysis() from
+  # tests/gazebo/scripts/test_ardupilot_tecs_climb_descent_energy.py was applied
+  # UNCHANGED to the 2026-09-02 raw timeseries
+  # tests/gazebo/results/ardupilot_tecs_cruise_speed_hold_timeseries.json.
+  # It reproduces validation's 20.138 s exactly, which confirms the two runs are
+  # being compared with the identical statistic.
+  # ---------------------------------------------------------------------------
+  crosscheck_2026_09_02_vs_2026_09_03:
+    binding_channel_both_runs: airspeed
+    band_B_ms: 0.5
+    after_climb:
+      run_2026_09_02:
+        source: "ardupilot_tecs_cruise_speed_hold_timeseries.json / segment B_hold_new_altitude"
+        t_settle_s: 20.138
+        A0_ms: 1.4308
+        t_peak_s: 5.286
+        T_measured_s: 5.698
+        ln_A0_over_B: 1.0514
+        tau_ref_s: 20.904
+        tau_implied_s: 11.415
+        tau_implied_over_tau_limit: 0.546
+        derived_limit_s: 30.114
+        verdict_new_metric: PASS
+        verdict_old_fixed_25s: "PASS (margin 4.862 s, 19.4 %)"
+      run_2026_09_03:
+        source: "ardupilot_tecs_climb_descent_energy_result.json / analysis.settling.P3_settle"
+        t_settle_s: 25.269
+        A0_ms: 1.5981
+        t_peak_s: 5.407
+        T_measured_s: 5.633
+        ln_A0_over_B: 1.1620
+        tau_ref_s: 20.895
+        tau_implied_s: 14.669
+        tau_implied_over_tau_limit: 0.702
+        derived_limit_s: 32.502
+        verdict_new_metric: PASS
+        verdict_old_fixed_25s: "FAIL (exceeded by 0.269 s, 1.1 %)"
+      classification_consistent: true
+      conclusion: >-
+        CONSISTENT. Under the withdrawn fixed 25.0 s limit the same manoeuvre,
+        same aircraft, same firmware defaults and same command method was
+        classified PASS on 2026-09-02 and FAIL on 2026-09-03. Under the
+        corrected amplitude-normalised criterion both runs are PASS, and
+        neither is marginal: 0.546 and 0.702 of their own tau_limit
+        (45.4 % and 29.8 % margin).
+      honest_caveat_on_the_spread: >-
+        The correction does NOT remove the physical run-to-run scatter, and it
+        is not claimed to. Raw settling time differs by 5.131 s (+25.5 % of the
+        earlier run). Amplitude normalisation absorbs 2.388 s of that (46.5 %)
+        into the derived limit, which moves from 30.114 s to 32.502 s because
+        A0 grew from 1.4308 to 1.5981 m/s (+11.7 %). The remaining difference
+        is genuine: tau_implied differs by 3.254 s (+28.5 %), i.e. the
+        2026-09-03 mode really did decay more slowly. What the correction
+        changes is that the limit is now derived from each run's own trim and
+        sits far above BOTH values, so this scatter can no longer flip the
+        verdict - whereas the fixed 25.0 s limit sat in the middle of it. The
+        underlying light damping is a separate, still-open item (validation
+        V-2, TECS_CLMB_MAX_NOT_AIRFRAME_DERIVED).
+    after_descent:
+      run_2026_09_02:
+        source: "ardupilot_tecs_cruise_speed_hold_timeseries.json / segment C_hold_return_altitude"
+        t_settle_s: 6.843
+        A0_ms: 0.9390
+        tau_ref_s: 20.846
+        derived_limit_s: 21.571
+        tau_implied_s: -2.524
+        verdict_new_metric: PASS
+      run_2026_09_03:
+        source: "ardupilot_tecs_climb_descent_energy_result.json / analysis.settling.P5_resettle"
+        t_settle_s: 6.871
+        A0_ms: 1.1082
+        tau_ref_s: 20.855
+        derived_limit_s: 24.967
+        tau_implied_s: -1.882
+        verdict_new_metric: PASS
+      classification_consistent: true
+      conclusion: >-
+        CONSISTENT and near-identical (6.843 s vs 6.871 s, 0.4 %). Both runs
+        return NEGATIVE tau_implied, which means the band was re-entered within
+        half a period of the peak - faster than the quantisation allowance of
+        the last-exit statistic. The normalised envelope constant is not
+        resolvable in these two cases; the channel trivially satisfies the
+        limit. Reported, not hidden.
+
+  # ---------------------------------------------------------------------------
+  # LIMITATION OF THE CORRECTED METRIC - recorded, not dropped.
+  # ---------------------------------------------------------------------------
+  limitation_falsifiability:
+    id: SETTLE_LIMIT_NOT_FULLY_FALSIFIABLE_P3_AIRSPEED
+    status: OPEN_LIMITATION
+    severity: METHODOLOGICAL
+    channel: "P3_settle, airspeed"
+    corrected_2026_09_04: >-
+      validation finding V-10 (MINOR). The ORIGINAL text of this entry (written
+      2026-09-03) claimed that a settling time between 30.0 s and 32.502 s
+      "could therefore not be measured at all" and "would be reported as never
+      settled ... which the test scores as a FAIL". THAT CLAIM IS WRONG ABOUT
+      THIS TEST'S OWN ACCEPTANCE CODE and is withdrawn. The error was in the
+      CONSERVATIVE direction (it described the gate as weaker than it is) and
+      gated nothing, but it was an incorrect statement about acceptance-code
+      behaviour in a source-of-truth file. The limitation stays OPEN because a
+      real - and milder - defect exists; only its description changed. NOTHING
+      ELSE CHANGED with this correction: no threshold, no band, no K, no
+      segment length, no parameter, no flight data, no re-fly, and the verdict
+      and every settling number are unchanged.
+    id_note: >-
+      The id is deliberately kept UNCHANGED for traceability with
+      docs/validation/2026-09-03_ardupilot_tecs_climb_descent_energy_validation.md
+      (sections R.3 and V-10) and with the stage test report, but THE NAME IS
+      NOW A MISNOMER: the gate IS falsifiable inside its own segment - see
+      falsifiability_verified_against_the_code. The accurate title is
+      SETTLED_REFERENCE_MAY_BE_DEFINED_FROM_AN_UNSETTLED_TAIL_P3_AIRSPEED.
+      Rename candidate for the next stage that edits this file; not renamed now
+      because two other agents' documents currently cite the existing id.
+    flag_in_result_json: "analysis.settling.P3_settle.settle_limits.airspeed.limit_exceeds_observable_window: true"
+    numbers:
+      derived_limit_s: 32.502
+      observable_window_s: 30.0
+      observable_window_definition: "P3_SETTLE_S (40 s) - SETTLE_TAIL_S (10 s), the 10 s tail being needed to DEFINE the settled value"
+      actual_settling_s: 25.269
+      segment_span_s: 39.980
+      tail_window_s: "[29.980, 39.980] of the segment"
+    harmless_in_this_run: >-
+      YES, and for a reason that is a completed measurement rather than an
+      inference: settling occurred at 25.269 s, i.e. 4.7 s before the tail
+      window opens at 29.980 s, so the settled reference used to score this run
+      was defined from 10 s of already-settled flight. The PASS is a real
+      measurement, not an artefact.
+    falsifiability_verified_against_the_code: >-
+      VERIFIED 2026-09-04 by controls-integration, first by reading
+      settling_analysis() and then by driving the REAL function (imported, not
+      re-implemented) with synthetic airspeed traces built on the REAL
+      P3_settle segment - same 769 samples, same 39.980 s span, same 0.5 m/s
+      band, aero channel untouched so TAU_REF stays 20.895 s. In the code,
+      `never_spd = (rows[-1][0] - t_spd) < 1e-9`, where t_spd is the time of
+      the LAST out-of-band sample. "Never settled" is therefore reported ONLY
+      when the FINAL sample of the segment is still out of band. Any earlier
+      last exit - including one later than the 30.0 s observable window - is
+      reported as a number and compared against the derived limit. THE GATE IS
+      FALSIFIABLE INSIDE ITS OWN 40 s SEGMENT.
+    falsifiability_evidence_table: |
+      Real function, synthetic airspeed on the real P3_settle segment.
+      Peak fixed at the measured t_peak = 5.407 s, A0 = 1.598 m/s,
+      period = 5.6329 s, band = 0.5 m/s, TAU_REF = 20.895 s.
+
+      (a) forced last band exit, decaying-then-in-band trace
+        last exit   reported t_settle   never   derived limit   scored
+          28.0 s        27.979 s        False      29.687 s     PASS
+          31.0 s        30.873 s        False      33.118 s     PASS  <- inside the
+          32.4 s        32.397 s        False      33.647 s     PASS     (30, 32.5] s
+          33.0 s        32.962 s        False      33.302 s     PASS     region the old
+          39.9 s        39.879 s        False      32.597 s     FAIL     text called
+                                                                         unmeasurable
+      (b) swept envelope constant on a pure decaying oscillation
+        envelope tau   reported t_settle   never   derived limit   scored
+           20 s            28.190 s        False      32.667 s     PASS
+           26 s            33.947 s        False      32.673 s     FAIL
+           28 s            36.546 s        False      32.672 s     FAIL
+           34 s            39.720 s        False      32.664 s     FAIL
+
+      (c) `never` = True is reachable only when the LAST sample is out of band
+        (envelope tau 40 s with the peak at t = 0): t_settle = None,
+        never = True, scored FAIL.
+
+      Conclusion: a settling time anywhere in roughly (limit, 39.98] s is
+      measured and produces a FAIL, and a settling time in (30.0, 32.502] s is
+      measured and produces a PASS. Neither is scored "never settled".
+    the_limitation: >-
+      The REAL and much milder defect is about the REFERENCE, not about
+      falsifiability. The "settled" altitude and airspeed are defined as the
+      mean over the LAST 10 s of the segment (t_seg in [29.980, 39.980]). If
+      the response were still out of band after ~30 s - which the derived
+      airspeed limit of 32.502 s permits - then the tail window would overlap
+      the still-unsettled motion, and the settled value would be defined from a
+      state that is not yet settled. That contaminates the reference and
+      therefore A0, the derived limit, and the last-exit time itself. Measured
+      contamination, from the same synthetic runs: a last exit at 32.4 s shifts
+      the tail-mean airspeed reference by -0.090 m/s (18 % of the 0.5 m/s band)
+      relative to the clean value, inflates A0 from 1.598 to 1.688 m/s and
+      widens the derived limit from 32.502 s to 33.647 s. NOTE THE DIRECTION:
+      the contamination makes the gate slightly MORE PERMISSIVE, i.e. it is a
+      quality-of-reference defect that errs toward passing, not toward the
+      spurious failure the withdrawn text described. It is the reason the flag
+      exists and is reported.
+    why_it_arises: >-
+      The limit grows as ln(A0/B) with a large TAU_REF (20.9 s), while the
+      airspeed band B is the inherited 0.5 m/s. With A0 = 1.598 m/s the
+      logarithmic term alone is 24.3 s on top of t_peak + T/2 = 8.22 s. The
+      altitude channel is unaffected (limit 21.76 s, well inside the window)
+      because its 1.5 m band gives a much smaller ln(A0/B).
+    what_would_reduce_it: >-
+      SUPERSEDES the withdrawn "what_would_make_it_falsifiable" remedy, which
+      was mis-targeted: it asserted that a segment of at least limit + tail =
+      42.5 s was "required to make the criterion falsifiable". The criterion is
+      already falsifiable (above), so no segment length is REQUIRED on
+      falsifiability grounds and none is claimed here. A longer segment would
+      improve REFERENCE CLEANLINESS only: it would keep the 10 s tail clear of
+      the derived limit, so that even a near-limit settling time is scored
+      against a reference taken from settled flight. For orientation only, at
+      this run's A0 a 50 s segment (40 s observable) keeps the airspeed limit
+      clear of the tail up to A0 = 2.29 m/s, 45 s up to 1.80 m/s and 55 s up to
+      2.91 m/s. NOT DONE, and NOT PROPOSED as a fix for this stage: lengthening
+      the segment requires a re-fly, and re-flying to make a reported
+      limitation disappear would be exactly the kind of after-the-fact
+      adjustment this project forbids. Recorded for the next stage that
+      re-flies this campaign for an independent reason.
+    also_true_of_the_crosscheck_run: >-
+      Same channel, 2026-09-02: derived limit 30.114 s against a TRUE observable
+      window of 25.004 s (35.004 s segment - 10 s tail). Settling occurred at
+      20.138 s, again before that run's tail window opens, so that run is
+      harmless for the same reason. NOTE for anyone re-running the cross-check:
+      the limit_exceeds_observable_window flag inside settling_analysis() is
+      computed against THIS stage's P3_SETTLE_S - SETTLE_TAIL_S = 30.0 s, so
+      when the function is applied to the shorter 2026-09-02 segments the
+      flag's reference window is 30.0 s, not the true 25.004 s / 20.002 s. The
+      true windows are stated here explicitly rather than left implicit.
+    not_a_reason_to: >-
+      widen the band, lower K, shorten the tail, or re-fly. None of those were
+      done.
+
+  scope_note_v5:
+    finding: "validation V-5 (MINOR)"
+    issue: >-
+      The acceptance check formerly named `no_growing_oscillation` overstated
+      its scope: it evaluates the three HOLD windows only.
+    action: >-
+      NAME AND DESCRIPTION ONLY. The check is renamed
+      `no_growing_oscillation_in_hold_windows`. WHAT IT EVALUATES IS UNCHANGED:
+      the same three windows (P1_cruise_hold, P3_settle_hold, P5_resettle_hold)
+      with the same detrended-growth statistic and the same threshold.
+    why_the_ramp_windows_are_not_gated: >-
+      detrended_growth() compares second-half to first-half residual spread
+      about a STRAIGHT-LINE fit, so on a commanded ramp it is a curvature
+      statistic, not an oscillation statistic. The ramp windows
+      (P2_climb_full, P4_descent_full) are RECORDED as declared INFO in
+      analysis.oscillation_growth_scope so nothing is silently discarded.
+    the_question_it_does_not_answer: >-
+      "does the response keep growing after the excitation stops" is answered
+      by oscillation_decays_after_climb / oscillation_decays_after_descent
+      (P3/P5), which are separate gating checks.
+
+# -----------------------------------------------------------------------------
+# 5. OPEN LIMITATIONS carried into this stage
+# -----------------------------------------------------------------------------
+open_limitations:
+  - id: PROPULSION_HIGH_J_WINDMILLING
+    status: OPEN_LIMITATION
+    severity: DATA_REQUIRED
+    owner: propulsion
+    first_observed: "docs/test_results/2026-09-02_ardupilot_tecs_and_cruise_speed_hold_validation.md sec 11(a)"
+    detail: >-
+      The APC 13x6.5E Ct/Cp source table contains no windmilling data above the
+      zero-thrust advance ratio (~J 0.64). At low throttle in a descent the
+      propeller model clamps Ct to the table's last value, flooring thrust at
+      0 N, where a real fixed-pitch propeller would windmill and produce
+      NEGATIVE thrust (drag). In the 2026-09-02 run this affected 176 of 4888
+      motor-samples (3.6 %), 168 of which produced exactly 0.000 N.
+    required_data: >-
+      DATA_REQUIRED - measured or defensibly extrapolated APC 13x6.5E Ct/Cp for
+      J beyond the zero-thrust point, or an explicit out-of-domain declaration
+      in docs/source_of_truth/propulsion/.
+    effect_on_this_stage: >-
+      The DIRECTION, controllability, settling behaviour and energy bookkeeping
+      of the descent remain valid (the energy analysis is kinematic - it is
+      derived from measured altitude and airspeed, not from the thrust model).
+      What is NOT high-fidelity real-aircraft truth is the ABSOLUTE descent
+      drag / sink performance, and consequently the non-gating
+      propulsive-power cross-check. NOT an automatic blocker for this stage.
+    action_this_stage: >-
+      REPORTED, never gated and never compensated for. The test counts
+      interpClamped and zero-thrust motor-samples and records advance-ratio
+      statistics per phase and for the whole flight.
+  - id: SETTLE_LIMIT_NOT_FULLY_FALSIFIABLE_P3_AIRSPEED
+    status: OPEN_LIMITATION
+    severity: METHODOLOGICAL
+    owner: controls-integration
+    first_observed: "2026-09-03 re-analysis, this stage (controls-integration, while correcting validation finding V-1)"
+    id_is_a_misnomer: >-
+      Kept for traceability only. The gate IS falsifiable inside its own
+      segment; accurate title
+      SETTLED_REFERENCE_MAY_BE_DEFINED_FROM_AN_UNSETTLED_TAIL_P3_AIRSPEED.
+      See section 4A limitation_falsifiability -> id_note.
+    detail: >-
+      CORRECTED 2026-09-04 (validation V-10). On the P3_settle AIRSPEED channel
+      the corrected amplitude-normalised settling limit (32.502 s) is longer
+      than the observable part of the settle segment (40 s segment - 10 s tail
+      = 30.0 s). The consequence is NOT that such a settling time cannot be
+      measured - it can: `never settled` is reported only when the FINAL sample
+      of the segment is out of band, so a last band exit after 30.0 s is
+      measured and compared against the limit (verified against the code and by
+      driving the real settling_analysis() with synthetic traces on the real
+      segment). The real, milder consequence is that the SETTLED REFERENCE (the
+      mean of the last 10 s) would then be defined from a state that is not yet
+      settled, contaminating A0, the derived limit and the last-exit time - in
+      the PERMISSIVE direction (a last exit at 32.4 s inflates A0 1.598 ->
+      1.688 m/s and widens the limit 32.502 -> 33.647 s). Harmless in the
+      2026-09-03 run because settling occurred at 25.269 s, 4.7 s before the
+      tail window opens. Full entry, evidence table and the withdrawn claim:
+      section 4A settling_criterion_correction -> limitation_falsifiability.
+    action_this_stage: >-
+      REPORTED as a NON-GATING per-channel flag
+      (settle_limits.<channel>.limit_exceeds_observable_window). NOT hidden,
+      NOT compensated for. The segment was NOT lengthened and the campaign was
+      NOT re-flown, because doing so purely to make a reported limitation
+      disappear is exactly the kind of after-the-fact adjustment CLAUDE.md's
+      simulation tuning policy forbids. The 2026-09-04 correction is WORDING
+      ONLY: no threshold, segment length, band, K or flight datum changed.
+  - id: TECS_CLMB_MAX_NOT_AIRFRAME_DERIVED
+    status: ASSUMPTION
+    owner: controls-integration
+    detail: >-
+      TECS_CLMB_MAX = 5.0 m/s and TECS_SINK_MIN = 2.0 m/s remain generic
+      ArduPlane firmware defaults, not Falcon V2 measurements. They set the
+      TECS throttle-loop gain K_thr2STE (AP_TECS.cpp:759). See
+      ardupilot_fbwb_tecs_baseline.yaml open_items for the full entry.
+    action_this_stage: >-
+      NONE. Baseline preserved. This stage RECORDS the achieved climb and sink
+      energy rates so a future, properly scoped performance stage can size
+      these from measured data instead of guessing.
+
+# -----------------------------------------------------------------------------
+# 6. TECS PARAMETER POLICY FOR THIS STAGE
+# -----------------------------------------------------------------------------
+tecs_parameter_policy:
+  changed_this_stage: NONE
+  rule: >-
+    No TECS_* parameter is set up front. If, and only if, the run shows a clear
+    TECS control problem, the root cause must be isolated FIRST; then at most
+    1-2 small, individually justified TECS changes with documented provenance.
+    No broad parameter sweeps. Never mixed with PID tuning. If the baseline is
+    stable and bounded, nothing changes and the report says so explicitly.
+  enforcement_in_the_test: >-
+    `tecs_at_firmware_defaults` and `pids_unchanged` are GATING acceptance
+    checks evaluated against the LIVE parameter dump, so a stage that quietly
+    tuned something cannot report PASS.

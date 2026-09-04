@@ -1,0 +1,5349 @@
+{
+  "stage": "ARDUPLANE_TECS_CLIMB_DESCENT_AND_ENERGY_VALIDATION",
+  "timestamp": "2026-09-03T20:20:39Z",
+  "mode": {
+    "name": "FBWB",
+    "custom_mode": 6,
+    "evidence": "docs/source_of_truth/controls/ardupilot_fbwb_tecs_baseline.yaml + the imported cruise-stage module docstring. TECS authority is RE-PROVED live here (tecs_is_driving_throttle_not_the_stick), not inherited on trust."
+  },
+  "parameter_policy": "NO TECS_* parameter, no PID, no PTCH_TRIM_DEG, no control-surface mapping, no aero/propulsion/actuator/sensor/mass/CG/inertia value is written by this stage. config/ardupilot/falcon_v2_sitl.parm is read-only input.",
+  "open_limitations": [
+    "PROPULSION_HIGH_J_WINDMILLING",
+    "SETTLE_LIMIT_NOT_FULLY_FALSIFIABLE_P3_AIRSPEED"
+  ],
+  "open_limitations_note": "The 2026-09-03 flight artifact listed only PROPULSION_HIGH_J_WINDMILLING. SETTLE_LIMIT_NOT_FULLY_FALSIFIABLE_P3_AIRSPEED was added 2026-09-04 so the machine-readable artifact surfaces the limitation that until then existed only as the non-gating settle_limits.<channel>.limit_exceeds_observable_window flag and as a yaml entry. Both are declared, NON-GATING: neither is read by verdict(). Full entries: docs/source_of_truth/controls/ardupilot_tecs_energy_management.yaml open_limitations.",
+  "reference_constants": {
+    "MASS_KG": 6.0,
+    "S_REF_M2": 0.4514,
+    "G_WORLD": 9.81,
+    "G_TECS": 9.80665,
+    "V_TRIM_REF": 18.162,
+    "TRIM_THROTTLE_REF": 0.4957,
+    "ELEV_TRIM_DEG_REF": 4.092,
+    "PTCH_TRIM_DEG_EXPECTED": 2.49,
+    "SURFACE_TRAVEL_LIMIT_DEG": 45.0,
+    "prior_stage_measurements": {
+      "cruise_airspeed_mean_ms": 17.926,
+      "cruise_airspeed_std_ms": 0.187,
+      "hold_vz_max_abs_ms": 0.00829,
+      "hold_alt_p2p_max_m": 2.179,
+      "achieved_climb_m": 10.239,
+      "achieved_descent_m": -10.314,
+      "ramp_vz_ms": 1.301,
+      "ramp_peak_vz_ms": 1.951,
+      "roundtrip_alt_residual_m": -0.074,
+      "level_throttle": 0.4911,
+      "climb_throttle": 0.5398,
+      "descent_throttle": 0.4251,
+      "level_pitch_deg": 2.663,
+      "climb_pitch_deg": 6.683,
+      "descent_pitch_deg": -1.253,
+      "climb_specific_energy_rate_W_per_kg": 10.37,
+      "descent_specific_energy_rate_W_per_kg": -9.6,
+      "level_specific_energy_rate_W_per_kg": 0.05,
+      "whole_flight_airspeed_min_ms": 16.78,
+      "whole_flight_airspeed_max_ms": 19.342,
+      "whole_flight_elevator_max_abs_deg": 6.368,
+      "decay_ratio_range": [
+        0.405,
+        0.653
+      ]
+    }
+  },
+  "tecs_baseline_params_live": {
+    "TECS_CLMB_MAX": 5.0,
+    "TECS_SINK_MIN": 2.0,
+    "TECS_SINK_MAX": 5.0,
+    "TECS_TIME_CONST": 5.0,
+    "TECS_THR_DAMP": 0.5,
+    "TECS_PTCH_DAMP": 0.30000001192092896,
+    "TECS_INTEG_GAIN": 0.30000001192092896,
+    "TECS_VERT_ACC": 7.0,
+    "TECS_SPDWEIGHT": 1.0,
+    "TECS_HGT_OMEGA": 3.0,
+    "TECS_SPD_OMEGA": 2.0,
+    "TECS_RLL2THR": 10.0,
+    "TECS_PITCH_MAX": 15.0,
+    "TECS_PITCH_MIN": 0.0,
+    "TECS_HDEM_TCONST": 3.0,
+    "TECS_OPTIONS": 0.0,
+    "TECS_SYNAIRSPEED": 0.0,
+    "TECS_PTCH_FF_V0": 12.0,
+    "TECS_PTCH_FF_K": 0.0,
+    "TECS_THR_ERATE": 20.0,
+    "TECS_LAND_ARSPD": -1.0,
+    "TECS_LAND_THR": -1.0,
+    "TECS_LAND_SPDWGT": -1.0,
+    "THR_MIN": 0.0,
+    "THR_MAX": 100.0,
+    "TRIM_THROTTLE": 45.0,
+    "THR_SLEWRATE": 100.0,
+    "THROTTLE_NUDGE": 1.0,
+    "AIRSPEED_MIN": 16.0,
+    "AIRSPEED_CRUISE": 18.0,
+    "AIRSPEED_MAX": 28.0,
+    "AIRSPEED_STALL": 0.0,
+    "ARSPD_TYPE": 100.0,
+    "ARSPD_USE": 1.0,
+    "MIN_GROUNDSPEED": 0.0,
+    "FBWB_CLIMB_RATE": 2.0,
+    "FBWB_ELEV_REV": 0.0,
+    "CRUISE_ALT_FLOOR": 0.0,
+    "PTCH_LIM_MAX_DEG": 20.0,
+    "PTCH_LIM_MIN_DEG": -25.0,
+    "ROLL_LIMIT_DEG": 45.0,
+    "PTCH_TRIM_DEG": 2.490000009536743,
+    "KFF_THR2PTCH": 0.0,
+    "STAB_PITCH_DOWN": 2.0,
+    "STICK_MIXING": 1.0,
+    "FLIGHT_OPTIONS": 0.0,
+    "TERRAIN_FOLLOW": 0.0,
+    "FENCE_ENABLE": 0.0,
+    "RC2_MIN": 1100.0,
+    "RC2_MAX": 1900.0,
+    "RC2_TRIM": 1500.0,
+    "RC2_DZ": 30.0,
+    "RC2_REVERSED": 0.0,
+    "RC3_MIN": 1100.0,
+    "RC3_MAX": 1900.0,
+    "RC3_TRIM": 1500.0,
+    "RC3_DZ": 30.0,
+    "RC3_REVERSED": 0.0,
+    "RLL_RATE_P": 0.25,
+    "RLL_RATE_I": 0.125,
+    "RLL_RATE_D": 0.0020000000949949026,
+    "RLL_RATE_FF": 0.125,
+    "PTCH_RATE_P": 0.25,
+    "PTCH_RATE_I": 0.125,
+    "PTCH_RATE_D": 0.0020000000949949026,
+    "PTCH_RATE_FF": 0.125,
+    "SIM_WIND_SPD": 0.0,
+    "SIM_WIND_DIR": 180.0,
+    "SIM_WIND_TURB": 0.0,
+    "SIM_OPOS_LAT": -35.36326217651367,
+    "SIM_OPOS_LNG": 149.1652374267578,
+    "SIM_OPOS_ALT": 0.0,
+    "SIM_OPOS_HDG": 0.0,
+    "SIM_ARSPD_RND": 2.0,
+    "SIM_ARSPD_RATIO": 1.9900000095367432,
+    "ARSPD_OPTIONS": 11.0,
+    "AHRS_EKF_TYPE": 10.0,
+    "AHRS_WIND_MAX": 0.0,
+    "ALT_OFFSET": 0.0
+  },
+  "command_derivation": {
+    "v_target_ms": 18.0,
+    "rc3_pwm_us": 1258.3333333333333,
+    "rc3_pwm_us_rounded": 1258,
+    "predicted_target_airspeed_ms": 17.92,
+    "error": null,
+    "demand_quantisation_grid_ms": 0.12,
+    "demand_quantisation_error_ms": -0.0799999999999983,
+    "rc2_up_us": 1900.0,
+    "rc2_down_us": 1100.0,
+    "rc2_neutral_us": 1500.0,
+    "formula": "ArduPlane/navigation.cpp:187-189 inverted through RC_Channel.cpp:388-402, including the int16_t control_in truncation (RC_Channel.h:99/542). Derivation and the resulting 0.08 m/s command quantisation: docs/test_results/2026-09-02_ardupilot_tecs_and_cruise_speed_hold_validation.md sec 3."
+  },
+  "reference_altitude_m": 89.15421266728174,
+  "thresholds": {
+    "INHERITED": {
+      "TH_SPEED_MEAN_TOL_MS": 0.5,
+      "TH_SPEED_STD_MAX_MS": 0.5,
+      "TH_SPEED_MIN_MS": 16.0,
+      "TH_SPEED_HARD_FLOOR_MS": 14.4,
+      "TH_SPEED_SLOPE_MAX_MS_PER_S": 0.02,
+      "TH_TECS_TARGET_TOL_MS": 0.4,
+      "TH_ALT_SLOPE_MAX_MS": 0.1,
+      "TH_ALT_SLOPE_TIGHT_MS": 0.02,
+      "TH_ALT_P2P_MAX_M": 5.0,
+      "TH_SINK_CLOSED_MS": 0.078,
+      "TH_THROTTLE_TOL": 0.05,
+      "TH_SAT_RUN_MAX_S": 2.0,
+      "TH_SAT_MARGIN": 0.01,
+      "TH_TECS_AUTHORITY_MIN_DELTA": 0.1,
+      "TH_THROTTLE_MODULATION_MIN": 0.05,
+      "TH_SURF_HOLD_MAX_DEG": 10.0,
+      "TH_SURF_FLIGHT_MAX_DEG": 15.0,
+      "TH_LATERAL_SURF_MAX_DEG": 10.0,
+      "TH_COORD_THROTTLE_DELTA": 0.01,
+      "TH_COORD_PITCH_DELTA_DEG": 0.5,
+      "TH_PITCH_ALPHA_GAMMA_RESID_DEG": 1.5,
+      "TH_GS_VS_AS_MAX_MS": 1.0,
+      "TH_RAMP_DIRECTION_MIN_MS": 0.2,
+      "TH_ALT_STEP_ACHIEVED_FRAC": 0.7,
+      "source": "tests/gazebo/scripts/test_ardupilot_tecs_cruise_speed_hold.py (ARDUPLANE_TECS_AND_CRUISE_SPEED_HOLD_VALIDATION, 2026-09-02)"
+    },
+    "DERIVED_THIS_STAGE": {
+      "TH_TARGET_STEP_TOL_M": 3.0,
+      "TH_TARGET_VS_ACTUAL_TOL_M": 2.0,
+      "TH_RESETTLE_TOL_M": 2.0,
+      "TH_RESETTLE_TIGHT_M": 0.5,
+      "TH_LEVEL_STEDOT_MAX_W_PER_KG": 1.0,
+      "TH_RAMP_STEDOT_MIN_W_PER_KG": 2.0,
+      "TH_KINETIC_FRACTION_MAX": 0.25,
+      "TH_STE_ROUNDTRIP_MAX_J_PER_KG": 20.0,
+      "TH_DESCENT_SPEED_OVERSHOOT_MAX_MS": 2.0,
+      "TH_SETTLE_BAND_M": 1.5,
+      "TH_SETTLE_SPEED_BAND_MS": 0.5,
+      "TH_SETTLE_TIME_MAX_S": {
+        "value": null,
+        "status": "WITHDRAWN_2026-09-03",
+        "was": 25.0,
+        "cause": "validation finding V-1 - 5 x TECS_TIME_CONST bounds a FIRST-order loop, not the decay envelope of the measured SECOND-order longitudinal energy mode, and it ignored the uncontrolled initial excursion A0",
+        "replaced_by": "TH_SETTLE_TAU_MARGIN_K + per-phase derived limit"
+      },
+      "TH_SETTLE_TAU_MARGIN_K": {
+        "value": 1.0,
+        "units": "-",
+        "criterion": "t_limit_c = t_peak_c + T/2 + K*TAU_REF*ln(A0_c/B_c) per channel; equivalently tau_implied_c <= K*TAU_REF",
+        "TAU_REF": "V*(L/D)/g, free-airframe Lanchester phugoid envelope time constant from the phase own post-transient trim state (ASSUMPTION PHUGOID_REFERENCE_IS_LANCHESTER)",
+        "K_justification": "no margin. Any K>1 needs a Falcon V2 handling-qualities basis, which is DATA_REQUIRED"
+      },
+      "TH_DECAY_RATIO_MAX": 0.9,
+      "TH_SURF_LIMIT_MARGIN_DEG": 5.0,
+      "TH_SURF_MAX_ABS_DEG": 40.0,
+      "TH_PROPULSIVE_POWER_RESID_W_PER_KG": 3.0,
+      "provenance": "Each derived from an inherited threshold or a documented physical quantity - see the comment block above each constant in this file and docs/source_of_truth/controls/ardupilot_tecs_energy_management.yaml"
+    }
+  },
+  "reanalyzed_from": "tests/gazebo/results/ardupilot_tecs_climb_descent_energy_timeseries.json",
+  "provenance_blocks_source": "mode / parameter_policy / open_limitations / reference_constants are STATIC declarations regenerated from this module by provenance_block(); they are not flight measurements and are not read from the timeseries file (which does not carry them). Restored 2026-09-04 for validation finding V-13 - before that fix a re-analysed artifact silently dropped them.",
+  "param_preconditions": {
+    "arspd_use_1_tecs_uses_airspeed_path": true,
+    "arspd_type_100_sitl_backend": true,
+    "airspeed_min_16": true,
+    "airspeed_cruise_18": true,
+    "airspeed_max_28": true,
+    "ptch_trim_deg_2p49": true,
+    "kff_thr2ptch_zero": true,
+    "flight_options_zero": true,
+    "fbwb_elev_rev_zero": true,
+    "cruise_alt_floor_zero": true,
+    "min_groundspeed_zero": true,
+    "rc3_not_reversed": true,
+    "rc2_not_reversed": true,
+    "sim_wind_zero": true,
+    "sim_opos_alt_zero_atmosphere_datum": true,
+    "pids_unchanged": true,
+    "tecs_at_firmware_defaults": true,
+    "alt_offset_zero_for_target_readback": true,
+    "terrain_follow_zero": true,
+    "fbwb_climb_rate_2ms": true,
+    "tecs_spdweight_readable": true
+  },
+  "analysis": {
+    "phase_plan": {
+      "p1_cruise_s": 45.0,
+      "p1_transient_s": 12.0,
+      "p2_climb_max_s": 20.0,
+      "p3_settle_s": 40.0,
+      "p4_descent_max_s": 20.0,
+      "p5_resettle_s": 40.0,
+      "hold_transient_s": 10.0,
+      "settle_tail_s": 10.0,
+      "alt_step_m": 10.0,
+      "v_target_ms": 18.0
+    },
+    "P1_cruise_full": {
+      "label": "P1_cruise_full",
+      "n": 863,
+      "t_start": 0.0032994747161865234,
+      "t_end": 44.99700736999512,
+      "duration_s": 44.99370789527893,
+      "airspeed_vfr_hud_ms": {
+        "label": "airspeed_vfr_hud",
+        "n": 863,
+        "mean": 17.909545107208288,
+        "std": 0.43584810344276187,
+        "min": 16.650882720947266,
+        "max": 19.27482032775879,
+        "slope_per_s": -0.0007208445784109214,
+        "drift_over_window": -0.03243347039891648,
+        "endpoint_delta": -0.2987995147705078,
+        "t_start": 0.0032994747161865234,
+        "t_end": 44.99700736999512
+      },
+      "airspeed_aero_diag_V_ms": {
+        "min": 16.671853174518134,
+        "max": 19.279322849338286,
+        "mean": 17.907561713127873,
+        "std": 0.44729893792431263,
+        "n": 863
+      },
+      "groundspeed_ms": {
+        "min": 16.66969108581543,
+        "max": 19.277523040771484,
+        "mean": 17.896775881081027,
+        "std": 0.44567311499650214,
+        "n": 863
+      },
+      "tecs_target_airspeed_ms": {
+        "min": 17.760133743286133,
+        "max": 18.030807495117188,
+        "mean": 17.91967245188124,
+        "std": 0.04714571891181314,
+        "n": 863
+      },
+      "groundspeed_minus_airspeed_max_abs_ms": 0.5384387969970703,
+      "altitude_gz_m": {
+        "label": "altitude_gz",
+        "n": 863,
+        "mean": 89.08495168109026,
+        "std": 0.6596434322149227,
+        "min": 86.72447290596605,
+        "max": 90.38011262806889,
+        "slope_per_s": 0.011586551339277575,
+        "drift_over_window": 0.521321906473108,
+        "endpoint_delta": 0.374624726000377,
+        "t_start": 0.0032994747161865234,
+        "t_end": 44.99700736999512
+      },
+      "vertical_speed_regression_ms": 0.011586551339277575,
+      "vertical_speed_endpoint_ms": 0.008326158112425435,
+      "altitude_p2p_m": 3.6556397221028334,
+      "vfr_hud_climb_ms": {
+        "min": -1.567726731300354,
+        "max": 1.8738380670547485,
+        "mean": 0.006638656378165751,
+        "std": 0.641260912946036,
+        "n": 863
+      },
+      "mav_relative_alt_m": {
+        "min": 86.72,
+        "max": 90.38,
+        "mean": 89.07949015063728,
+        "std": 0.6597481661351919,
+        "n": 863
+      },
+      "nav_alt_error_m": {
+        "min": -1.209999918937683,
+        "max": 2.450000047683716,
+        "mean": 0.0905098468540096,
+        "std": 0.6597481488286085,
+        "n": 863
+      },
+      "pitch_physical_noseup_deg": {
+        "label": "pitch_physical",
+        "n": 863,
+        "mean": 2.724586407404625,
+        "std": 1.9756545741639795,
+        "min": -2.679018103152397,
+        "max": 8.321379253927375,
+        "slope_per_s": 0.00016847255199766938,
+        "drift_over_window": 0.007580204792955327,
+        "endpoint_delta": 3.993172752327145,
+        "t_start": 0.0032994747161865234,
+        "t_end": 44.99700736999512
+      },
+      "pitch_demand_physical_deg": {
+        "min": -0.4399998188018799,
+        "max": 12.639999628067017,
+        "mean": 3.3280069368868754,
+        "std": 2.521104578740277,
+        "n": 863
+      },
+      "nav_pitch_raw_tecs_demand_deg": {
+        "min": -2.929999828338623,
+        "max": 10.149999618530273,
+        "mean": 0.8380069273501324,
+        "std": 2.521104578740277,
+        "n": 863
+      },
+      "pitch_mav_reported_deg": {
+        "min": -5.167934142556387,
+        "max": 5.831299617107773,
+        "mean": 0.23184613349560362,
+        "std": 1.9775606670554764,
+        "n": 863
+      },
+      "pitch_rate_q_gz_deg_s": {
+        "min": -5.926597745160105,
+        "max": 5.411641023403783,
+        "mean": -0.08611806580760006,
+        "std": 2.08704530239803,
+        "n": 863
+      },
+      "alpha_aero_diag_deg": {
+        "min": 1.65335119182171,
+        "max": 3.5623664276098426,
+        "mean": 2.707248359525347,
+        "std": 0.2876258176963419,
+        "n": 863
+      },
+      "pitch_minus_alpha_minus_gamma_deg": {
+        "min": -0.213729756881758,
+        "max": 0.2711388161676641,
+        "mean": 0.002929149488372819,
+        "std": 0.055866602448638655,
+        "n": 863
+      },
+      "throttle_actual": {
+        "label": "throttle_actual",
+        "n": 863,
+        "mean": 0.48884241019698743,
+        "std": 0.02587911034043682,
+        "min": 0.18,
+        "max": 0.545,
+        "slope_per_s": 0.00010011416275611553,
+        "drift_over_window": 0.004504507395229076,
+        "endpoint_delta": 0.306,
+        "t_start": 0.0032994747161865234,
+        "t_end": 44.99700736999512
+      },
+      "throttle_L": {
+        "min": 0.18,
+        "max": 0.545,
+        "mean": 0.48882387022016216,
+        "std": 0.02587968481385101,
+        "n": 863
+      },
+      "throttle_R": {
+        "min": 0.18,
+        "max": 0.545,
+        "mean": 0.4888609501738126,
+        "std": 0.02587888078097817,
+        "n": 863
+      },
+      "throttle_LR_asymmetry_max": 0.0010000000000000009,
+      "throttle_vfr_hud_pct": {
+        "min": 22,
+        "max": 54,
+        "mean": 48.43453070683662,
+        "std": 2.498678905851972,
+        "n": 863
+      },
+      "motor_left_rpm": {
+        "min": 1666.1685114480429,
+        "max": 6587.81181398042,
+        "mean": 5942.284025244264,
+        "std": 326.34748515576706,
+        "n": 863
+      },
+      "motor_left_thrust_N": {
+        "min": 0.0,
+        "max": 3.6812093283097336,
+        "mean": 2.563622596344964,
+        "std": 0.5250320220875906,
+        "n": 863
+      },
+      "motor_right_rpm": {
+        "min": 1666.1685114480429,
+        "max": 6587.801045114862,
+        "mean": 5942.710354180035,
+        "std": 326.34921540935284,
+        "n": 863
+      },
+      "motor_right_thrust_N": {
+        "min": 0.0,
+        "max": 3.68140786359674,
+        "mean": 2.5649266398679584,
+        "std": 0.5249324723087095,
+        "n": 863
+      },
+      "thrust_total_N": {
+        "min": 0.0,
+        "max": 7.362617191906473,
+        "mean": 5.12854923621293,
+        "std": 1.0499526238469306,
+        "n": 863
+      },
+      "drag_qbar_S_CD_N": {
+        "min": 4.33825768263221,
+        "max": 6.129510132289807,
+        "mean": 5.145331668032256,
+        "std": 0.3301051965927235,
+        "n": 863
+      },
+      "thrust_minus_drag_N": -0.01678243181932615,
+      "lift_over_weight": 0.9988048951031455,
+      "specific_energy_rate_W_per_kg": 0.05221522057746908,
+      "dV_dt_ms2": -0.0007208445784109214,
+      "surfaces": {
+        "left_aileron": {
+          "cmd_deg": {
+            "min": 0.0,
+            "max": 0.06428571428591892,
+            "mean": 0.0010428736964111988,
+            "std": 0.008121224965306834,
+            "n": 863
+          },
+          "actual_deg": {
+            "min": -0.4044101548455888,
+            "max": 0.5160319739808191,
+            "mean": 0.0004079564510479924,
+            "std": 0.15183863390627814,
+            "n": 863
+          },
+          "max_abs_actual_deg": 0.5160319739808191
+        },
+        "right_aileron": {
+          "cmd_deg": {
+            "min": -0.06428571428591892,
+            "max": 0.0,
+            "mean": -0.0010428736964111988,
+            "std": 0.008121224965306834,
+            "n": 863
+          },
+          "actual_deg": {
+            "min": -0.40456219300193424,
+            "max": 0.5162380618699114,
+            "mean": -0.0014600405894742024,
+            "std": 0.15161153428035662,
+            "n": 863
+          },
+          "max_abs_actual_deg": 0.5162380618699114
+        },
+        "left_elevator": {
+          "cmd_deg": {
+            "min": 0.9000000000029248,
+            "max": 6.621428571450089,
+            "mean": 4.449718589651953,
+            "std": 0.8009967548892012,
+            "n": 863
+          },
+          "actual_deg": {
+            "min": 1.0759274441157465,
+            "max": 6.313194029556947,
+            "mean": 4.441636662836831,
+            "std": 0.6756880739550047,
+            "n": 863
+          },
+          "max_abs_actual_deg": 6.313194029556947
+        },
+        "right_elevator": {
+          "cmd_deg": {
+            "min": 0.9000000000029248,
+            "max": 6.621428571450089,
+            "mean": 4.449718589651953,
+            "std": 0.8009967548892012,
+            "n": 863
+          },
+          "actual_deg": {
+            "min": 1.0759932217802057,
+            "max": 6.313173572396251,
+            "mean": 4.441621315330376,
+            "std": 0.675685791413966,
+            "n": 863
+          },
+          "max_abs_actual_deg": 6.313173572396251
+        },
+        "rudder": {
+          "cmd_deg": {
+            "min": 0.0,
+            "max": 0.0,
+            "mean": 0.0,
+            "std": 0.0,
+            "n": 863
+          },
+          "actual_deg": {
+            "min": -0.0027876229490220285,
+            "max": 0.0036614660146122037,
+            "mean": 5.155199778880293e-06,
+            "std": 0.0007047585794851319,
+            "n": 863
+          },
+          "max_abs_actual_deg": 0.0036614660146122037
+        }
+      },
+      "elevator_max_abs_deg": 6.313194029556947,
+      "lateral_surface_max_abs_deg": 0.5162380618699114,
+      "actuator_clamp": {
+        "target_clamp_active_samples": 0,
+        "effort_clamp_active_samples": 0
+      },
+      "roll_gz_deg": {
+        "min": -0.040207615875893915,
+        "max": 0.04370114456857666,
+        "mean": -0.015312499232374628,
+        "std": 0.020277104580116712,
+        "n": 863
+      },
+      "nav_roll_demand_deg": {
+        "min": 0.0,
+        "max": 0.0,
+        "mean": 0.0,
+        "std": 0.0,
+        "n": 863
+      },
+      "custom_modes_seen": [
+        6
+      ],
+      "all_fbwb": true,
+      "oscillation_growth": {
+        "altitude": {
+          "n": 863,
+          "resid_std_first_half": 0.8644176871677955,
+          "resid_std_second_half": 0.26648757589130956,
+          "resid_p2p_first_half": 3.619816329044923,
+          "resid_p2p_second_half": 1.03706746681452,
+          "ratio_second_over_first": 0.30828565848118816,
+          "growing": false
+        },
+        "airspeed": {
+          "n": 863,
+          "resid_std_first_half": 0.5871230172124721,
+          "resid_std_second_half": 0.18540984467456034,
+          "resid_p2p_first_half": 2.621784432549255,
+          "resid_p2p_second_half": 0.7770275756535021,
+          "ratio_second_over_first": 0.3157938613186118,
+          "growing": false
+        },
+        "pitch_physical": {
+          "n": 863,
+          "resid_std_first_half": 2.6348144076457913,
+          "resid_std_second_half": 0.9251112398086903,
+          "resid_p2p_first_half": 10.99990849814345,
+          "resid_p2p_second_half": 3.5463118975995114,
+          "ratio_second_over_first": 0.3511105894685303,
+          "growing": false
+        },
+        "throttle": {
+          "n": 863,
+          "resid_std_first_half": 0.03523998961130966,
+          "resid_std_second_half": 0.009741196198407156,
+          "resid_p2p_first_half": 0.3648258840860686,
+          "resid_p2p_second_half": 0.036318092368921084,
+          "ratio_second_over_first": 0.27642449120589097,
+          "growing": false
+        }
+      },
+      "nan_inf_count": 0,
+      "nan_inf_samples": [],
+      "energy": {
+        "seb_weights": {
+          "w_SPE": 1.0,
+          "w_SKE": 1.0,
+          "tecs_spdweight_live": 1.0,
+          "source": "AP_TECS.cpp:1003,1024,1027-1028"
+        },
+        "gravity_used_m_s2": 9.81,
+        "gravity_ardupilot_internal_m_s2": 9.80665,
+        "SPE_J_per_kg": {
+          "min": 850.767079207527,
+          "max": 886.6289048813558,
+          "mean": 873.9233759914962,
+          "std": 6.471102070028395,
+          "n": 863
+        },
+        "SKE_J_per_kg": {
+          "min": 138.9753441363452,
+          "max": 185.84614476450867,
+          "mean": 160.4404214246754,
+          "std": 8.02112494867869,
+          "n": 863
+        },
+        "STE_J_per_kg": {
+          "min": 1024.6956553343864,
+          "max": 1038.204247567078,
+          "mean": 1034.3637974161713,
+          "std": 2.74928449162578,
+          "n": 863
+        },
+        "SEB_J_per_kg": {
+          "min": 665.1105353778503,
+          "max": 747.501653586907,
+          "mean": 713.482954566821,
+          "std": 14.313233375802591,
+          "n": 863
+        },
+        "TAS_ms": {
+          "min": 16.671853174518134,
+          "max": 19.279322849338286,
+          "mean": 17.907561713127873,
+          "std": 0.44729893792431263,
+          "n": 863
+        },
+        "vz_regression_ms": 0.011586551339277575,
+        "vz_vfr_hud_mean_ms": 0.006638656378165751,
+        "dTAS_dt_ms2": -0.0009816800740229717,
+        "SPEdot_W_per_kg": 0.11366406863831302,
+        "SKEdot_W_per_kg": -0.017579496508114304,
+        "STEdot_W_per_kg": 0.09608457213019872,
+        "SEBdot_W_per_kg": 0.13124356514642732,
+        "STEdot_endpoint_W_per_kg": -0.0402828583534056,
+        "STE_change_over_window_J_per_kg": -1.8124751619400286,
+        "potential_fraction_of_STEdot": 1.182958576162397,
+        "kinetic_fraction_of_STEdot": -0.18295857616239714,
+        "kinetic_over_potential_abs": 0.15466186208812818,
+        "thrust_total_N_mean": 5.12854923621293,
+        "drag_N_mean": 5.145331668032256,
+        "propulsive_excess_power_W_per_kg": -0.05008873891682398,
+        "propulsive_vs_STEdot_residual_W_per_kg": -0.1461733110470227,
+        "propulsive_note": "REPORT-ONLY. D is the aero plugin's qbar*S*CD diagnostic and the descent is affected by PROPULSION_HIGH_J_WINDMILLING (thrust floored at 0 N above the APC table's last J), which biases exactly this comparison. Not a gating criterion."
+      },
+      "high_j": {
+        "limitation_id": "PROPULSION_HIGH_J_WINDMILLING",
+        "status": "OPEN_LIMITATION",
+        "owner": "propulsion",
+        "detail": "APC 13x6.5E Ct/Cp table has no windmilling data above the zero-thrust advance ratio. Ct is clamped to the table end, so thrust is floored at 0 N where a real fixed-pitch prop would produce NEGATIVE thrust. The simulated descent is therefore less draggy than reality. DATA_REQUIRED: measured or extrapolated APC 13x6.5E Ct/Cp for J beyond zero-thrust.",
+        "effect_on_this_stage": "Descent DIRECTION, controllability, settling and energy bookkeeping remain valid. The ABSOLUTE descent drag/sink performance is NOT high-fidelity real-aircraft truth. NOT a blocker for this stage.",
+        "motor_samples": 1726,
+        "interp_clamped_samples": 10,
+        "interp_clamped_fraction": 0.005793742757821553,
+        "zero_thrust_samples": 4,
+        "advance_ratio_J": {
+          "min": 0.5190146658090923,
+          "max": 1.9825060232547875,
+          "mean": 0.5496515756097147,
+          "std": 0.06281469206499998,
+          "n": 1726
+        }
+      },
+      "ap_target_alt_rel_m": {
+        "label": "ap_target_alt_rel",
+        "n": 863,
+        "mean": 89.16999999749129,
+        "std": 2.5395100255304335e-08,
+        "min": 89.16999982833862,
+        "max": 89.17000008106231,
+        "slope_per_s": 2.94468796053136e-10,
+        "drift_over_window": 1.3249242993889266e-08,
+        "endpoint_delta": 1.5497207073167374e-08,
+        "t_start": 0.0032994747161865234,
+        "t_end": 44.99700736999512
+      },
+      "ap_alt_rel_m": {
+        "min": 86.72,
+        "max": 90.38,
+        "mean": 89.07949015063728,
+        "std": 0.6597481661351919,
+        "n": 863
+      },
+      "ap_height_error_m": {
+        "min": -1.209999918937683,
+        "max": 2.450000047683716,
+        "mean": 0.0905098468540096,
+        "std": 0.6597481488286085,
+        "n": 863
+      },
+      "gz_z_minus_ap_relative_alt_m": {
+        "min": -0.07303125100355601,
+        "max": 0.09682329367123543,
+        "mean": 0.0054615304529678005,
+        "std": 0.016760742406894447,
+        "n": 863
+      },
+      "elevator_deg": {
+        "label": "elevator_deg",
+        "n": 863,
+        "mean": 4.441628989083609,
+        "std": 0.6756867508909418,
+        "min": 1.075960332947976,
+        "max": 6.313183800976599,
+        "slope_per_s": -0.0035364173381020195,
+        "drift_over_window": -0.15911652870636214,
+        "endpoint_delta": 2.528130875733601,
+        "t_start": 0.0032994747161865234,
+        "t_end": 44.99700736999512
+      }
+    },
+    "P2_climb_full": {
+      "label": "P2_climb_full",
+      "n": 168,
+      "t_start": 45.00445818901062,
+      "t_end": 53.72323155403137,
+      "duration_s": 8.718773365020752,
+      "airspeed_vfr_hud_ms": {
+        "label": "airspeed_vfr_hud",
+        "n": 168,
+        "mean": 17.810078530084517,
+        "std": 0.2760958887383382,
+        "min": 17.285505294799805,
+        "max": 18.245838165283203,
+        "slope_per_s": -0.050527747730858115,
+        "drift_over_window": -0.44053998111029347,
+        "endpoint_delta": 0.1597919464111328,
+        "t_start": 45.00445818901062,
+        "t_end": 53.72323155403137
+      },
+      "airspeed_aero_diag_V_ms": {
+        "min": 17.313717573035724,
+        "max": 18.24152455619555,
+        "mean": 17.81440479321903,
+        "std": 0.28584363413460395,
+        "n": 168
+      },
+      "groundspeed_ms": {
+        "min": 17.246885299682617,
+        "max": 18.221511840820312,
+        "mean": 17.760022890000116,
+        "std": 0.30140576548901094,
+        "n": 168
+      },
+      "tecs_target_airspeed_ms": {
+        "min": 17.850923538208008,
+        "max": 17.98128318786621,
+        "mean": 17.921882152557373,
+        "std": 0.03311318477250709,
+        "n": 168
+      },
+      "groundspeed_minus_airspeed_max_abs_ms": 0.29111480712890625,
+      "altitude_gz_m": {
+        "label": "altitude_gz",
+        "n": 168,
+        "mean": 92.88493863079995,
+        "std": 3.3833322887191923,
+        "min": 89.12383179862343,
+        "max": 99.44173951680752,
+        "slope_per_s": 1.3014849586689439,
+        "drift_over_window": 11.347352392617921,
+        "endpoint_delta": 10.071774784738722,
+        "t_start": 45.00445818901062,
+        "t_end": 53.72323155403137
+      },
+      "vertical_speed_regression_ms": 1.3014849586689439,
+      "vertical_speed_endpoint_ms": 1.1551825426666253,
+      "altitude_p2p_m": 10.317907718184088,
+      "vfr_hud_climb_ms": {
+        "min": -0.21419787406921387,
+        "max": 2.131080150604248,
+        "mean": 1.153408639985303,
+        "std": 0.7697394957294516,
+        "n": 168
+      },
+      "mav_relative_alt_m": {
+        "min": 89.12,
+        "max": 99.39,
+        "mean": 92.85791666666665,
+        "std": 3.371499040303858,
+        "n": 168
+      },
+      "nav_alt_error_m": {
+        "min": -0.19999998807907104,
+        "max": 6.449999809265137,
+        "mean": 4.486607043715638,
+        "std": 1.7524040370205516,
+        "n": 168
+      },
+      "pitch_physical_noseup_deg": {
+        "label": "pitch_physical",
+        "n": 168,
+        "mean": 6.718589625870344,
+        "std": 2.5207201001946373,
+        "min": 2.040507913978806,
+        "max": 9.842183300096767,
+        "slope_per_s": 0.8042527428703017,
+        "drift_over_window": 7.0120973932824695,
+        "endpoint_delta": 7.582959648743118,
+        "t_start": 45.00445818901062,
+        "t_end": 53.72323155403137
+      },
+      "pitch_demand_physical_deg": {
+        "min": 2.1100000143051147,
+        "max": 10.609999895095825,
+        "mean": 8.24220227494481,
+        "std": 2.1264458133533393,
+        "n": 168
+      },
+      "nav_pitch_raw_tecs_demand_deg": {
+        "min": -0.3799999952316284,
+        "max": 8.119999885559082,
+        "mean": 5.752202265408068,
+        "std": 2.1264458133533393,
+        "n": 168
+      },
+      "pitch_mav_reported_deg": {
+        "min": -0.44870394143869863,
+        "max": 7.325619502780564,
+        "mean": 4.21502375752303,
+        "std": 2.5246297448275814,
+        "n": 168
+      },
+      "pitch_rate_q_gz_deg_s": {
+        "min": -3.1695358420141697,
+        "max": 1.3415315331604687,
+        "mean": -0.871467841556707,
+        "std": 1.3698748179441658,
+        "n": 168
+      },
+      "alpha_aero_diag_deg": {
+        "min": 2.6114268534064804,
+        "max": 3.225461364286046,
+        "mean": 2.976394120461141,
+        "std": 0.17159659927936735,
+        "n": 168
+      },
+      "pitch_minus_alpha_minus_gamma_deg": {
+        "min": -0.07873336452924296,
+        "max": 0.15852977550819336,
+        "mean": 0.013323763885281458,
+        "std": 0.03580637154623168,
+        "n": 168
+      },
+      "throttle_actual": {
+        "label": "throttle_actual",
+        "n": 168,
+        "mean": 0.5404315476190471,
+        "std": 0.025619405637600606,
+        "min": 0.485,
+        "max": 0.578,
+        "slope_per_s": 0.009288681361689215,
+        "drift_over_window": 0.08098590765246062,
+        "endpoint_delta": 0.08599999999999997,
+        "t_start": 45.00445818901062,
+        "t_end": 53.72323155403137
+      },
+      "throttle_L": {
+        "min": 0.485,
+        "max": 0.578,
+        "mean": 0.5403988095238089,
+        "std": 0.02561322665216444,
+        "n": 168
+      },
+      "throttle_R": {
+        "min": 0.485,
+        "max": 0.578,
+        "mean": 0.5404642857142853,
+        "std": 0.02562618007901639,
+        "n": 168
+      },
+      "throttle_LR_asymmetry_max": 0.0010000000000000009,
+      "throttle_vfr_hud_pct": {
+        "min": 48,
+        "max": 57,
+        "mean": 53.57738095238095,
+        "std": 2.559987499526594,
+        "n": 168
+      },
+      "motor_left_rpm": {
+        "min": 5905.867962871587,
+        "max": 6891.758971697337,
+        "mean": 6487.666736170502,
+        "std": 271.70000517757495,
+        "n": 168
+      },
+      "motor_left_thrust_N": {
+        "min": 2.492358276132279,
+        "max": 6.066420503140738,
+        "mean": 4.568020330166926,
+        "std": 1.0726583725820393,
+        "n": 168
+      },
+      "motor_right_rpm": {
+        "min": 5905.884887337751,
+        "max": 6891.743062534191,
+        "mean": 6488.404372770626,
+        "std": 271.8824545554108,
+        "n": 168
+      },
+      "motor_right_thrust_N": {
+        "min": 2.4919598208018607,
+        "max": 6.066254021925384,
+        "mean": 4.570706140869767,
+        "std": 1.0737739074828483,
+        "n": 168
+      },
+      "thrust_total_N": {
+        "min": 4.98431809693414,
+        "max": 12.132674525066122,
+        "mean": 9.138726471036694,
+        "std": 2.1464194714567304,
+        "n": 168
+      },
+      "drag_qbar_S_CD_N": {
+        "min": 4.8447766800716545,
+        "max": 5.581333546580558,
+        "mean": 5.206414936389668,
+        "std": 0.22273518152361974,
+        "n": 168
+      },
+      "thrust_minus_drag_N": 3.9323115346470265,
+      "lift_over_weight": 1.0157986953860803,
+      "specific_energy_rate_W_per_kg": 10.41503560322094,
+      "dV_dt_ms2": -0.050527747730858115,
+      "surfaces": {
+        "left_aileron": {
+          "cmd_deg": {
+            "min": 0.0,
+            "max": 0.06428571428591892,
+            "mean": 0.0003826530612257079,
+            "std": 0.004944967340571873,
+            "n": 168
+          },
+          "actual_deg": {
+            "min": -0.1486245069878969,
+            "max": 0.15795268378613728,
+            "mean": -0.018461607656928006,
+            "std": 0.09350962925028826,
+            "n": 168
+          },
+          "max_abs_actual_deg": 0.15795268378613728
+        },
+        "right_aileron": {
+          "cmd_deg": {
+            "min": -0.06428571428591892,
+            "max": 0.0,
+            "mean": -0.0003826530612257079,
+            "std": 0.004944967340571873,
+            "n": 168
+          },
+          "actual_deg": {
+            "min": -0.16148342347512054,
+            "max": 0.1580617016771154,
+            "mean": -0.02047240931866527,
+            "std": 0.09433430719657562,
+            "n": 168
+          },
+          "max_abs_actual_deg": 0.16148342347512054
+        },
+        "left_elevator": {
+          "cmd_deg": {
+            "min": 4.3071428571568475,
+            "max": 5.97857142859085,
+            "mean": 5.305102040833565,
+            "std": 0.4938353835952963,
+            "n": 168
+          },
+          "actual_deg": {
+            "min": 4.234968620562292,
+            "max": 5.867363609265178,
+            "mean": 5.270367757342086,
+            "std": 0.4457656788641535,
+            "n": 168
+          },
+          "max_abs_actual_deg": 5.867363609265178
+        },
+        "right_elevator": {
+          "cmd_deg": {
+            "min": 4.3071428571568475,
+            "max": 5.97857142859085,
+            "mean": 5.305102040833565,
+            "std": 0.4938353835952963,
+            "n": 168
+          },
+          "actual_deg": {
+            "min": 4.234981860370287,
+            "max": 5.8672475684976755,
+            "mean": 5.270355224603525,
+            "std": 0.4457782727934693,
+            "n": 168
+          },
+          "max_abs_actual_deg": 5.8672475684976755
+        },
+        "rudder": {
+          "cmd_deg": {
+            "min": 0.0,
+            "max": 0.0,
+            "mean": 0.0,
+            "std": 0.0,
+            "n": 168
+          },
+          "actual_deg": {
+            "min": -0.0027859860531374452,
+            "max": 0.0026178555547905487,
+            "mean": 1.033488318604294e-05,
+            "std": 0.0008269077246251499,
+            "n": 168
+          },
+          "max_abs_actual_deg": 0.0027859860531374452
+        }
+      },
+      "elevator_max_abs_deg": 5.867363609265178,
+      "lateral_surface_max_abs_deg": 0.16148342347512054,
+      "actuator_clamp": {
+        "target_clamp_active_samples": 0,
+        "effort_clamp_active_samples": 0
+      },
+      "roll_gz_deg": {
+        "min": -0.047930559390927184,
+        "max": -0.01796285609587851,
+        "mean": -0.03300455408168099,
+        "std": 0.007886186786530068,
+        "n": 168
+      },
+      "nav_roll_demand_deg": {
+        "min": 0.0,
+        "max": 0.0,
+        "mean": 0.0,
+        "std": 0.0,
+        "n": 168
+      },
+      "custom_modes_seen": [
+        6
+      ],
+      "all_fbwb": true,
+      "oscillation_growth": {
+        "altitude": {
+          "n": 168,
+          "resid_std_first_half": 1.0110414234103609,
+          "resid_std_second_half": 0.3033276287871009,
+          "resid_p2p_first_half": 3.2849153103903177,
+          "resid_p2p_second_half": 1.4300376589352197,
+          "ratio_second_over_first": 0.3000150357479334,
+          "growing": false
+        },
+        "airspeed": {
+          "n": 168,
+          "resid_std_first_half": 0.20103751455754607,
+          "resid_std_second_half": 0.2480780872843569,
+          "resid_p2p_first_half": 0.6252129794696692,
+          "resid_p2p_second_half": 0.7920018425315511,
+          "ratio_second_over_first": 1.2339890285170914,
+          "growing": false
+        },
+        "pitch_physical": {
+          "n": 168,
+          "resid_std_first_half": 1.693350501345115,
+          "resid_std_second_half": 1.215052666680122,
+          "resid_p2p_first_half": 4.437303187121031,
+          "resid_p2p_second_half": 3.9199044972156862,
+          "ratio_second_over_first": 0.7175435125303022,
+          "growing": false
+        },
+        "throttle": {
+          "n": 168,
+          "resid_std_first_half": 0.011489643881822489,
+          "resid_std_second_half": 0.0071178104484101975,
+          "resid_p2p_first_half": 0.034143775507768814,
+          "resid_p2p_second_half": 0.021410299723006343,
+          "ratio_second_over_first": 0.6194979166996749,
+          "growing": false
+        }
+      },
+      "nan_inf_count": 0,
+      "nan_inf_samples": [],
+      "energy": {
+        "seb_weights": {
+          "w_SPE": 1.0,
+          "w_SKE": 1.0,
+          "tecs_spdweight_live": 1.0,
+          "source": "AP_TECS.cpp:1003,1024,1027-1028"
+        },
+        "gravity_used_m_s2": 9.81,
+        "gravity_ardupilot_internal_m_s2": 9.80665,
+        "SPE_J_per_kg": {
+          "min": 874.3047899444958,
+          "max": 975.5234646598818,
+          "mean": 911.2012479681476,
+          "std": 33.19048975233529,
+          "n": 168
+        },
+        "SKE_J_per_kg": {
+          "min": 149.88240809942303,
+          "max": 166.37660906714262,
+          "mean": 158.71736235992,
+          "std": 5.081246010690712,
+          "n": 168
+        },
+        "STE_J_per_kg": {
+          "min": 1034.6052449914014,
+          "max": 1136.1866363370857,
+          "mean": 1069.9186103280674,
+          "std": 30.940948171636286,
+          "n": 168
+        },
+        "SEB_J_per_kg": {
+          "min": 710.0229481404275,
+          "max": 814.860292982678,
+          "mean": 752.4838856082275,
+          "std": 36.021008707172335,
+          "n": 168
+        },
+        "TAS_ms": {
+          "min": 17.313717573035724,
+          "max": 18.24152455619555,
+          "mean": 17.81440479321903,
+          "std": 0.28584363413460395,
+          "n": 168
+        },
+        "vz_regression_ms": 1.3014849586689439,
+        "vz_vfr_hud_mean_ms": 1.153408639985303,
+        "dTAS_dt_ms2": -0.04851901657969992,
+        "SPEdot_W_per_kg": 12.76756744454234,
+        "SKEdot_W_per_kg": -0.8643374015196797,
+        "STEdot_W_per_kg": 11.90323004302266,
+        "SEBdot_W_per_kg": 13.631904846062021,
+        "STEdot_endpoint_W_per_kg": 11.648253774445969,
+        "STE_change_over_window_J_per_kg": 101.55848475764196,
+        "potential_fraction_of_STEdot": 1.072613685394271,
+        "kinetic_fraction_of_STEdot": -0.0726136853942708,
+        "kinetic_over_potential_abs": 0.06769789196525074,
+        "thrust_total_N_mean": 9.138726471036694,
+        "drag_N_mean": 5.206414936389668,
+        "propulsive_excess_power_W_per_kg": 11.67529824187441,
+        "propulsive_vs_STEdot_residual_W_per_kg": -0.22793180114824985,
+        "propulsive_note": "REPORT-ONLY. D is the aero plugin's qbar*S*CD diagnostic and the descent is affected by PROPULSION_HIGH_J_WINDMILLING (thrust floored at 0 N above the APC table's last J), which biases exactly this comparison. Not a gating criterion."
+      },
+      "high_j": {
+        "limitation_id": "PROPULSION_HIGH_J_WINDMILLING",
+        "status": "OPEN_LIMITATION",
+        "owner": "propulsion",
+        "detail": "APC 13x6.5E Ct/Cp table has no windmilling data above the zero-thrust advance ratio. Ct is clamped to the table end, so thrust is floored at 0 N where a real fixed-pitch prop would produce NEGATIVE thrust. The simulated descent is therefore less draggy than reality. DATA_REQUIRED: measured or extrapolated APC 13x6.5E Ct/Cp for J beyond zero-thrust.",
+        "effect_on_this_stage": "Descent DIRECTION, controllability, settling and energy bookkeeping remain valid. The ABSOLUTE descent drag/sink performance is NOT high-fidelity real-aircraft truth. NOT a blocker for this stage.",
+        "motor_samples": 336,
+        "interp_clamped_samples": 0,
+        "interp_clamped_fraction": 0.0,
+        "zero_thrust_samples": 0,
+        "advance_ratio_J": {
+          "min": 0.47007289025660925,
+          "max": 0.5464484096821379,
+          "mean": 0.4991234784886419,
+          "std": 0.023432221550119824,
+          "n": 336
+        }
+      },
+      "ap_target_alt_rel_m": {
+        "label": "ap_target_alt_rel",
+        "n": 168,
+        "mean": 97.34452371038229,
+        "std": 4.8565251317511855,
+        "min": 89.17000000238419,
+        "max": 105.64,
+        "slope_per_s": 1.917760291830251,
+        "drift_over_window": 16.720517352904018,
+        "endpoint_delta": 16.469999988079067,
+        "t_start": 45.00445818901062,
+        "t_end": 53.72323155403137
+      },
+      "ap_alt_rel_m": {
+        "min": 89.12,
+        "max": 99.39,
+        "mean": 92.85791666666665,
+        "std": 3.371499040303858,
+        "n": 168
+      },
+      "ap_height_error_m": {
+        "min": -0.19999998807907104,
+        "max": 6.449999809265137,
+        "mean": 4.486607043715638,
+        "std": 1.7524040370205516,
+        "n": 168
+      },
+      "gz_z_minus_ap_relative_alt_m": {
+        "min": -0.00891592352598991,
+        "max": 0.10734510859207091,
+        "mean": 0.027021964133258334,
+        "std": 0.02494577507729391,
+        "n": 168
+      },
+      "elevator_deg": {
+        "label": "elevator_deg",
+        "n": 168,
+        "mean": 5.270361490972803,
+        "std": 0.4457717119128001,
+        "min": 4.234975240466289,
+        "max": 5.867305588881427,
+        "slope_per_s": 0.09340036449252458,
+        "drift_over_window": 0.8143366102206533,
+        "endpoint_delta": 1.1908855105773277,
+        "t_start": 45.00445818901062,
+        "t_end": 53.72323155403137
+      }
+    },
+    "P3_settle_full": {
+      "label": "P3_settle_full",
+      "n": 769,
+      "t_start": 53.72353744506836,
+      "t_end": 93.70418977737427,
+      "duration_s": 39.98065233230591,
+      "airspeed_vfr_hud_ms": {
+        "label": "airspeed_vfr_hud",
+        "n": 769,
+        "mean": 17.94106298677323,
+        "std": 0.53570056415293,
+        "min": 16.97942352294922,
+        "max": 19.49742889404297,
+        "slope_per_s": -0.00085848598836289,
+        "drift_over_window": -0.03432282983289272,
+        "endpoint_delta": 0.1996784210205078,
+        "t_start": 53.72353744506836,
+        "t_end": 93.70418977737427
+      },
+      "airspeed_aero_diag_V_ms": {
+        "min": 16.91992102534044,
+        "max": 19.526805194544774,
+        "mean": 17.941975488173647,
+        "std": 0.5559305401951702,
+        "n": 769
+      },
+      "groundspeed_ms": {
+        "min": 16.91807746887207,
+        "max": 19.526931762695312,
+        "mean": 17.91847292003458,
+        "std": 0.5563668006755981,
+        "n": 769
+      },
+      "tecs_target_airspeed_ms": {
+        "min": 17.766847610473633,
+        "max": 18.095155715942383,
+        "mean": 17.92062472488542,
+        "std": 0.060306419905605244,
+        "n": 769
+      },
+      "groundspeed_minus_airspeed_max_abs_ms": 0.5074748992919922,
+      "altitude_gz_m": {
+        "label": "altitude_gz",
+        "n": 769,
+        "mean": 99.9551519663298,
+        "std": 0.9547990710418959,
+        "min": 98.46236976387942,
+        "max": 103.03745022868769,
+        "slope_per_s": -0.03375734753985608,
+        "drift_over_window": -1.349640775651808,
+        "endpoint_delta": 0.09335945571818627,
+        "t_start": 53.72353744506836,
+        "t_end": 93.70418977737427
+      },
+      "vertical_speed_regression_ms": -0.03375734753985608,
+      "vertical_speed_endpoint_ms": 0.002335115869101221,
+      "altitude_p2p_m": 4.575080464808266,
+      "vfr_hud_climb_ms": {
+        "min": -2.280043363571167,
+        "max": 2.277539014816284,
+        "mean": 0.0046289776305344695,
+        "std": 0.9325505319943198,
+        "n": 769
+      },
+      "mav_relative_alt_m": {
+        "min": 98.46,
+        "max": 103.03,
+        "mean": 99.94914174252285,
+        "std": 0.9537066375569782,
+        "n": 769
+      },
+      "nav_alt_error_m": {
+        "min": -3.3399999141693115,
+        "max": 6.389999866485596,
+        "mean": -0.22729518379342725,
+        "std": 1.0628000778892814,
+        "n": 769
+      },
+      "pitch_physical_noseup_deg": {
+        "label": "pitch_physical",
+        "n": 769,
+        "mean": 2.611152115299328,
+        "std": 2.8855902579010495,
+        "min": -4.730416427980113,
+        "max": 10.124277333868015,
+        "slope_per_s": -0.0017486692353313254,
+        "drift_over_window": -0.06991293674198094,
+        "endpoint_delta": -5.932238153918421,
+        "t_start": 53.72353744506836,
+        "t_end": 93.70418977737427
+      },
+      "pitch_demand_physical_deg": {
+        "min": -7.520000219345093,
+        "max": 9.749999761581421,
+        "mean": 2.346671009676044,
+        "std": 3.140860826901838,
+        "n": 769
+      },
+      "nav_pitch_raw_tecs_demand_deg": {
+        "min": -10.010000228881836,
+        "max": 7.259999752044678,
+        "mean": -0.14332899986069905,
+        "std": 3.140860826901838,
+        "n": 769
+      },
+      "pitch_mav_reported_deg": {
+        "min": -7.218602391317512,
+        "max": 7.634560911771289,
+        "mean": 0.1262823136701737,
+        "std": 2.892629465029328,
+        "n": 769
+      },
+      "pitch_rate_q_gz_deg_s": {
+        "min": -6.7325910255813435,
+        "max": 8.139634547372298,
+        "mean": 0.15168499115119105,
+        "std": 3.0004875521808745,
+        "n": 769
+      },
+      "alpha_aero_diag_deg": {
+        "min": 1.313823306294647,
+        "max": 3.3132564008181493,
+        "mean": 2.609472396842941,
+        "std": 0.4131486864268667,
+        "n": 769
+      },
+      "pitch_minus_alpha_minus_gamma_deg": {
+        "min": -0.3722531881470488,
+        "max": 0.33658518207936516,
+        "mean": -0.004382264077483202,
+        "std": 0.07888851712257879,
+        "n": 769
+      },
+      "throttle_actual": {
+        "label": "throttle_actual",
+        "n": 769,
+        "mean": 0.48998114434330275,
+        "std": 0.028772073599875367,
+        "min": 0.423,
+        "max": 0.572,
+        "slope_per_s": -1.801721765626e-05,
+        "drift_over_window": -0.0007203401151104146,
+        "endpoint_delta": -0.08049999999999996,
+        "t_start": 53.72353744506836,
+        "t_end": 93.70418977737427
+      },
+      "throttle_L": {
+        "min": 0.423,
+        "max": 0.572,
+        "mean": 0.4899570871261379,
+        "std": 0.028771047791052214,
+        "n": 769
+      },
+      "throttle_R": {
+        "min": 0.423,
+        "max": 0.572,
+        "mean": 0.4900052015604684,
+        "std": 0.028773497305611646,
+        "n": 769
+      },
+      "throttle_LR_asymmetry_max": 0.0010000000000000009,
+      "throttle_vfr_hud_pct": {
+        "min": 42,
+        "max": 57,
+        "mean": 48.555266579973996,
+        "std": 2.8749175756491647,
+        "n": 769
+      },
+      "motor_left_rpm": {
+        "min": 5219.547936073608,
+        "max": 6836.926204950051,
+        "mean": 5961.6645060512665,
+        "std": 321.39405725232706,
+        "n": 769
+      },
+      "motor_left_thrust_N": {
+        "min": 0.870581313315646,
+        "max": 5.824359281958031,
+        "mean": 2.5774949924775914,
+        "std": 0.7806552928423108,
+        "n": 769
+      },
+      "motor_right_rpm": {
+        "min": 5219.558477242942,
+        "max": 6836.92451790078,
+        "mean": 5962.200715872018,
+        "std": 321.4091028757801,
+        "n": 769
+      },
+      "motor_right_thrust_N": {
+        "min": 0.8703705447426636,
+        "max": 5.824333181834078,
+        "mean": 2.5790335790150434,
+        "std": 0.7808126194965559,
+        "n": 769
+      },
+      "thrust_total_N": {
+        "min": 1.7409518580583097,
+        "max": 11.64869246379211,
+        "mean": 5.156528571492632,
+        "std": 1.561457651192869,
+        "n": 769
+      },
+      "drag_qbar_S_CD_N": {
+        "min": 4.077786473698268,
+        "max": 6.2983703716516235,
+        "mean": 5.127082459065087,
+        "std": 0.4594011148068538,
+        "n": 769
+      },
+      "thrust_minus_drag_N": 0.02944611242754469,
+      "lift_over_weight": 0.9926621015597159,
+      "specific_energy_rate_W_per_kg": 0.030008119365062272,
+      "dV_dt_ms2": -0.00085848598836289,
+      "surfaces": {
+        "left_aileron": {
+          "cmd_deg": {
+            "min": 0.0,
+            "max": 0.06428571428591892,
+            "mean": 0.0008359650752395176,
+            "std": 0.0072829783998604,
+            "n": 769
+          },
+          "actual_deg": {
+            "min": -0.5232113135043237,
+            "max": 0.4549224966266453,
+            "mean": 0.0027367107150415015,
+            "std": 0.2098101768975511,
+            "n": 769
+          },
+          "max_abs_actual_deg": 0.5232113135043237
+        },
+        "right_aileron": {
+          "cmd_deg": {
+            "min": -0.06428571428591892,
+            "max": 0.0,
+            "mean": -0.0008359650752395176,
+            "std": 0.0072829783998604,
+            "n": 769
+          },
+          "actual_deg": {
+            "min": -0.5250216199751772,
+            "max": 0.45472674734696805,
+            "mean": 0.0007684280504571731,
+            "std": 0.2100346974819875,
+            "n": 769
+          },
+          "max_abs_actual_deg": 0.5250216199751772
+        },
+        "left_elevator": {
+          "cmd_deg": {
+            "min": 1.0285714285747727,
+            "max": 6.3000000000204635,
+            "mean": 4.255898198044675,
+            "std": 1.13912300541216,
+            "n": 769
+          },
+          "actual_deg": {
+            "min": 1.4751667463176894,
+            "max": 5.943700134067444,
+            "mean": 4.2610714628107464,
+            "std": 0.9564146464484533,
+            "n": 769
+          },
+          "max_abs_actual_deg": 5.943700134067444
+        },
+        "right_elevator": {
+          "cmd_deg": {
+            "min": 1.0285714285747727,
+            "max": 6.3000000000204635,
+            "mean": 4.255898198044675,
+            "std": 1.13912300541216,
+            "n": 769
+          },
+          "actual_deg": {
+            "min": 1.4750996520144837,
+            "max": 5.94371235955271,
+            "mean": 4.261066224515489,
+            "std": 0.9564091673426731,
+            "n": 769
+          },
+          "max_abs_actual_deg": 5.94371235955271
+        },
+        "rudder": {
+          "cmd_deg": {
+            "min": 0.0,
+            "max": 0.0,
+            "mean": 0.0,
+            "std": 0.0,
+            "n": 769
+          },
+          "actual_deg": {
+            "min": -0.002728274525735665,
+            "max": 0.0032852124589814223,
+            "mean": 2.0245194557741638e-06,
+            "std": 0.0007902855485294179,
+            "n": 769
+          },
+          "max_abs_actual_deg": 0.0032852124589814223
+        }
+      },
+      "elevator_max_abs_deg": 5.94371235955271,
+      "lateral_surface_max_abs_deg": 0.5250216199751772,
+      "actuator_clamp": {
+        "target_clamp_active_samples": 0,
+        "effort_clamp_active_samples": 0
+      },
+      "roll_gz_deg": {
+        "min": -0.06450392707045603,
+        "max": -0.025198999121372856,
+        "mean": -0.044715923981981195,
+        "std": 0.008856739158546022,
+        "n": 769
+      },
+      "nav_roll_demand_deg": {
+        "min": 0.0,
+        "max": 0.0,
+        "mean": 0.0,
+        "std": 0.0,
+        "n": 769
+      },
+      "custom_modes_seen": [
+        6
+      ],
+      "all_fbwb": true,
+      "oscillation_growth": {
+        "altitude": {
+          "n": 769,
+          "resid_std_first_half": 1.1401694400290485,
+          "resid_std_second_half": 0.4670516918555835,
+          "resid_p2p_first_half": 4.2850964337340685,
+          "resid_p2p_second_half": 1.7070842096947985,
+          "ratio_second_over_first": 0.40963358204345857,
+          "growing": false
+        },
+        "airspeed": {
+          "n": 769,
+          "resid_std_first_half": 0.6914699035887089,
+          "resid_std_second_half": 0.309907207192929,
+          "resid_p2p_first_half": 2.520554208506862,
+          "resid_p2p_second_half": 1.1572550350333657,
+          "ratio_second_over_first": 0.44818611133256786,
+          "growing": false
+        },
+        "pitch_physical": {
+          "n": 769,
+          "resid_std_first_half": 3.79598134156888,
+          "resid_std_second_half": 1.5026424987303535,
+          "resid_p2p_first_half": 14.849438343531462,
+          "resid_p2p_second_half": 5.559774007154538,
+          "ratio_second_over_first": 0.39585086530201724,
+          "growing": false
+        },
+        "throttle": {
+          "n": 769,
+          "resid_std_first_half": 0.037325255905680615,
+          "resid_std_second_half": 0.015967864190191822,
+          "resid_p2p_first_half": 0.14886406030619087,
+          "resid_p2p_second_half": 0.06095709784670944,
+          "ratio_second_over_first": 0.427803207312013,
+          "growing": false
+        }
+      },
+      "nan_inf_count": 0,
+      "nan_inf_samples": [],
+      "energy": {
+        "seb_weights": {
+          "w_SPE": 1.0,
+          "w_SKE": 1.0,
+          "tecs_spdweight_live": 1.0,
+          "source": "AP_TECS.cpp:1003,1024,1027-1028"
+        },
+        "gravity_used_m_s2": 9.81,
+        "gravity_ardupilot_internal_m_s2": 9.80665,
+        "SPE_J_per_kg": {
+          "min": 965.9158473836571,
+          "max": 1010.7973867434263,
+          "mean": 980.5600407896951,
+          "std": 9.366578886920987,
+          "n": 769
+        },
+        "SKE_J_per_kg": {
+          "min": 143.14186375187873,
+          "max": 190.64806055285038,
+          "mean": 161.11177159187247,
+          "std": 10.051997139775006,
+          "n": 769
+        },
+        "STE_J_per_kg": {
+          "min": 1134.4409575728776,
+          "max": 1159.3534810125532,
+          "mean": 1141.6718123815676,
+          "std": 6.237544835829865,
+          "n": 769
+        },
+        "SEB_J_per_kg": {
+          "min": 778.0327996505581,
+          "max": 867.5677045695596,
+          "mean": 819.44826919782,
+          "std": 18.402280497452765,
+          "n": 769
+        },
+        "TAS_ms": {
+          "min": 16.91992102534044,
+          "max": 19.526805194544774,
+          "mean": 17.941975488173647,
+          "std": 0.5559305401951702,
+          "n": 769
+        },
+        "vz_regression_ms": -0.03375734753985608,
+        "vz_vfr_hud_mean_ms": 0.0046289776305344695,
+        "dTAS_dt_ms2": -0.0003092327707160936,
+        "SPEdot_W_per_kg": -0.3311595793659881,
+        "SKEdot_W_per_kg": -0.005548246792328172,
+        "STEdot_W_per_kg": -0.3367078261583163,
+        "SEBdot_W_per_kg": -0.32561133257365993,
+        "STEdot_endpoint_W_per_kg": 0.10090206027005331,
+        "STE_change_over_window_J_per_kg": 4.034130191270378,
+        "potential_fraction_of_STEdot": 0.9835220735566762,
+        "kinetic_fraction_of_STEdot": 0.01647792644332374,
+        "kinetic_over_potential_abs": 0.016753997583130183,
+        "thrust_total_N_mean": 5.156528571492632,
+        "drag_N_mean": 5.127082459065087,
+        "propulsive_excess_power_W_per_kg": 0.08805357123283537,
+        "propulsive_vs_STEdot_residual_W_per_kg": 0.42476139739115165,
+        "propulsive_note": "REPORT-ONLY. D is the aero plugin's qbar*S*CD diagnostic and the descent is affected by PROPULSION_HIGH_J_WINDMILLING (thrust floored at 0 N above the APC table's last J), which biases exactly this comparison. Not a gating criterion."
+      },
+      "high_j": {
+        "limitation_id": "PROPULSION_HIGH_J_WINDMILLING",
+        "status": "OPEN_LIMITATION",
+        "owner": "propulsion",
+        "detail": "APC 13x6.5E Ct/Cp table has no windmilling data above the zero-thrust advance ratio. Ct is clamped to the table end, so thrust is floored at 0 N where a real fixed-pitch prop would produce NEGATIVE thrust. The simulated descent is therefore less draggy than reality. DATA_REQUIRED: measured or extrapolated APC 13x6.5E Ct/Cp for J beyond zero-thrust.",
+        "effect_on_this_stage": "Descent DIRECTION, controllability, settling and energy bookkeeping remain valid. The ABSOLUTE descent drag/sink performance is NOT high-fidelity real-aircraft truth. NOT a blocker for this stage.",
+        "motor_samples": 1538,
+        "interp_clamped_samples": 0,
+        "interp_clamped_fraction": 0.0,
+        "zero_thrust_samples": 0,
+        "advance_ratio_J": {
+          "min": 0.4756893345284574,
+          "max": 0.6004019552538223,
+          "mean": 0.547155506635683,
+          "std": 0.019609242816985444,
+          "n": 1538
+        }
+      },
+      "ap_target_alt_rel_m": {
+        "label": "ap_target_alt_rel",
+        "n": 769,
+        "mean": 99.72184655872941,
+        "std": 0.440474642994793,
+        "min": 99.68999992370605,
+        "max": 105.86999998092651,
+        "slope_per_s": -0.004745923379400315,
+        "drift_over_window": -0.18974511262756635,
+        "endpoint_delta": -5.950000003576278,
+        "t_start": 53.72353744506836,
+        "t_end": 93.70418977737427
+      },
+      "ap_alt_rel_m": {
+        "min": 98.46,
+        "max": 103.03,
+        "mean": 99.94914174252285,
+        "std": 0.9537066375569782,
+        "n": 769
+      },
+      "ap_height_error_m": {
+        "min": -3.3399999141693115,
+        "max": 6.389999866485596,
+        "mean": -0.22729518379342725,
+        "std": 1.0628000778892814,
+        "n": 769
+      },
+      "gz_z_minus_ap_relative_alt_m": {
+        "min": -0.08641187221344637,
+        "max": 0.12730704522431324,
+        "mean": 0.006010223806969156,
+        "std": 0.024569431637947507,
+        "n": 769
+      },
+      "elevator_deg": {
+        "label": "elevator_deg",
+        "n": 769,
+        "mean": 4.261068843663117,
+        "std": 0.9564117412340655,
+        "min": 1.4751331991660865,
+        "max": 5.943706246810077,
+        "slope_per_s": 0.018471948042263358,
+        "drift_over_window": 0.7385205325781501,
+        "endpoint_delta": -1.0695242836853343,
+        "t_start": 53.72353744506836,
+        "t_end": 93.70418977737427
+      }
+    },
+    "P4_descent_full": {
+      "label": "P4_descent_full",
+      "n": 179,
+      "t_start": 93.7270028591156,
+      "t_end": 102.98715806007385,
+      "duration_s": 9.260155200958252,
+      "airspeed_vfr_hud_ms": {
+        "label": "airspeed_vfr_hud",
+        "n": 179,
+        "mean": 18.085749748698827,
+        "std": 0.33245290550375134,
+        "min": 17.49635887145996,
+        "max": 18.577871322631836,
+        "slope_per_s": 0.07421484671805806,
+        "drift_over_window": 0.6872409988245448,
+        "endpoint_delta": 0.10215568542480469,
+        "t_start": 93.7270028591156,
+        "t_end": 102.98715806007385
+      },
+      "airspeed_aero_diag_V_ms": {
+        "min": 17.529863619083695,
+        "max": 18.56272560875388,
+        "mean": 18.087839734354183,
+        "std": 0.3258934704745903,
+        "n": 179
+      },
+      "groundspeed_ms": {
+        "min": 17.515180587768555,
+        "max": 18.502986907958984,
+        "mean": 18.036278154596936,
+        "std": 0.3100197250906339,
+        "n": 179
+      },
+      "tecs_target_airspeed_ms": {
+        "min": 17.85633087158203,
+        "max": 18.012022018432617,
+        "mean": 17.921318118132692,
+        "std": 0.03474886918402384,
+        "n": 179
+      },
+      "groundspeed_minus_airspeed_max_abs_ms": 0.1706714630126953,
+      "altitude_gz_m": {
+        "label": "altitude_gz",
+        "n": 179,
+        "mean": 95.64461940316164,
+        "std": 3.5996499717641397,
+        "min": 88.8830403863634,
+        "max": 99.9733416071903,
+        "slope_per_s": -1.3152603682871775,
+        "drift_over_window": -12.179515140008773,
+        "endpoint_delta": -10.665573529149938,
+        "t_start": 93.7270028591156,
+        "t_end": 102.98715806007385
+      },
+      "vertical_speed_regression_ms": -1.3152603682871775,
+      "vertical_speed_endpoint_ms": -1.1517704938731752,
+      "altitude_p2p_m": 11.090301220826902,
+      "vfr_hud_climb_ms": {
+        "min": -1.9369847774505615,
+        "max": 0.41805174946784973,
+        "mean": -1.1467940093033724,
+        "std": 0.7505082747890288,
+        "n": 179
+      },
+      "mav_relative_alt_m": {
+        "min": 88.94,
+        "max": 99.97,
+        "mean": 95.66089385474858,
+        "std": 3.5906590927818205,
+        "n": 179
+      },
+      "nav_alt_error_m": {
+        "min": -6.96999979019165,
+        "max": 0.1599999964237213,
+        "mean": -4.765809962577993,
+        "std": 1.7703257451755303,
+        "n": 179
+      },
+      "pitch_physical_noseup_deg": {
+        "label": "pitch_physical",
+        "n": 179,
+        "mean": -1.3320150501755965,
+        "std": 2.402362631614713,
+        "min": -3.846472234795275,
+        "max": 3.93904107759087,
+        "slope_per_s": -0.6562940611335374,
+        "drift_over_window": -6.077384863563739,
+        "endpoint_delta": -7.766271774976506,
+        "t_start": 93.7270028591156,
+        "t_end": 102.98715806007385
+      },
+      "pitch_demand_physical_deg": {
+        "min": -4.519999742507935,
+        "max": 2.919999986886978,
+        "mean": -2.7544132890648014,
+        "std": 1.754349069320962,
+        "n": 179
+      },
+      "nav_pitch_raw_tecs_demand_deg": {
+        "min": -7.009999752044678,
+        "max": 0.429999977350235,
+        "mean": -5.244413298601545,
+        "std": 1.7543490693209622,
+        "n": 179
+      },
+      "pitch_mav_reported_deg": {
+        "min": -6.328134407523671,
+        "max": 1.4488686052843527,
+        "mean": -3.8070907818900754,
+        "std": 2.408800286031175,
+        "n": 179
+      },
+      "pitch_rate_q_gz_deg_s": {
+        "min": -1.5935635425432533,
+        "max": 3.4554776424658398,
+        "mean": 0.8372223235592531,
+        "std": 1.400869502795856,
+        "n": 179
+      },
+      "alpha_aero_diag_deg": {
+        "min": 2.0955066623921113,
+        "max": 2.6557065841145193,
+        "mean": 2.2996325948138407,
+        "std": 0.1623219740893732,
+        "n": 179
+      },
+      "pitch_minus_alpha_minus_gamma_deg": {
+        "min": -0.13405749448195325,
+        "max": 0.05637426079887131,
+        "mean": -0.014966714030279004,
+        "std": 0.037850797510902166,
+        "n": 179
+      },
+      "throttle_actual": {
+        "label": "throttle_actual",
+        "n": 179,
+        "mean": 0.4200586592178773,
+        "std": 0.042353964288360677,
+        "min": 0.332,
+        "max": 0.489,
+        "slope_per_s": -0.014750928315017169,
+        "drift_over_window": -0.13659588555526858,
+        "endpoint_delta": -0.15699999999999997,
+        "t_start": 93.7270028591156,
+        "t_end": 102.98715806007385
+      },
+      "throttle_L": {
+        "min": 0.332,
+        "max": 0.489,
+        "mean": 0.42002234636871505,
+        "std": 0.04237712507580104,
+        "n": 179
+      },
+      "throttle_R": {
+        "min": 0.332,
+        "max": 0.489,
+        "mean": 0.4200949720670392,
+        "std": 0.04233118859413843,
+        "n": 179
+      },
+      "throttle_LR_asymmetry_max": 0.0010000000000000009,
+      "throttle_vfr_hud_pct": {
+        "min": 33,
+        "max": 48,
+        "mean": 41.54189944134078,
+        "std": 4.2138609760033,
+        "n": 179
+      },
+      "motor_left_rpm": {
+        "min": 4143.752792344785,
+        "max": 5976.025637854337,
+        "mean": 5201.418067095336,
+        "std": 488.5229129807085,
+        "n": 179
+      },
+      "motor_left_thrust_N": {
+        "min": 0.0,
+        "max": 2.477718699808304,
+        "mean": 0.7462568768541639,
+        "std": 0.7467331971825647,
+        "n": 179
+      },
+      "motor_right_rpm": {
+        "min": 4143.990574780631,
+        "max": 5983.988043896025,
+        "mean": 5202.236664614151,
+        "std": 488.14197437334144,
+        "n": 179
+      },
+      "motor_right_thrust_N": {
+        "min": 0.0,
+        "max": 2.5040182194947787,
+        "mean": 0.7468636730935851,
+        "std": 0.7471173156152603,
+        "n": 179
+      },
+      "thrust_total_N": {
+        "min": 0.0,
+        "max": 4.981736919303083,
+        "mean": 1.493120549947749,
+        "std": 1.4938456719810729,
+        "n": 179
+      },
+      "drag_qbar_S_CD_N": {
+        "min": 4.6802359857013585,
+        "max": 5.418443466574443,
+        "mean": 5.057710839054744,
+        "std": 0.21493913268839004,
+        "n": 179
+      },
+      "thrust_minus_drag_N": -3.564590289106995,
+      "lift_over_weight": 0.9714792917278254,
+      "specific_energy_rate_W_per_kg": -9.907818085885244,
+      "dV_dt_ms2": 0.07421484671805806,
+      "surfaces": {
+        "left_aileron": {
+          "cmd_deg": {
+            "min": 0.0,
+            "max": 0.06428571428591892,
+            "mean": 0.002154828411818511,
+            "std": 0.011570712948343543,
+            "n": 179
+          },
+          "actual_deg": {
+            "min": -0.15390727833960124,
+            "max": 0.15526623244828575,
+            "mean": 0.018579463436648326,
+            "std": 0.09160405993239197,
+            "n": 179
+          },
+          "max_abs_actual_deg": 0.15526623244828575
+        },
+        "right_aileron": {
+          "cmd_deg": {
+            "min": -0.06428571428591892,
+            "max": 0.0,
+            "mean": -0.002154828411818511,
+            "std": 0.011570712948343543,
+            "n": 179
+          },
+          "actual_deg": {
+            "min": -0.1633266735797313,
+            "max": 0.15490824705639103,
+            "mean": 0.01587392048237174,
+            "std": 0.09188970011621056,
+            "n": 179
+          },
+          "max_abs_actual_deg": 0.1633266735797313
+        },
+        "left_elevator": {
+          "cmd_deg": {
+            "min": 2.8928571428665415,
+            "max": 4.178571428585,
+            "mean": 3.391699920202556,
+            "std": 0.4158055829023361,
+            "n": 179
+          },
+          "actual_deg": {
+            "min": 2.9107224324961622,
+            "max": 4.322550593731735,
+            "mean": 3.422581463660865,
+            "std": 0.38012698213181123,
+            "n": 179
+          },
+          "max_abs_actual_deg": 4.322550593731735
+        },
+        "right_elevator": {
+          "cmd_deg": {
+            "min": 2.8928571428665415,
+            "max": 4.178571428585,
+            "mean": 3.391699920202556,
+            "std": 0.4158055829023361,
+            "n": 179
+          },
+          "actual_deg": {
+            "min": 2.910705456424268,
+            "max": 4.322738277874259,
+            "mean": 3.422583166070504,
+            "std": 0.3800946923429346,
+            "n": 179
+          },
+          "max_abs_actual_deg": 4.322738277874259
+        },
+        "rudder": {
+          "cmd_deg": {
+            "min": 0.0,
+            "max": 0.0,
+            "mean": 0.0,
+            "std": 0.0,
+            "n": 179
+          },
+          "actual_deg": {
+            "min": -0.0018632504140274544,
+            "max": 0.0026931670727019658,
+            "mean": -1.0544607576153095e-05,
+            "std": 0.0007516950368776645,
+            "n": 179
+          },
+          "max_abs_actual_deg": 0.0026931670727019658
+        }
+      },
+      "elevator_max_abs_deg": 4.322738277874259,
+      "lateral_surface_max_abs_deg": 0.1633266735797313,
+      "actuator_clamp": {
+        "target_clamp_active_samples": 0,
+        "effort_clamp_active_samples": 0
+      },
+      "roll_gz_deg": {
+        "min": -0.06830287397430206,
+        "max": -0.04080204133864115,
+        "mean": -0.05250695859290781,
+        "std": 0.005279570521451607,
+        "n": 179
+      },
+      "nav_roll_demand_deg": {
+        "min": 0.0,
+        "max": 0.0,
+        "mean": 0.0,
+        "std": 0.0,
+        "n": 179
+      },
+      "custom_modes_seen": [
+        6
+      ],
+      "all_fbwb": true,
+      "oscillation_growth": {
+        "altitude": {
+          "n": 179,
+          "resid_std_first_half": 0.9067266393203052,
+          "resid_std_second_half": 0.16844423282297064,
+          "resid_p2p_first_half": 3.196162901257665,
+          "resid_p2p_second_half": 0.833522746201254,
+          "ratio_second_over_first": 0.18577179220105275,
+          "growing": false
+        },
+        "airspeed": {
+          "n": 179,
+          "resid_std_first_half": 0.25238500630606964,
+          "resid_std_second_half": 0.24125702969008558,
+          "resid_p2p_first_half": 0.8359633322170872,
+          "resid_p2p_second_half": 0.6849334989561555,
+          "ratio_second_over_first": 0.9559087254078436,
+          "growing": false
+        },
+        "pitch_physical": {
+          "n": 179,
+          "resid_std_first_half": 2.075188757972248,
+          "resid_std_second_half": 0.8162350876963708,
+          "resid_p2p_first_half": 5.351937558697751,
+          "resid_p2p_second_half": 3.148187455767002,
+          "ratio_second_over_first": 0.3933305269511712,
+          "growing": false
+        },
+        "throttle": {
+          "n": 179,
+          "resid_std_first_half": 0.011866275190410676,
+          "resid_std_second_half": 0.01680316738966807,
+          "resid_p2p_first_half": 0.041197362846140506,
+          "resid_p2p_second_half": 0.04604214632005754,
+          "ratio_second_over_first": 1.4160439666229023,
+          "growing": true
+        }
+      },
+      "nan_inf_count": 0,
+      "nan_inf_samples": [],
+      "energy": {
+        "seb_weights": {
+          "w_SPE": 1.0,
+          "w_SKE": 1.0,
+          "tecs_spdweight_live": 1.0,
+          "source": "AP_TECS.cpp:1003,1024,1027-1028"
+        },
+        "gravity_used_m_s2": 9.81,
+        "gravity_ardupilot_internal_m_s2": 9.80665,
+        "SPE_J_per_kg": {
+          "min": 871.942626190225,
+          "max": 980.738481166537,
+          "mean": 938.2737163450156,
+          "std": 35.312566223006215,
+          "n": 179
+        },
+        "SKE_J_per_kg": {
+          "min": 153.64805925183705,
+          "max": 172.28739101294354,
+          "mean": 163.63807640489003,
+          "std": 5.877745617762492,
+          "n": 179
+        },
+        "STE_J_per_kg": {
+          "min": 1039.4936015471217,
+          "max": 1140.124290619241,
+          "mean": 1101.9117927499058,
+          "std": 31.441522625874967,
+          "n": 179
+        },
+        "SEB_J_per_kg": {
+          "min": 704.3916508333284,
+          "max": 825.9207090523971,
+          "mean": 774.6356399401254,
+          "std": 39.67973170989496,
+          "n": 179
+        },
+        "TAS_ms": {
+          "min": 17.529863619083695,
+          "max": 18.56272560875388,
+          "mean": 18.087839734354183,
+          "std": 0.3258934704745903,
+          "n": 179
+        },
+        "vz_regression_ms": -1.3152603682871775,
+        "vz_vfr_hud_mean_ms": -1.1467940093033724,
+        "dTAS_dt_ms2": 0.0791270814818614,
+        "SPEdot_W_per_kg": -12.902704212897213,
+        "SKEdot_W_per_kg": 1.4312379684910936,
+        "STEdot_W_per_kg": -11.47146624440612,
+        "SEBdot_W_per_kg": -14.333942181388306,
+        "STEdot_endpoint_W_per_kg": -10.867062904270329,
+        "STE_change_over_window_J_per_kg": -100.63068907211937,
+        "potential_fraction_of_STEdot": 1.1247650420615598,
+        "kinetic_fraction_of_STEdot": -0.12476504206155986,
+        "kinetic_over_potential_abs": 0.11092542655209167,
+        "thrust_total_N_mean": 1.493120549947749,
+        "drag_N_mean": 5.057710839054744,
+        "propulsive_excess_power_W_per_kg": -10.745956311333762,
+        "propulsive_vs_STEdot_residual_W_per_kg": 0.7255099330723578,
+        "propulsive_note": "REPORT-ONLY. D is the aero plugin's qbar*S*CD diagnostic and the descent is affected by PROPULSION_HIGH_J_WINDMILLING (thrust floored at 0 N above the APC table's last J), which biases exactly this comparison. Not a gating criterion."
+      },
+      "high_j": {
+        "limitation_id": "PROPULSION_HIGH_J_WINDMILLING",
+        "status": "OPEN_LIMITATION",
+        "owner": "propulsion",
+        "detail": "APC 13x6.5E Ct/Cp table has no windmilling data above the zero-thrust advance ratio. Ct is clamped to the table end, so thrust is floored at 0 N where a real fixed-pitch prop would produce NEGATIVE thrust. The simulated descent is therefore less draggy than reality. DATA_REQUIRED: measured or extrapolated APC 13x6.5E Ct/Cp for J beyond zero-thrust.",
+        "effect_on_this_stage": "Descent DIRECTION, controllability, settling and energy bookkeeping remain valid. The ABSOLUTE descent drag/sink performance is NOT high-fidelity real-aircraft truth. NOT a blocker for this stage.",
+        "motor_samples": 358,
+        "interp_clamped_samples": 126,
+        "interp_clamped_fraction": 0.35195530726256985,
+        "zero_thrust_samples": 124,
+        "advance_ratio_J": {
+          "min": 0.5485418411288822,
+          "max": 0.8021082305980332,
+          "mean": 0.6378277383161555,
+          "std": 0.06979766191931262,
+          "n": 358
+        }
+      },
+      "ap_target_alt_rel_m": {
+        "label": "ap_target_alt_rel",
+        "n": 179,
+        "mean": 90.8950838921706,
+        "std": 5.159790603136647,
+        "min": 82.04000020980835,
+        "max": 99.69000000059604,
+        "slope_per_s": -1.9186058233069203,
+        "drift_over_window": -17.766587693284368,
+        "endpoint_delta": -17.649999614953998,
+        "t_start": 93.7270028591156,
+        "t_end": 102.98715806007385
+      },
+      "ap_alt_rel_m": {
+        "min": 88.94,
+        "max": 99.97,
+        "mean": 95.66089385474858,
+        "std": 3.5906590927818205,
+        "n": 179
+      },
+      "ap_height_error_m": {
+        "min": -6.96999979019165,
+        "max": 0.1599999964237213,
+        "mean": -4.765809962577993,
+        "std": 1.7703257451755303,
+        "n": 179
+      },
+      "gz_z_minus_ap_relative_alt_m": {
+        "min": -0.09577187248285668,
+        "max": 0.02658631062494976,
+        "mean": -0.016274451586970454,
+        "std": 0.026329007500580367,
+        "n": 179
+      },
+      "elevator_deg": {
+        "label": "elevator_deg",
+        "n": 179,
+        "mean": 3.4225823148656835,
+        "std": 0.38011019851773725,
+        "min": 2.9107139444602153,
+        "max": 4.322644435802997,
+        "slope_per_s": -0.07039476173012586,
+        "drift_over_window": -0.651866418955442,
+        "endpoint_delta": -1.1090724689631077,
+        "t_start": 93.7270028591156,
+        "t_end": 102.98715806007385
+      }
+    },
+    "P5_resettle_full": {
+      "label": "P5_resettle_full",
+      "n": 767,
+      "t_start": 102.98756837844849,
+      "t_end": 142.9624960422516,
+      "duration_s": 39.9749276638031,
+      "airspeed_vfr_hud_ms": {
+        "label": "airspeed_vfr_hud",
+        "n": 767,
+        "mean": 17.88170582250324,
+        "std": 0.3082923898372988,
+        "min": 16.821744918823242,
+        "max": 18.44162940979004,
+        "slope_per_s": 0.0035024219935693556,
+        "drift_over_window": 0.14000906584104805,
+        "endpoint_delta": -0.3945884704589844,
+        "t_start": 102.98756837844849,
+        "t_end": 142.9624960422516
+      },
+      "airspeed_aero_diag_V_ms": {
+        "min": 16.85916140593003,
+        "max": 18.46373706840033,
+        "mean": 17.878295225393085,
+        "std": 0.31155629874031976,
+        "n": 767
+      },
+      "groundspeed_ms": {
+        "min": 16.85649871826172,
+        "max": 18.389436721801758,
+        "mean": 17.870823033319148,
+        "std": 0.3079164556710275,
+        "n": 767
+      },
+      "tecs_target_airspeed_ms": {
+        "min": 17.82106590270996,
+        "max": 18.0250186920166,
+        "mean": 17.918919773425085,
+        "std": 0.03303043347279273,
+        "n": 767
+      },
+      "groundspeed_minus_airspeed_max_abs_ms": 0.2967700958251953,
+      "altitude_gz_m": {
+        "label": "altitude_gz",
+        "n": 767,
+        "mean": 88.2119304925687,
+        "std": 0.7151739337378935,
+        "min": 85.6667918707053,
+        "max": 88.8830403863634,
+        "slope_per_s": 0.04074390781975621,
+        "drift_over_window": 1.628734767835416,
+        "endpoint_delta": -0.2352653811152834,
+        "t_start": 102.98756837844849,
+        "t_end": 142.9624960422516
+      },
+      "vertical_speed_regression_ms": 0.04074390781975621,
+      "vertical_speed_endpoint_ms": -0.0058853234981163915,
+      "altitude_p2p_m": 3.2162485156581084,
+      "vfr_hud_climb_ms": {
+        "min": -1.9594981670379639,
+        "max": 1.1674057245254517,
+        "mean": -0.008337842096301848,
+        "std": 0.5201768484386917,
+        "n": 767
+      },
+      "mav_relative_alt_m": {
+        "min": 85.66,
+        "max": 88.94,
+        "mean": 88.20719687092563,
+        "std": 0.7153903879246137,
+        "n": 767
+      },
+      "nav_alt_error_m": {
+        "min": -6.929999828338623,
+        "max": 2.929999828338623,
+        "mean": 0.356883954640473,
+        "std": 0.845764213136881,
+        "n": 767
+      },
+      "pitch_physical_noseup_deg": {
+        "label": "pitch_physical",
+        "n": 767,
+        "mean": 2.7425484767576016,
+        "std": 1.682656872774141,
+        "min": -3.8738417594242383,
+        "max": 6.999677321098375,
+        "slope_per_s": 0.0020716805130820953,
+        "drift_over_window": 0.08281527865296726,
+        "endpoint_delta": 5.9877994071976985,
+        "t_start": 102.98756837844849,
+        "t_end": 142.9624960422516
+      },
+      "pitch_demand_physical_deg": {
+        "min": -3.6399996280670166,
+        "max": 10.069999933242798,
+        "mean": 3.0956975211410005,
+        "std": 1.8847591858276167,
+        "n": 767
+      },
+      "nav_pitch_raw_tecs_demand_deg": {
+        "min": -6.12999963760376,
+        "max": 7.579999923706055,
+        "mean": 0.6056975116042573,
+        "std": 1.8847591858276167,
+        "n": 767
+      },
+      "pitch_mav_reported_deg": {
+        "min": -6.363805070464063,
+        "max": 4.506126804909409,
+        "mean": 0.24769778438175383,
+        "std": 1.688803855314835,
+        "n": 767
+      },
+      "pitch_rate_q_gz_deg_s": {
+        "min": -5.551508844618492,
+        "max": 3.0760597647416854,
+        "mean": -0.150910022209298,
+        "std": 1.5183400538038954,
+        "n": 767
+      },
+      "alpha_aero_diag_deg": {
+        "min": 2.2000073810359786,
+        "max": 3.7377716181243863,
+        "mean": 2.755245025873643,
+        "std": 0.26686757145332163,
+        "n": 767
+      },
+      "pitch_minus_alpha_minus_gamma_deg": {
+        "min": -0.14034600908433514,
+        "max": 0.21749385233865498,
+        "mean": 0.004832086746364102,
+        "std": 0.03927104802033938,
+        "n": 767
+      },
+      "throttle_actual": {
+        "label": "throttle_actual",
+        "n": 767,
+        "mean": 0.4854543676662329,
+        "std": 0.030011392944640294,
+        "min": 0.327,
+        "max": 0.525,
+        "slope_per_s": 0.0007732170297740073,
+        "drift_over_window": 0.030909294833636632,
+        "endpoint_delta": 0.15699999999999997,
+        "t_start": 102.98756837844849,
+        "t_end": 142.9624960422516
+      },
+      "throttle_L": {
+        "min": 0.327,
+        "max": 0.525,
+        "mean": 0.4854315514993488,
+        "std": 0.030006825743558892,
+        "n": 767
+      },
+      "throttle_R": {
+        "min": 0.327,
+        "max": 0.525,
+        "mean": 0.4854771838331166,
+        "std": 0.030016322172491644,
+        "n": 767
+      },
+      "throttle_LR_asymmetry_max": 0.0010000000000000009,
+      "throttle_vfr_hud_pct": {
+        "min": 32,
+        "max": 52,
+        "mean": 48.07822685788788,
+        "std": 3.0178319208733866,
+        "n": 767
+      },
+      "motor_left_rpm": {
+        "min": 4078.432789788081,
+        "max": 6334.75613679263,
+        "mean": 5903.119774935855,
+        "std": 349.44969847087407,
+        "n": 767
+      },
+      "motor_left_thrust_N": {
+        "min": 0.0,
+        "max": 3.8810810255850554,
+        "mean": 2.5366192968039343,
+        "std": 0.6647068672046575,
+        "n": 767
+      },
+      "motor_right_rpm": {
+        "min": 4078.4353832524325,
+        "max": 6334.776720318723,
+        "mean": 5903.608306661307,
+        "std": 349.548144259227,
+        "n": 767
+      },
+      "motor_right_thrust_N": {
+        "min": 0.0,
+        "max": 3.8816651599438825,
+        "mean": 2.537915131819102,
+        "std": 0.6649297984860685,
+        "n": 767
+      },
+      "thrust_total_N": {
+        "min": 0.0,
+        "max": 7.762746185528938,
+        "mean": 5.074534428623037,
+        "std": 1.3296246493293868,
+        "n": 767
+      },
+      "drag_qbar_S_CD_N": {
+        "min": 4.626946826381159,
+        "max": 5.873478678050631,
+        "mean": 5.1479983774145985,
+        "std": 0.226195712021917,
+        "n": 767
+      },
+      "thrust_minus_drag_N": -0.07346394879156115,
+      "lift_over_weight": 1.000408504393452,
+      "specific_energy_rate_W_per_kg": -0.019164951209448583,
+      "dV_dt_ms2": 0.0035024219935693556,
+      "surfaces": {
+        "left_aileron": {
+          "cmd_deg": {
+            "min": 0.0,
+            "max": 0.06428571428591892,
+            "mean": 0.0011734028683218574,
+            "std": 0.008605589302530725,
+            "n": 767
+          },
+          "actual_deg": {
+            "min": -0.2632251724858305,
+            "max": 0.25345993543267864,
+            "mean": -0.0005980557485860562,
+            "std": 0.09740266960623173,
+            "n": 767
+          },
+          "max_abs_actual_deg": 0.2632251724858305
+        },
+        "right_aileron": {
+          "cmd_deg": {
+            "min": -0.06428571428591892,
+            "max": 0.0,
+            "mean": -0.0011734028683218574,
+            "std": 0.008605589302530725,
+            "n": 767
+          },
+          "actual_deg": {
+            "min": -0.2708419819602917,
+            "max": 0.25287948621293455,
+            "mean": -0.0027700114447381254,
+            "std": 0.0974549147285439,
+            "n": 767
+          },
+          "max_abs_actual_deg": 0.2708419819602917
+        },
+        "left_elevator": {
+          "cmd_deg": {
+            "min": 3.278571428582085,
+            "max": 6.492857142878241,
+            "mean": 4.535285900554895,
+            "std": 0.5937427742287749,
+            "n": 767
+          },
+          "actual_deg": {
+            "min": 3.1982146553354283,
+            "max": 6.333634314223633,
+            "mean": 4.529791340088658,
+            "std": 0.538297333123935,
+            "n": 767
+          },
+          "max_abs_actual_deg": 6.333634314223633
+        },
+        "right_elevator": {
+          "cmd_deg": {
+            "min": 3.278571428582085,
+            "max": 6.492857142878241,
+            "mean": 4.535285900554895,
+            "std": 0.5937427742287749,
+            "n": 767
+          },
+          "actual_deg": {
+            "min": 3.198087553656116,
+            "max": 6.333610422555823,
+            "mean": 4.529788222046572,
+            "std": 0.538302090124057,
+            "n": 767
+          },
+          "max_abs_actual_deg": 6.333610422555823
+        },
+        "rudder": {
+          "cmd_deg": {
+            "min": 0.0,
+            "max": 0.0,
+            "mean": 0.0,
+            "std": 0.0,
+            "n": 767
+          },
+          "actual_deg": {
+            "min": -0.0027949328082086137,
+            "max": 0.00262298984058626,
+            "mean": -2.1155663303624286e-07,
+            "std": 0.0006676963537852743,
+            "n": 767
+          },
+          "max_abs_actual_deg": 0.0027949328082086137
+        }
+      },
+      "elevator_max_abs_deg": 6.333634314223633,
+      "lateral_surface_max_abs_deg": 0.2708419819602917,
+      "actuator_clamp": {
+        "target_clamp_active_samples": 0,
+        "effort_clamp_active_samples": 0
+      },
+      "roll_gz_deg": {
+        "min": -0.08230395927554628,
+        "max": -0.0472797243610056,
+        "mean": -0.0656410464365874,
+        "std": 0.008060163911737644,
+        "n": 767
+      },
+      "nav_roll_demand_deg": {
+        "min": 0.0,
+        "max": 0.0,
+        "mean": 0.0,
+        "std": 0.0,
+        "n": 767
+      },
+      "custom_modes_seen": [
+        6
+      ],
+      "all_fbwb": true,
+      "oscillation_growth": {
+        "altitude": {
+          "n": 767,
+          "resid_std_first_half": 0.7049138529475645,
+          "resid_std_second_half": 0.2861429914395045,
+          "resid_p2p_first_half": 3.3112046025805313,
+          "resid_p2p_second_half": 1.0611030971133744,
+          "ratio_second_over_first": 0.4059261855090674,
+          "growing": false
+        },
+        "airspeed": {
+          "n": 767,
+          "resid_std_first_half": 0.4090754347838486,
+          "resid_std_second_half": 0.14020546508312393,
+          "resid_p2p_first_half": 1.6366035794669571,
+          "resid_p2p_second_half": 0.565189583160489,
+          "ratio_second_over_first": 0.34273743461815814,
+          "growing": false
+        },
+        "pitch_physical": {
+          "n": 767,
+          "resid_std_first_half": 2.2885387994885567,
+          "resid_std_second_half": 0.6534048448204978,
+          "resid_p2p_first_half": 10.8663796602974,
+          "resid_p2p_second_half": 2.4564956815539793,
+          "ratio_second_over_first": 0.28551180559688166,
+          "growing": false
+        },
+        "throttle": {
+          "n": 767,
+          "resid_std_first_half": 0.03938717565946587,
+          "resid_std_second_half": 0.00809610322894315,
+          "resid_p2p_first_half": 0.19248320563472537,
+          "resid_p2p_second_half": 0.03113867262780956,
+          "ratio_second_over_first": 0.20555175874859724,
+          "growing": false
+        }
+      },
+      "nan_inf_count": 0,
+      "nan_inf_samples": [],
+      "energy": {
+        "seb_weights": {
+          "w_SPE": 1.0,
+          "w_SKE": 1.0,
+          "tecs_spdweight_live": 1.0,
+          "source": "AP_TECS.cpp:1003,1024,1027-1028"
+        },
+        "gravity_used_m_s2": 9.81,
+        "gravity_ardupilot_internal_m_s2": 9.80665,
+        "SPE_J_per_kg": {
+          "min": 840.391228251619,
+          "max": 871.942626190225,
+          "mean": 865.3590381320978,
+          "std": 7.015856289968736,
+          "n": 767
+        },
+        "SKE_J_per_kg": {
+          "min": 142.11566165560032,
+          "max": 170.45479326551023,
+          "mean": 159.8652537467989,
+          "std": 5.517119455529944,
+          "n": 767
+        },
+        "STE_J_per_kg": {
+          "min": 1002.6377567340837,
+          "max": 1039.4936015471217,
+          "mean": 1025.2242918788957,
+          "std": 8.222008939348274,
+          "n": 767
+        },
+        "SEB_J_per_kg": {
+          "min": 674.4928971159147,
+          "max": 720.6847598796331,
+          "mean": 705.4937843852999,
+          "std": 9.577069600741073,
+          "n": 767
+        },
+        "TAS_ms": {
+          "min": 16.85916140593003,
+          "max": 18.46373706840033,
+          "mean": 17.878295225393085,
+          "std": 0.31155629874031976,
+          "n": 767
+        },
+        "vz_regression_ms": 0.04074390781975621,
+        "vz_vfr_hud_mean_ms": -0.008337842096301848,
+        "dTAS_dt_ms2": 0.003979821904225672,
+        "SPEdot_W_per_kg": 0.39969773571180844,
+        "SKEdot_W_per_kg": 0.07115243094823265,
+        "STEdot_W_per_kg": 0.4708501666600411,
+        "SEBdot_W_per_kg": 0.3285453047635758,
+        "STEdot_endpoint_W_per_kg": -0.2566119838277539,
+        "STE_change_over_window_J_per_kg": -10.258045491179473,
+        "potential_fraction_of_STEdot": 0.8488851953627842,
+        "kinetic_fraction_of_STEdot": 0.15111480463721588,
+        "kinetic_over_potential_abs": 0.1780155967646893,
+        "thrust_total_N_mean": 5.074534428623037,
+        "drag_N_mean": 5.1479983774145985,
+        "propulsive_excess_power_W_per_kg": -0.21890169415311497,
+        "propulsive_vs_STEdot_residual_W_per_kg": -0.6897518608131561,
+        "propulsive_note": "REPORT-ONLY. D is the aero plugin's qbar*S*CD diagnostic and the descent is affected by PROPULSION_HIGH_J_WINDMILLING (thrust floored at 0 N above the APC table's last J), which biases exactly this comparison. Not a gating criterion."
+      },
+      "high_j": {
+        "limitation_id": "PROPULSION_HIGH_J_WINDMILLING",
+        "status": "OPEN_LIMITATION",
+        "owner": "propulsion",
+        "detail": "APC 13x6.5E Ct/Cp table has no windmilling data above the zero-thrust advance ratio. Ct is clamped to the table end, so thrust is floored at 0 N where a real fixed-pitch prop would produce NEGATIVE thrust. The simulated descent is therefore less draggy than reality. DATA_REQUIRED: measured or extrapolated APC 13x6.5E Ct/Cp for J beyond zero-thrust.",
+        "effect_on_this_stage": "Descent DIRECTION, controllability, settling and energy bookkeeping remain valid. The ABSOLUTE descent drag/sink performance is NOT high-fidelity real-aircraft truth. NOT a blocker for this stage.",
+        "motor_samples": 1534,
+        "interp_clamped_samples": 62,
+        "interp_clamped_fraction": 0.04041720990873533,
+        "zero_thrust_samples": 62,
+        "advance_ratio_J": {
+          "min": 0.5108900752559096,
+          "max": 0.8172832274284277,
+          "mean": 0.5523362990441015,
+          "std": 0.04703850994495366,
+          "n": 1534
+        }
+      },
+      "ap_target_alt_rel_m": {
+        "label": "ap_target_alt_rel",
+        "n": 767,
+        "mean": 88.56408082556607,
+        "std": 0.4136808345481698,
+        "min": 81.81000017166137,
+        "max": 88.59000005722046,
+        "slope_per_s": 0.003875229363070775,
+        "drift_over_window": 0.15491201346939998,
+        "endpoint_delta": 6.5499996215105085,
+        "t_start": 102.98756837844849,
+        "t_end": 142.9624960422516
+      },
+      "ap_alt_rel_m": {
+        "min": 85.66,
+        "max": 88.94,
+        "mean": 88.20719687092563,
+        "std": 0.7153903879246137,
+        "n": 767
+      },
+      "ap_height_error_m": {
+        "min": -6.929999828338623,
+        "max": 2.929999828338623,
+        "mean": 0.356883954640473,
+        "std": 0.845764213136881,
+        "n": 767
+      },
+      "gz_z_minus_ap_relative_alt_m": {
+        "min": -0.09624269275163044,
+        "max": 0.0669612049584174,
+        "mean": 0.00473362164291317,
+        "std": 0.01431323550143587,
+        "n": 767
+      },
+      "elevator_deg": {
+        "label": "elevator_deg",
+        "n": 767,
+        "mean": 4.529789781067619,
+        "std": 0.5382993960680889,
+        "min": 3.1981511044957722,
+        "max": 6.333622368389728,
+        "slope_per_s": -0.017495861188064947,
+        "drift_over_window": -0.6993957854088364,
+        "endpoint_delta": 1.1870678072636602,
+        "t_start": 102.98756837844849,
+        "t_end": 142.9624960422516
+      }
+    },
+    "P1_cruise_hold": {
+      "label": "P1_cruise_hold",
+      "n": 633,
+      "t_start": 12.019716501235962,
+      "t_end": 44.99700736999512,
+      "duration_s": 32.977290868759155,
+      "airspeed_vfr_hud_ms": {
+        "label": "airspeed_vfr_hud",
+        "n": 633,
+        "mean": 17.925597496695616,
+        "std": 0.23904776712500816,
+        "min": 17.329023361206055,
+        "max": 18.385150909423828,
+        "slope_per_s": -0.0003202610326754655,
+        "drift_over_window": -0.010561341228468005,
+        "endpoint_delta": 0.46209716796875,
+        "t_start": 12.019716501235962,
+        "t_end": 44.99700736999512
+      },
+      "airspeed_aero_diag_V_ms": {
+        "min": 17.37944968671225,
+        "max": 18.403071899851934,
+        "mean": 17.928340881274035,
+        "std": 0.2470878612372688,
+        "n": 633
+      },
+      "groundspeed_ms": {
+        "min": 17.37893295288086,
+        "max": 18.401790618896484,
+        "mean": 17.92381633740466,
+        "std": 0.24743991922193218,
+        "n": 633
+      },
+      "tecs_target_airspeed_ms": {
+        "min": 17.82748794555664,
+        "max": 18.01625633239746,
+        "mean": 17.921821910623127,
+        "std": 0.03539592442552886,
+        "n": 633
+      },
+      "groundspeed_minus_airspeed_max_abs_ms": 0.2706890106201172,
+      "altitude_gz_m": {
+        "label": "altitude_gz",
+        "n": 633,
+        "mean": 89.15421266728174,
+        "std": 0.3548268973050229,
+        "min": 88.43162086332474,
+        "max": 89.94787412873649,
+        "slope_per_s": 0.0029911840392942944,
+        "drift_over_window": 0.09864114610579786,
+        "endpoint_delta": -0.01537033002757937,
+        "t_start": 12.019716501235962,
+        "t_end": 44.99700736999512
+      },
+      "vertical_speed_regression_ms": 0.0029911840392942944,
+      "vertical_speed_endpoint_ms": -0.0004660883178290538,
+      "altitude_p2p_m": 1.5162532654117484,
+      "vfr_hud_climb_ms": {
+        "min": -0.9934190511703491,
+        "max": 0.8574651479721069,
+        "mean": -0.002814660563117473,
+        "std": 0.40752873145953994,
+        "n": 633
+      },
+      "mav_relative_alt_m": {
+        "min": 88.43,
+        "max": 89.94,
+        "mean": 89.14900473933652,
+        "std": 0.35522476471784703,
+        "n": 633
+      },
+      "nav_alt_error_m": {
+        "min": -0.7699999809265137,
+        "max": 0.7400000095367432,
+        "mean": 0.0209952596410238,
+        "std": 0.35522475601094516,
+        "n": 633
+      },
+      "pitch_physical_noseup_deg": {
+        "label": "pitch_physical",
+        "n": 633,
+        "mean": 2.6841213701236755,
+        "std": 1.2244804456609875,
+        "min": -0.24780098491232075,
+        "max": 5.3264993222125785,
+        "slope_per_s": 0.005230482952266719,
+        "drift_over_window": 0.17248715770098572,
+        "endpoint_delta": 2.5070246362659705,
+        "t_start": 12.019716501235962,
+        "t_end": 44.99700736999512
+      },
+      "pitch_demand_physical_deg": {
+        "min": -0.2200000286102295,
+        "max": 5.490000009536743,
+        "mean": 2.722954190843761,
+        "std": 1.2933842666337183,
+        "n": 633
+      },
+      "nav_pitch_raw_tecs_demand_deg": {
+        "min": -2.7100000381469727,
+        "max": 3.0,
+        "mean": 0.23295418130701753,
+        "std": 1.293384266633718,
+        "n": 633
+      },
+      "pitch_mav_reported_deg": {
+        "min": -2.748496509986869,
+        "max": 2.8363865304529465,
+        "mean": 0.19274573549338747,
+        "std": 1.2254696942270373,
+        "n": 633
+      },
+      "pitch_rate_q_gz_deg_s": {
+        "min": -3.206891375262552,
+        "max": 2.8959972423619385,
+        "mean": -0.07710398485846277,
+        "std": 1.3686760289853985,
+        "n": 633
+      },
+      "alpha_aero_diag_deg": {
+        "min": 2.323308626215991,
+        "max": 3.221096672347437,
+        "mean": 2.695717631324341,
+        "std": 0.19757817550837597,
+        "n": 633
+      },
+      "pitch_minus_alpha_minus_gamma_deg": {
+        "min": -0.15544617594144494,
+        "max": 0.14963205320137085,
+        "mean": 0.001493782237909154,
+        "std": 0.037300161468463634,
+        "n": 633
+      },
+      "throttle_actual": {
+        "label": "throttle_actual",
+        "n": 633,
+        "mean": 0.49085624012638307,
+        "std": 0.013402707623661003,
+        "min": 0.462,
+        "max": 0.521,
+        "slope_per_s": -0.000194919558490781,
+        "drift_over_window": -0.006427918976360598,
+        "endpoint_delta": -0.01200000000000001,
+        "t_start": 12.019716501235962,
+        "t_end": 44.99700736999512
+      },
+      "throttle_L": {
+        "min": 0.462,
+        "max": 0.521,
+        "mean": 0.49083254344391875,
+        "std": 0.013412889606305016,
+        "n": 633
+      },
+      "throttle_R": {
+        "min": 0.462,
+        "max": 0.521,
+        "mean": 0.4908799368088476,
+        "std": 0.01339336064312097,
+        "n": 633
+      },
+      "throttle_LR_asymmetry_max": 0.0010000000000000009,
+      "throttle_vfr_hud_pct": {
+        "min": 46,
+        "max": 52,
+        "mean": 48.62875197472354,
+        "std": 1.3904189840194463,
+        "n": 633
+      },
+      "motor_left_rpm": {
+        "min": 5647.891942303914,
+        "max": 6304.16750694344,
+        "mean": 5970.418839474673,
+        "std": 149.45029486231064,
+        "n": 633
+      },
+      "motor_left_thrust_N": {
+        "min": 1.8997494665455705,
+        "max": 3.406795611400984,
+        "mean": 2.592457635206435,
+        "std": 0.34397835678971933,
+        "n": 633
+      },
+      "motor_right_rpm": {
+        "min": 5647.889135769628,
+        "max": 6304.171905340354,
+        "mean": 5970.967013461521,
+        "std": 149.2406516725051,
+        "n": 633
+      },
+      "motor_right_thrust_N": {
+        "min": 1.8995399566971776,
+        "max": 3.406690479112559,
+        "mean": 2.594105572372628,
+        "std": 0.3433247748394526,
+        "n": 633
+      },
+      "thrust_total_N": {
+        "min": 3.7992894232427483,
+        "max": 6.813486090513543,
+        "mean": 5.1865632075790655,
+        "std": 0.6872809544985279,
+        "n": 633
+      },
+      "drag_qbar_S_CD_N": {
+        "min": 4.702444910415167,
+        "max": 5.627935494427985,
+        "mean": 5.1460357499681155,
+        "std": 0.21198314069413055,
+        "n": 633
+      },
+      "thrust_minus_drag_N": 0.04052745761095,
+      "lift_over_weight": 0.9989490090105688,
+      "specific_energy_rate_W_per_kg": -0.033352690489798886,
+      "dV_dt_ms2": -0.0003202610326754655,
+      "surfaces": {
+        "left_aileron": {
+          "cmd_deg": {
+            "min": 0.0,
+            "max": 0.06428571428591892,
+            "mean": 0.0010155721056227314,
+            "std": 0.008015946077481576,
+            "n": 633
+          },
+          "actual_deg": {
+            "min": -0.24963185029380705,
+            "max": 0.25503462667419746,
+            "mean": -0.0012608147937939228,
+            "std": 0.10309765250803339,
+            "n": 633
+          },
+          "max_abs_actual_deg": 0.25503462667419746
+        },
+        "right_aileron": {
+          "cmd_deg": {
+            "min": -0.06428571428591892,
+            "max": 0.0,
+            "mean": -0.0010155721056227314,
+            "std": 0.008015946077481576,
+            "n": 633
+          },
+          "actual_deg": {
+            "min": -0.25032435298968325,
+            "max": 0.23290777036668658,
+            "mean": -0.0031241451938317137,
+            "std": 0.102652271300223,
+            "n": 633
+          },
+          "max_abs_actual_deg": 0.25032435298968325
+        },
+        "left_elevator": {
+          "cmd_deg": {
+            "min": 3.342857142868004,
+            "max": 5.850000000019001,
+            "mean": 4.4281990521470895,
+            "std": 0.557927512526604,
+            "n": 633
+          },
+          "actual_deg": {
+            "min": 3.5155660183711435,
+            "max": 5.6278319388927285,
+            "mean": 4.42922170480414,
+            "std": 0.464655267735364,
+            "n": 633
+          },
+          "max_abs_actual_deg": 5.6278319388927285
+        },
+        "right_elevator": {
+          "cmd_deg": {
+            "min": 3.342857142868004,
+            "max": 5.850000000019001,
+            "mean": 4.4281990521470895,
+            "std": 0.557927512526604,
+            "n": 633
+          },
+          "actual_deg": {
+            "min": 3.515499615436641,
+            "max": 5.627816056705205,
+            "mean": 4.429208545687587,
+            "std": 0.4646508256850212,
+            "n": 633
+          },
+          "max_abs_actual_deg": 5.627816056705205
+        },
+        "rudder": {
+          "cmd_deg": {
+            "min": 0.0,
+            "max": 0.0,
+            "mean": 0.0,
+            "std": 0.0,
+            "n": 633
+          },
+          "actual_deg": {
+            "min": -0.0027876229490220285,
+            "max": 0.0036614660146122037,
+            "mean": -1.7149099226441483e-06,
+            "std": 0.000779856866984838,
+            "n": 633
+          },
+          "max_abs_actual_deg": 0.0036614660146122037
+        }
+      },
+      "elevator_max_abs_deg": 5.6278319388927285,
+      "lateral_surface_max_abs_deg": 0.25503462667419746,
+      "actuator_clamp": {
+        "target_clamp_active_samples": 0,
+        "effort_clamp_active_samples": 0
+      },
+      "roll_gz_deg": {
+        "min": -0.040207615875893915,
+        "max": -0.00475683906990872,
+        "mean": -0.02549529359189329,
+        "std": 0.008666829551748577,
+        "n": 633
+      },
+      "nav_roll_demand_deg": {
+        "min": 0.0,
+        "max": 0.0,
+        "mean": 0.0,
+        "std": 0.0,
+        "n": 633
+      },
+      "custom_modes_seen": [
+        6
+      ],
+      "all_fbwb": true,
+      "oscillation_growth": {
+        "altitude": {
+          "n": 633,
+          "resid_std_first_half": 0.4475520779604115,
+          "resid_std_second_half": 0.22057587337261095,
+          "resid_p2p_first_half": 1.50800001294391,
+          "resid_p2p_second_half": 0.7520838729884645,
+          "ratio_second_over_first": 0.4928496240656984,
+          "growing": false
+        },
+        "airspeed": {
+          "n": 633,
+          "resid_std_first_half": 0.29906840585415145,
+          "resid_std_second_half": 0.15775126720298346,
+          "resid_p2p_first_half": 1.0585453740751696,
+          "resid_p2p_second_half": 0.6258534653948153,
+          "ratio_second_over_first": 0.5274755344097263,
+          "growing": false
+        },
+        "pitch_physical": {
+          "n": 633,
+          "resid_std_first_half": 1.5454811984273735,
+          "resid_std_second_half": 0.7764862835720527,
+          "resid_p2p_first_half": 5.560137092368622,
+          "resid_p2p_second_half": 2.768160652123589,
+          "ratio_second_over_first": 0.502423636316105,
+          "growing": false
+        },
+        "throttle": {
+          "n": 633,
+          "resid_std_first_half": 0.016814349871005718,
+          "resid_std_second_half": 0.008202056524373154,
+          "resid_p2p_first_half": 0.05852337154873505,
+          "resid_p2p_second_half": 0.027597190563266705,
+          "ratio_second_over_first": 0.4878009906595671,
+          "growing": false
+        }
+      },
+      "nan_inf_count": 0,
+      "nan_inf_samples": [],
+      "energy": {
+        "seb_weights": {
+          "w_SPE": 1.0,
+          "w_SKE": 1.0,
+          "tecs_spdweight_live": 1.0,
+          "source": "AP_TECS.cpp:1003,1024,1027-1028"
+        },
+        "gravity_used_m_s2": 9.81,
+        "gravity_ardupilot_internal_m_s2": 9.80665,
+        "SPE_J_per_kg": {
+          "min": 867.5142006692157,
+          "max": 882.388645202905,
+          "mean": 874.6028262660345,
+          "std": 3.4808518625622757,
+          "n": 633
+        },
+        "SKE_J_per_kg": {
+          "min": 151.02263570648125,
+          "max": 169.33652767555995,
+          "mean": 160.74322958316608,
+          "std": 4.430221098019826,
+          "n": 633
+        },
+        "STE_J_per_kg": {
+          "min": 1030.9486625787745,
+          "max": 1038.204247567078,
+          "mean": 1035.3460558492006,
+          "std": 1.4019548605662788,
+          "n": 633
+        },
+        "SEB_J_per_kg": {
+          "min": 698.333448492272,
+          "max": 731.2725964584307,
+          "mean": 713.8595966828677,
+          "std": 7.843525986558673,
+          "n": 633
+        },
+        "TAS_ms": {
+          "min": 17.37944968671225,
+          "max": 18.403071899851934,
+          "mean": 17.928340881274035,
+          "std": 0.2470878612372688,
+          "n": 633
+        },
+        "vz_regression_ms": 0.0029911840392942944,
+        "vz_vfr_hud_mean_ms": -0.002814660563117473,
+        "dTAS_dt_ms2": -0.00197471363091169,
+        "SPEdot_W_per_kg": 0.02934351542547703,
+        "SKEdot_W_per_kg": -0.03540333911788314,
+        "STEdot_W_per_kg": -0.0060598236924061105,
+        "SEBdot_W_per_kg": 0.06474685454336017,
+        "STEdot_endpoint_W_per_kg": 0.11157644863286834,
+        "STE_change_over_window_J_per_kg": 3.679489000669264,
+        "potential_fraction_of_STEdot": -4.8423051420207095,
+        "kinetic_fraction_of_STEdot": 5.8423051420207095,
+        "kinetic_over_potential_abs": 1.206513214403233,
+        "thrust_total_N_mean": 5.1865632075790655,
+        "drag_N_mean": 5.1460357499681155,
+        "propulsive_excess_power_W_per_kg": 0.12109834585008257,
+        "propulsive_vs_STEdot_residual_W_per_kg": 0.12715816954248868,
+        "propulsive_note": "REPORT-ONLY. D is the aero plugin's qbar*S*CD diagnostic and the descent is affected by PROPULSION_HIGH_J_WINDMILLING (thrust floored at 0 N above the APC table's last J), which biases exactly this comparison. Not a gating criterion."
+      },
+      "high_j": {
+        "limitation_id": "PROPULSION_HIGH_J_WINDMILLING",
+        "status": "OPEN_LIMITATION",
+        "owner": "propulsion",
+        "detail": "APC 13x6.5E Ct/Cp table has no windmilling data above the zero-thrust advance ratio. Ct is clamped to the table end, so thrust is floored at 0 N where a real fixed-pitch prop would produce NEGATIVE thrust. The simulated descent is therefore less draggy than reality. DATA_REQUIRED: measured or extrapolated APC 13x6.5E Ct/Cp for J beyond zero-thrust.",
+        "effect_on_this_stage": "Descent DIRECTION, controllability, settling and energy bookkeeping remain valid. The ABSOLUTE descent drag/sink performance is NOT high-fidelity real-aircraft truth. NOT a blocker for this stage.",
+        "motor_samples": 1266,
+        "interp_clamped_samples": 0,
+        "interp_clamped_fraction": 0.0,
+        "zero_thrust_samples": 0,
+        "advance_ratio_J": {
+          "min": 0.5253081404621569,
+          "max": 0.5630034574938309,
+          "mean": 0.5451907319058659,
+          "std": 0.008233749809082015,
+          "n": 1266
+        }
+      },
+      "ap_target_alt_rel_m": {
+        "label": "ap_target_alt_rel",
+        "n": 633,
+        "mean": 89.16999999897754,
+        "std": 1.2766942127828946e-08,
+        "min": 89.16999995708466,
+        "max": 89.17000004291535,
+        "slope_per_s": 1.265059473959901e-10,
+        "drift_over_window": 4.171823423905511e-09,
+        "endpoint_delta": 1.1920931797249068e-08,
+        "t_start": 12.019716501235962,
+        "t_end": 44.99700736999512
+      },
+      "ap_alt_rel_m": {
+        "min": 88.43,
+        "max": 89.94,
+        "mean": 89.14900473933652,
+        "std": 0.35522476471784703,
+        "n": 633
+      },
+      "ap_height_error_m": {
+        "min": -0.7699999809265137,
+        "max": 0.7400000095367432,
+        "mean": 0.0209952596410238,
+        "std": 0.35522475601094516,
+        "n": 633
+      },
+      "gz_z_minus_ap_relative_alt_m": {
+        "min": -0.04666643752537425,
+        "max": 0.06048889104987154,
+        "mean": 0.005207927945285743,
+        "std": 0.011108029662286903,
+        "n": 633
+      },
+      "elevator_deg": {
+        "label": "elevator_deg",
+        "n": 633,
+        "mean": 4.429215125245875,
+        "std": 0.4646527616146467,
+        "min": 3.5155328169038924,
+        "max": 5.627823997798966,
+        "slope_per_s": -0.0076190251540304175,
+        "drift_over_window": -0.2512548086408536,
+        "endpoint_delta": -0.8458348548672836,
+        "t_start": 12.019716501235962,
+        "t_end": 44.99700736999512
+      }
+    },
+    "P3_settle_hold": {
+      "label": "P3_settle_hold",
+      "n": 576,
+      "t_start": 63.76556873321533,
+      "t_end": 93.70418977737427,
+      "duration_s": 29.938621044158936,
+      "airspeed_vfr_hud_ms": {
+        "label": "airspeed_vfr_hud",
+        "n": 576,
+        "mean": 17.949750257862938,
+        "std": 0.4164302316096886,
+        "min": 17.04833984375,
+        "max": 18.871688842773438,
+        "slope_per_s": -0.004937713381000015,
+        "drift_over_window": -0.1478283297384322,
+        "endpoint_delta": -0.017528533935546875,
+        "t_start": 63.76556873321533,
+        "t_end": 93.70418977737427
+      },
+      "airspeed_aero_diag_V_ms": {
+        "min": 17.057153537020863,
+        "max": 18.924592248549402,
+        "mean": 17.94775779832454,
+        "std": 0.4319639342556275,
+        "n": 576
+      },
+      "groundspeed_ms": {
+        "min": 17.053722381591797,
+        "max": 18.923654556274414,
+        "mean": 17.936747597323524,
+        "std": 0.4316529804063421,
+        "n": 576
+      },
+      "tecs_target_airspeed_ms": {
+        "min": 17.799318313598633,
+        "max": 18.03180503845215,
+        "mean": 17.92006031009886,
+        "std": 0.049445565072394185,
+        "n": 576
+      },
+      "groundspeed_minus_airspeed_max_abs_ms": 0.3966541290283203,
+      "altitude_gz_m": {
+        "label": "altitude_gz",
+        "n": 576,
+        "mean": 99.67544510070539,
+        "std": 0.5885353584955755,
+        "min": 98.46236976387942,
+        "max": 100.95439180008995,
+        "slope_per_s": 0.0003325373461377623,
+        "drift_over_window": 0.009955709589048775,
+        "endpoint_delta": 0.661227966252298,
+        "t_start": 63.76556873321533,
+        "t_end": 93.70418977737427
+      },
+      "vertical_speed_regression_ms": 0.0003325373461377623,
+      "vertical_speed_endpoint_ms": 0.022086119640480382,
+      "altitude_p2p_m": 2.4920220362105283,
+      "vfr_hud_climb_ms": {
+        "min": -1.252602458000183,
+        "max": 1.4022217988967896,
+        "mean": 0.020086593557304393,
+        "std": 0.635614247380633,
+        "n": 576
+      },
+      "mav_relative_alt_m": {
+        "min": 98.46,
+        "max": 100.95,
+        "mean": 99.66980902777783,
+        "std": 0.5883237118445069,
+        "n": 576
+      },
+      "nav_alt_error_m": {
+        "min": -1.2599999904632568,
+        "max": 1.2300000190734863,
+        "mean": 0.020190971431374136,
+        "std": 0.5883236981395695,
+        "n": 576
+      },
+      "pitch_physical_noseup_deg": {
+        "label": "pitch_physical",
+        "n": 576,
+        "mean": 2.751067401731789,
+        "std": 1.917284691432215,
+        "min": -1.1734695279808922,
+        "max": 6.88000139365379,
+        "slope_per_s": -0.0192388405748976,
+        "drift_over_window": -0.5759843573008481,
+        "endpoint_delta": 4.167552973480381,
+        "t_start": 63.76556873321533,
+        "t_end": 93.70418977737427
+      },
+      "pitch_demand_physical_deg": {
+        "min": -1.2799999713897705,
+        "max": 7.700000047683716,
+        "mean": 2.853281251141905,
+        "std": 2.086496846053751,
+        "n": 576
+      },
+      "nav_pitch_raw_tecs_demand_deg": {
+        "min": -3.7699999809265137,
+        "max": 5.210000038146973,
+        "mean": 0.3632812416051618,
+        "std": 2.086496846053751,
+        "n": 576
+      },
+      "pitch_mav_reported_deg": {
+        "min": -3.664182192526632,
+        "max": 4.390072499400785,
+        "mean": 0.2583639172913356,
+        "std": 1.9211082291582307,
+        "n": 576
+      },
+      "pitch_rate_q_gz_deg_s": {
+        "min": -5.296286292963634,
+        "max": 4.505118170557092,
+        "mean": -0.14282554713740814,
+        "std": 2.2402451748127508,
+        "n": 576
+      },
+      "alpha_aero_diag_deg": {
+        "min": 2.0636805836737646,
+        "max": 3.3132564008181493,
+        "mean": 2.6945163140305564,
+        "std": 0.2916111727959821,
+        "n": 576
+      },
+      "pitch_minus_alpha_minus_gamma_deg": {
+        "min": -0.19420384472981622,
+        "max": 0.22105658143502005,
+        "mean": 0.0030494004259528874,
+        "std": 0.05774612047334992,
+        "n": 576
+      },
+      "throttle_actual": {
+        "label": "throttle_actual",
+        "n": 576,
+        "mean": 0.49020486111111183,
+        "std": 0.021976088899393436,
+        "min": 0.441,
+        "max": 0.536,
+        "slope_per_s": 7.980522568042697e-05,
+        "drift_over_window": 0.002389258408989884,
+        "endpoint_delta": -0.039500000000000035,
+        "t_start": 63.76556873321533,
+        "t_end": 93.70418977737427
+      },
+      "throttle_L": {
+        "min": 0.441,
+        "max": 0.536,
+        "mean": 0.4901788194444452,
+        "std": 0.02196732823347888,
+        "n": 576
+      },
+      "throttle_R": {
+        "min": 0.441,
+        "max": 0.536,
+        "mean": 0.49023090277777864,
+        "std": 0.021985407484068794,
+        "n": 576
+      },
+      "throttle_LR_asymmetry_max": 0.0010000000000000009,
+      "throttle_vfr_hud_pct": {
+        "min": 44,
+        "max": 53,
+        "mean": 48.58680555555556,
+        "std": 2.205446116617329,
+        "n": 576
+      },
+      "motor_left_rpm": {
+        "min": 5411.040468187258,
+        "max": 6473.408286824916,
+        "mean": 5964.309184831454,
+        "std": 246.57758744851793,
+        "n": 576
+      },
+      "motor_left_thrust_N": {
+        "min": 1.3994024407437404,
+        "max": 3.6616716457491925,
+        "mean": 2.5677051607303407,
+        "std": 0.5389476362520245,
+        "n": 576
+      },
+      "motor_right_rpm": {
+        "min": 5411.037403849923,
+        "max": 6473.40546698074,
+        "mean": 5964.882875140453,
+        "std": 246.76221551911635,
+        "n": 576
+      },
+      "motor_right_thrust_N": {
+        "min": 1.3994416237643148,
+        "max": 3.6617854179833382,
+        "mean": 2.5693926695571006,
+        "std": 0.5396157185386012,
+        "n": 576
+      },
+      "thrust_total_N": {
+        "min": 2.7988440645080552,
+        "max": 7.323457063732531,
+        "mean": 5.1370978302874395,
+        "std": 1.0785471043931545,
+        "n": 576
+      },
+      "drag_qbar_S_CD_N": {
+        "min": 4.4651494571163415,
+        "max": 5.998893584174168,
+        "mean": 5.163341892878467,
+        "std": 0.35560658350846597,
+        "n": 576
+      },
+      "thrust_minus_drag_N": -0.026244062591027628,
+      "lift_over_weight": 1.0020863112547937,
+      "specific_energy_rate_W_per_kg": 0.10841876076329782,
+      "dV_dt_ms2": -0.004937713381000015,
+      "surfaces": {
+        "left_aileron": {
+          "cmd_deg": {
+            "min": 0.0,
+            "max": 0.06428571428591892,
+            "mean": 0.0006696428571449887,
+            "std": 0.006526871213062558,
+            "n": 576
+          },
+          "actual_deg": {
+            "min": -0.35893428580015413,
+            "max": 0.3495767849044367,
+            "mean": 0.0029399714904869475,
+            "std": 0.1598721982401074,
+            "n": 576
+          },
+          "max_abs_actual_deg": 0.35893428580015413
+        },
+        "right_aileron": {
+          "cmd_deg": {
+            "min": -0.06428571428591892,
+            "max": 0.0,
+            "mean": -0.0006696428571449887,
+            "std": 0.006526871213062558,
+            "n": 576
+          },
+          "actual_deg": {
+            "min": -0.3593184756922286,
+            "max": 0.34971562599635614,
+            "mean": 0.0008158112069833269,
+            "std": 0.16018361292917108,
+            "n": 576
+          },
+          "max_abs_actual_deg": 0.3593184756922286
+        },
+        "left_elevator": {
+          "cmd_deg": {
+            "min": 2.5714285714369267,
+            "max": 6.3000000000204635,
+            "mean": 4.414397321442926,
+            "std": 0.841871484234272,
+            "n": 576
+          },
+          "actual_deg": {
+            "min": 2.892800191310307,
+            "max": 5.943700134067444,
+            "mean": 4.4219777719744675,
+            "std": 0.7008827693312323,
+            "n": 576
+          },
+          "max_abs_actual_deg": 5.943700134067444
+        },
+        "right_elevator": {
+          "cmd_deg": {
+            "min": 2.5714285714369267,
+            "max": 6.3000000000204635,
+            "mean": 4.414397321442926,
+            "std": 0.841871484234272,
+            "n": 576
+          },
+          "actual_deg": {
+            "min": 2.8927364423035513,
+            "max": 5.94371235955271,
+            "mean": 4.421970166747737,
+            "std": 0.7008801474681237,
+            "n": 576
+          },
+          "max_abs_actual_deg": 5.94371235955271
+        },
+        "rudder": {
+          "cmd_deg": {
+            "min": 0.0,
+            "max": 0.0,
+            "mean": 0.0,
+            "std": 0.0,
+            "n": 576
+          },
+          "actual_deg": {
+            "min": -0.002728274525735665,
+            "max": 0.0032852124589814223,
+            "mean": -5.962373715033741e-06,
+            "std": 0.0008392680121655686,
+            "n": 576
+          },
+          "max_abs_actual_deg": 0.0032852124589814223
+        }
+      },
+      "elevator_max_abs_deg": 5.94371235955271,
+      "lateral_surface_max_abs_deg": 0.3593184756922286,
+      "actuator_clamp": {
+        "target_clamp_active_samples": 0,
+        "effort_clamp_active_samples": 0
+      },
+      "roll_gz_deg": {
+        "min": -0.06450392707045603,
+        "max": -0.030776443197043136,
+        "mean": -0.046774014956411696,
+        "std": 0.008279415866504675,
+        "n": 576
+      },
+      "nav_roll_demand_deg": {
+        "min": 0.0,
+        "max": 0.0,
+        "mean": 0.0,
+        "std": 0.0,
+        "n": 576
+      },
+      "custom_modes_seen": [
+        6
+      ],
+      "all_fbwb": true,
+      "oscillation_growth": {
+        "altitude": {
+          "n": 576,
+          "resid_std_first_half": 0.7405435551627502,
+          "resid_std_second_half": 0.37928742752648104,
+          "resid_p2p_first_half": 2.49108818814544,
+          "resid_p2p_second_half": 1.3616058499474377,
+          "ratio_second_over_first": 0.5121743682491768,
+          "growing": false
+        },
+        "airspeed": {
+          "n": 576,
+          "resid_std_first_half": 0.5113918711094655,
+          "resid_std_second_half": 0.2857434956198297,
+          "resid_p2p_first_half": 1.8082272506168806,
+          "resid_p2p_second_half": 1.0300678705161062,
+          "ratio_second_over_first": 0.5587564288026494,
+          "growing": false
+        },
+        "pitch_physical": {
+          "n": 576,
+          "resid_std_first_half": 2.3578532829383585,
+          "resid_std_second_half": 1.3101988312144799,
+          "resid_p2p_first_half": 7.998947465133792,
+          "resid_p2p_second_half": 4.465483439078766,
+          "ratio_second_over_first": 0.5556744521362708,
+          "growing": false
+        },
+        "throttle": {
+          "n": 576,
+          "resid_std_first_half": 0.027901036762103693,
+          "resid_std_second_half": 0.013578686911282459,
+          "resid_p2p_first_half": 0.09524569785667547,
+          "resid_p2p_second_half": 0.045243537506560405,
+          "ratio_second_over_first": 0.4866732023996175,
+          "growing": false
+        }
+      },
+      "nan_inf_count": 0,
+      "nan_inf_samples": [],
+      "energy": {
+        "seb_weights": {
+          "w_SPE": 1.0,
+          "w_SKE": 1.0,
+          "tecs_spdweight_live": 1.0,
+          "source": "AP_TECS.cpp:1003,1024,1027-1028"
+        },
+        "gravity_used_m_s2": 9.81,
+        "gravity_ardupilot_internal_m_s2": 9.80665,
+        "SPE_J_per_kg": {
+          "min": 965.9158473836571,
+          "max": 990.3625835588824,
+          "mean": 977.8161164379211,
+          "std": 5.773531866841597,
+          "n": 576
+        },
+        "SKE_J_per_kg": {
+          "min": 145.47324339275167,
+          "max": 179.07009588692804,
+          "mean": 161.1543014139085,
+          "std": 7.758118439886597,
+          "n": 576
+        },
+        "STE_J_per_kg": {
+          "min": 1134.4409575728776,
+          "max": 1145.5386225410543,
+          "mean": 1138.9704178518296,
+          "std": 2.5376853471977103,
+          "n": 576
+        },
+        "SEB_J_per_kg": {
+          "min": 786.9459159432189,
+          "max": 844.6080510111196,
+          "mean": 816.6618150240122,
+          "std": 13.438909813229122,
+          "n": 576
+        },
+        "TAS_ms": {
+          "min": 17.057153537020863,
+          "max": 18.924592248549402,
+          "mean": 17.94775779832454,
+          "std": 0.4319639342556275,
+          "n": 576
+        },
+        "vz_regression_ms": 0.0003325373461377623,
+        "vz_vfr_hud_mean_ms": 0.020086593557304393,
+        "dTAS_dt_ms2": -0.003212628750682533,
+        "SPEdot_W_per_kg": 0.0032621913656114485,
+        "SKEdot_W_per_kg": -0.05765948271318406,
+        "STEdot_W_per_kg": -0.05439729134757261,
+        "SEBdot_W_per_kg": 0.06092167407879551,
+        "STEdot_endpoint_W_per_kg": -0.06430136466792923,
+        "STE_change_over_window_J_per_kg": -1.925094189415404,
+        "potential_fraction_of_STEdot": -0.0599697390218864,
+        "kinetic_fraction_of_STEdot": 1.0599697390218863,
+        "kinetic_over_potential_abs": 17.67507673553561,
+        "thrust_total_N_mean": 5.1370978302874395,
+        "drag_N_mean": 5.163341892878467,
+        "propulsive_excess_power_W_per_kg": -0.07850367983797225,
+        "propulsive_vs_STEdot_residual_W_per_kg": -0.024106388490399644,
+        "propulsive_note": "REPORT-ONLY. D is the aero plugin's qbar*S*CD diagnostic and the descent is affected by PROPULSION_HIGH_J_WINDMILLING (thrust floored at 0 N above the APC table's last J), which biases exactly this comparison. Not a gating criterion."
+      },
+      "high_j": {
+        "limitation_id": "PROPULSION_HIGH_J_WINDMILLING",
+        "status": "OPEN_LIMITATION",
+        "owner": "propulsion",
+        "detail": "APC 13x6.5E Ct/Cp table has no windmilling data above the zero-thrust advance ratio. Ct is clamped to the table end, so thrust is floored at 0 N where a real fixed-pitch prop would produce NEGATIVE thrust. The simulated descent is therefore less draggy than reality. DATA_REQUIRED: measured or extrapolated APC 13x6.5E Ct/Cp for J beyond zero-thrust.",
+        "effect_on_this_stage": "Descent DIRECTION, controllability, settling and energy bookkeeping remain valid. The ABSOLUTE descent drag/sink performance is NOT high-fidelity real-aircraft truth. NOT a blocker for this stage.",
+        "motor_samples": 1152,
+        "interp_clamped_samples": 0,
+        "interp_clamped_fraction": 0.0,
+        "zero_thrust_samples": 0,
+        "advance_ratio_J": {
+          "min": 0.5237172183824041,
+          "max": 0.5780656582234183,
+          "mean": 0.5466167429229739,
+          "std": 0.013093321334906101,
+          "n": 1152
+        }
+      },
+      "ap_target_alt_rel_m": {
+        "label": "ap_target_alt_rel",
+        "n": 576,
+        "mean": 99.68999999920919,
+        "std": 2.0493745523190172e-08,
+        "min": 99.68999992370605,
+        "max": 99.69000008106232,
+        "slope_per_s": 2.855896635532294e-11,
+        "drift_over_window": 8.550160711248983e-10,
+        "endpoint_delta": 2.503395535313757e-08,
+        "t_start": 63.76556873321533,
+        "t_end": 93.70418977737427
+      },
+      "ap_alt_rel_m": {
+        "min": 98.46,
+        "max": 100.95,
+        "mean": 99.66980902777783,
+        "std": 0.5883237118445069,
+        "n": 576
+      },
+      "ap_height_error_m": {
+        "min": -1.2599999904632568,
+        "max": 1.2300000190734863,
+        "mean": 0.020190971431374136,
+        "std": 0.5883236981395695,
+        "n": 576
+      },
+      "gz_z_minus_ap_relative_alt_m": {
+        "min": -0.05168436684266453,
+        "max": 0.07220502881479263,
+        "mean": 0.005636072927730471,
+        "std": 0.01627025702214123,
+        "n": 576
+      },
+      "elevator_deg": {
+        "label": "elevator_deg",
+        "n": 576,
+        "mean": 4.421973969361101,
+        "std": 0.7008812299073987,
+        "min": 2.8927683168069294,
+        "max": 5.943706246810077,
+        "slope_per_s": -0.00126338589446111,
+        "drift_over_window": -0.037824031526806946,
+        "endpoint_delta": -1.533508216832459,
+        "t_start": 63.76556873321533,
+        "t_end": 93.70418977737427
+      }
+    },
+    "P5_resettle_hold": {
+      "label": "P5_resettle_hold",
+      "n": 575,
+      "t_start": 113.02267336845398,
+      "t_end": 142.9624960422516,
+      "duration_s": 29.939822673797607,
+      "airspeed_vfr_hud_ms": {
+        "label": "airspeed_vfr_hud",
+        "n": 575,
+        "mean": 17.916526343304177,
+        "std": 0.18837417845989166,
+        "min": 17.45746612548828,
+        "max": 18.33418083190918,
+        "slope_per_s": 0.001277851568489683,
+        "drift_over_window": 0.03825864936401525,
+        "endpoint_delta": 0.14009857177734375,
+        "t_start": 113.02267336845398,
+        "t_end": 142.9624960422516
+      },
+      "airspeed_aero_diag_V_ms": {
+        "min": 17.453197778177465,
+        "max": 18.312583165902964,
+        "mean": 17.91733115923587,
+        "std": 0.19265788800466876,
+        "n": 575
+      },
+      "groundspeed_ms": {
+        "min": 17.453413009643555,
+        "max": 18.312143325805664,
+        "mean": 17.915150312340778,
+        "std": 0.19261536917633346,
+        "n": 575
+      },
+      "tecs_target_airspeed_ms": {
+        "min": 17.84490966796875,
+        "max": 17.99320411682129,
+        "mean": 17.92032909559167,
+        "std": 0.02800661226271549,
+        "n": 575
+      },
+      "groundspeed_minus_airspeed_max_abs_ms": 0.20865631103515625,
+      "altitude_gz_m": {
+        "label": "altitude_gz",
+        "n": 575,
+        "mean": 88.52178865828216,
+        "std": 0.2558710382073766,
+        "min": 87.87186844550322,
+        "max": 88.87863030933566,
+        "slope_per_s": 0.008534198715479897,
+        "drift_over_window": 0.25551239620441946,
+        "endpoint_delta": 0.01673308868188883,
+        "t_start": 113.02267336845398,
+        "t_end": 142.9624960422516
+      },
+      "vertical_speed_regression_ms": 0.008534198715479897,
+      "vertical_speed_endpoint_ms": 0.0005588907076772069,
+      "altitude_p2p_m": 1.0067618638324376,
+      "vfr_hud_climb_ms": {
+        "min": -0.5472773313522339,
+        "max": 0.5516323447227478,
+        "mean": 0.00046905237889424586,
+        "std": 0.26950548574518146,
+        "n": 575
+      },
+      "mav_relative_alt_m": {
+        "min": 87.87,
+        "max": 88.87,
+        "mean": 88.51702608695659,
+        "std": 0.2560082016644602,
+        "n": 575
+      },
+      "nav_alt_error_m": {
+        "min": -0.2800000011920929,
+        "max": 0.7199999690055847,
+        "mean": 0.07297391083577405,
+        "std": 0.25600819509127914,
+        "n": 575
+      },
+      "pitch_physical_noseup_deg": {
+        "label": "pitch_physical",
+        "n": 575,
+        "mean": 2.664642078868016,
+        "std": 0.8139004083453328,
+        "min": 1.00986717660455,
+        "max": 4.322075309979195,
+        "slope_per_s": 0.005708304796016761,
+        "drift_over_window": 0.17090563336073025,
+        "endpoint_delta": -1.8716822084199896,
+        "t_start": 113.02267336845398,
+        "t_end": 142.9624960422516
+      },
+      "pitch_demand_physical_deg": {
+        "min": 0.49000000953674316,
+        "max": 4.230000019073486,
+        "mean": 2.645321745759119,
+        "std": 0.8996614743747666,
+        "n": 575
+      },
+      "nav_pitch_raw_tecs_demand_deg": {
+        "min": -2.0,
+        "max": 1.7400000095367432,
+        "mean": 0.155321736222376,
+        "std": 0.8996614743747667,
+        "n": 575
+      },
+      "pitch_mav_reported_deg": {
+        "min": -1.4789931546186939,
+        "max": 1.8325164889825607,
+        "mean": 0.1744385171667726,
+        "std": 0.8139190912809755,
+        "n": 575
+      },
+      "pitch_rate_q_gz_deg_s": {
+        "min": -1.983341493340916,
+        "max": 2.332094758191837,
+        "mean": 0.06189990874677819,
+        "std": 0.9639468290337443,
+        "n": 575
+      },
+      "alpha_aero_diag_deg": {
+        "min": 2.4009051004539312,
+        "max": 2.9017864466485617,
+        "mean": 2.665027543472257,
+        "std": 0.12215114739889596,
+        "n": 575
+      },
+      "pitch_minus_alpha_minus_gamma_deg": {
+        "min": -0.10149350183534445,
+        "max": 0.06714202009012582,
+        "mean": 0.00012090949392799334,
+        "std": 0.024460871721607096,
+        "n": 575
+      },
+      "throttle_actual": {
+        "label": "throttle_actual",
+        "n": 575,
+        "mean": 0.49082695652173947,
+        "std": 0.00952534670590395,
+        "min": 0.474,
+        "max": 0.514,
+        "slope_per_s": -0.000123878327620081,
+        "drift_over_window": -0.0037088951620718297,
+        "endpoint_delta": 0.013000000000000012,
+        "t_start": 113.02267336845398,
+        "t_end": 142.9624960422516
+      },
+      "throttle_L": {
+        "min": 0.474,
+        "max": 0.514,
+        "mean": 0.490801739130435,
+        "std": 0.0095321331396921,
+        "n": 575
+      },
+      "throttle_R": {
+        "min": 0.474,
+        "max": 0.514,
+        "mean": 0.4908521739130436,
+        "std": 0.009519813186202207,
+        "n": 575
+      },
+      "throttle_LR_asymmetry_max": 0.0010000000000000009,
+      "throttle_vfr_hud_pct": {
+        "min": 47,
+        "max": 51,
+        "mean": 48.603478260869565,
+        "std": 0.986511679102511,
+        "n": 575
+      },
+      "motor_left_rpm": {
+        "min": 5780.930848601475,
+        "max": 6222.624516477948,
+        "mean": 5969.451146506207,
+        "std": 106.7508765999241,
+        "n": 575
+      },
+      "motor_left_thrust_N": {
+        "min": 2.177290761938456,
+        "max": 3.25699994672657,
+        "mean": 2.594047139097235,
+        "std": 0.24297183218654184,
+        "n": 575
+      },
+      "motor_right_rpm": {
+        "min": 5782.619354193112,
+        "max": 6222.640845537095,
+        "mean": 5970.002109644493,
+        "std": 106.64716152012139,
+        "n": 575
+      },
+      "motor_right_thrust_N": {
+        "min": 2.1768460514711947,
+        "max": 3.256605857281007,
+        "mean": 2.5955194152478978,
+        "std": 0.24272014869469952,
+        "n": 575
+      },
+      "thrust_total_N": {
+        "min": 4.354136813409651,
+        "max": 6.513605804007577,
+        "mean": 5.189566554345132,
+        "std": 0.4856550988717675,
+        "n": 575
+      },
+      "drag_qbar_S_CD_N": {
+        "min": 4.78512745732837,
+        "max": 5.437886487839453,
+        "mean": 5.122992657449711,
+        "std": 0.15141944559836007,
+        "n": 575
+      },
+      "thrust_minus_drag_N": 0.06657389689542104,
+      "lift_over_weight": 0.9938748344231705,
+      "specific_energy_rate_W_per_kg": 0.027496065126630522,
+      "dV_dt_ms2": 0.001277851568489683,
+      "surfaces": {
+        "left_aileron": {
+          "cmd_deg": {
+            "min": 0.0,
+            "max": 0.06428571428591892,
+            "mean": 0.0012298136646001878,
+            "std": 0.008806077913450934,
+            "n": 575
+          },
+          "actual_deg": {
+            "min": -0.15292275580170334,
+            "max": 0.14450734947632307,
+            "mean": -2.218568658709927e-05,
+            "std": 0.06853651678011145,
+            "n": 575
+          },
+          "max_abs_actual_deg": 0.15292275580170334
+        },
+        "right_aileron": {
+          "cmd_deg": {
+            "min": -0.06428571428591892,
+            "max": 0.0,
+            "mean": -0.0012298136646001878,
+            "std": 0.008806077913450934,
+            "n": 575
+          },
+          "actual_deg": {
+            "min": -0.16479275159451628,
+            "max": 0.14383507339931048,
+            "mean": -0.0022343930644754336,
+            "std": 0.06852170573573396,
+            "n": 575
+          },
+          "max_abs_actual_deg": 0.16479275159451628
+        },
+        "left_elevator": {
+          "cmd_deg": {
+            "min": 3.664285714297618,
+            "max": 5.142857142873853,
+            "mean": 4.3757888198899835,
+            "std": 0.35780072792703826,
+            "n": 575
+          },
+          "actual_deg": {
+            "min": 3.7338616306248342,
+            "max": 5.002851116696438,
+            "mean": 4.371684388741538,
+            "std": 0.2960274971158582,
+            "n": 575
+          },
+          "max_abs_actual_deg": 5.002851116696438
+        },
+        "right_elevator": {
+          "cmd_deg": {
+            "min": 3.664285714297618,
+            "max": 5.142857142873853,
+            "mean": 4.3757888198899835,
+            "std": 0.35780072792703826,
+            "n": 575
+          },
+          "actual_deg": {
+            "min": 3.733864074139699,
+            "max": 5.007011873866352,
+            "mean": 4.371682977954477,
+            "std": 0.29603145257697583,
+            "n": 575
+          },
+          "max_abs_actual_deg": 5.007011873866352
+        },
+        "rudder": {
+          "cmd_deg": {
+            "min": 0.0,
+            "max": 0.0,
+            "mean": 0.0,
+            "std": 0.0,
+            "n": 575
+          },
+          "actual_deg": {
+            "min": -0.0027949328082086137,
+            "max": 0.0025569068234757085,
+            "mean": -1.1952814466142462e-05,
+            "std": 0.000685420527315631,
+            "n": 575
+          },
+          "max_abs_actual_deg": 0.0027949328082086137
+        }
+      },
+      "elevator_max_abs_deg": 5.007011873866352,
+      "lateral_surface_max_abs_deg": 0.16479275159451628,
+      "actuator_clamp": {
+        "target_clamp_active_samples": 0,
+        "effort_clamp_active_samples": 0
+      },
+      "roll_gz_deg": {
+        "min": -0.08230395927554628,
+        "max": -0.05098647210031709,
+        "mean": -0.0674699106631009,
+        "std": 0.007507756578393942,
+        "n": 575
+      },
+      "nav_roll_demand_deg": {
+        "min": 0.0,
+        "max": 0.0,
+        "mean": 0.0,
+        "std": 0.0,
+        "n": 575
+      },
+      "custom_modes_seen": [
+        6
+      ],
+      "all_fbwb": true,
+      "oscillation_growth": {
+        "altitude": {
+          "n": 575,
+          "resid_std_first_half": 0.3058543566633907,
+          "resid_std_second_half": 0.162892281310761,
+          "resid_p2p_first_half": 0.980147596193433,
+          "resid_p2p_second_half": 0.5853441915768087,
+          "ratio_second_over_first": 0.5325812033144677,
+          "growing": false
+        },
+        "airspeed": {
+          "n": 575,
+          "resid_std_first_half": 0.23358697194026493,
+          "resid_std_second_half": 0.12729448214148914,
+          "resid_p2p_first_half": 0.872905220745622,
+          "resid_p2p_second_half": 0.5051000076496237,
+          "ratio_second_over_first": 0.5449554017680494,
+          "growing": false
+        },
+        "pitch_physical": {
+          "n": 575,
+          "resid_std_first_half": 0.9974101192762719,
+          "resid_std_second_half": 0.5677248641424508,
+          "resid_p2p_first_half": 3.2963219607817376,
+          "resid_p2p_second_half": 1.9785025600312542,
+          "ratio_second_over_first": 0.56919902171676,
+          "growing": false
+        },
+        "throttle": {
+          "n": 575,
+          "resid_std_first_half": 0.012099305248708838,
+          "resid_std_second_half": 0.005718641940604538,
+          "resid_p2p_first_half": 0.03982657938262296,
+          "resid_p2p_second_half": 0.020882315834560294,
+          "ratio_second_over_first": 0.4726421743277198,
+          "growing": false
+        }
+      },
+      "nan_inf_count": 0,
+      "nan_inf_samples": [],
+      "energy": {
+        "seb_weights": {
+          "w_SPE": 1.0,
+          "w_SKE": 1.0,
+          "tecs_spdweight_live": 1.0,
+          "source": "AP_TECS.cpp:1003,1024,1027-1028"
+        },
+        "gravity_used_m_s2": 9.81,
+        "gravity_ardupilot_internal_m_s2": 9.80665,
+        "SPE_J_per_kg": {
+          "min": 862.0230294503867,
+          "max": 871.8993633345829,
+          "mean": 868.3987467377472,
+          "std": 2.5100948848143623,
+          "n": 575
+        },
+        "SKE_J_per_kg": {
+          "min": 152.3070563420894,
+          "max": 167.67535110405632,
+          "mean": 160.53393646576734,
+          "std": 3.4502610479025946,
+          "n": 575
+        },
+        "STE_J_per_kg": {
+          "min": 1023.4202750701709,
+          "max": 1030.8927497526593,
+          "mean": 1028.9326832035129,
+          "std": 1.7008745264285676,
+          "n": 575
+        },
+        "SEB_J_per_kg": {
+          "min": 694.4387578230642,
+          "max": 718.8102691232226,
+          "mean": 707.8648102719804,
+          "std": 5.789367936505391,
+          "n": 575
+        },
+        "TAS_ms": {
+          "min": 17.453197778177465,
+          "max": 18.312583165902964,
+          "mean": 17.91733115923587,
+          "std": 0.19265788800466876,
+          "n": 575
+        },
+        "vz_regression_ms": 0.008534198715479897,
+        "vz_vfr_hud_mean_ms": 0.00046905237889424586,
+        "dTAS_dt_ms2": 0.0010818262081999832,
+        "SPEdot_W_per_kg": 0.0837204893988578,
+        "SKEdot_W_per_kg": 0.01938343842905955,
+        "STEdot_W_per_kg": 0.10310392782791736,
+        "SEBdot_W_per_kg": 0.06433705096979825,
+        "STEdot_endpoint_W_per_kg": 0.1862633290051104,
+        "STE_change_over_window_J_per_kg": 5.576691041044228,
+        "potential_fraction_of_STEdot": 0.812000969920264,
+        "kinetic_fraction_of_STEdot": 0.18799903007973587,
+        "kinetic_over_potential_abs": 0.23152562255953557,
+        "thrust_total_N_mean": 5.189566554345132,
+        "drag_N_mean": 5.122992657449711,
+        "propulsive_excess_power_W_per_kg": 0.19880442620601393,
+        "propulsive_vs_STEdot_residual_W_per_kg": 0.09570049837809658,
+        "propulsive_note": "REPORT-ONLY. D is the aero plugin's qbar*S*CD diagnostic and the descent is affected by PROPULSION_HIGH_J_WINDMILLING (thrust floored at 0 N above the APC table's last J), which biases exactly this comparison. Not a gating criterion."
+      },
+      "high_j": {
+        "limitation_id": "PROPULSION_HIGH_J_WINDMILLING",
+        "status": "OPEN_LIMITATION",
+        "owner": "propulsion",
+        "detail": "APC 13x6.5E Ct/Cp table has no windmilling data above the zero-thrust advance ratio. Ct is clamped to the table end, so thrust is floored at 0 N where a real fixed-pitch prop would produce NEGATIVE thrust. The simulated descent is therefore less draggy than reality. DATA_REQUIRED: measured or extrapolated APC 13x6.5E Ct/Cp for J beyond zero-thrust.",
+        "effect_on_this_stage": "Descent DIRECTION, controllability, settling and energy bookkeeping remain valid. The ABSOLUTE descent drag/sink performance is NOT high-fidelity real-aircraft truth. NOT a blocker for this stage.",
+        "motor_samples": 1150,
+        "interp_clamped_samples": 0,
+        "interp_clamped_fraction": 0.0,
+        "zero_thrust_samples": 0,
+        "advance_ratio_J": {
+          "min": 0.5293818873742812,
+          "max": 0.555311071089152,
+          "mean": 0.5448744715872946,
+          "std": 0.005846403751068606,
+          "n": 1150
+        }
+      },
+      "ap_target_alt_rel_m": {
+        "label": "ap_target_alt_rel",
+        "n": 575,
+        "mean": 88.58999999779236,
+        "std": 9.056577441197511e-09,
+        "min": 88.58999995708466,
+        "max": 88.59000001907349,
+        "slope_per_s": 2.094210950227539e-10,
+        "drift_over_window": 6.2700304491337705e-09,
+        "endpoint_delta": 2.3096760060070665e-09,
+        "t_start": 113.02267336845398,
+        "t_end": 142.9624960422516
+      },
+      "ap_alt_rel_m": {
+        "min": 87.87,
+        "max": 88.87,
+        "mean": 88.51702608695659,
+        "std": 0.2560082016644602,
+        "n": 575
+      },
+      "ap_height_error_m": {
+        "min": -0.2800000011920929,
+        "max": 0.7199999690055847,
+        "mean": 0.07297391083577405,
+        "std": 0.25600819509127914,
+        "n": 575
+      },
+      "gz_z_minus_ap_relative_alt_m": {
+        "min": -0.022383123044960485,
+        "max": 0.032853101187541256,
+        "mean": 0.0047625713255578595,
+        "std": 0.007918409385362925,
+        "n": 575
+      },
+      "elevator_deg": {
+        "label": "elevator_deg",
+        "n": 575,
+        "mean": 4.371683683348009,
+        "std": 0.29602889808163707,
+        "min": 3.7338628523822663,
+        "max": 5.0049314952813955,
+        "slope_per_s": 0.00084751031598459,
+        "drift_over_window": 0.025374308574792805,
+        "endpoint_delta": 0.5401577407994216,
+        "t_start": 113.02267336845398,
+        "t_end": 142.9624960422516
+      }
+    },
+    "settling": {
+      "P3_settle": {
+        "label": "P3_settle",
+        "band_m": 1.5,
+        "speed_band_ms": 0.5,
+        "tail_s": 10.0,
+        "settle_limit_basis": "AMPLITUDE-NORMALISED, derived per phase: t_limit = t_peak + T/2 + K*TAU_REF*ln(A0/B), TAU_REF = V*(L/D)/g (free-airframe Lanchester phugoid envelope), K = TH_SETTLE_TAU_MARGIN_K. Replaces the withdrawn fixed 25 s limit (validation V-1).",
+        "settle_tau_margin_k": 1.0,
+        "altitude_settled_m": 99.68322823061841,
+        "airspeed_settled_ms": 17.89933208624522,
+        "settling_time_altitude_s": 8.485944271087646,
+        "settling_time_airspeed_s": 25.26861023902893,
+        "settling_time_s": 25.26861023902893,
+        "settling_binding_channel": "airspeed",
+        "settled_within_segment": true,
+        "initial_altitude_excursion_m": 3.354221998069278,
+        "initial_airspeed_excursion_ms": 1.5980968077977487,
+        "initial_altitude_excursion_time_s": 2.1318256855010986,
+        "initial_airspeed_excursion_time_s": 5.406965255737305,
+        "decay": {
+          "altitude": {
+            "n": 576,
+            "resid_std_first_half": 0.7405435551627502,
+            "resid_std_second_half": 0.37928742752648104,
+            "resid_p2p_first_half": 2.49108818814544,
+            "resid_p2p_second_half": 1.3616058499474377,
+            "ratio_second_over_first": 0.5121743682491768,
+            "growing": false
+          },
+          "airspeed": {
+            "n": 576,
+            "resid_std_first_half": 0.5113918711094655,
+            "resid_std_second_half": 0.2857434956198297,
+            "resid_p2p_first_half": 1.8082272506168806,
+            "resid_p2p_second_half": 1.0300678705161062,
+            "ratio_second_over_first": 0.5587564288026494,
+            "growing": false
+          },
+          "pitch_physical": {
+            "n": 576,
+            "resid_std_first_half": 2.3578532829383585,
+            "resid_std_second_half": 1.3101988312144799,
+            "resid_p2p_first_half": 7.998947465133792,
+            "resid_p2p_second_half": 4.465483439078766,
+            "ratio_second_over_first": 0.5556744521362708,
+            "growing": false
+          },
+          "throttle": {
+            "n": 576,
+            "resid_std_first_half": 0.027901036762103693,
+            "resid_std_second_half": 0.013578686911282459,
+            "resid_p2p_first_half": 0.09524569785667547,
+            "resid_p2p_second_half": 0.045243537506560405,
+            "ratio_second_over_first": 0.4866732023996175,
+            "growing": false
+          }
+        },
+        "decay_ratios": {
+          "altitude": 0.5121743682491768,
+          "airspeed": 0.5587564288026494,
+          "pitch_physical": 0.5556744521362708,
+          "throttle": 0.4866732023996175
+        },
+        "decay_ratio_max": 0.5587564288026494,
+        "all_channels_decaying": true,
+        "decay_ratio_threshold": 0.9,
+        "phugoid_estimate_altitude": {
+          "n": 576,
+          "n_extrema": 11,
+          "period_s": 5.632851219177246,
+          "amplitude_ratio_per_half_cycle": 0.8969938841207968,
+          "amplitude_ratio_per_cycle": 0.8045980281501135,
+          "damping_ratio_zeta": 0.03458157296043258,
+          "first_amplitude": 1.208326467134981,
+          "last_amplitude": 0.3913834285343114,
+          "note": "REPORT_ONLY log-decrement estimate; not an acceptance criterion"
+        },
+        "phugoid_reference_free_airframe": {
+          "label": "P3_settle",
+          "window": "t_seg >= 10.0 s",
+          "n_samples": 576,
+          "model": "Lanchester phugoid: tau = V*(L/D)/g, T = pi*sqrt(2)*V/g",
+          "assumption": "PHUGOID_REFERENCE_IS_LANCHESTER",
+          "gravity_m_s2": 9.81,
+          "V_ms": 17.94775779832454,
+          "CL": 0.661142367336489,
+          "CD": 0.05788941170587699,
+          "L_over_D_aero": 11.420782278728343,
+          "zeta_free_airframe": 0.06191404090624876,
+          "omega_n_rad_s": 0.77298987443296,
+          "tau_ref_s": 20.89474354801359,
+          "T_ref_s": 8.128418644278783,
+          "thrust_N_mean": 5.1370978302874395,
+          "L_over_D_thrust_crosscheck": 11.457831239454237,
+          "crosscheck_note": "REPORT ONLY - level-flight identity L/D = m*g/T. Thrust is affected by PROPULSION_HIGH_J_WINDMILLING and never gates."
+        },
+        "settle_period_used_s": 5.632851219177246,
+        "settle_period_source": "measured closed-loop period (log-decrement extrema spacing)",
+        "tau_ref_s": 20.89474354801359,
+        "settle_limits": {
+          "altitude": {
+            "A0": 3.354221998069278,
+            "t_peak_s": 2.1318256855010986,
+            "band": 1.5,
+            "settling_time_s": 8.485944271087646,
+            "ln_A0_over_B": 0.8047547421511358,
+            "limit_s": 21.763395251385507,
+            "tau_implied_s": 4.395988977389006,
+            "tau_limit_s": 20.89474354801359,
+            "ok": true,
+            "margin_s": 13.27745098029786,
+            "limit_exceeds_observable_window": false,
+            "observable_window_s": 30.0
+          },
+          "airspeed": {
+            "A0": 1.5980968077977487,
+            "t_peak_s": 5.406965255737305,
+            "band": 0.5,
+            "settling_time_s": 25.26861023902893,
+            "ln_A0_over_B": 1.1619606066684398,
+            "limit_s": 32.50225975455727,
+            "tau_implied_s": 14.66936079922267,
+            "tau_limit_s": 20.89474354801359,
+            "ok": true,
+            "margin_s": 7.233649515528342,
+            "limit_exceeds_observable_window": true,
+            "observable_window_s": 30.0
+          }
+        },
+        "settle_time_limit_s": 32.50225975455727,
+        "settled_within_limit": true
+      },
+      "P5_resettle": {
+        "label": "P5_resettle",
+        "band_m": 1.5,
+        "speed_band_ms": 0.5,
+        "tail_s": 10.0,
+        "settle_limit_basis": "AMPLITUDE-NORMALISED, derived per phase: t_limit = t_peak + T/2 + K*TAU_REF*ln(A0/B), TAU_REF = V*(L/D)/g (free-airframe Lanchester phugoid envelope), K = TH_SETTLE_TAU_MARGIN_K. Replaces the withdrawn fixed 25 s limit (validation V-1).",
+        "settle_tau_margin_k": 1.0,
+        "altitude_settled_m": 88.5890842053225,
+        "airspeed_settled_ms": 17.929909351608515,
+        "settling_time_altitude_s": 3.983968734741211,
+        "settling_time_airspeed_s": 6.871028661727905,
+        "settling_time_s": 6.871028661727905,
+        "settling_binding_channel": "airspeed",
+        "settled_within_segment": true,
+        "initial_altitude_excursion_m": 2.9222923346171967,
+        "initial_airspeed_excursion_ms": 1.1081644327852729,
+        "initial_altitude_excursion_time_s": 2.303929567337036,
+        "initial_airspeed_excursion_time_s": 5.561908960342407,
+        "decay": {
+          "altitude": {
+            "n": 575,
+            "resid_std_first_half": 0.3058543566633907,
+            "resid_std_second_half": 0.162892281310761,
+            "resid_p2p_first_half": 0.980147596193433,
+            "resid_p2p_second_half": 0.5853441915768087,
+            "ratio_second_over_first": 0.5325812033144677,
+            "growing": false
+          },
+          "airspeed": {
+            "n": 575,
+            "resid_std_first_half": 0.23358697194026493,
+            "resid_std_second_half": 0.12729448214148914,
+            "resid_p2p_first_half": 0.872905220745622,
+            "resid_p2p_second_half": 0.5051000076496237,
+            "ratio_second_over_first": 0.5449554017680494,
+            "growing": false
+          },
+          "pitch_physical": {
+            "n": 575,
+            "resid_std_first_half": 0.9974101192762719,
+            "resid_std_second_half": 0.5677248641424508,
+            "resid_p2p_first_half": 3.2963219607817376,
+            "resid_p2p_second_half": 1.9785025600312542,
+            "ratio_second_over_first": 0.56919902171676,
+            "growing": false
+          },
+          "throttle": {
+            "n": 575,
+            "resid_std_first_half": 0.012099305248708838,
+            "resid_std_second_half": 0.005718641940604538,
+            "resid_p2p_first_half": 0.03982657938262296,
+            "resid_p2p_second_half": 0.020882315834560294,
+            "ratio_second_over_first": 0.4726421743277198,
+            "growing": false
+          }
+        },
+        "decay_ratios": {
+          "altitude": 0.5325812033144677,
+          "airspeed": 0.5449554017680494,
+          "pitch_physical": 0.56919902171676,
+          "throttle": 0.4726421743277198
+        },
+        "decay_ratio_max": 0.56919902171676,
+        "all_channels_decaying": true,
+        "decay_ratio_threshold": 0.9,
+        "phugoid_estimate_altitude": {
+          "n": 575,
+          "n_extrema": 11,
+          "period_s": 5.614236068725586,
+          "amplitude_ratio_per_half_cycle": 0.9146900439454384,
+          "amplitude_ratio_per_cycle": 0.836657876492908,
+          "damping_ratio_zeta": 0.02837227265964823,
+          "first_amplitude": 0.39889123376394764,
+          "last_amplitude": 0.12614988164199303,
+          "note": "REPORT_ONLY log-decrement estimate; not an acceptance criterion"
+        },
+        "phugoid_reference_free_airframe": {
+          "label": "P5_resettle",
+          "window": "t_seg >= 10.0 s",
+          "n_samples": 575,
+          "model": "Lanchester phugoid: tau = V*(L/D)/g, T = pi*sqrt(2)*V/g",
+          "assumption": "PHUGOID_REFERENCE_IS_LANCHESTER",
+          "gravity_m_s2": 9.81,
+          "V_ms": 17.91733115923587,
+          "CL": 0.6588732954269728,
+          "CD": 0.05770217826900229,
+          "L_over_D_aero": 11.41851686006316,
+          "zeta_free_airframe": 0.06192632457019783,
+          "omega_n_rad_s": 0.774302541130893,
+          "tau_ref_s": 20.855183275134536,
+          "T_ref_s": 8.11463862433255,
+          "thrust_N_mean": 5.189566554345132,
+          "L_over_D_thrust_crosscheck": 11.341987694659695,
+          "crosscheck_note": "REPORT ONLY - level-flight identity L/D = m*g/T. Thrust is affected by PROPULSION_HIGH_J_WINDMILLING and never gates."
+        },
+        "settle_period_used_s": 5.614236068725586,
+        "settle_period_source": "measured closed-loop period (log-decrement extrema spacing)",
+        "tau_ref_s": 20.855183275134536,
+        "settle_limits": {
+          "altitude": {
+            "A0": 2.9222923346171967,
+            "t_peak_s": 2.303929567337036,
+            "band": 1.5,
+            "settling_time_s": 3.983968734741211,
+            "ln_A0_over_B": 0.6669032462862938,
+            "limit_s": 19.019437029782672,
+            "tau_implied_s": -1.690018564514194,
+            "tau_limit_s": 20.855183275134536,
+            "ok": true,
+            "margin_s": 15.035468295041461,
+            "tau_implied_note": "NEGATIVE = the band was re-entered within half a period of the peak, i.e. faster than the quantisation allowance of the last-exit statistic. The normalised envelope constant is not resolvable here; the channel trivially satisfies the limit.",
+            "limit_exceeds_observable_window": false,
+            "observable_window_s": 30.0
+          },
+          "airspeed": {
+            "A0": 1.1081644327852729,
+            "t_peak_s": 5.561908960342407,
+            "band": 0.5,
+            "settling_time_s": 6.871028661727905,
+            "ln_A0_over_B": 0.7958521629149586,
+            "limit_s": 24.96666971220889,
+            "tau_implied_s": -1.8822570356416368,
+            "tau_limit_s": 20.855183275134536,
+            "ok": true,
+            "margin_s": 18.095641050480985,
+            "tau_implied_note": "NEGATIVE = the band was re-entered within half a period of the peak, i.e. faster than the quantisation allowance of the last-exit statistic. The normalised envelope constant is not resolvable here; the channel trivially satisfies the limit.",
+            "limit_exceeds_observable_window": false,
+            "observable_window_s": 30.0
+          }
+        },
+        "settle_time_limit_s": 24.96666971220889,
+        "settled_within_limit": true
+      }
+    },
+    "whole_flight": {
+      "n_samples": 2746,
+      "duration_s": 142.9591965675354,
+      "throttle_range": 0.39799999999999996,
+      "throttle_min": 0.18,
+      "throttle_max": 0.578,
+      "thr_min_param": 0.0,
+      "thr_max_param": 1.0,
+      "throttle_sat_high_longest_run_s": 0.0,
+      "throttle_sat_low_longest_run_s": 0.0,
+      "elevator_max_abs_deg": 6.333634314223633,
+      "surface_travel_limit_deg": 45.0,
+      "surface_limit_margin_deg": 5.0,
+      "lateral_surface_max_abs_deg": 0.5250216199751772,
+      "airspeed_min_ms": 16.650882720947266,
+      "airspeed_max_ms": 19.49742889404297,
+      "high_j": {
+        "limitation_id": "PROPULSION_HIGH_J_WINDMILLING",
+        "status": "OPEN_LIMITATION",
+        "owner": "propulsion",
+        "detail": "APC 13x6.5E Ct/Cp table has no windmilling data above the zero-thrust advance ratio. Ct is clamped to the table end, so thrust is floored at 0 N where a real fixed-pitch prop would produce NEGATIVE thrust. The simulated descent is therefore less draggy than reality. DATA_REQUIRED: measured or extrapolated APC 13x6.5E Ct/Cp for J beyond zero-thrust.",
+        "effect_on_this_stage": "Descent DIRECTION, controllability, settling and energy bookkeeping remain valid. The ABSOLUTE descent drag/sink performance is NOT high-fidelity real-aircraft truth. NOT a blocker for this stage.",
+        "motor_samples": 5492,
+        "interp_clamped_samples": 198,
+        "interp_clamped_fraction": 0.03605243991260015,
+        "zero_thrust_samples": 190,
+        "advance_ratio_J": {
+          "min": 0.47007289025660925,
+          "max": 1.9825060232547875,
+          "mean": 0.55235897496924,
+          "std": 0.05455583363054802,
+          "n": 5492
+        }
+      }
+    },
+    "tecs_authority": {
+      "rc3_pwm_us": 1258,
+      "manual_passthrough_equivalent_throttle": 0.1975,
+      "measured_throttle_mean_P1_hold": 0.49085624012638307,
+      "abs_delta": 0.29335624012638306,
+      "note": "In FBWB the throttle stick sets target AIRSPEED (ArduPlane/navigation.cpp:187-189); throttle itself is TECS output (Attitude.cpp:510). A large delta proves TECS - not the stick - is the throttle authority."
+    },
+    "altitude_step": {
+      "commanded_step_m": 10.0,
+      "reference_altitude_m": 89.15421266728174,
+      "alt_P1_hold_mean_m": 89.15421266728174,
+      "alt_P3_hold_mean_m": 99.67544510070539,
+      "alt_P5_hold_mean_m": 88.52178865828216,
+      "achieved_climb_m": 10.521232433423648,
+      "achieved_descent_m": -11.153656442423227,
+      "roundtrip_residual_m": -0.6324240089995783,
+      "ap_target_P1_hold_m": 89.16999999897754,
+      "ap_target_P3_hold_m": 99.68999999920919,
+      "ap_target_P5_hold_m": 88.58999999779236,
+      "ap_target_climb_step_m": 10.520000000231647,
+      "ap_target_descent_step_m": -11.10000000141683,
+      "ap_target_roundtrip_residual_m": -0.5800000011851836,
+      "target_vs_actual_climb_gap_m": -0.001232433192001281,
+      "target_vs_actual_descent_gap_m": 0.053656441006395994,
+      "climb_ramp_duration_s": 8.719136238098145,
+      "descent_ramp_duration_s": 9.260583639144897,
+      "climb_ramp_stopped_early": true,
+      "descent_ramp_stopped_early": true,
+      "climb_ramp_stop_reason": "altitude >= 99.15 m for 3 consecutive samples",
+      "descent_ramp_stop_reason": "altitude <= original reference 89.15 m for 3 consecutive samples",
+      "note": "ap_target_* is ArduPlane's OWN height demand reconstructed from GLOBAL_POSITION_INT.relative_alt + NAV_CONTROLLER_OUTPUT.alt_error (see module docstring). It verifies that the FBWB stick ramp really moved the demand by ~+/-10 m rather than assuming it integrated."
+    },
+    "energy_management": {
+      "per_phase": {
+        "P1_cruise": {
+          "seb_weights": {
+            "w_SPE": 1.0,
+            "w_SKE": 1.0,
+            "tecs_spdweight_live": 1.0,
+            "source": "AP_TECS.cpp:1003,1024,1027-1028"
+          },
+          "gravity_used_m_s2": 9.81,
+          "gravity_ardupilot_internal_m_s2": 9.80665,
+          "SPE_J_per_kg": {
+            "min": 850.767079207527,
+            "max": 886.6289048813558,
+            "mean": 873.9233759914962,
+            "std": 6.471102070028395,
+            "n": 863
+          },
+          "SKE_J_per_kg": {
+            "min": 138.9753441363452,
+            "max": 185.84614476450867,
+            "mean": 160.4404214246754,
+            "std": 8.02112494867869,
+            "n": 863
+          },
+          "STE_J_per_kg": {
+            "min": 1024.6956553343864,
+            "max": 1038.204247567078,
+            "mean": 1034.3637974161713,
+            "std": 2.74928449162578,
+            "n": 863
+          },
+          "SEB_J_per_kg": {
+            "min": 665.1105353778503,
+            "max": 747.501653586907,
+            "mean": 713.482954566821,
+            "std": 14.313233375802591,
+            "n": 863
+          },
+          "TAS_ms": {
+            "min": 16.671853174518134,
+            "max": 19.279322849338286,
+            "mean": 17.907561713127873,
+            "std": 0.44729893792431263,
+            "n": 863
+          },
+          "vz_regression_ms": 0.011586551339277575,
+          "vz_vfr_hud_mean_ms": 0.006638656378165751,
+          "dTAS_dt_ms2": -0.0009816800740229717,
+          "SPEdot_W_per_kg": 0.11366406863831302,
+          "SKEdot_W_per_kg": -0.017579496508114304,
+          "STEdot_W_per_kg": 0.09608457213019872,
+          "SEBdot_W_per_kg": 0.13124356514642732,
+          "STEdot_endpoint_W_per_kg": -0.0402828583534056,
+          "STE_change_over_window_J_per_kg": -1.8124751619400286,
+          "potential_fraction_of_STEdot": 1.182958576162397,
+          "kinetic_fraction_of_STEdot": -0.18295857616239714,
+          "kinetic_over_potential_abs": 0.15466186208812818,
+          "thrust_total_N_mean": 5.12854923621293,
+          "drag_N_mean": 5.145331668032256,
+          "propulsive_excess_power_W_per_kg": -0.05008873891682398,
+          "propulsive_vs_STEdot_residual_W_per_kg": -0.1461733110470227,
+          "propulsive_note": "REPORT-ONLY. D is the aero plugin's qbar*S*CD diagnostic and the descent is affected by PROPULSION_HIGH_J_WINDMILLING (thrust floored at 0 N above the APC table's last J), which biases exactly this comparison. Not a gating criterion."
+        },
+        "P2_climb": {
+          "seb_weights": {
+            "w_SPE": 1.0,
+            "w_SKE": 1.0,
+            "tecs_spdweight_live": 1.0,
+            "source": "AP_TECS.cpp:1003,1024,1027-1028"
+          },
+          "gravity_used_m_s2": 9.81,
+          "gravity_ardupilot_internal_m_s2": 9.80665,
+          "SPE_J_per_kg": {
+            "min": 874.3047899444958,
+            "max": 975.5234646598818,
+            "mean": 911.2012479681476,
+            "std": 33.19048975233529,
+            "n": 168
+          },
+          "SKE_J_per_kg": {
+            "min": 149.88240809942303,
+            "max": 166.37660906714262,
+            "mean": 158.71736235992,
+            "std": 5.081246010690712,
+            "n": 168
+          },
+          "STE_J_per_kg": {
+            "min": 1034.6052449914014,
+            "max": 1136.1866363370857,
+            "mean": 1069.9186103280674,
+            "std": 30.940948171636286,
+            "n": 168
+          },
+          "SEB_J_per_kg": {
+            "min": 710.0229481404275,
+            "max": 814.860292982678,
+            "mean": 752.4838856082275,
+            "std": 36.021008707172335,
+            "n": 168
+          },
+          "TAS_ms": {
+            "min": 17.313717573035724,
+            "max": 18.24152455619555,
+            "mean": 17.81440479321903,
+            "std": 0.28584363413460395,
+            "n": 168
+          },
+          "vz_regression_ms": 1.3014849586689439,
+          "vz_vfr_hud_mean_ms": 1.153408639985303,
+          "dTAS_dt_ms2": -0.04851901657969992,
+          "SPEdot_W_per_kg": 12.76756744454234,
+          "SKEdot_W_per_kg": -0.8643374015196797,
+          "STEdot_W_per_kg": 11.90323004302266,
+          "SEBdot_W_per_kg": 13.631904846062021,
+          "STEdot_endpoint_W_per_kg": 11.648253774445969,
+          "STE_change_over_window_J_per_kg": 101.55848475764196,
+          "potential_fraction_of_STEdot": 1.072613685394271,
+          "kinetic_fraction_of_STEdot": -0.0726136853942708,
+          "kinetic_over_potential_abs": 0.06769789196525074,
+          "thrust_total_N_mean": 9.138726471036694,
+          "drag_N_mean": 5.206414936389668,
+          "propulsive_excess_power_W_per_kg": 11.67529824187441,
+          "propulsive_vs_STEdot_residual_W_per_kg": -0.22793180114824985,
+          "propulsive_note": "REPORT-ONLY. D is the aero plugin's qbar*S*CD diagnostic and the descent is affected by PROPULSION_HIGH_J_WINDMILLING (thrust floored at 0 N above the APC table's last J), which biases exactly this comparison. Not a gating criterion."
+        },
+        "P3_settle": {
+          "seb_weights": {
+            "w_SPE": 1.0,
+            "w_SKE": 1.0,
+            "tecs_spdweight_live": 1.0,
+            "source": "AP_TECS.cpp:1003,1024,1027-1028"
+          },
+          "gravity_used_m_s2": 9.81,
+          "gravity_ardupilot_internal_m_s2": 9.80665,
+          "SPE_J_per_kg": {
+            "min": 965.9158473836571,
+            "max": 1010.7973867434263,
+            "mean": 980.5600407896951,
+            "std": 9.366578886920987,
+            "n": 769
+          },
+          "SKE_J_per_kg": {
+            "min": 143.14186375187873,
+            "max": 190.64806055285038,
+            "mean": 161.11177159187247,
+            "std": 10.051997139775006,
+            "n": 769
+          },
+          "STE_J_per_kg": {
+            "min": 1134.4409575728776,
+            "max": 1159.3534810125532,
+            "mean": 1141.6718123815676,
+            "std": 6.237544835829865,
+            "n": 769
+          },
+          "SEB_J_per_kg": {
+            "min": 778.0327996505581,
+            "max": 867.5677045695596,
+            "mean": 819.44826919782,
+            "std": 18.402280497452765,
+            "n": 769
+          },
+          "TAS_ms": {
+            "min": 16.91992102534044,
+            "max": 19.526805194544774,
+            "mean": 17.941975488173647,
+            "std": 0.5559305401951702,
+            "n": 769
+          },
+          "vz_regression_ms": -0.03375734753985608,
+          "vz_vfr_hud_mean_ms": 0.0046289776305344695,
+          "dTAS_dt_ms2": -0.0003092327707160936,
+          "SPEdot_W_per_kg": -0.3311595793659881,
+          "SKEdot_W_per_kg": -0.005548246792328172,
+          "STEdot_W_per_kg": -0.3367078261583163,
+          "SEBdot_W_per_kg": -0.32561133257365993,
+          "STEdot_endpoint_W_per_kg": 0.10090206027005331,
+          "STE_change_over_window_J_per_kg": 4.034130191270378,
+          "potential_fraction_of_STEdot": 0.9835220735566762,
+          "kinetic_fraction_of_STEdot": 0.01647792644332374,
+          "kinetic_over_potential_abs": 0.016753997583130183,
+          "thrust_total_N_mean": 5.156528571492632,
+          "drag_N_mean": 5.127082459065087,
+          "propulsive_excess_power_W_per_kg": 0.08805357123283537,
+          "propulsive_vs_STEdot_residual_W_per_kg": 0.42476139739115165,
+          "propulsive_note": "REPORT-ONLY. D is the aero plugin's qbar*S*CD diagnostic and the descent is affected by PROPULSION_HIGH_J_WINDMILLING (thrust floored at 0 N above the APC table's last J), which biases exactly this comparison. Not a gating criterion."
+        },
+        "P4_descent": {
+          "seb_weights": {
+            "w_SPE": 1.0,
+            "w_SKE": 1.0,
+            "tecs_spdweight_live": 1.0,
+            "source": "AP_TECS.cpp:1003,1024,1027-1028"
+          },
+          "gravity_used_m_s2": 9.81,
+          "gravity_ardupilot_internal_m_s2": 9.80665,
+          "SPE_J_per_kg": {
+            "min": 871.942626190225,
+            "max": 980.738481166537,
+            "mean": 938.2737163450156,
+            "std": 35.312566223006215,
+            "n": 179
+          },
+          "SKE_J_per_kg": {
+            "min": 153.64805925183705,
+            "max": 172.28739101294354,
+            "mean": 163.63807640489003,
+            "std": 5.877745617762492,
+            "n": 179
+          },
+          "STE_J_per_kg": {
+            "min": 1039.4936015471217,
+            "max": 1140.124290619241,
+            "mean": 1101.9117927499058,
+            "std": 31.441522625874967,
+            "n": 179
+          },
+          "SEB_J_per_kg": {
+            "min": 704.3916508333284,
+            "max": 825.9207090523971,
+            "mean": 774.6356399401254,
+            "std": 39.67973170989496,
+            "n": 179
+          },
+          "TAS_ms": {
+            "min": 17.529863619083695,
+            "max": 18.56272560875388,
+            "mean": 18.087839734354183,
+            "std": 0.3258934704745903,
+            "n": 179
+          },
+          "vz_regression_ms": -1.3152603682871775,
+          "vz_vfr_hud_mean_ms": -1.1467940093033724,
+          "dTAS_dt_ms2": 0.0791270814818614,
+          "SPEdot_W_per_kg": -12.902704212897213,
+          "SKEdot_W_per_kg": 1.4312379684910936,
+          "STEdot_W_per_kg": -11.47146624440612,
+          "SEBdot_W_per_kg": -14.333942181388306,
+          "STEdot_endpoint_W_per_kg": -10.867062904270329,
+          "STE_change_over_window_J_per_kg": -100.63068907211937,
+          "potential_fraction_of_STEdot": 1.1247650420615598,
+          "kinetic_fraction_of_STEdot": -0.12476504206155986,
+          "kinetic_over_potential_abs": 0.11092542655209167,
+          "thrust_total_N_mean": 1.493120549947749,
+          "drag_N_mean": 5.057710839054744,
+          "propulsive_excess_power_W_per_kg": -10.745956311333762,
+          "propulsive_vs_STEdot_residual_W_per_kg": 0.7255099330723578,
+          "propulsive_note": "REPORT-ONLY. D is the aero plugin's qbar*S*CD diagnostic and the descent is affected by PROPULSION_HIGH_J_WINDMILLING (thrust floored at 0 N above the APC table's last J), which biases exactly this comparison. Not a gating criterion."
+        },
+        "P5_resettle": {
+          "seb_weights": {
+            "w_SPE": 1.0,
+            "w_SKE": 1.0,
+            "tecs_spdweight_live": 1.0,
+            "source": "AP_TECS.cpp:1003,1024,1027-1028"
+          },
+          "gravity_used_m_s2": 9.81,
+          "gravity_ardupilot_internal_m_s2": 9.80665,
+          "SPE_J_per_kg": {
+            "min": 840.391228251619,
+            "max": 871.942626190225,
+            "mean": 865.3590381320978,
+            "std": 7.015856289968736,
+            "n": 767
+          },
+          "SKE_J_per_kg": {
+            "min": 142.11566165560032,
+            "max": 170.45479326551023,
+            "mean": 159.8652537467989,
+            "std": 5.517119455529944,
+            "n": 767
+          },
+          "STE_J_per_kg": {
+            "min": 1002.6377567340837,
+            "max": 1039.4936015471217,
+            "mean": 1025.2242918788957,
+            "std": 8.222008939348274,
+            "n": 767
+          },
+          "SEB_J_per_kg": {
+            "min": 674.4928971159147,
+            "max": 720.6847598796331,
+            "mean": 705.4937843852999,
+            "std": 9.577069600741073,
+            "n": 767
+          },
+          "TAS_ms": {
+            "min": 16.85916140593003,
+            "max": 18.46373706840033,
+            "mean": 17.878295225393085,
+            "std": 0.31155629874031976,
+            "n": 767
+          },
+          "vz_regression_ms": 0.04074390781975621,
+          "vz_vfr_hud_mean_ms": -0.008337842096301848,
+          "dTAS_dt_ms2": 0.003979821904225672,
+          "SPEdot_W_per_kg": 0.39969773571180844,
+          "SKEdot_W_per_kg": 0.07115243094823265,
+          "STEdot_W_per_kg": 0.4708501666600411,
+          "SEBdot_W_per_kg": 0.3285453047635758,
+          "STEdot_endpoint_W_per_kg": -0.2566119838277539,
+          "STE_change_over_window_J_per_kg": -10.258045491179473,
+          "potential_fraction_of_STEdot": 0.8488851953627842,
+          "kinetic_fraction_of_STEdot": 0.15111480463721588,
+          "kinetic_over_potential_abs": 0.1780155967646893,
+          "thrust_total_N_mean": 5.074534428623037,
+          "drag_N_mean": 5.1479983774145985,
+          "propulsive_excess_power_W_per_kg": -0.21890169415311497,
+          "propulsive_vs_STEdot_residual_W_per_kg": -0.6897518608131561,
+          "propulsive_note": "REPORT-ONLY. D is the aero plugin's qbar*S*CD diagnostic and the descent is affected by PROPULSION_HIGH_J_WINDMILLING (thrust floored at 0 N above the APC table's last J), which biases exactly this comparison. Not a gating criterion."
+        }
+      },
+      "hold_windows": {
+        "P1_cruise_hold": {
+          "seb_weights": {
+            "w_SPE": 1.0,
+            "w_SKE": 1.0,
+            "tecs_spdweight_live": 1.0,
+            "source": "AP_TECS.cpp:1003,1024,1027-1028"
+          },
+          "gravity_used_m_s2": 9.81,
+          "gravity_ardupilot_internal_m_s2": 9.80665,
+          "SPE_J_per_kg": {
+            "min": 867.5142006692157,
+            "max": 882.388645202905,
+            "mean": 874.6028262660345,
+            "std": 3.4808518625622757,
+            "n": 633
+          },
+          "SKE_J_per_kg": {
+            "min": 151.02263570648125,
+            "max": 169.33652767555995,
+            "mean": 160.74322958316608,
+            "std": 4.430221098019826,
+            "n": 633
+          },
+          "STE_J_per_kg": {
+            "min": 1030.9486625787745,
+            "max": 1038.204247567078,
+            "mean": 1035.3460558492006,
+            "std": 1.4019548605662788,
+            "n": 633
+          },
+          "SEB_J_per_kg": {
+            "min": 698.333448492272,
+            "max": 731.2725964584307,
+            "mean": 713.8595966828677,
+            "std": 7.843525986558673,
+            "n": 633
+          },
+          "TAS_ms": {
+            "min": 17.37944968671225,
+            "max": 18.403071899851934,
+            "mean": 17.928340881274035,
+            "std": 0.2470878612372688,
+            "n": 633
+          },
+          "vz_regression_ms": 0.0029911840392942944,
+          "vz_vfr_hud_mean_ms": -0.002814660563117473,
+          "dTAS_dt_ms2": -0.00197471363091169,
+          "SPEdot_W_per_kg": 0.02934351542547703,
+          "SKEdot_W_per_kg": -0.03540333911788314,
+          "STEdot_W_per_kg": -0.0060598236924061105,
+          "SEBdot_W_per_kg": 0.06474685454336017,
+          "STEdot_endpoint_W_per_kg": 0.11157644863286834,
+          "STE_change_over_window_J_per_kg": 3.679489000669264,
+          "potential_fraction_of_STEdot": -4.8423051420207095,
+          "kinetic_fraction_of_STEdot": 5.8423051420207095,
+          "kinetic_over_potential_abs": 1.206513214403233,
+          "thrust_total_N_mean": 5.1865632075790655,
+          "drag_N_mean": 5.1460357499681155,
+          "propulsive_excess_power_W_per_kg": 0.12109834585008257,
+          "propulsive_vs_STEdot_residual_W_per_kg": 0.12715816954248868,
+          "propulsive_note": "REPORT-ONLY. D is the aero plugin's qbar*S*CD diagnostic and the descent is affected by PROPULSION_HIGH_J_WINDMILLING (thrust floored at 0 N above the APC table's last J), which biases exactly this comparison. Not a gating criterion."
+        },
+        "P3_settle_hold": {
+          "seb_weights": {
+            "w_SPE": 1.0,
+            "w_SKE": 1.0,
+            "tecs_spdweight_live": 1.0,
+            "source": "AP_TECS.cpp:1003,1024,1027-1028"
+          },
+          "gravity_used_m_s2": 9.81,
+          "gravity_ardupilot_internal_m_s2": 9.80665,
+          "SPE_J_per_kg": {
+            "min": 965.9158473836571,
+            "max": 990.3625835588824,
+            "mean": 977.8161164379211,
+            "std": 5.773531866841597,
+            "n": 576
+          },
+          "SKE_J_per_kg": {
+            "min": 145.47324339275167,
+            "max": 179.07009588692804,
+            "mean": 161.1543014139085,
+            "std": 7.758118439886597,
+            "n": 576
+          },
+          "STE_J_per_kg": {
+            "min": 1134.4409575728776,
+            "max": 1145.5386225410543,
+            "mean": 1138.9704178518296,
+            "std": 2.5376853471977103,
+            "n": 576
+          },
+          "SEB_J_per_kg": {
+            "min": 786.9459159432189,
+            "max": 844.6080510111196,
+            "mean": 816.6618150240122,
+            "std": 13.438909813229122,
+            "n": 576
+          },
+          "TAS_ms": {
+            "min": 17.057153537020863,
+            "max": 18.924592248549402,
+            "mean": 17.94775779832454,
+            "std": 0.4319639342556275,
+            "n": 576
+          },
+          "vz_regression_ms": 0.0003325373461377623,
+          "vz_vfr_hud_mean_ms": 0.020086593557304393,
+          "dTAS_dt_ms2": -0.003212628750682533,
+          "SPEdot_W_per_kg": 0.0032621913656114485,
+          "SKEdot_W_per_kg": -0.05765948271318406,
+          "STEdot_W_per_kg": -0.05439729134757261,
+          "SEBdot_W_per_kg": 0.06092167407879551,
+          "STEdot_endpoint_W_per_kg": -0.06430136466792923,
+          "STE_change_over_window_J_per_kg": -1.925094189415404,
+          "potential_fraction_of_STEdot": -0.0599697390218864,
+          "kinetic_fraction_of_STEdot": 1.0599697390218863,
+          "kinetic_over_potential_abs": 17.67507673553561,
+          "thrust_total_N_mean": 5.1370978302874395,
+          "drag_N_mean": 5.163341892878467,
+          "propulsive_excess_power_W_per_kg": -0.07850367983797225,
+          "propulsive_vs_STEdot_residual_W_per_kg": -0.024106388490399644,
+          "propulsive_note": "REPORT-ONLY. D is the aero plugin's qbar*S*CD diagnostic and the descent is affected by PROPULSION_HIGH_J_WINDMILLING (thrust floored at 0 N above the APC table's last J), which biases exactly this comparison. Not a gating criterion."
+        },
+        "P5_resettle_hold": {
+          "seb_weights": {
+            "w_SPE": 1.0,
+            "w_SKE": 1.0,
+            "tecs_spdweight_live": 1.0,
+            "source": "AP_TECS.cpp:1003,1024,1027-1028"
+          },
+          "gravity_used_m_s2": 9.81,
+          "gravity_ardupilot_internal_m_s2": 9.80665,
+          "SPE_J_per_kg": {
+            "min": 862.0230294503867,
+            "max": 871.8993633345829,
+            "mean": 868.3987467377472,
+            "std": 2.5100948848143623,
+            "n": 575
+          },
+          "SKE_J_per_kg": {
+            "min": 152.3070563420894,
+            "max": 167.67535110405632,
+            "mean": 160.53393646576734,
+            "std": 3.4502610479025946,
+            "n": 575
+          },
+          "STE_J_per_kg": {
+            "min": 1023.4202750701709,
+            "max": 1030.8927497526593,
+            "mean": 1028.9326832035129,
+            "std": 1.7008745264285676,
+            "n": 575
+          },
+          "SEB_J_per_kg": {
+            "min": 694.4387578230642,
+            "max": 718.8102691232226,
+            "mean": 707.8648102719804,
+            "std": 5.789367936505391,
+            "n": 575
+          },
+          "TAS_ms": {
+            "min": 17.453197778177465,
+            "max": 18.312583165902964,
+            "mean": 17.91733115923587,
+            "std": 0.19265788800466876,
+            "n": 575
+          },
+          "vz_regression_ms": 0.008534198715479897,
+          "vz_vfr_hud_mean_ms": 0.00046905237889424586,
+          "dTAS_dt_ms2": 0.0010818262081999832,
+          "SPEdot_W_per_kg": 0.0837204893988578,
+          "SKEdot_W_per_kg": 0.01938343842905955,
+          "STEdot_W_per_kg": 0.10310392782791736,
+          "SEBdot_W_per_kg": 0.06433705096979825,
+          "STEdot_endpoint_W_per_kg": 0.1862633290051104,
+          "STE_change_over_window_J_per_kg": 5.576691041044228,
+          "potential_fraction_of_STEdot": 0.812000969920264,
+          "kinetic_fraction_of_STEdot": 0.18799903007973587,
+          "kinetic_over_potential_abs": 0.23152562255953557,
+          "thrust_total_N_mean": 5.189566554345132,
+          "drag_N_mean": 5.122992657449711,
+          "propulsive_excess_power_W_per_kg": 0.19880442620601393,
+          "propulsive_vs_STEdot_residual_W_per_kg": 0.09570049837809658,
+          "propulsive_note": "REPORT-ONLY. D is the aero plugin's qbar*S*CD diagnostic and the descent is affected by PROPULSION_HIGH_J_WINDMILLING (thrust floored at 0 N above the APC table's last J), which biases exactly this comparison. Not a gating criterion."
+        }
+      },
+      "summary": {
+        "level_STEdot_W_per_kg": -0.0060598236924061105,
+        "settle_STEdot_W_per_kg": -0.05439729134757261,
+        "resettle_STEdot_W_per_kg": 0.10310392782791736,
+        "climb_STEdot_W_per_kg": 11.90323004302266,
+        "descent_STEdot_W_per_kg": -11.47146624440612,
+        "climb_SPEdot_W_per_kg": 12.76756744454234,
+        "climb_SKEdot_W_per_kg": -0.8643374015196797,
+        "descent_SPEdot_W_per_kg": -12.902704212897213,
+        "descent_SKEdot_W_per_kg": 1.4312379684910936,
+        "climb_SEBdot_W_per_kg": 13.631904846062021,
+        "descent_SEBdot_W_per_kg": -14.333942181388306,
+        "climb_kinetic_over_potential": 0.06769789196525074,
+        "descent_kinetic_over_potential": 0.11092542655209167,
+        "STE_level_J_per_kg": 1035.3460558492006,
+        "STE_resettle_J_per_kg": 1028.9326832035129,
+        "STE_roundtrip_residual_J_per_kg": -6.413372645687787
+      },
+      "definitions": "AP_TECS.cpp:678-697 (energies/rates), :1024-1036 (balance). Rates here are RAW kinematic rates over the window, not TECS's high-passed internal state - see the module docstring FILTER NOTE.",
+      "reference_prior_stage": {
+        "climb_W_per_kg": 10.37,
+        "descent_W_per_kg": -9.6,
+        "level_W_per_kg": 0.05,
+        "source": "docs/test_results/2026-09-02_ardupilot_tecs_and_cruise_speed_hold_validation.md sec 7"
+      }
+    },
+    "coordination": {
+      "level_throttle": 0.49085624012638307,
+      "climb_throttle": 0.5404315476190471,
+      "settle_throttle": 0.49020486111111183,
+      "descent_throttle": 0.4200586592178773,
+      "resettle_throttle": 0.49082695652173947,
+      "level_pitch_deg": 2.6841213701236755,
+      "climb_pitch_deg": 6.718589625870344,
+      "settle_pitch_deg": 2.751067401731789,
+      "descent_pitch_deg": -1.3320150501755965,
+      "resettle_pitch_deg": 2.664642078868016,
+      "level_nav_pitch_raw_deg": 0.23295418130701753,
+      "climb_nav_pitch_raw_deg": 5.752202265408068,
+      "descent_nav_pitch_raw_deg": -5.244413298601545,
+      "level_pitch_demand_phys_deg": 2.722954190843761,
+      "climb_pitch_demand_phys_deg": 8.24220227494481,
+      "descent_pitch_demand_phys_deg": -2.7544132890648014,
+      "level_elevator_deg": 4.429215125245875,
+      "climb_elevator_deg": 5.270361490972803,
+      "descent_elevator_deg": 3.4225823148656835,
+      "level_vz_ms": -0.002814660563117473,
+      "climb_vz_ms": 1.153408639985303,
+      "descent_vz_ms": -1.1467940093033724,
+      "note": "TECS division of labour: the THROTTLE loop tracks total specific energy rate STEdot (AP_TECS.cpp:739-772) and the PITCH loop tracks the specific energy BALANCE SEBdot (AP_TECS.cpp:1031-1096). Climb must therefore show MORE throttle and MORE nose-up than level; descent the opposite. The checks test the SIGN of the split, not its magnitude. Raw nav_pitch and the PTCH_TRIM_DEG-corrected physical demand are both reported so the convention cannot be double counted."
+    },
+    "descent_speed_excursion": {
+      "n_samples": 371,
+      "airspeed_max_ms": 18.577871322631836,
+      "airspeed_min_ms": 16.821744918823242,
+      "tecs_target_mean_ms": 17.917892666839847,
+      "overshoot_above_target_ms": 0.6599786557919884,
+      "window": "P4_descent + the first 10 s of P5_resettle (the recovery transient)",
+      "note": "Guards against an energy-management failure in which the descent is flown by trading altitude into SPEED instead of reducing throttle."
+    },
+    "oscillation_growth_scope": {
+      "gated_windows": [
+        "P1_cruise_hold",
+        "P3_settle_hold",
+        "P5_resettle_hold"
+      ],
+      "reported_only_windows": [
+        "P2_climb_full",
+        "P4_descent_full"
+      ],
+      "reported_only_ratios": {
+        "P2_climb_full": {
+          "altitude": 0.3000150357479334,
+          "airspeed": 1.2339890285170914,
+          "pitch_physical": 0.7175435125303022,
+          "throttle": 0.6194979166996749,
+          "growing_flag_raw": {
+            "altitude": false,
+            "airspeed": false,
+            "pitch_physical": false,
+            "throttle": false
+          }
+        },
+        "P4_descent_full": {
+          "altitude": 0.18577179220105275,
+          "airspeed": 0.9559087254078436,
+          "pitch_physical": 0.3933305269511712,
+          "throttle": 1.4160439666229023,
+          "growing_flag_raw": {
+            "altitude": false,
+            "airspeed": false,
+            "pitch_physical": false,
+            "throttle": true
+          }
+        }
+      },
+      "status": "INFO - NOT GATED",
+      "reason": "detrended_growth() on a commanded ramp is a curvature statistic, not an oscillation statistic (validation V-5 / sec 6)."
+    }
+  },
+  "acceptance_checks": {
+    "mode_is_fbwb_throughout": true,
+    "param_preconditions_all_ok": true,
+    "tecs_at_firmware_defaults_baseline": true,
+    "pids_unchanged": true,
+    "ptch_trim_deg_unchanged": true,
+    "target_altitude_readback_preconditions_ok": true,
+    "tecs_is_driving_throttle_not_the_stick": true,
+    "throttle_is_actively_modulated": true,
+    "tecs_target_airspeed_matches_command": true,
+    "P1_hold_window_present": true,
+    "speed_mean_within_tol_P1": true,
+    "speed_std_bounded_P1": true,
+    "speed_no_divergence_P1": true,
+    "P3_hold_window_present": true,
+    "speed_mean_within_tol_P3": true,
+    "speed_std_bounded_P3": true,
+    "speed_no_divergence_P3": true,
+    "P5_hold_window_present": true,
+    "speed_mean_within_tol_P5": true,
+    "speed_std_bounded_P5": true,
+    "speed_no_divergence_P5": true,
+    "speed_never_below_airspeed_min": true,
+    "speed_never_below_underspeed_trigger": true,
+    "speed_never_above_airspeed_max": true,
+    "no_airspeed_runaway_in_descent": true,
+    "zero_wind_confirmed_gs_vs_as": true,
+    "alt_hold_slope_bounded_P1": true,
+    "alt_hold_p2p_bounded_P1": true,
+    "alt_hold_no_unidirectional_drift_P1": true,
+    "alt_hold_slope_bounded_P3": true,
+    "alt_hold_p2p_bounded_P3": true,
+    "alt_hold_no_unidirectional_drift_P3": true,
+    "alt_hold_slope_bounded_P5": true,
+    "alt_hold_p2p_bounded_P5": true,
+    "alt_hold_no_unidirectional_drift_P5": true,
+    "fbwa_residual_sink_closed_P1": true,
+    "alt_hold_tight_P1_preferred": true,
+    "altitude_step_climb_achieved": true,
+    "altitude_step_descent_achieved": true,
+    "ap_target_alt_climb_step_verified": true,
+    "ap_target_alt_descent_step_verified": true,
+    "ap_target_tracks_actual_climb": true,
+    "ap_target_tracks_actual_descent": true,
+    "fbwb_up_stick_climbs": true,
+    "fbwb_down_stick_descends": true,
+    "resettled_near_original_altitude": true,
+    "resettled_near_original_altitude_tight_preferred": false,
+    "ap_target_roundtrip_closed": true,
+    "throttle_plausible_vs_measured_trim": true,
+    "no_sustained_throttle_high_saturation": true,
+    "no_sustained_throttle_low_saturation": true,
+    "throttle_never_pinned_at_a_limit": true,
+    "climb_total_energy_rate_positive": true,
+    "descent_total_energy_rate_negative": true,
+    "level_total_energy_rate_near_zero_P1": true,
+    "level_total_energy_rate_near_zero_P3": true,
+    "level_total_energy_rate_near_zero_P5": true,
+    "climb_energy_goes_to_altitude_not_speed": true,
+    "descent_energy_comes_from_altitude_not_speed": true,
+    "energy_roundtrip_closed": true,
+    "climb_uses_more_throttle_than_level": true,
+    "descent_uses_less_throttle_than_level": true,
+    "climb_is_more_nose_up_than_level": true,
+    "descent_is_more_nose_down_than_level": true,
+    "climb_energy_balance_rate_positive": true,
+    "descent_energy_balance_rate_negative": true,
+    "propulsive_power_matches_energy_rate_preferred": true,
+    "settling_window_present_after_climb": true,
+    "settles_after_climb": true,
+    "oscillation_decays_after_climb": true,
+    "settling_window_present_after_descent": true,
+    "settles_after_descent": true,
+    "oscillation_decays_after_descent": true,
+    "no_growing_oscillation_in_hold_windows": true,
+    "elevator_within_10deg_in_all_hold_windows": true,
+    "elevator_within_15deg_whole_flight": true,
+    "elevator_never_near_travel_limit": true,
+    "lateral_surfaces_bounded": true,
+    "zero_actuator_clamp": true,
+    "longitudinal_kinematics_consistent": true,
+    "no_nan_inf": true
+  },
+  "core_checks": [
+    "mode_is_fbwb_throughout",
+    "param_preconditions_all_ok",
+    "tecs_at_firmware_defaults_baseline",
+    "pids_unchanged",
+    "ptch_trim_deg_unchanged",
+    "target_altitude_readback_preconditions_ok",
+    "tecs_is_driving_throttle_not_the_stick",
+    "throttle_is_actively_modulated",
+    "tecs_target_airspeed_matches_command",
+    "speed_mean_within_tol_P1",
+    "speed_mean_within_tol_P3",
+    "speed_mean_within_tol_P5",
+    "speed_std_bounded_P1",
+    "speed_std_bounded_P3",
+    "speed_std_bounded_P5",
+    "speed_never_below_airspeed_min",
+    "speed_never_below_underspeed_trigger",
+    "speed_never_above_airspeed_max",
+    "no_airspeed_runaway_in_descent",
+    "zero_wind_confirmed_gs_vs_as",
+    "alt_hold_slope_bounded_P1",
+    "alt_hold_slope_bounded_P3",
+    "alt_hold_slope_bounded_P5",
+    "alt_hold_p2p_bounded_P1",
+    "alt_hold_p2p_bounded_P3",
+    "alt_hold_p2p_bounded_P5",
+    "fbwa_residual_sink_closed_P1",
+    "altitude_step_climb_achieved",
+    "altitude_step_descent_achieved",
+    "ap_target_alt_climb_step_verified",
+    "ap_target_alt_descent_step_verified",
+    "ap_target_tracks_actual_climb",
+    "ap_target_tracks_actual_descent",
+    "fbwb_up_stick_climbs",
+    "fbwb_down_stick_descends",
+    "resettled_near_original_altitude",
+    "ap_target_roundtrip_closed",
+    "throttle_plausible_vs_measured_trim",
+    "no_sustained_throttle_high_saturation",
+    "no_sustained_throttle_low_saturation",
+    "throttle_never_pinned_at_a_limit",
+    "climb_total_energy_rate_positive",
+    "descent_total_energy_rate_negative",
+    "level_total_energy_rate_near_zero_P1",
+    "level_total_energy_rate_near_zero_P3",
+    "level_total_energy_rate_near_zero_P5",
+    "climb_energy_goes_to_altitude_not_speed",
+    "descent_energy_comes_from_altitude_not_speed",
+    "energy_roundtrip_closed",
+    "climb_uses_more_throttle_than_level",
+    "descent_uses_less_throttle_than_level",
+    "climb_is_more_nose_up_than_level",
+    "descent_is_more_nose_down_than_level",
+    "climb_energy_balance_rate_positive",
+    "descent_energy_balance_rate_negative",
+    "settles_after_climb",
+    "settles_after_descent",
+    "oscillation_decays_after_climb",
+    "oscillation_decays_after_descent",
+    "no_growing_oscillation_in_hold_windows",
+    "elevator_within_10deg_in_all_hold_windows",
+    "elevator_within_15deg_whole_flight",
+    "elevator_never_near_travel_limit",
+    "lateral_surfaces_bounded",
+    "zero_actuator_clamp",
+    "longitudinal_kinematics_consistent",
+    "no_nan_inf"
+  ],
+  "verdict": "TECS_CLIMB_DESCENT_ENERGY_PASS",
+  "failed_checks": [],
+  "overall_result": "REANALYZED",
+  "segments_summary": {
+    "P1_cruise": {
+      "label": "P1_cruise",
+      "duration_s": 45.0,
+      "actual_duration_s": 45.00220704078674,
+      "rc1": 1500,
+      "rc2": 1500,
+      "rc3": 1258,
+      "n_samples": 863,
+      "aborted": false,
+      "abort_reason": null,
+      "stopped_early": false,
+      "stop_reason": null
+    },
+    "P2_climb": {
+      "label": "P2_climb",
+      "duration_s": 20.0,
+      "actual_duration_s": 8.719136238098145,
+      "rc1": 1500,
+      "rc2": 1900,
+      "rc3": 1258,
+      "n_samples": 168,
+      "aborted": false,
+      "abort_reason": null,
+      "stopped_early": true,
+      "stop_reason": "altitude >= 99.15 m for 3 consecutive samples"
+    },
+    "P3_settle": {
+      "label": "P3_settle",
+      "duration_s": 40.0,
+      "actual_duration_s": 40.003313064575195,
+      "rc1": 1500,
+      "rc2": 1500,
+      "rc3": 1258,
+      "n_samples": 769,
+      "aborted": false,
+      "abort_reason": null,
+      "stopped_early": false,
+      "stop_reason": null
+    },
+    "P4_descent": {
+      "label": "P4_descent",
+      "duration_s": 20.0,
+      "actual_duration_s": 9.260583639144897,
+      "rc1": 1500,
+      "rc2": 1100,
+      "rc3": 1258,
+      "n_samples": 179,
+      "aborted": false,
+      "abort_reason": null,
+      "stopped_early": true,
+      "stop_reason": "altitude <= original reference 89.15 m for 3 consecutive samples"
+    },
+    "P5_resettle": {
+      "label": "P5_resettle",
+      "duration_s": 40.0,
+      "actual_duration_s": 40.001274824142456,
+      "rc1": 1500,
+      "rc2": 1500,
+      "rc3": 1258,
+      "n_samples": 767,
+      "aborted": false,
+      "abort_reason": null,
+      "stopped_early": false,
+      "stop_reason": null
+    }
+  },
+  "timeseries_file": "/home/emirhan/Desktop/FalconV2/tests/gazebo/results/ardupilot_tecs_climb_descent_energy_timeseries.json",
+  "per_sample_trace_file": "/home/emirhan/Desktop/FalconV2/tests/gazebo/results/ardupilot_tecs_climb_descent_energy_per_sample.json"
+}

@@ -1,0 +1,32 @@
+PHASE 1 (mavlink arm): {"ok": true, "heartbeat": {"mavpackettype": "HEARTBEAT", "type": 1, "autopilot": 3, "base_mode": 17, "custom_mode": 16, "system_status": 2, "mavlink_version": 3}, "dcm_ekf_ready": true, "dcm_ekf_droll_deg": 0.0060868907660861565, "dcm_ekf_dpitch_deg": 2.5237585535381344, "arm_attempt_0": {"ack": {"m
+param preconditions: {"arspd_use_1_tecs_uses_airspeed_path": true, "arspd_type_100_sitl_backend": true, "airspeed_min_16": true, "airspeed_cruise_18": true, "airspeed_max_28": true, "ptch_trim_deg_2p49": true, "kff_thr2ptch_zero": true, "flight_options_zero": true, "fbwb_elev_rev_zero": true, "cruise_alt_floor_zero": true, "min_groundspeed_zero": true, "rc3_not_reversed": true, "rc2_not_reversed": true, "sim_wind_zero": true, "sim_opos_alt_zero_atmosphere_datum": true, "pids_unchanged": true, "tecs_at_firmware_defaults": true}
+param preconditions (extended): {"arspd_use_1_tecs_uses_airspeed_path": true, "arspd_type_100_sitl_backend": true, "airspeed_min_16": true, "airspeed_cruise_18": true, "airspeed_max_28": true, "ptch_trim_deg_2p49": true, "kff_thr2ptch_zero": true, "flight_options_zero": true, "fbwb_elev_rev_zero": true, "cruise_alt_floor_zero": true, "min_groundspeed_zero": true, "rc3_not_reversed": true, "rc2_not_reversed": true, "sim_wind_zero": true, "sim_opos_alt_zero_atmosphere_datum": true, "pids_unchanged": true, "tecs_at_firmware_defaults": true, "alt_offset_zero_for_target_readback": true, "terrain_follow_zero": true, "fbwb_climb_rate_2ms": true, "tecs_spdweight_readable": true}
+ground settle: {'settled': True, 'elapsed_s': 1.0010883808135986}
+PHASE 2 (teleport+verify): True
+PHASE 3 (hold-to-trim): aborted = False reason = None
+command derivation: {"v_target_ms": 18.0, "rc3_pwm_us": 1258.3333333333333, "rc3_pwm_us_rounded": 1258, "predicted_target_airspeed_ms": 17.92, "error": null, "demand_quantisation_grid_ms": 0.12, "demand_quantisation_error_ms": -0.0799999999999983, "rc2_up_us": 1900.0, "rc2_down_us": 1100.0, "rc2_neutral_us": 1500.0, "formula": "ArduPlane/navigation.cpp:187-189 inverted through RC_Channel.cpp:388-402, including the int16_t control_in truncation (RC_Channel.h:99/542). Derivation and the resulting 0.08 m/s command quantisation: docs/test_results/2026-09-02_ardupilot_tecs_and_cruise_speed_hold_validation.md sec 3."}
+P1 CRUISE: 45.0s level cruise (rc2=1500, rc3=1258 -> TECS target 17.920 m/s)
+reference altitude (P1 settled mean): 89.154 m
+P2 CLIMB: up-stick rc2=1900, cap 20.0s, stop at z >= 99.15 m
+P3 SETTLE: 40.0s at the new altitude (rc2=1500 -> set_target_altitude_current(), navigation.cpp:421-426)
+P4 DESCENT: down-stick rc2=1100, cap 20.0s, stop at z <= 89.15 m (the ORIGINAL altitude)
+P5 RESETTLE: 40.0s near the original altitude (rc2=1500)
+------------------------------------------------------------------------------
+P1_cruise_hold     V 17.926+-0.239 m/s | alt 89.154 m | vz +0.0030 m/s | thr 0.4909 | STEdot -0.006 W/kg
+P3_settle_hold     V 17.950+-0.416 m/s | alt 99.675 m | vz +0.0003 m/s | thr 0.4902 | STEdot -0.054 W/kg
+P5_resettle_hold   V 17.917+-0.188 m/s | alt 88.522 m | vz +0.0085 m/s | thr 0.4908 | STEdot +0.103 W/kg
+achieved step (actual)   : climb +10.521 m, descent -11.154 m, roundtrip -0.632 m
+achieved step (AP target): climb +10.520 m, descent -11.100 m, roundtrip -0.580 m
+energy climb   : STEdot +11.903 = SPEdot +12.768 + SKEdot -0.864 W/kg | SEBdot +13.632
+energy descent : STEdot -11.471 = SPEdot -12.903 + SKEdot +1.431 W/kg | SEBdot -14.334
+throttle L/C/D : 0.49085624012638307 / 0.5404315476190471 / 0.4200586592178773
+pitch    L/C/D : 2.6841213701236755 / 6.718589625870344 / -1.3320150501755965 deg (physical, nose-up +)
+P3_settle    settling 25.26861023902893 s (limit 25.0, binding airspeed; alt 8.485944271087646 s, spd 25.26861023902893 s) | decay ratios {'altitude': 0.5121743682491768, 'airspeed': 0.5587564288026494, 'pitch_physical': 0.5556744521362708, 'throttle': 0.4866732023996175}
+P5_resettle  settling 6.871028661727905 s (limit 25.0, binding airspeed; alt 3.983968734741211 s, spd 6.871028661727905 s) | decay ratios {'altitude': 0.5325812033144677, 'airspeed': 0.5449554017680494, 'pitch_physical': 0.56919902171676, 'throttle': 0.4726421743277198}
+HIGH-J (OPEN_LIMITATION): interpClamped 198/5492 motor-samples (0.03605243991260015), zero-thrust 190
+elevator max |deg| (flight): 6.333634314223633 (travel limit 45.0)
+VERDICT: TECS_CLIMB_DESCENT_ENERGY_FAILED  failed_checks=['settles_after_climb']
+------------------------------------------------------------------------------
+RESULT: FLIGHT_COMPLETED_NO_ABORT TECS_CLIMB_DESCENT_ENERGY_FAILED -> /home/emirhan/Desktop/FalconV2/tests/gazebo/results/ardupilot_tecs_climb_descent_energy_result.json
+TIMESERIES: /home/emirhan/Desktop/FalconV2/tests/gazebo/results/ardupilot_tecs_climb_descent_energy_timeseries.json
+PER-SAMPLE TRACE: /home/emirhan/Desktop/FalconV2/tests/gazebo/results/ardupilot_tecs_climb_descent_energy_per_sample.json

@@ -711,7 +711,16 @@ def analyze_window(samples, label, p, ptch_trim_deg):
     _, ralt = collect(samples, lambda s: s["mav"]["relative_alt_m"])
     out["mav_relative_alt_m"] = minmaxmean(ralt)
     _, aerr = collect(samples, lambda s: s["mav"]["nav_alt_error"])
-    out["nav_alt_error_m"] = minmaxmean(aerr)   # 1 m resolution (int16), coarse
+    # COMMENT-ONLY CORRECTION (controls-integration, 2026-09-03, stage
+    # ARDUPLANE_TECS_CLIMB_DESCENT_AND_ENERGY_VALIDATION). The comment that was
+    # here said "1 m resolution (int16), coarse". That was WRONG: in
+    # NAV_CONTROLLER_OUTPUT only nav_bearing/target_bearing are int16;
+    # alt_error is a MAVLink float in metres carrying the underlying int32
+    # centimetre value (~0.01 m resolution). No code or threshold is changed by
+    # this edit and no recorded result is affected. See
+    # docs/source_of_truth/controls/ardupilot_tecs_energy_management.yaml
+    # section target_altitude_readback.
+    out["nav_alt_error_m"] = minmaxmean(aerr)   # float, metres, ~0.01 m resolution
 
     # ---- pitch: physical (gz truth), demand, MAVLink-reported, rate ----
     ts_p, pitch = collect(samples, s_pitch_phys)
