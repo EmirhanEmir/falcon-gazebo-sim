@@ -18,10 +18,24 @@
 #
 # DOES NOT include: RC calibration hardware specifics, INS/COMPASS/BARO
 # device IDs and calibration offsets, BRD/CAN/SERIAL hardware config, stale
-# BATT_* values, the old no-pitot ARSPD_TYPE=0 config, TECS/NAVL1/EK3/AHRS/
+# BATT_* values, the old no-pitot ARSPD_TYPE=0 config, NAVL1/EK3/AHRS/
 # GPS/FLTMODE/FENCE/ARMING/AFS groups (all REVIEW_AND_ADAPT or
 # DROP_OR_DO_NOT_IMPORT - see the migration doc). No PID is retuned, no
 # autotune is executed by writing this file.
+#
+# TECS: the TECS_* GROUP REMAINS EXCLUDED AS A GROUP (still classified
+# REVIEW_AND_ADAPT in the migration doc sec 3) - EXCEPT for exactly ONE
+# Falcon-V2-specific SIM-VALIDATED value, TECS_PTCH_DAMP, adopted
+# 2026-09-05 by stage ARDUPLANE_TECS_PTCH_DAMP_ADOPTION_INTEGRATION and set
+# below under the heading FALCON_V2_SIM_VALIDATED_TECS_PITCH_DAMPING.
+# Every OTHER TECS_* value is still left at ArduPlane's own compiled
+# firmware default and is NOT imported from the real aircraft's .param.
+# Source-of-truth records:
+#   docs/source_of_truth/controls/ardupilot_tecs_pitch_damping_loop.yaml
+#   docs/source_of_truth/controls/ardupilot_fbwb_tecs_baseline.yaml
+#   docs/source_of_truth/autopilot/SITL_PARAM_MIGRATION.md sec 3 + sec 18
+# Adopting that single value does NOT retune any PID and does NOT execute
+# autotune - both of those statements above remain true and unchanged.
 # =============================================================================
 
 # -----------------------------------------------------------------------------
@@ -141,6 +155,57 @@ AIRSPEED_MAX      28
 # fabricated number.
 AIRSPEED_STALL    0
 
+# -----------------------------------------------------------------------------
+# TECS_PTCH_DAMP - FALCON_V2_SIM_VALIDATED_TECS_PITCH_DAMPING (2026-09-05,
+# stage ARDUPLANE_TECS_PTCH_DAMP_ADOPTION_INTEGRATION).
+#
+# THE ONLY TECS_* VALUE THIS FILE SETS. Every other TECS_* parameter stays at
+# ArduPlane's compiled firmware default (arduplane is launched with -w, wiped
+# EEPROM), and the TECS group as a whole remains REVIEW_AND_ADAPT / excluded -
+# see the file header and SITL_PARAM_MIGRATION.md sec 3 + sec 18.
+#
+# SUPERSEDES the ArduPlane compiled firmware default 0.3
+# (libraries/AP_TECS/AP_TECS.cpp:107, @Range 0.1 1.0, ArduPlane V4.8.0-dev,
+# ArduPilot commit 409226a637). 0.3 is NOT deleted from the record: it is kept
+# visible as the superseded firmware default in
+# docs/source_of_truth/controls/ardupilot_fbwb_tecs_baseline.yaml.
+#
+# DERIVATION (DERIVED_CALCULATION from AP_TECS source; full algebra in
+# docs/source_of_truth/controls/ardupilot_tecs_pitch_damping_loop.yaml sec 1-2):
+# TECS_PTCH_DAMP is the ONLY derivative term in the TECS pitch/energy-balance
+# loop, and 0.3 -> 0.6 moves the PD corner (1+Kd)/(Tc*Kd) from 1.867 to 1.033
+# rad/s, i.e. from ABOVE to BELOW the closed-loop energy mode at ~1.1-1.3
+# rad/s, so the PD pair finally delivers real phase lead AT the mode frequency
+# instead of pure proportional stiffening.
+#
+# EVIDENCE - TWO INDEPENDENT CAMPAIGNS, agreeing on the EFFECT (direction and
+# magnitude of improvement), not on absolute numbers. Adoption rests on that
+# agreement, NOT on either campaign's absolute values:
+#   this repository, 2026-09-05 (ARDUPLANE_LONGITUDINAL_PHUGOID_DAMPING_
+#     VALIDATION): tau 22.07 -> 8.65 s, zeta 0.0407 -> 0.0872, airspeed std
+#     0.186 -> 0.066 m/s, altitude-hold p2p 2.148 -> 0.635 m, max elevator
+#     6.29 deg
+#   external Codex adoption campaign, separate working copy, THIS REPOSITORY
+#     NOT TOUCHED: tau 26.0 -> 9.3 s, zeta 0.0347 -> 0.083, airspeed std
+#     0.40 -> 0.11 m/s, altitude-hold p2p 2.1 -> 0.59 m, max elevator 8.25 deg;
+#     repeat runs at both settings (0.6 repeatable), sanity runs at 17.0 m/s,
+#     19.5 m/s and -5 m/s headwind, no growing oscillation, no throttle
+#     saturation, no actuator clamp, no NaN/Inf; validation 0 CRITICAL /
+#     0 MAJOR -> ADOPT. Its repeat runs and extra envelope points are what
+#     closed this project's own RUN_TO_RUN_SCATTER and ENVELOPE_COVERAGE
+#     adoption gates.
+#   Both campaigns changed exactly ONE functional thing: TECS_PTCH_DAMP.
+# Provenance class: DERIVED_CALCULATION + GAZEBO_VALIDATION.
+#
+# SIM-SPECIFIC - EXPLICITLY NOT THE REAL-AIRCRAFT VALUE. The real Falcon V2's
+# GCS export docs/source_of_truth/autopilot/real_aircraft/yeni_pixhawk.param
+# line 1035 carries TECS_PTCH_DAMP,0.3 (the untuned ArduPlane default); that
+# file is NEVER modified and was not modified. 0.6 is validated ONLY against
+# the Gazebo Falcon V2 model. Transferring it to the real aircraft is NOT
+# authorised by this work and would require separate flight validation.
+# -----------------------------------------------------------------------------
+TECS_PTCH_DAMP    0.6
+
 # =============================================================================
 # SIMULATION ENVIRONMENT - SITL ORIGIN / ALTITUDE DATUM
 # =============================================================================
@@ -153,7 +218,10 @@ AIRSPEED_STALL    0
 #
 # These are SITL-simulator parameters (SIM_*), NOT aircraft parameters. They
 # exist only inside the simulator and have no counterpart on the real vehicle.
-# They set NO PID, NO TECS value, NO aerodynamic/propulsion quantity.
+# The four SIM_OPOS_* values in THIS section set NO PID, NO TECS value, NO
+# aerodynamic/propulsion quantity. (File-level scope note: the only TECS value
+# set anywhere in this file is TECS_PTCH_DAMP, in its own section above; it is
+# not set here and nothing in this section touches it.)
 #
 # ROOT CAUSE THEY FIX (source-cited, ArduPilot commit 409226a637):
 #   The launch scripts passed `-O 0,0,0,0`. That flag IS parsed

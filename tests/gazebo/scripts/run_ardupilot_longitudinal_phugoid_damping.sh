@@ -20,11 +20,21 @@
 #                        set_target_altitude_current())
 #
 # PARAMETER POLICY
-#   By DEFAULT this run writes NO parameter of any kind: no TECS_*, no PID, no
-#   PTCH_TRIM_DEG, no control-surface mapping, no aero/propulsion/actuator/
-#   sensor/mass/CG/inertia value. `arduplane -w` wipes its own scratch EEPROM,
-#   so every TECS_* value is the compiled firmware default. The checked-in
-#   config/ardupilot/falcon_v2_sitl.parm is READ-ONLY input and is NOT edited.
+#   By DEFAULT this run writes NO runtime parameter of any kind: no TECS_*, no
+#   PID, no PTCH_TRIM_DEG, no control-surface mapping, no aero/propulsion/
+#   actuator/sensor/mass/CG/inertia value. `arduplane -w` wipes its own scratch
+#   EEPROM. The checked-in config/ardupilot/falcon_v2_sitl.parm is READ-ONLY
+#   input and is NOT edited by this script.
+#
+#   UPDATED 2026-09-05 (stage ARDUPLANE_TECS_PTCH_DAMP_ADOPTION_INTEGRATION):
+#   falcon_v2_sitl.parm now SETS exactly one TECS value, TECS_PTCH_DAMP 0.6
+#   (section FALCON_V2_SIM_VALIDATED_TECS_PITCH_DAMPING, superseding the
+#   AP_TECS.cpp:107 default 0.3). Every OTHER TECS_* value is still the
+#   compiled firmware default. A no-argument run is therefore the PROJECT
+#   BASELINE - "firmware defaults EXCEPT TECS_PTCH_DAMP 0.6" - and is NOT the
+#   firmware-defaults baseline. The previous wording here ("every TECS_* value
+#   is the compiled firmware default") was true before that stage and is
+#   SUPERSEDED. Still no runtime parameter is written by the harness.
 #
 #   THE STAGE BASELINE MUST BE RUN WITH NO ARGUMENTS.
 #

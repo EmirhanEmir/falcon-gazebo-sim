@@ -15,6 +15,20 @@
 # scratch EEPROM; the checked-in config/ardupilot/falcon_v2_sitl.parm is
 # READ-ONLY input and is NOT edited by this stage.
 #
+# AMENDED 2026-09-05 (stage ARDUPLANE_TECS_PTCH_DAMP_ADOPTION_INTEGRATION):
+# this script still WRITES no TECS_* parameter, but the .parm it loads is no
+# longer TECS-free. config/ardupilot/falcon_v2_sitl.parm now SETS exactly one
+# TECS value, TECS_PTCH_DAMP 0.6 (section
+# FALCON_V2_SIM_VALIDATED_TECS_PITCH_DAMPING, superseding the AP_TECS.cpp:107
+# default 0.3). Every OTHER TECS_* value is still an ArduPlane compiled
+# firmware default. A run of this script is therefore now on the PROJECT
+# BASELINE - "firmware defaults EXCEPT TECS_PTCH_DAMP 0.6" - not on pure
+# compiled firmware defaults. The wording above was true when this stage was
+# flown and is SUPERSEDED for any NEW run. NOTE: this script's test module
+# still gates on `tecs_at_firmware_defaults`; re-running it unchanged is
+# expected to trip that gate. Flagged to gazebo-testing, not silently
+# "fixed" here - the gate is deliberately left alone.
+#
 # Expected wall-clock: ~4-5 min (preconditions + <=150 s of flight + teardown).
 # Outputs:
 #   tests/gazebo/results/ardupilot_tecs_cruise_speed_hold_result.json      (summary + PASS/FAIL)

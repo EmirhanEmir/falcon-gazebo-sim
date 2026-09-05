@@ -8,9 +8,16 @@
 #   The authoritative, provenance-carrying table for
 #     (a) which ArduPlane mode is used to exercise TECS on Falcon V2,
 #     (b) how an RC command becomes a TECS speed/height DEMAND in that mode,
-#     (c) what TECS actually runs with (baseline = ArduPlane firmware
-#         defaults, because config/ardupilot/falcon_v2_sitl.parm deliberately
-#         sets NO TECS_* value - see SITL_PARAM_MIGRATION.md sec 3).
+#     (c) what TECS actually runs with. AMENDED 2026-09-05 (stage
+#         ARDUPLANE_TECS_PTCH_DAMP_ADOPTION_INTEGRATION): the baseline is the
+#         ArduPlane compiled firmware defaults EXCEPT TECS_PTCH_DAMP, which
+#         config/ardupilot/falcon_v2_sitl.parm now SETS to 0.6 (section
+#         FALCON_V2_SIM_VALIDATED_TECS_PITCH_DAMPING). Every OTHER TECS_*
+#         value is still a compiled firmware default and the TECS_* group as a
+#         whole is still REVIEW_AND_ADAPT / not imported - see
+#         SITL_PARAM_MIGRATION.md sec 3 + sec 18. The origin-stage wording here
+#         ("falcon_v2_sitl.parm deliberately sets NO TECS_* value") was true on
+#         2026-09-02 and is SUPERSEDED.
 #
 #   It exists so the RC-PWM <-> demand conversions used by
 #   tests/gazebo/scripts/test_ardupilot_tecs_cruise_speed_hold.py are NOT
@@ -18,8 +25,12 @@
 #   parameter live over MAVLink and RE-DERIVES the PWM from the live values -
 #   this file is the documented reference, not a hardcoded substitute.
 #
-#   NOTHING in this file changes any parameter. No TECS_* value is written to
-#   config/ardupilot/falcon_v2_sitl.parm by this stage. Baseline-first.
+#   NOTHING in this file changes any parameter: this is a record, not a
+#   parameter file. The 2026-09-02 origin stage wrote no TECS_* value to
+#   config/ardupilot/falcon_v2_sitl.parm (baseline-first). The single TECS_*
+#   value that file now carries, TECS_PTCH_DAMP 0.6, was written there later by
+#   the separate 2026-09-05 adoption stage, whose full record is
+#   docs/source_of_truth/controls/ardupilot_tecs_pitch_damping_loop.yaml.
 #
 # FIRMWARE UNDER TEST
 #   ArduPlane V4.8.0-dev, ArduPilot commit 409226a637, installed at
@@ -159,15 +170,23 @@ command_mapping:
 
 # -----------------------------------------------------------------------------
 # TECS BASELINE PARAMETERS
-# provenance for EVERY row below = "ArduPlane 4.8.0-dev compiled firmware
-# default" because config/ardupilot/falcon_v2_sitl.parm sets NO TECS_* value
-# and arduplane is launched with -w (wiped EEPROM).
+# provenance for every row below = "ArduPlane 4.8.0-dev compiled firmware
+# default", because arduplane is launched with -w (wiped EEPROM) and
+# config/ardupilot/falcon_v2_sitl.parm sets NO TECS_* value -
+# WITH EXACTLY ONE EXCEPTION as of 2026-09-05:
+#   TECS_PTCH_DAMP is now SET by falcon_v2_sitl.parm to the Falcon-V2-specific
+#   SIM-VALIDATED value 0.6 (stage ARDUPLANE_TECS_PTCH_DAMP_ADOPTION_
+#   INTEGRATION). Its row below carries its own provenance and keeps the
+#   superseded firmware default 0.3 visible. Every OTHER row is unchanged and
+#   is still a pure compiled firmware default.
 # The live test re-reads all of these over MAVLink and records the measured
 # values in its result JSON - these are the EXPECTED values, not a substitute
 # for the live dump.
 # -----------------------------------------------------------------------------
 tecs_baseline_parameters:
   provenance_class: ARDUPLANE_FIRMWARE_DEFAULT_NOT_FALCON_DERIVED
+  provenance_class_exceptions:
+    TECS_PTCH_DAMP: FALCON_V2_SIM_VALIDATED_TECS_PITCH_DAMPING
   values:
     TECS_CLMB_MAX:   {value: 5.0,  units: "m/s",    source: "libraries/AP_TECS/AP_TECS.cpp:27"}
     TECS_SINK_MIN:   {value: 2.0,  units: "m/s",    source: "libraries/AP_TECS/AP_TECS.cpp:35"}
@@ -180,7 +199,41 @@ tecs_baseline_parameters:
     TECS_SPD_OMEGA:  {value: 2.0,  units: "rad/s",  source: "libraries/AP_TECS/AP_TECS.cpp:83"}
     TECS_RLL2THR:    {value: 10.0, units: "-",      source: "libraries/AP_TECS/AP_TECS.cpp:91"}
     TECS_SPDWEIGHT:  {value: 1.0,  units: "-",      source: "libraries/AP_TECS/AP_TECS.cpp:99"}
-    TECS_PTCH_DAMP:  {value: 0.3,  units: "-",      source: "libraries/AP_TECS/AP_TECS.cpp:107"}
+    # ADOPTED 2026-09-05, stage ARDUPLANE_TECS_PTCH_DAMP_ADOPTION_INTEGRATION.
+    # SET by config/ardupilot/falcon_v2_sitl.parm (section
+    # FALCON_V2_SIM_VALIDATED_TECS_PITCH_DAMPING) - the ONLY TECS_* value that
+    # file sets. History is superseded, NOT erased: the firmware default 0.3
+    # and its source line are retained below.
+    TECS_PTCH_DAMP:
+      value: 0.6
+      units: "-"
+      provenance_class: [DERIVED_CALCULATION, GAZEBO_VALIDATION]
+      classification: FALCON_V2_SIM_VALIDATED_TECS_PITCH_DAMPING
+      source: "config/ardupilot/falcon_v2_sitl.parm (adopted value) + docs/source_of_truth/controls/ardupilot_tecs_pitch_damping_loop.yaml (derivation + both campaigns)"
+      superseded:
+        value: 0.3
+        source: "libraries/AP_TECS/AP_TECS.cpp:107"
+        status: SUPERSEDED_FIRMWARE_DEFAULT
+        note: >-
+          ArduPlane V4.8.0-dev / commit 409226a637 compiled default, @Range
+          0.1 1.0. This WAS the live value for every stage up to and including
+          2026-09-05 ARDUPLANE_LONGITUDINAL_PHUGOID_DAMPING_VALIDATION; every
+          result artifact produced before the adoption stage was measured at
+          0.3 and remains valid at 0.3.
+      derivation_one_line: >-
+        TECS_PTCH_DAMP is the ONLY derivative term in the TECS pitch/energy
+        loop; 0.3 -> 0.6 moves the PD corner 1.867 -> 1.033 rad/s, from ABOVE
+        to BELOW the closed-loop energy mode at ~1.1-1.3 rad/s, giving real
+        phase lead at the mode frequency.
+      real_aircraft_divergence:
+        real_aircraft_value: 0.3
+        real_aircraft_source: "docs/source_of_truth/autopilot/real_aircraft/yeni_pixhawk.param:1035 (GCS comma-CSV export, NEVER modified, byte-unchanged by this stage)"
+        status: DIVERGENT_BY_DESIGN_SIM_ONLY
+        note: >-
+          0.6 is SIM-SPECIFIC. It is validated against the Gazebo Falcon V2
+          model only. The real aircraft carries the untuned ArduPlane default
+          0.3. Transferring 0.6 to the real aircraft is NOT authorised by this
+          work and would require separate flight validation.
     TECS_PITCH_MAX:  {value: 15,   units: deg,      source: "libraries/AP_TECS/AP_TECS.cpp:147"}
     TECS_PITCH_MIN:  {value: 0,    units: deg,      source: "libraries/AP_TECS/AP_TECS.cpp:155 (0 => fall back to PTCH_LIM_MIN_DEG, AP_TECS.cpp:1498)"}
     TECS_SYNAIRSPEED: {value: 0,    units: bool,     source: "libraries/AP_TECS/AP_TECS.cpp:244"}

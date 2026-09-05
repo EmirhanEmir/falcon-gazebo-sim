@@ -434,10 +434,16 @@ def dump_params(mav, R):
     R["tecs_baseline_params_missing"] = missing
     R["param_bulk_count"] = len(bulk)
     R["tecs_baseline_params_provenance"] = (
-        "config/ardupilot/falcon_v2_sitl.parm sets NO TECS_* value and arduplane "
-        "is launched with -w (wiped EEPROM), so every TECS_* value above is the "
-        "ArduPlane 4.8.0-dev COMPILED FIRMWARE DEFAULT. Expected values + source "
-        "line numbers: docs/source_of_truth/controls/ardupilot_fbwb_tecs_baseline.yaml")
+        "Every TECS_* value above is the ArduPlane 4.8.0-dev COMPILED FIRMWARE "
+        "DEFAULT, EXCEPT TECS_PTCH_DAMP, which config/ardupilot/falcon_v2_sitl.parm "
+        "SETS to 0.6 (section FALCON_V2_SIM_VALIDATED_TECS_PITCH_DAMPING, adopted "
+        "2026-09-05 by stage ARDUPLANE_TECS_PTCH_DAMP_ADOPTION_INTEGRATION, "
+        "superseding the AP_TECS.cpp:107 compiled default 0.3). arduplane is still "
+        "launched with -w (wiped scratch EEPROM), so nothing persists in the EEPROM "
+        "and every TECS_* parameter NOT present in the .parm is a pure firmware "
+        "default. Expected values + source line numbers: "
+        "docs/source_of_truth/controls/ardupilot_fbwb_tecs_baseline.yaml. "
+        "THIS STAGE WROTE NO PARAMETER.")
     if missing:
         print("WARNING: params not read:", missing)
     return got

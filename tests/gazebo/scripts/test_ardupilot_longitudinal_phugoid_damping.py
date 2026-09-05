@@ -168,10 +168,16 @@ TOTAL FLIGHT TIME: 30 + 4 + 65 = 99 s (the prior stage flew 165 s).
 
 PARAMETER POLICY - READ THIS BEFORE ADDING A FLAG
 --------------------------------------------------
-  * DEFAULT: this test writes NO parameter of any kind. TECS runs on the
-    ArduPlane compiled firmware defaults (config/ardupilot/falcon_v2_sitl.parm
-    sets no TECS_* value and arduplane is launched with -w, a wiped scratch
-    EEPROM). The BASELINE run for this stage MUST be run with no flags.
+  * DEFAULT: this test writes NO parameter of any kind. The BASELINE run for
+    this stage MUST be run with no flags.
+  * UPDATED 2026-09-05 (stage ARDUPLANE_TECS_PTCH_DAMP_ADOPTION_INTEGRATION).
+    config/ardupilot/falcon_v2_sitl.parm now SETS exactly one TECS value,
+    TECS_PTCH_DAMP 0.6 (section FALCON_V2_SIM_VALIDATED_TECS_PITCH_DAMPING).
+    Every OTHER TECS_* parameter is still an ArduPlane compiled firmware
+    default, since arduplane is launched with -w (wiped scratch EEPROM). The
+    PROJECT BASELINE is therefore "firmware defaults, except TECS_PTCH_DAMP
+    0.6" - see TECS_PROJECT_BASELINE below. The previous wording ("the .parm
+    sets no TECS_* value") was true before that stage and is SUPERSEDED.
   * config/ardupilot/falcon_v2_sitl.parm is READ-ONLY input and is never
     edited by this file or its runner.
   * `--set-param NAME=VALUE` (repeatable) performs a RUNTIME MAVLink
@@ -518,6 +524,89 @@ TECS_FIRMWARE_DEFAULTS = {
     "TECS_SINK_MAX": 5.0, "TECS_PITCH_MAX": 15.0, "TECS_PITCH_MIN": 0.0,
     "TECS_OPTIONS": 0.0, "TECS_SYNAIRSPEED": 0.0,
 }
+
+# =============================================================================
+# PROJECT BASELINE  (BASELINE-DEFINITION CORRECTION, 2026-09-05, stage
+# ARDUPLANE_TECS_PTCH_DAMP_ADOPTION_INTEGRATION)
+#
+# Until 2026-09-05 "the stage baseline" and "the compiled ArduPlane firmware
+# defaults" were the same thing, because config/ardupilot/falcon_v2_sitl.parm
+# set NO TECS_* value and arduplane is launched with -w. That is no longer
+# true: falcon_v2_sitl.parm now SETS TECS_PTCH_DAMP 0.6 (section
+# FALCON_V2_SIM_VALIDATED_TECS_PITCH_DAMPING). A run launched with NO
+# --set-param flag therefore DIFFERS from the firmware defaults and yet IS the
+# project baseline.
+#
+# SOURCE OF THE OVERRIDE (read off two documents, not a magic number):
+#   config/ardupilot/falcon_v2_sitl.parm        -> TECS_PTCH_DAMP 0.6
+#   docs/source_of_truth/controls/ardupilot_tecs_pitch_damping_loop.yaml
+#       -> adoption.adopted_value = 0.6
+#   docs/source_of_truth/controls/ardupilot_fbwb_tecs_baseline.yaml
+#       -> TECS_PTCH_DAMP.value = 0.6, .superseded.value = 0.3
+#
+# BASELINE DEFINITION, NOT A THRESHOLD CHANGE. tecs_at_project_baseline() below
+# gates on EXACTLY the same 12 parameter names, with the same 1e-6 tolerance
+# and the same "a missing parameter FAILS" behaviour, as the inherited
+# cruise-stage `tecs_at_firmware_defaults` check it replaces
+# (test_ardupilot_tecs_cruise_speed_hold.py:489-493). Only the expected
+# TECS_PTCH_DAMP value moves 0.3 -> 0.6. Nothing is relaxed, nothing is
+# removed, and the full delta from the FIRMWARE defaults is still computed and
+# still persisted for auditability.
+# =============================================================================
+TECS_PROJECT_BASELINE_OVERRIDES = {
+    # name: (project value, superseded firmware default, provenance)
+    "TECS_PTCH_DAMP": (0.6, 0.3, "config/ardupilot/falcon_v2_sitl.parm "
+                                 "FALCON_V2_SIM_VALIDATED_TECS_PITCH_DAMPING; "
+                                 "supersedes AP_TECS.cpp:107 default 0.3"),
+}
+TECS_PROJECT_BASELINE = dict(TECS_FIRMWARE_DEFAULTS)
+TECS_PROJECT_BASELINE.update({k: v[0] for k, v in TECS_PROJECT_BASELINE_OVERRIDES.items()})
+
+# EXACTLY the 12 names the inherited cruise-stage precondition gates on -
+# test_ardupilot_tecs_cruise_speed_hold.py:489-493. Kept as an explicit tuple
+# so the equivalence is auditable and cannot drift silently.
+GATED_TECS_BASELINE_KEYS = (
+    "TECS_CLMB_MAX", "TECS_SINK_MIN", "TECS_SINK_MAX", "TECS_TIME_CONST",
+    "TECS_THR_DAMP", "TECS_PTCH_DAMP", "TECS_INTEG_GAIN", "TECS_VERT_ACC",
+    "TECS_SPDWEIGHT", "TECS_HDEM_TCONST", "TECS_PITCH_MAX", "TECS_PITCH_MIN",
+)
+
+
+def _tecs_delta(p, expected, key):
+    """Which TECS_* values differ from `expected`, read from the LIVE parameter
+    dump. An unreadable parameter counts as a difference - never silently
+    treated as matching."""
+    diff = {}
+    for name, exp in expected.items():
+        live = p.get(name)
+        if live is None:
+            diff[name] = {"live": None, key: exp, "unreadable": True}
+        elif abs(live - exp) > 1e-6:
+            diff[name] = {"live": live, key: exp}
+    return diff
+
+
+def tecs_delta_from_firmware_defaults(p):
+    """Delta vs the compiled ArduPlane firmware defaults. REPORT-ONLY as of the
+    2026-09-05 baseline-definition correction - still computed, printed and
+    persisted for auditability, but no longer the baseline gate."""
+    return _tecs_delta(p, TECS_FIRMWARE_DEFAULTS, "default")
+
+
+def tecs_delta_from_project_baseline(p):
+    """Delta vs the FALCON V2 PROJECT BASELINE (firmware defaults with
+    TECS_PROJECT_BASELINE_OVERRIDES applied). REPORT-ONLY; the GATE is
+    tecs_at_project_baseline()."""
+    return _tecs_delta(p, TECS_PROJECT_BASELINE, "project_baseline")
+
+
+def tecs_at_project_baseline(p):
+    """GATE. True iff every one of the 12 gated TECS names reads back equal to
+    the PROJECT baseline. Same names / same tolerance / same missing-parameter
+    behaviour as the inherited `tecs_at_firmware_defaults` it replaces."""
+    return all(p.get(n) is not None
+               and abs(p[n] - TECS_PROJECT_BASELINE[n]) < 1e-6
+               for n in GATED_TECS_BASELINE_KEYS)
 
 
 # =============================================================================
@@ -1953,9 +2042,15 @@ def verdict(R):
         w.get("confirmed") for w in writes) if writes else True
     if writes:
         # a run WITH writes is not the stage baseline; declare it loudly
-        c["is_firmware_default_baseline"] = False
+        c["is_project_baseline"] = False
     else:
-        c["is_firmware_default_baseline"] = bool(pre.get("tecs_at_firmware_defaults"))
+        # BASELINE-DEFINITION CORRECTION 2026-09-05: the gate is the PROJECT
+        # baseline (firmware defaults with the adopted TECS_PTCH_DAMP 0.6), not
+        # the raw firmware defaults. Same strictness, corrected reference.
+        c["is_project_baseline"] = bool(pre.get("tecs_at_project_baseline"))
+    # REPORT-ONLY, never gated: expected False on the project baseline.
+    R["is_firmware_default_baseline"] = (
+        (not writes) and not R.get("tecs_delta_from_firmware_defaults"))
 
     # --- 3. TECS is genuinely the authority (re-proved live) ----------------
     ta = an.get("tecs_authority") or {}
@@ -2433,6 +2528,21 @@ def bulk_parameter_audit(R, ts_path=None, explicit_dir=None):
     aud["tecs_vs_firmware_defaults"] = tecs
     aud["tecs_differing_from_firmware_defaults"] = sorted(
         k for k, v in tecs.items() if v["differs"])
+    # 2026-09-05 baseline-definition correction: the same table against the
+    # PROJECT baseline. Both are kept - the firmware-default view above is the
+    # audit trail, this one is what "baseline" now means.
+    ptecs = {}
+    for k, v in sorted(TECS_PROJECT_BASELINE.items()):
+        got = pr.get(k)
+        ptecs[k] = dict(value=got, project_baseline=v,
+                        differs=(got is None or abs(got - v) > 1e-6))
+    aud["tecs_vs_project_baseline"] = ptecs
+    aud["tecs_differing_from_project_baseline"] = sorted(
+        k for k, v in ptecs.items() if v["differs"])
+    aud["tecs_project_baseline_overrides"] = {
+        k: dict(project_value=v[0], superseded_firmware_default=v[1],
+                provenance=v[2])
+        for k, v in TECS_PROJECT_BASELINE_OVERRIDES.items()}
 
     # diff against every OTHER captured run of this stage
     root = os.path.dirname(os.path.abspath(d))
@@ -2506,8 +2616,12 @@ def provenance_block():
                               "LIVE here (tecs_is_driving_throttle_not_the_stick), "
                               "never inherited on trust."),
         "parameter_policy": (
-            "DEFAULT: writes NO parameter of any kind - TECS runs on ArduPlane "
-            "compiled firmware defaults. config/ardupilot/falcon_v2_sitl.parm is "
+            "DEFAULT: writes NO parameter of any kind - a no-flag run is the "
+            "PROJECT BASELINE. As of 2026-09-05 that is the ArduPlane compiled "
+            "firmware defaults EXCEPT TECS_PTCH_DAMP, adopted at 0.6 by "
+            "config/ardupilot/falcon_v2_sitl.parm (superseding the "
+            "AP_TECS.cpp:107 default 0.3); see tecs_project_baseline_expected. "
+            "config/ardupilot/falcon_v2_sitl.parm is "
             "READ-ONLY input and is never edited. `--set-param NAME=VALUE` is an "
             "explicit opt-in that performs a RUNTIME MAVLink PARAM_SET in the "
             "SITL scratch EEPROM only, restricted to SETTABLE_PARAMS (TECS "
@@ -2645,6 +2759,11 @@ def provenance_block():
             V_TARGET_MS=V_TARGET_MS,
             prior_stage_measurements=PRIOR_ENERGY),
         "tecs_firmware_defaults_expected": TECS_FIRMWARE_DEFAULTS,
+        "tecs_project_baseline_expected": TECS_PROJECT_BASELINE,
+        "tecs_project_baseline_overrides": {
+            k: dict(project_value=v[0], superseded_firmware_default=v[1],
+                    provenance=v[2])
+            for k, v in TECS_PROJECT_BASELINE_OVERRIDES.items()},
         "settable_params_whitelist": {k: dict(range=list(v))
                                       for k, v in SETTABLE_PARAMS.items()},
     }
@@ -2704,16 +2823,44 @@ def param_precondition_checks(p, R):
 
     chk["tecs_pitch_max_15"] = eq("TECS_PITCH_MAX", 15.0)
     chk["ptch_lim_min_deg_minus25"] = eq("PTCH_LIM_MIN_DEG", -25.0)
-    # If a --set-param write was requested, the "firmware defaults" precondition
-    # inherited from the energy stage will (correctly) be False. Record which
-    # TECS values were deliberately changed so that is never ambiguous.
+
+    # BASELINE-DEFINITION CORRECTION 2026-09-05 (stage
+    # ARDUPLANE_TECS_PTCH_DAMP_ADOPTION_INTEGRATION). The inherited
+    # `tecs_at_firmware_defaults` precondition gates on "== compiled firmware
+    # defaults", which is no longer the project baseline now that
+    # falcon_v2_sitl.parm adopts TECS_PTCH_DAMP 0.6. It is moved OUT of the
+    # gated dict (param_preconditions_all_ok) into a report-only field, and
+    # REPLACED ONE-FOR-ONE by the equally strict project-baseline gate over the
+    # SAME 12 names with the SAME tolerance. No threshold moved; nothing
+    # relaxed; the firmware-default delta stays fully visible below.
+    R["tecs_at_firmware_defaults_report_only"] = chk.pop(
+        "tecs_at_firmware_defaults", None)
+    chk["tecs_at_project_baseline"] = tecs_at_project_baseline(p)
+    R["tecs_delta_from_firmware_defaults"] = tecs_delta_from_firmware_defaults(p)
+    R["tecs_delta_from_project_baseline"] = tecs_delta_from_project_baseline(p)
+    R["tecs_project_baseline_expected"] = dict(TECS_PROJECT_BASELINE)
+    R["tecs_project_baseline_overrides"] = {
+        k: dict(project_value=v[0], superseded_firmware_default=v[1],
+                provenance=v[2])
+        for k, v in TECS_PROJECT_BASELINE_OVERRIDES.items()}
+    R["baseline_definition_note"] = (
+        "PROJECT BASELINE = ArduPlane compiled firmware defaults EXCEPT "
+        "TECS_PTCH_DAMP, adopted at 0.6 by config/ardupilot/falcon_v2_sitl.parm "
+        "(FALCON_V2_SIM_VALIDATED_TECS_PITCH_DAMPING), superseding the "
+        "AP_TECS.cpp:107 firmware default 0.3. tecs_at_firmware_defaults is "
+        "retained REPORT-ONLY in tecs_at_firmware_defaults_report_only and is "
+        "EXPECTED False on the project baseline.")
+
+    # If a --set-param write was requested, the baseline precondition will
+    # (correctly) be False. Record which TECS values were deliberately changed
+    # so that is never ambiguous.
     writes = R.get("parameter_writes") or []
     if writes:
-        chk["tecs_at_firmware_defaults"] = True   # neutralised - see note
+        chk["tecs_at_project_baseline"] = True   # neutralised - see note
         R["param_precondition_override_note"] = (
-            "tecs_at_firmware_defaults was neutralised for this run because "
+            "tecs_at_project_baseline was neutralised for this run because "
             f"--set-param deliberately wrote {[w['name'] for w in writes]}. The "
-            "run is NOT the stage baseline; is_firmware_default_baseline is "
+            "run is NOT the stage baseline; is_project_baseline is "
             "False in acceptance_checks and the before/after values are in "
             "parameter_writes.")
     R["param_preconditions"] = chk
@@ -2862,7 +3009,15 @@ def print_summary(R):
               f"{hj.get('interp_clamped_samples')}/{hj.get('motor_samples')} "
               f"motor-samples, zero-thrust {hj.get('zero_thrust_samples')}")
         pw = R.get("parameter_writes") or []
-        print(f"parameter writes: {pw if pw else 'NONE (firmware defaults baseline)'}")
+        print(f"parameter writes: {pw if pw else 'NONE (PROJECT baseline)'}")
+        print(f"tecs_at_project_baseline: "
+              f"{(R.get('param_preconditions') or {}).get('tecs_at_project_baseline')}"
+              f" | tecs_at_firmware_defaults (report-only): "
+              f"{R.get('tecs_at_firmware_defaults_report_only')}")
+        print(f"TECS delta vs firmware defaults (REPORT-ONLY): "
+              f"{json.dumps(R.get('tecs_delta_from_firmware_defaults'), default=str)}")
+        print(f"TECS delta vs PROJECT baseline: "
+              f"{json.dumps(R.get('tecs_delta_from_project_baseline'), default=str)}")
         print("-" * 78)
     except Exception as exc:      # summary print only - JSON is authoritative
         print("summary print failed:", exc)

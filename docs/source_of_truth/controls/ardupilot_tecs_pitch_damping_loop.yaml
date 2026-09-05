@@ -1,11 +1,16 @@
 # =============================================================================
 # FALCON V2 - ArduPlane TECS PITCH / ENERGY-BALANCE LOOP:
 # gain structure derived from AP_TECS source, the measured closed-loop
-# longitudinal energy mode, and the VALIDATED-BUT-NOT-ADOPTED candidate
-# TECS_PTCH_DAMP = 0.6
+# longitudinal energy mode, and the NOW-ADOPTED TECS_PTCH_DAMP = 0.6
 # =============================================================================
 # Owner: controls-integration.
-# Stage: ARDUPLANE_LONGITUDINAL_PHUGOID_DAMPING_VALIDATION (2026-09-05).
+# Stage of origin: ARDUPLANE_LONGITUDINAL_PHUGOID_DAMPING_VALIDATION
+#   (2026-09-05) - measured and recorded the candidate, adopted NOTHING.
+# Amended by:     ARDUPLANE_TECS_PTCH_DAMP_ADOPTION_INTEGRATION (2026-09-05) -
+#   ADOPTS TECS_PTCH_DAMP = 0.6 into config/ardupilot/falcon_v2_sitl.parm.
+#   See `adoption:` below. Everything the origin stage MEASURED is untouched;
+#   only the STATUS of the candidate and the claims that depended on it are
+#   amended, and each amendment is marked AMENDED_2026-09-05_ADOPTION.
 #
 # WHAT THIS FILE IS
 #   The provenance-carrying reference for
@@ -14,27 +19,36 @@
 #         rather than guessed,
 #     (b) the MEASURED closed-loop mode at firmware defaults and the evidence
 #         that it is NOT the bare-airframe phugoid,
-#     (c) the MEASURED effect of TECS_PTCH_DAMP = 0.6, recorded with status
-#         VALIDATED_NOT_ADOPTED, together with the explicit gate a future
-#         adoption stage must pass,
+#     (c) the MEASURED effect of TECS_PTCH_DAMP = 0.6, recorded by the origin
+#         stage with status VALIDATED_NOT_ADOPTED together with the explicit
+#         gate a future adoption stage had to pass - and, AMENDED_2026-09-05_
+#         ADOPTION, the record of that gate being closed and the value being
+#         ADOPTED (see `adoption:` and section 8),
 #     (d) the estimator correction applied to the envelope-decay analysis and
 #         exactly what it does and does not validate,
 #     (e) every declared limitation, each one NON-GATING and each one tagged.
 #
 # WHAT THIS FILE IS NOT
-#   It is NOT a parameter file and it does NOT adopt anything. NO TECS_* value,
-#   NO PID, NO PTCH_TRIM_DEG, NO control-surface mapping, NO aerodynamic,
-#   propulsion, actuator, sensor, mass, CG or inertia quantity is written or
-#   changed by this stage.
+#   It is NOT a parameter file. NO PID, NO PTCH_TRIM_DEG, NO control-surface
+#   mapping, NO aerodynamic, propulsion, actuator, sensor, mass, CG or inertia
+#   quantity is written or changed by the origin stage or by the adoption
+#   amendment. TECS_PTCH_DAMP is the ONLY value that changed anywhere.
 #
-#   config/ardupilot/falcon_v2_sitl.parm is UNCHANGED
-#   (md5 180e56711bdf18c658f6ded8031421f1) and sets no TECS_* value at all.
-#
-#   docs/source_of_truth/controls/ardupilot_fbwb_tecs_baseline.yaml line 183
-#   remains the authoritative record of the LIVE value:
-#       TECS_PTCH_DAMP: {value: 0.3, source: "libraries/AP_TECS/AP_TECS.cpp:107"}
-#   That line is CORRECT and was not edited. 0.6 appears in this repository
-#   ONLY as a runtime MAVLink PARAM_SET inside two measurement runs.
+#   AMENDED_2026-09-05_ADOPTION - the two statements that follow were TRUE for
+#   the origin stage and are now SUPERSEDED. They are kept verbatim so the
+#   record of what the origin stage did (and did not do) stays readable:
+#     WAS: "config/ardupilot/falcon_v2_sitl.parm is UNCHANGED
+#           (md5 180e56711bdf18c658f6ded8031421f1) and sets no TECS_* value
+#           at all."
+#     WAS: "docs/source_of_truth/controls/ardupilot_fbwb_tecs_baseline.yaml
+#           line 183 remains the authoritative record of the LIVE value:
+#           TECS_PTCH_DAMP: {value: 0.3,
+#                            source: libraries/AP_TECS/AP_TECS.cpp:107}"
+#   NOW: falcon_v2_sitl.parm SETS TECS_PTCH_DAMP 0.6 (section
+#   FALCON_V2_SIM_VALIDATED_TECS_PITCH_DAMPING; new md5 recorded under
+#   `adoption:` below), and the baseline.yaml row now carries 0.6 with the
+#   firmware default 0.3 retained as `superseded:`. It remains true that
+#   falcon_v2_sitl.parm sets NO OTHER TECS_* value.
 #
 # WHY A SIBLING FILE RATHER THAN AN EXTENSION OF THE 2026-09-03 FILE
 #   docs/source_of_truth/controls/ already follows one-file-per-subject:
@@ -49,10 +63,14 @@
 #                                          ARDUPLANE_TECS_CLIMB_DESCENT_AND_
 #                                          ENERGY_VALIDATION.
 #   The subject here - the ALGEBRAIC GAIN STRUCTURE of the pitch/energy loop
-#   plus a NOT-ADOPTED candidate parameter - is a distinct subject from that
+#   plus the candidate parameter it produced - is a distinct subject from that
 #   stage's energy bookkeeping. Folding it into a document whose header claims
-#   a different stage would blur which stage measured what, and would bury a
-#   NOT-ADOPTED value inside a closed stage's record. Kept separate.
+#   a different stage would blur which stage measured what, and would bury the
+#   candidate inside a closed stage's record. Kept separate. This remains true
+#   after adoption: this file is now the derivation-and-evidence record BEHIND
+#   the adopted value, while the adopted value itself lives in
+#   config/ardupilot/falcon_v2_sitl.parm and is tabulated in
+#   ardupilot_fbwb_tecs_baseline.yaml.
 #
 # COMPANION FILES (read in this order)
 #   1. docs/source_of_truth/controls/ardupilot_fbwb_tecs_baseline.yaml
@@ -74,6 +92,9 @@ stage:
   stage_blocking_findings: 0
   parameters_written_by_this_stage: NONE
   parm_file_md5_unchanged: 180e56711bdf18c658f6ded8031421f1
+  # AMENDED_2026-09-05_ADOPTION: the two fields above describe the ORIGIN
+  # stage and are still accurate FOR IT - it wrote nothing. The later adoption
+  # stage did write; see `adoption:` for the new md5.
   tests:
     phugoid: tests/gazebo/scripts/test_ardupilot_longitudinal_phugoid_damping.py
     phugoid_runner: tests/gazebo/scripts/run_ardupilot_longitudinal_phugoid_damping.sh
@@ -98,6 +119,302 @@ stage:
       altitude (ArduPlane/navigation.cpp:418-424, ArduPlane/altitude.cpp:191-195).
       The airspeed demand is unchanged. Constant demands are what make the
       AP_TECS algebra in section 1 EXACT rather than approximate.
+
+# =============================================================================
+# 0. ADOPTION RECORD  (AMENDED_2026-09-05_ADOPTION)
+#    Stage: ARDUPLANE_TECS_PTCH_DAMP_ADOPTION_INTEGRATION.
+#    Documentation + parameter integration ONLY. No simulation was run by this
+#    stage; the readback belongs to gazebo-testing.
+# =============================================================================
+adoption:
+  parameter: TECS_PTCH_DAMP
+  adopted_value: 0.6
+  superseded_value: 0.3
+  superseded_value_source: "libraries/AP_TECS/AP_TECS.cpp:107 (ArduPlane V4.8.0-dev, commit 409226a637, @Range 0.1 1.0)"
+  status: ADOPTED
+  adoption_date: 2026-09-05
+  authorisation: >-
+    Project owner, explicitly, after an independent external adoption campaign
+    concluded ADOPT. See external_campaign below.
+  scope_of_the_change: >-
+    TECS_PTCH_DAMP is the ONLY value changed anywhere by this stage. No PID, no
+    PTCH_TRIM_DEG, no control-surface travel scaling, no aerodynamic
+    coefficient, no actuator model, no propulsion model, no High-J behaviour,
+    no sensor model, no mass/CG/inertia, no SDF, no mesh, no plugin. No
+    AUTOTUNE.
+  written_to:
+    file: config/ardupilot/falcon_v2_sitl.parm
+    section: FALCON_V2_SIM_VALIDATED_TECS_PITCH_DAMPING
+    line_form: "TECS_PTCH_DAMP    0.6"
+    parm_file_md5_before: 180e56711bdf18c658f6ded8031421f1
+    parm_file_md5_after: 1b5ac47a5487502ca0a11abdaecb3026
+    note: >-
+      The md5 change is EXPECTED and AUTHORISED. Any prior document quoting
+      180e567... is describing the pre-adoption file and is correct for its
+      own date.
+  also_updated:
+    - "docs/source_of_truth/controls/ardupilot_fbwb_tecs_baseline.yaml - TECS_PTCH_DAMP row now 0.6 with the firmware default 0.3 retained as `superseded:`; the TECS-BASELINE-PARAMETERS section header no longer claims the .parm sets no TECS_* value. AMENDED 2026-09-05 (provenance-wording sweep): the FILE header at the top of that file still carried the same stale claim in two more places (the `WHAT THIS FILE IS` (c) bullet and the `NOTHING in this file changes any parameter` paragraph) - the original wording of this entry overstated the fix. Both are now corrected; the file header no longer claims the .parm is TECS-free."
+    - "docs/source_of_truth/autopilot/SITL_PARAM_MIGRATION.md - new section 18; sec 3 amended so it no longer contradicts the .parm."
+    - "tests/gazebo/scripts/test_ardupilot_tecs_ptch_damp_regression.py + test_ardupilot_longitudinal_phugoid_damping.py - PROJECT-baseline definition (see harness_baseline_definition below). BASELINE-DEFINITION correction only; no acceptance threshold moved, no gate weakened."
+
+  # ---------------------------------------------------------------------------
+  # WHY THIS IS DEFENSIBLE: TWO INDEPENDENT CAMPAIGNS AGREE ON THE EFFECT.
+  # The ABSOLUTE numbers DIFFER between them. The adoption rests on the agreed
+  # DIRECTION AND MAGNITUDE OF IMPROVEMENT, NOT on either campaign's absolute
+  # values. Recorded honestly and side by side - not reconciled, not averaged.
+  # ---------------------------------------------------------------------------
+  evidence_basis: TWO_INDEPENDENT_CAMPAIGNS_AGREEING_ON_THE_EFFECT
+  evidence_basis_note: >-
+    The two campaigns used different excitation and different test conditions,
+    which is the stated and sufficient explanation for the absolute-value
+    spread. Neither campaign's absolute numbers are promoted to project truth
+    by this adoption. What IS claimed is the effect: TECS_PTCH_DAMP 0.3 -> 0.6
+    roughly triples the longitudinal energy-mode decay rate and cuts
+    airspeed/altitude hold scatter by roughly a factor 3, with no adverse
+    envelope, saturation or numerical behaviour observed.
+  headline_results_side_by_side:
+    units: {tau: s, zeta: "-", airspeed_std: "m/s", altitude_hold_p2p: m, max_elevator: deg}
+    this_repository_2026_09_05:
+      campaign: ARDUPLANE_LONGITUDINAL_PHUGOID_DAMPING_VALIDATION (sections 4 and 7 of this file)
+      tau:                {at_0p3: 22.07, at_0p6: 8.65}
+      zeta:               {at_0p3: 0.0407, at_0p6: 0.0872}
+      airspeed_std:       {at_0p3: 0.186, at_0p6: 0.066}
+      altitude_hold_p2p:  {at_0p3: 2.148, at_0p6: 0.635}
+      max_elevator:       {at_0p6: 6.29}
+      n_runs_per_setting: 1
+    external_codex_campaign:
+      campaign: "independent external adoption campaign (Codex), run in a SEPARATE WORKING COPY - THIS REPOSITORY WAS NOT TOUCHED by it"
+      tau:                {at_0p3: 26.0, at_0p6: 9.3}
+      zeta:               {at_0p3: 0.0347, at_0p6: 0.083}
+      airspeed_std:       {at_0p3: 0.40, at_0p6: 0.11}
+      altitude_hold_p2p:  {at_0p3: 2.1, at_0p6: 0.59}
+      max_elevator:       {at_0p6: 8.25}
+      n_runs_per_setting: "repeat runs at BOTH 0.3 and 0.6; 0.6 repeatability reported clean"
+    agreement:
+      tau_improvement_factor: {this_repository: 2.55, external: 2.80}
+      zeta_improvement_factor: {this_repository: 2.14, external: 2.39}
+      airspeed_std_improvement_factor: {this_repository: 2.82, external: 3.64}
+      altitude_hold_p2p_improvement_factor: {this_repository: 3.38, external: 3.56}
+      ruling: >-
+        Same sign, same order of magnitude, on four independent metrics, from
+        two campaigns that shared no run. That is the basis for adoption.
+  external_campaign:
+    attribution: "independent external campaign (Codex), separate working copy; this repository was NOT modified by it"
+    exactly_one_functional_difference: "TECS_PTCH_DAMP 0.3 -> 0.6"
+    reported_findings:
+      - "repeat runs for both default 0.3 and candidate 0.6; 0.6 repeatability clean"
+      - "sanity tests clean at 17.0 m/s, 19.5 m/s, and -5 m/s headwind"
+      - "no growing oscillation, no throttle saturation, no actuator clamp, no NaN/Inf"
+      - "max elevator ~8.25 deg"
+      - "validation: 0 CRITICAL, 0 MAJOR; decision ADOPT"
+    what_is_NOT_recorded_here: >-
+      Only the evidence summary above was supplied. No per-run artifact, no raw
+      timeseries, no threshold table and no acceptance-check list from that
+      campaign exists in this repository. Nothing beyond the quoted summary is
+      claimed, and no number from it has been invented or extrapolated.
+    why_it_matters_for_the_gate: >-
+      It supplies EXACTLY the two things this file listed as unsatisfied
+      adoption requirements: RUN_TO_RUN_SCATTER (repeat runs at both settings)
+      and ENVELOPE_COVERAGE (two extra airspeeds plus a headwind case). That is
+      what closed this project's adoption gate.
+
+  # ---------------------------------------------------------------------------
+  # ADOPTION REQUIREMENTS - final disposition. See section 8 for the originals.
+  # ---------------------------------------------------------------------------
+  adoption_requirements_final:
+    SOT_ENTRY:                        SATISFIED
+    RUN_TO_RUN_SCATTER:               SATISFIED_BY_EXTERNAL_CAMPAIGN
+    ENVELOPE_COVERAGE:                PARTIALLY_SATISFIED_BY_EXTERNAL_CAMPAIGN
+    REAL_AIRCRAFT_DIVERGENCE_DECLARED: SATISFIED
+    PITCH_DEMAND_MARGIN_DECLARED:     SATISFIED
+  adoption_requirements_not_fully_satisfied:
+    - id: RUN_TO_RUN_SCATTER
+      caveat: >-
+        Satisfied by the EXTERNAL campaign's repeat runs, not by repeats in
+        this repository. n = 1 per setting still holds for every artifact
+        stored HERE (open limitation N_EQUALS_1_PER_SETTING remains OPEN).
+    - id: ENVELOPE_COVERAGE
+      caveat: >-
+        BROADER than before but NOT exhaustive - see
+        open_limitations -> ENVELOPE_COVERAGE_NOT_EXHAUSTIVE.
+
+  # ---------------------------------------------------------------------------
+  # REAL-AIRCRAFT SEPARATION - MUST NOT BE BLURRED
+  # ---------------------------------------------------------------------------
+  real_aircraft_divergence:
+    sim_validated_value: 0.6
+    real_aircraft_value: 0.3
+    real_aircraft_file: docs/source_of_truth/autopilot/real_aircraft/yeni_pixhawk.param
+    real_aircraft_line: 1035
+    real_aircraft_file_status: >-
+      GCS-side comma-CSV export. NEVER modified. NOT touched by this stage -
+      byte-unchanged, md5 a14a18b3ad4d053efa459d422b2a1096.
+    why_they_differ: >-
+      The sim value is VALIDATED AGAINST THE GAZEBO FALCON V2 MODEL (its
+      aerodynamic tables, propulsion tables, actuator model, mass/CG/inertia).
+      The real-aircraft value is the UNTUNED ArduPlane compiled default carried
+      in the airframe's GCS export - it is not a flight-tuned Falcon V2 value
+      and never was.
+    transfer_to_real_aircraft: NOT_AUTHORISED
+    transfer_note: >-
+      Adopting 0.6 in simulation does NOT authorise setting 0.6 on the real
+      aircraft. That would require its own flight validation. Any future
+      real-aircraft change must be justified from flight data, not from this
+      record.
+
+  # ---------------------------------------------------------------------------
+  # HARNESS BASELINE DEFINITION (TRAP the adoption creates, and its fix)
+  # ---------------------------------------------------------------------------
+  harness_baseline_definition:
+    problem: >-
+      Both damping harnesses defined "baseline" as "equals the compiled
+      ArduPlane firmware defaults". Once falcon_v2_sitl.parm sets
+      TECS_PTCH_DAMP 0.6, a run with NO --set-param flag - which IS the project
+      baseline - differs from the firmware defaults and would be reported as
+      not-a-baseline.
+    fix: >-
+      An explicit PROJECT BASELINE was introduced:
+      TECS_PROJECT_BASELINE = TECS_FIRMWARE_DEFAULTS with TECS_PTCH_DAMP
+      overridden to 0.6, sourced from config/ardupilot/falcon_v2_sitl.parm and
+      from this record. The gating baseline check is now evaluated against the
+      PROJECT baseline; the delta from the FIRMWARE defaults is still computed,
+      still printed and still persisted in every result artifact.
+    classification: BASELINE_DEFINITION_CORRECTION_NOT_A_THRESHOLD_CHANGE
+    guarantees:
+      - "no acceptance threshold value was moved"
+      - "no gate was removed or made permissive; the gated parameter set and tolerance are unchanged, only the EXPECTED TECS_PTCH_DAMP value changed 0.3 -> 0.6"
+      - "delta-from-firmware-defaults reporting remains visible in both harnesses"
+    files:
+      - tests/gazebo/scripts/test_ardupilot_tecs_ptch_damp_regression.py
+      - tests/gazebo/scripts/test_ardupilot_longitudinal_phugoid_damping.py
+    known_follow_up_NOT_done_here:
+      severity: INFO
+      owner: gazebo-testing
+      detail: >-
+        tests/gazebo/scripts/test_ardupilot_tecs_cruise_speed_hold.py (its
+        `tecs_at_firmware_defaults` precondition and the
+        `tecs_at_firmware_defaults_baseline` acceptance check) and
+        tests/gazebo/scripts/test_ardupilot_tecs_climb_descent_energy.py (same
+        acceptance check) carry the EQUIVALENT firmware-defaults baseline
+        notion and were deliberately NOT edited by this stage, which was scoped
+        to the two damping harnesses. If either of those closed-stage tests is
+        re-run at the project baseline it will report that check False for the
+        same baseline-definition reason. FLAGGED, not silently fixed.
+
+  # ---------------------------------------------------------------------------
+  # POST-ADOPTION SANITY RUN - THE PROJECT'S FIRST RUN-TO-RUN REPEATABILITY
+  # SAMPLE AT TECS_PTCH_DAMP = 0.6, MEASURED IN THIS REPOSITORY.
+  #
+  # PURPOSE. The adoption changed HOW 0.6 reaches the vehicle: the validation
+  # stage delivered it as a RUNTIME MAVLink PARAM_SET; the adoption delivers it
+  # from config/ardupilot/falcon_v2_sitl.parm at launch. This run exists to
+  # prove the .parm LOAD PATH delivers what the runtime write delivered. It is
+  # NOT a re-validation of 0.6 and it moved no threshold.
+  #
+  # It is ALSO, incidentally, the first time the same configuration has been
+  # flown twice at 0.6 in this repository, so the pair is recorded here as a
+  # repeatability datum. n = 2. See the honesty caveat at the end.
+  # ---------------------------------------------------------------------------
+  post_adoption_sanity_run:
+    stage: ARDUPLANE_TECS_PTCH_DAMP_ADOPTION_INTEGRATION
+    date: 2026-09-05
+    executed_by: gazebo-testing
+    harness: tests/gazebo/scripts/test_ardupilot_tecs_ptch_damp_regression.py
+    verdict: TECS_PTCH_DAMP_NO_PERFORMANCE_REGRESSION
+    failed_checks: []
+    acceptance_checks: "66/66"
+    regression_gates: "37/37"
+    live_readback: "TECS_PTCH_DAMP = 0.6"
+    parameter_writes: []
+    is_project_baseline: true
+    what_the_readback_proves: >-
+      TECS_PTCH_DAMP read back LIVE as 0.6 over MAVLink while the harness's own
+      parameter_writes list was EMPTY. The value can therefore only have come
+      from config/ardupilot/falcon_v2_sitl.parm at launch. This is the direct
+      evidence that the .parm load path works - not an inference.
+    artifacts:
+      - tests/gazebo/results/ardupilot_tecs_ptch_damp_regression_result_adopted.json
+      - tests/gazebo/results/ardupilot_tecs_ptch_damp_regression_timeseries_adopted.json
+      - tests/gazebo/results/ardupilot_tecs_ptch_damp_regression_per_sample_adopted.json
+      - tests/gazebo/results/ardupilot_tecs_ptch_damp_regression_log_adopted.txt
+      - tests/gazebo/results/ardupilot_tecs_ptch_damp_regression_dataflash_adopted/
+
+    # -------------------------------------------------------------------------
+    # RUN-TO-RUN COMPARISON AT THE SAME SETTING (0.6), DIFFERENT DELIVERY PATH.
+    # Column A: this run - 0.6 loaded from the .parm, NO runtime write.
+    # Column B: the validation stage's candidate run - 0.6 written at runtime
+    #           by MAVLink PARAM_SET into the scratch EEPROM.
+    # Same aircraft, same world, same zero wind, same 5-phase profile.
+    # -------------------------------------------------------------------------
+    repeatability_pair:
+      n: 2
+      setting: "TECS_PTCH_DAMP = 0.6 in BOTH columns"
+      only_difference: "delivery path (.parm at launch vs runtime PARAM_SET)"
+      units_note: "A = adopted-via-.parm, B = candidate-via-runtime-PARAM_SET"
+      metric_provenance: >-
+        Every column-A value below was RE-READ out of
+        tests/gazebo/results/ardupilot_tecs_ptch_damp_regression_result_adopted.json
+        at the JSON path given in `path:`, not copied from a summary. Column B
+        is the corresponding value from the validation stage's candidate-run
+        artifact at the same path.
+      metrics:
+        airspeed_std_mps:        {A: 0.0606,   B: 0.0660,   delta: -0.0054,  pct: -8.2,  path: "analysis.R1_cruise_hold.airspeed_vfr_hud_ms.std"}
+        alt_hold_p2p_m:          {A: 0.6680,   B: 0.6345,   delta: +0.0335,  pct: +5.3,  path: "analysis.R3_settle_hold.altitude_p2p_m"}
+        achieved_climb_m:        {A: 10.5842,  B: 10.3843,  delta: +0.1999,  pct: +1.9,  path: "analysis.altitude_step.achieved_climb_m"}
+        achieved_descent_m:      {A: -11.1171, B: -10.9168, delta: -0.2003,  pct: +1.8,  path: "analysis.altitude_step.achieved_descent_m"}
+        roundtrip_residual_m:    {A: -0.5330,  B: -0.5324,  delta: -0.0006,  pct: +0.1,  path: "analysis.altitude_step.roundtrip_residual_m"}
+        descent_ramp_s:          {A: 9.0825,   B: 8.8895,   delta: +0.1930,  pct: +2.2,  path: "analysis.altitude_step.descent_ramp_duration_s"}
+        v_min_mps:               {A: 17.1685,  B: 17.1171,  delta: +0.0514,  pct: +0.3,  path: "analysis.R5_resettle_full.airspeed_vfr_hud_ms.min"}
+        max_abs_elevator_deg:    {A: 6.2903,   B: 6.2895,   delta: +0.0008,  pct: +0.01, path: "analysis.R5_resettle_full.surfaces.left_elevator.actual_deg.max", sign_note: "PHYSICAL surface deflection, deg, actuator-reported. Sign convention unchanged by this stage; see docs/source_of_truth/controls/actuator_v1_config.yaml."}
+        cruise_mean_mps:         {A: 17.9123,  B: 17.9109,  delta: +0.0014,  pct: +0.01, path: "analysis.R1_cruise_hold.airspeed_vfr_hud_ms.mean"}
+
+    interpretation_by_gazebo_testing: >-
+      RECORDED AS gazebo-testing's INTERPRETATION, not as an independent
+      controls-integration claim. The PURE CONTROLLER SIGNATURES - the
+      quantities that depend only on what the control loop did - agree to a
+      fraction of a percent: max |elevator| 0.01%, cruise mean airspeed 0.01%,
+      roundtrip altitude residual 0.1%, and both throttles within 0.2%. The
+      LARGEST spreads are the climb/descent magnitudes (+/-0.20 m) and the
+      descent ramp duration (+0.19 s), and those are ONE QUANTITY SEEN TWICE,
+      not two independent disagreements: both ramps terminate closed-loop on a
+      THRESHOLD CROSSING, so a slightly larger achieved climb mechanically buys
+      a slightly longer descent back to the original altitude. That is
+      STOP-DETECTION QUANTISATION, not a control-path difference.
+    conclusion: >-
+      The .parm load path delivers exactly what the runtime write delivered.
+      The adoption changed the delivery mechanism and nothing else.
+    honesty_caveat: >-
+      n = 2. This is an INDICATION OF REPEATABILITY, NOT A DISTRIBUTION. No
+      standard deviation, no confidence interval and no scatter bound may be
+      quoted from two samples. The two runs also differ in delivery path, so
+      they are not two draws from an identical procedure. Open limitation
+      N_EQUALS_1_PER_SETTING is NARROWED, NOT CLOSED, by this pair.
+
+    # -------------------------------------------------------------------------
+    # HIGH-J PROPULSION EXPOSURE OF THE ADOPTED RUN - counted and reported,
+    # never gated, never compensated for (CLAUDE.md simulation tuning policy).
+    # -------------------------------------------------------------------------
+    high_j_exposure_adopted_run:
+      interp_clamped_samples: 180
+      total_samples: 4658
+      interp_clamped_fraction: 0.0386
+      zero_thrust_samples: 174
+      advance_ratio_min: 0.4726
+      advance_ratio_max: 1.4178
+      advance_ratio_mean: 0.5507
+      advance_ratio_std: 0.0446
+      path: "analysis.whole_flight.high_j (motor_samples 4658, interp_clamped_fraction 0.038643194504079006)"
+      relates_to: "open_limitations -> PROPULSION_HIGH_J_WINDMILLING"
+      status: "OPEN_LIMITATION UNCHANGED - still OPEN, still DATA_REQUIRED, still owner `propulsion`, still NON-GATING"
+      note: >-
+        Recorded so the adopted run's exposure to the missing APC 13x6.5E
+        windmilling data is on the record with a number, not left implicit.
+        The adoption neither addresses nor worsens this limitation.
+
+  historical_validity_of_earlier_artifacts: >-
+    Every result artifact produced BEFORE 2026-09-05 was measured at
+    TECS_PTCH_DAMP = 0.3 and remains valid AT 0.3. They are not invalidated by
+    this adoption; they are simply no longer at the project baseline.
 
 # -----------------------------------------------------------------------------
 # 1. ROOT CAUSE - the gain structure of the TECS pitch / energy-balance loop
@@ -384,8 +701,31 @@ measurements:
 # -----------------------------------------------------------------------------
 prior_stage_correction:
   finding_id: CLOSED_LOOP_LONGITUDINAL_DAMPING_WEAKER_THAN_FREE_AIRFRAME
-  status: OPEN_MAJOR
+  status: RESOLVED_AT_THE_ADOPTED_VALUE__HISTORICALLY_TRUE_AT_FIRMWARE_DEFAULTS
+  status_at_origin: OPEN_MAJOR
   gating: false
+  # AMENDED_2026-09-05_ADOPTION - RE-SCOPED, NOT DELETED.
+  re_scoping_at_adoption:
+    what_the_finding_says: >-
+      At TECS_PTCH_DAMP = 0.3 the closed-loop longitudinal energy mode decayed
+      MORE SLOWLY than the free-airframe Lanchester reference:
+      tau_closed/tau_ref in the range 1.057 - 1.134 depending on estimator
+      (see decomposition below). That statement is and remains TRUE at the
+      firmware default and must not be deleted from the record.
+    what_adoption_changes: >-
+      At the NOW-ADOPTED TECS_PTCH_DAMP = 0.6 this repository MEASURED
+      tau_ratio_closed_over_free = 0.41466 (measurements.candidate_ptch_damp_
+      0p6), i.e. the closed loop decays roughly 2.4x FASTER than the free
+      airframe reference - comfortably inside the criterion. The finding is
+      therefore RESOLVED AT THE ADOPTED CONFIGURATION.
+    precise_scope: >-
+      RESOLVED for the project baseline (TECS_PTCH_DAMP = 0.6).
+      HISTORICALLY TRUE and NOT retracted for TECS_PTCH_DAMP = 0.3 and for
+      every artifact measured at 0.3.
+    residual_caveats:
+      - "the 0.41466 ratio is n = 1 in this repository (open limitation N_EQUALS_1_PER_SETTING)"
+      - "the reference it is compared against is the Lanchester model, itself an ASSUMPTION (open limitation PHUGOID_REFERENCE_IS_LANCHESTER, still open, still DATA_REQUIRED)"
+      - "the ratio was measured at 18 m/s, zero wind, one mass/CG only (open limitation ENVELOPE_COVERAGE_NOT_EXHAUSTIVE)"
   gating_rationale: >-
     Part 1 exists to MEASURE this ratio on a purpose-built free decay. Gating
     the baseline on it would be circular and would invite tuning to pass, which
@@ -587,18 +927,35 @@ performance_regression:
 
 # -----------------------------------------------------------------------------
 # 8. CANDIDATE PARAMETER RECORD
+#    AMENDED_2026-09-05_ADOPTION - status flipped VALIDATED_NOT_ADOPTED ->
+#    ADOPTED. The origin-stage wording is preserved as `origin_stage_record:`
+#    so the history of "measured, not adopted" is not erased.
 # -----------------------------------------------------------------------------
 candidate_parameter:
   name: TECS_PTCH_DAMP
   candidate_value: 0.6
-  status: VALIDATED_NOT_ADOPTED
-  live_value_unchanged: 0.3
-  live_value_source: "libraries/AP_TECS/AP_TECS.cpp:107 (firmware default) - recorded at docs/source_of_truth/controls/ardupilot_fbwb_tecs_baseline.yaml:183, NOT edited by this stage"
+  status: ADOPTED
+  adoption_date: 2026-09-05
+  adopted_by_stage: ARDUPLANE_TECS_PTCH_DAMP_ADOPTION_INTEGRATION
+  adoption_record: "see `adoption:` (section 0)"
+  live_value: 0.6
+  live_value_source: "config/ardupilot/falcon_v2_sitl.parm, section FALCON_V2_SIM_VALIDATED_TECS_PITCH_DAMPING; tabulated at docs/source_of_truth/controls/ardupilot_fbwb_tecs_baseline.yaml"
+  superseded_live_value: 0.3
+  superseded_live_value_source: "libraries/AP_TECS/AP_TECS.cpp:107 (compiled firmware default)"
   where_0p6_exists_in_this_repository: >-
-    ONLY as a runtime MAVLink PARAM_SET issued by the test harness for the
-    duration of two measurement runs. It is NOT in config/ardupilot/
-    falcon_v2_sitl.parm, NOT in any SOT parameter table, and is NOT a default.
-  provenance_class_if_adopted: [DERIVED_CALCULATION, GAZEBO_VALIDATION]
+    Now the PROJECT DEFAULT: set in config/ardupilot/falcon_v2_sitl.parm,
+    tabulated in ardupilot_fbwb_tecs_baseline.yaml, and used as the expected
+    TECS_PROJECT_BASELINE value by the two damping harnesses. It is still
+    settable at runtime by --set-param under the same whitelist.
+  origin_stage_record:
+    status_at_origin: VALIDATED_NOT_ADOPTED
+    note: >-
+      At the origin stage (2026-09-05, ARDUPLANE_LONGITUDINAL_PHUGOID_DAMPING_
+      VALIDATION) 0.6 existed in this repository ONLY as a runtime MAVLink
+      PARAM_SET issued by the test harness for the duration of two measurement
+      runs; it was NOT in config/ardupilot/falcon_v2_sitl.parm, NOT in any SOT
+      parameter table, and was NOT a default. That stage adopted nothing.
+  provenance_class: [DERIVED_CALCULATION, GAZEBO_VALIDATION]
   adoption_requirements:
     - id: SOT_ENTRY
       requirement: >-
@@ -608,26 +965,47 @@ candidate_parameter:
       status: SATISFIED_BY_THIS_FILE
     - id: RUN_TO_RUN_SCATTER
       requirement: "Repeat runs to establish run-to-run scatter."
-      status: NOT_SATISFIED
-      detail: "n = 1 per setting on the damping measurement; n = 2 total realisations behind the regression reference bands."
+      status: SATISFIED_BY_EXTERNAL_CAMPAIGN     # AMENDED_2026-09-05_ADOPTION
+      status_at_origin: NOT_SATISFIED
+      detail: >-
+        n = 1 per setting on the damping measurement IN THIS REPOSITORY; n = 2
+        total realisations behind the regression reference bands. CLOSED by the
+        external Codex campaign, which ran repeats at BOTH 0.3 and 0.6 and
+        reported 0.6 repeatability clean (adoption.external_campaign). The
+        repeats live outside this repository, so the open limitation
+        N_EQUALS_1_PER_SETTING still stands for artifacts stored here.
     - id: ENVELOPE_COVERAGE
       requirement: >-
         Envelope coverage. Currently ONE airspeed (18 m/s), ONE step size
         (+/-10 m), ZERO wind, ONE mass/CG. The wind/gust model is already
         validated (commit efb5624) and should be exercised.
-      status: NOT_SATISFIED
+      status: PARTIALLY_SATISFIED_BY_EXTERNAL_CAMPAIGN  # AMENDED_2026-09-05_ADOPTION
+      status_at_origin: NOT_SATISFIED
+      detail: >-
+        The external Codex campaign added sanity runs at 17.0 m/s and 19.5 m/s
+        and a -5 m/s headwind case, all reported clean. Airspeed coverage and
+        the zero-wind gap are therefore addressed. STILL NOT COVERED: mass/CG
+        variation, gust (as opposed to steady-wind) cases, larger altitude
+        steps, and any coverage of the 0.6 setting inside THIS repository
+        beyond 18 m/s / +-10 m / zero wind. See
+        open_limitations -> ENVELOPE_COVERAGE_NOT_EXHAUSTIVE.
     - id: REAL_AIRCRAFT_DIVERGENCE_DECLARED
       requirement: >-
         Explicit record of the divergence from the real aircraft parameter set.
-      status: RECORDED_HERE_MUST_BE_RESTATED_AT_ADOPTION
+      status: SATISFIED   # AMENDED_2026-09-05_ADOPTION - restated at adoption
+      status_at_origin: RECORDED_HERE_MUST_BE_RESTATED_AT_ADOPTION
       detail: >-
         docs/source_of_truth/autopilot/real_aircraft/yeni_pixhawk.param:1035
         carries TECS_PTCH_DAMP,0.3. Per docs/source_of_truth/autopilot/
         SITL_PARAM_MIGRATION.md section 3 the whole TECS_* group is classified
         REVIEW_AND_ADAPT and explicitly "not authoritative Falcon V2 truth", so
-        this is NOT A BLOCKER - but 0.6 would be the project's FIRST
-        Falcon-specific TECS value and the divergence must be EXPLICIT rather
-        than silent.
+        this is NOT A BLOCKER - but 0.6 IS the project's FIRST Falcon-specific
+        TECS value and the divergence must be EXPLICIT rather than silent.
+      restated_at_adoption: >-
+        SIM 0.6 vs REAL AIRCRAFT 0.3. yeni_pixhawk.param is byte-unchanged.
+        Transfer of 0.6 to the real aircraft is NOT AUTHORISED by this work.
+        Full statement: adoption.real_aircraft_divergence, and
+        SITL_PARAM_MIGRATION.md sec 18.
     - id: PITCH_DEMAND_MARGIN_DECLARED
       requirement: "The reduced pitch-demand margin declared as a limitation."
       status: SATISFIED_BY_THIS_FILE
@@ -663,6 +1041,12 @@ open_limitations:
         than RUN 1's (0.5759), and the interp-clamped fraction IMPROVED
         0.041667 -> 0.039309.
     action_this_stage: "COUNTED and REPORTED in every artifact's high_j block. Never gated, never compensated for."
+    gating: false
+    amended_2026_09_05_adoption: >-
+      UNCHANGED BY THE ADOPTION. Stays OPEN / DATA_REQUIRED, owner
+      `propulsion`, NON-GATING. Adopting a TECS gain neither addresses nor
+      worsens the missing high-J windmilling data; both TECS_PTCH_DAMP settings
+      were compared under the SAME limitation.
   - id: WINDOW_OVER_TAU_USES_FULL_SPAN_NOT_SNR_ADMITTED_SPAN
     status: OPEN_LIMITATION
     severity: MINOR
@@ -694,6 +1078,12 @@ open_limitations:
     detail: >-
       Still 4.3x the required 1.0 deg margin, but the trend is REAL and WILL
       MATTER at larger altitude steps or higher gains. Declared, not gated.
+    amended_2026_09_05_adoption: >-
+      STAYS OPEN, and is now a property of the PROJECT BASELINE rather than of
+      a candidate: 0.6 is the adopted value, so the 4.31 deg nav_pitch_raw
+      margin is the margin the project now flies with at 18 m/s / +/-10 m.
+      Directly linked to ENVELOPE_COVERAGE_NOT_EXHAUSTIVE (larger altitude
+      steps are untested).
   - id: PHUGOID_REFERENCE_IS_LANCHESTER
     status: ASSUMPTION
     owner: controls-integration
@@ -721,27 +1111,75 @@ open_limitations:
     severity: METHODOLOGICAL
     owner: controls-integration
     detail: >-
-      ONE phugoid run and ONE regression run per TECS_PTCH_DAMP setting. NO
-      run-to-run scatter estimate exists for the damping measurement itself.
-      This is why adoption requirement RUN_TO_RUN_SCATTER is unsatisfied and
-      why the improvement is quoted as a RANGE (2.5x-3.5x) rather than a point
-      value.
+      ONE phugoid run and ONE regression run per TECS_PTCH_DAMP setting IN THIS
+      REPOSITORY. NO run-to-run scatter estimate exists here for the damping
+      measurement itself, which is why the improvement is quoted as a RANGE
+      (2.5x-3.5x) rather than a point value.
+    amended_2026_09_05_adoption: >-
+      The adoption requirement RUN_TO_RUN_SCATTER is now SATISFIED, but by the
+      EXTERNAL Codex campaign's repeat runs, which are NOT stored here. The
+      limitation on THIS repository's own artifacts is therefore STILL OPEN and
+      is deliberately not closed.
+    amended_2026_09_05_adoption_integration: >-
+      NARROWED AT 0.6 ONLY, STILL OPEN. The post-adoption sanity run gives this
+      repository its FIRST second sample at TECS_PTCH_DAMP = 0.6 (see
+      adoption -> post_adoption_sanity_run -> repeatability_pair). n = 2 at 0.6
+      is an INDICATION, NOT A DISTRIBUTION, and the two runs differ in delivery
+      path, so no scatter bound may be quoted from it. n = 1 still holds at
+      TECS_PTCH_DAMP = 0.3 and for the phugoid damping measurement itself,
+      which is why the improvement remains quoted as the RANGE 2.5x-3.5x.
+  - id: ENVELOPE_COVERAGE_NOT_EXHAUSTIVE
+    status: OPEN_LIMITATION
+    severity: METHODOLOGICAL
+    owner: controls-integration
+    opened: "2026-09-05 adoption stage (successor to adoption requirement ENVELOPE_COVERAGE)"
+    covered_now:
+      in_this_repository: "18 m/s, +/-10 m altitude step, zero wind, one mass/CG, n = 1 per setting"
+      by_external_campaign: "additional sanity runs at 17.0 m/s and 19.5 m/s and a -5 m/s headwind case, all reported clean; repeat runs at both settings"
+    still_uncovered:
+      - "mass / CG variation (every run to date is at the single 6.000 kg, CG (0.168309, 0, 0.100000) m configuration)"
+      - "GUST cases - only steady headwind was exercised; the validated wind/gust model (commit efb5624) has not been run against 0.6"
+      - "larger altitude steps than +/-10 m (relevant because of REDUCED_PITCH_DEMAND_MARGIN_AT_PTCH_DAMP_0P6)"
+      - "airspeeds outside 17.0 - 19.5 m/s, in particular the AIRSPEED_MIN 16 and AIRSPEED_MAX 28 edges"
+      - "turning / banked flight, where TECS_RLL2THR couples in"
+      - "any 0.6 coverage inside THIS repository beyond 18 m/s / +/-10 m / zero wind"
+    gating: false
+    detail: >-
+      Envelope coverage is BROADER than at the origin stage but is NOT
+      exhaustive. The adoption is defensible for the tested envelope and is
+      recorded as such; it is not a claim of validity across the whole flight
+      envelope.
 
 # -----------------------------------------------------------------------------
 # 10. TECS PARAMETER POLICY FOR THIS STAGE
 # -----------------------------------------------------------------------------
 tecs_parameter_policy:
-  changed_this_stage: NONE
-  adopted_this_stage: NONE
-  runtime_only_writes:
+  changed_by_origin_stage: NONE
+  adopted_by_origin_stage: NONE
+  runtime_only_writes_at_origin_stage:
     - {param: TECS_PTCH_DAMP, value: 0.6, scope: "two measurement runs only, via MAVLink PARAM_SET, inside the harness's settable-params whitelist"}
+  # AMENDED_2026-09-05_ADOPTION
+  changed_by_adoption_stage:
+    - {param: TECS_PTCH_DAMP, from: 0.3, to: 0.6, where: config/ardupilot/falcon_v2_sitl.parm}
+  adopted_by_adoption_stage: [TECS_PTCH_DAMP]
+  every_other_tecs_param: "still at the ArduPlane compiled firmware default; the TECS_* group as a whole remains excluded / REVIEW_AND_ADAPT"
   rule: >-
     A candidate TECS value may be MEASURED at runtime under a whitelist, but is
     ADOPTED only by a dedicated stage that satisfies every item in
-    candidate_parameter.adoption_requirements. Measuring is not adopting.
+    candidate_parameter.adoption_requirements. Measuring is not adopting. This
+    rule was followed: the origin stage measured, a separate authorised
+    adoption stage adopted.
   enforcement_in_the_tests: >-
-    `tecs_at_firmware_defaults` / `is_firmware_default_baseline` and
-    `pids_unchanged` are GATING acceptance checks evaluated against the LIVE
-    parameter dump, so a run that quietly tuned something cannot report a clean
-    baseline. This is why the candidate phugoid run correctly reports
-    is_firmware_default_baseline = FAIL: the gate is doing its job.
+    AMENDED_2026-09-05_ADOPTION. The baseline gate and `pids_unchanged` remain
+    GATING acceptance checks evaluated against the LIVE parameter dump, so a
+    run that quietly tuned something still cannot report a clean baseline. What
+    changed is only WHICH baseline is expected: `tecs_at_project_baseline` /
+    `is_project_baseline` replace `tecs_at_firmware_defaults` /
+    `is_firmware_default_baseline` as the gate, over the SAME parameter set
+    with the SAME tolerance, with only the expected TECS_PTCH_DAMP value moving
+    0.3 -> 0.6. The delta from the compiled firmware defaults is still computed
+    and still persisted, non-gating, for auditability. Historical note: the
+    origin stage's candidate phugoid run correctly reported
+    is_firmware_default_baseline = FAIL - at that time the gate was doing its
+    job, and the equivalent run today would correctly report
+    is_project_baseline = PASS.

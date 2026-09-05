@@ -62,6 +62,9 @@ AUTOTUNE_LEVEL=6  AUTOTUNE_AXES=7
 
 **Classification: `REVIEW_AND_ADAPT`, not imported this stage.** None of these are manufacturer-sourced for Falcon V2 (not present anywhere in the master dataset's captured manual excerpt), and — same reasoning as sec 1 — this real .param file's tuning-related fields are demonstrably not authoritative Falcon V2 truth. Some individual values (e.g. `TECS_PITCH_MAX=15`, `NAVL1_PERIOD=16`) may coincidentally be reasonable generic ArduPlane starting points, but this task does not cherry-pick individual "probably-fine" values out of an otherwise-rejected group — that would be an undocumented, unjustified judgment call. `falcon_v2_sitl.parm` leaves this entire group at ArduPlane's own compiled defaults. A future dedicated speed/height-controller tuning stage (out of scope here — this task explicitly must not retune anything) should derive Falcon-specific values from the Gazebo-validated trim/thrust data (`docs/test_results/2026-08-26_updated_powered_trim_high_deflection_validation.md`, `docs/test_results/2026-08-27_flight_envelope_validation.md`) if/when needed.
 
+> **AMENDED 2026-09-05 — one value has since been promoted out of this class.** `TECS_PTCH_DAMP` is now set to **0.6** by `config/ardupilot/falcon_v2_sitl.parm` (stage `ARDUPLANE_TECS_PTCH_DAMP_ADOPTION_INTEGRATION`). It is **not** cherry-picked from the real `.param` — it is a *newly derived and simulation-validated* Falcon-V2-specific value, and it differs from the real aircraft's 0.3. **`NAVL1_*` and every other `TECS_*` parameter remain `REVIEW_AND_ADAPT`, still not imported, still at ArduPlane's compiled defaults.** The classification of this group as *not authoritative Falcon V2 truth* is unchanged. See **sec 18** for the full record.
+
+
 ---
 
 ## 4. Airspeed: `AIRSPEED_*` / `ARSPD_*` — OLD (stale, no pitot) vs. NEW (simulated pitot)
@@ -232,3 +235,76 @@ PTCH_TRIM_DEG    2.49
 **Provenance of the value:** measured, `GAZEBO_VALIDATION` — C.2 equilibrium, `docs/test_results/2026-08-28_ardupilot_longitudinal_equilibrium_and_sink_root_cause_validation.md` §6.2 / §15.1. Not a manufacturer or real-.param value (the real `yeni_pixhawk.param` `AHRS_TRIM_*` / any pitch-trim is real-IMU-mounting-specific and explicitly `DROP_OR_DO_NOT_IMPORT`, sec 6 — this is a fresh simulation-measured value, not imported).
 
 **Not done this stage (explicitly out of scope):** TECS enable / throttle-managed mode, AUTOTUNE, navigation tuning, any PID change, `TRIM_THROTTLE`, `AHRS_TRIM_*`. The alternative fix in the root-cause report §15.2 (enable speed/energy control so throttle is not a dead pass-through) is deferred to a future stage.
+
+---
+
+## 18. `TECS_PTCH_DAMP` — first Falcon-specific TECS value promoted out of `REVIEW_AND_ADAPT` (added 2026-09-05)
+
+**Stage:** `ARDUPLANE_TECS_PTCH_DAMP_ADOPTION_INTEGRATION` (`controls-integration`). Documentation + parameter integration only; no simulation was run by this stage.
+
+**Value written to `config/ardupilot/falcon_v2_sitl.parm`** (section `FALCON_V2_SIM_VALIDATED_TECS_PITCH_DAMPING`):
+
+```
+TECS_PTCH_DAMP    0.6
+```
+
+`.parm` md5: `180e56711bdf18c658f6ded8031421f1` → `1b5ac47a5487502ca0a11abdaecb3026`.
+
+**This is the ONLY value that changed anywhere.** No PID, no `PTCH_TRIM_DEG`, no ±45° surface travel scaling, no aerodynamic coefficient, no actuator model, no propulsion model, no sensor model, no mass/CG/inertia, no SDF, no mesh, no plugin. No AUTOTUNE.
+
+### Why this does not contradict sec 3
+
+Sec 3 rejects **importing** the real `.param`'s `TECS_*` block, on the grounds that its tuning-related fields are not authoritative Falcon V2 truth and that cherry-picking "probably-fine" values out of a rejected group would be an undocumented judgment call. Neither objection applies here:
+
+| Sec 3 objection | Why `TECS_PTCH_DAMP = 0.6` is not subject to it |
+|---|---|
+| "not manufacturer-sourced for Falcon V2" | 0.6 is not sourced from the manufacturer *or* from the real `.param`. It is **derived** from ArduPlane's own `AP_TECS` algebra and then **measured** in Gazebo on the Falcon V2 model. Provenance class `DERIVED_CALCULATION` + `GAZEBO_VALIDATION`. |
+| "does not cherry-pick individual probably-fine values out of an otherwise-rejected group" | Nothing was picked out of the real `.param`. The real `.param` carries `TECS_PTCH_DAMP,0.3` — the value adopted here is **different from it**. This is a *new* value, produced by a dedicated derivation-and-measurement stage, which is exactly the "future dedicated speed/height-controller tuning stage" sec 3 anticipated. |
+| "the whole group stays at compiled defaults" | Still true for **every other** `TECS_*` parameter and for all of `NAVL1_*`. The group classification `REVIEW_AND_ADAPT` is unchanged; one member has been individually superseded with its own provenance. |
+
+### Justification (one line, full derivation in the SOT)
+
+`TECS_PTCH_DAMP` is the **only derivative term** in the TECS pitch/energy-balance loop; 0.3 → 0.6 moves the PD corner from **1.867 → 1.033 rad/s**, from above to below the measured closed-loop energy mode at ~1.1–1.3 rad/s, so the PD pair delivers real phase lead *at* the mode frequency instead of pure proportional stiffening. Full algebra, cited line-by-line against `libraries/AP_TECS/AP_TECS.cpp` (ArduPlane V4.8.0-dev, commit `409226a637`): `docs/source_of_truth/controls/ardupilot_tecs_pitch_damping_loop.yaml` sec 1–2.
+
+### Evidence — two independent campaigns agreeing on the *effect*
+
+Absolute numbers differ between the campaigns (different excitation, different test conditions). **The adoption rests on the agreed direction and magnitude of improvement, not on either campaign's absolute values.**
+
+| Metric | This repository (2026-09-05) 0.3 → 0.6 | External Codex campaign 0.3 → 0.6 |
+|---|---|---|
+| damping τ | 22.07 → 8.65 s | 26.0 → 9.3 s |
+| damping ratio ζ | 0.0407 → 0.0872 | 0.0347 → 0.083 |
+| airspeed std | 0.186 → 0.066 m/s | 0.40 → 0.11 m/s |
+| altitude-hold p2p | 2.148 → 0.635 m | 2.1 → 0.59 m |
+| max elevator at 0.6 | 6.29° | 8.25° |
+| repeats | n = 1 per setting | repeat runs at both settings; 0.6 repeatable |
+| envelope | 18 m/s, ±10 m, zero wind | + 17.0 m/s, 19.5 m/s, −5 m/s headwind |
+
+The Codex campaign was an **independent external adoption campaign run in a separate working copy — it did not touch this repository.** It reported no growing oscillation, no throttle saturation, no actuator clamp, no NaN/Inf, exactly one functional difference in the candidate runs (`TECS_PTCH_DAMP` 0.3 → 0.6), and a validation result of 0 CRITICAL / 0 MAJOR → **ADOPT**. Its repeat runs and extra envelope points supply precisely the two items this project had listed as unsatisfied adoption requirements (`RUN_TO_RUN_SCATTER`, `ENVELOPE_COVERAGE`) — **that is what closed the adoption gate.** Only the evidence summary above was supplied; no artifact, raw timeseries or threshold table from that campaign exists here, and nothing beyond that summary is claimed.
+
+### Real-aircraft separation — explicit, not blurred
+
+| | Value | Source | Status |
+|---|---|---|---|
+| **Simulation** | `TECS_PTCH_DAMP 0.6` | `config/ardupilot/falcon_v2_sitl.parm` | SIM-VALIDATED against the Gazebo Falcon V2 model |
+| **Real aircraft** | `TECS_PTCH_DAMP,0.3` | `docs/source_of_truth/autopilot/real_aircraft/yeni_pixhawk.param:1035` | untuned ArduPlane default carried in the airframe's GCS comma-CSV export |
+
+They differ **by design**. `yeni_pixhawk.param` is a GCS-side export, is **never modified**, and was **not touched** by this stage (byte-unchanged, md5 `a14a18b3ad4d053efa459d422b2a1096`). **Transferring 0.6 to the real aircraft is NOT authorised by this work** and would require separate flight validation.
+
+### Limitations that remain OPEN
+
+- `PROPULSION_HIGH_J_WINDMILLING` — **OPEN / `DATA_REQUIRED`**, owner `propulsion`, NON-GATING. Untouched by this adoption.
+- `CLOSED_LOOP_LONGITUDINAL_DAMPING_WEAKER_THAN_FREE_AIRFRAME` (MAJOR) — **re-scoped, not deleted**: **resolved at the adopted value** (measured τ ratio 0.415 at 0.6, inside the criterion) while remaining **historically true at the firmware default 0.3** (ratio ~1.06–1.13).
+- `WINDOW_OVER_TAU_USES_FULL_SPAN_NOT_SNR_ADMITTED_SPAN` (MINOR-1) — still open, deferred to a future stage that defines it *before* the runs.
+- `PHUGOID_REFERENCE_IS_LANCHESTER` — still an `ASSUMPTION`; a **measured** stick-fixed phugoid remains `DATA_REQUIRED`.
+- `ENVELOPE_COVERAGE_NOT_EXHAUSTIVE` — broader than before, still not exhaustive: mass/CG variation, gust (not just steady-wind) cases, larger altitude steps, and the AIRSPEED_MIN/MAX edges are all uncovered.
+- `REDUCED_PITCH_DEMAND_MARGIN_AT_PTCH_DAMP_0P6` — still open, and now a property of the project baseline (4.31° `nav_pitch_raw` margin vs `TECS_PITCH_MAX` 15°, still 4.3× the required 1.0°).
+- `N_EQUALS_1_PER_SETTING` — still open for artifacts stored *in this repository*.
+
+### Test-harness consequence
+
+The two damping harnesses defined "baseline" as *equals the compiled firmware defaults*. With 0.6 now in the `.parm`, a no-flag run **is** the project baseline but is not the firmware default. An explicit `TECS_PROJECT_BASELINE` (firmware defaults with `TECS_PTCH_DAMP` overridden to 0.6, sourced from the `.parm` and this record) was introduced in `test_ardupilot_tecs_ptch_damp_regression.py` and `test_ardupilot_longitudinal_phugoid_damping.py`. **Baseline-definition correction only** — no acceptance threshold value moved, no gate removed or weakened, and the delta-from-firmware-defaults reporting remains visible in every result artifact. `test_ardupilot_tecs_cruise_speed_hold.py` and `test_ardupilot_tecs_climb_descent_energy.py` carry the equivalent notion in **gate logic** (`tecs_at_firmware_defaults`), and that gate logic was deliberately **not** edited by this stage — flagged for `gazebo-testing`, not silently fixed. Re-running either of those two harnesses unchanged is expected to trip that gate, and that is the intended, visible signal.
+
+> **AMENDED 2026-09-05 — provenance-wording sweep.** One text-only exception was subsequently made in those two modules: the `tecs_baseline_params_provenance` **string** they emit into every result JSON still asserted that `falcon_v2_sitl.parm` "sets NO TECS_* value", which the adoption made false — and that same string is inherited verbatim by `test_ardupilot_tecs_ptch_damp_regression.py` (via `energy.dump_params()`), so the falsehood was appearing in *this* stage's own artifacts. The string was corrected in both modules. **No threshold, no gate, no analysis path was touched** — `tecs_at_firmware_defaults` in both files is byte-unchanged and still flagged for `gazebo-testing`.
+
+**Full source-of-truth record:** `docs/source_of_truth/controls/ardupilot_tecs_pitch_damping_loop.yaml` (`adoption:` block) and `docs/source_of_truth/controls/ardupilot_fbwb_tecs_baseline.yaml`.

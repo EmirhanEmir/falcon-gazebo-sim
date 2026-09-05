@@ -15,6 +15,29 @@ writing it.
 
 ---
 
+> **AMENDED 2026-09-05 (later the same day) — stage `ARDUPLANE_TECS_PTCH_DAMP_ADOPTION_INTEGRATION`.**
+> This file is the **historical stage record of the VALIDATION stage** and its statements are correct
+> *as of that stage*. They are deliberately left verbatim. Two of them are now **superseded** and must
+> not be read as describing the current repository:
+>
+> - "`config/ardupilot/falcon_v2_sitl.parm` md5 `180e56711bdf18c658f6ded8031421f1`, unchanged; it sets
+>   no `TECS_*` value" (§0) — the later adoption stage wrote `TECS_PTCH_DAMP 0.6` into that file
+>   (section `FALCON_V2_SIM_VALIDATED_TECS_PITCH_DAMPING`). New md5 `1b5ac47a5487502ca0a11abdaecb3026`.
+>   Every **other** `TECS_*` value is still a compiled firmware default.
+> - "`TECS_PTCH_DAMP = 0.6` — **VALIDATED_NOT_ADOPTED** … not written to any parameter file by this
+>   stage" (§0) — still true *of this stage*, but the value has since been **ADOPTED**.
+>
+> Consequently, wherever this file says "firmware defaults" (§1 configuration table, §4, §5.1, §8) it
+> means the **pre-adoption** configuration, which is what was flown here. As of the adoption, a
+> no-flag run of either damping harness is the **PROJECT BASELINE** (firmware defaults **except**
+> `TECS_PTCH_DAMP = 0.6`), not the firmware-defaults baseline. The carried MAJOR
+> `CLOSED_LOOP_LONGITUDINAL_DAMPING_WEAKER_THAN_FREE_AIRFRAME` was assessed here at the firmware
+> default 0.3. Current record:
+> `docs/source_of_truth/controls/ardupilot_tecs_pitch_damping_loop.yaml` (`adoption:` block) and
+> `docs/source_of_truth/autopilot/SITL_PARAM_MIGRATION.md` sec 18.
+
+---
+
 ## 0. Bottom line
 
 | | |

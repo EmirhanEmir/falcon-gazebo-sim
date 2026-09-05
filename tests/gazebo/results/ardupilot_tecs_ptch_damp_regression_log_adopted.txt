@@ -1,0 +1,70 @@
+outputs: /home/emirhan/Desktop/FalconV2/tests/gazebo/results/ardupilot_tecs_ptch_damp_regression_result_adopted.json
+NOTE: no --set-param; this run is the FIRMWARE-DEFAULTS baseline of this harness.
+PHASE 1 (mavlink arm): {"ok": true, "heartbeat": {"mavpackettype": "HEARTBEAT", "type": 1, "autopilot": 3, "base_mode": 17, "custom_mode": 16, "system_status": 2, "mavlink_version": 3}, "dcm_ekf_ready": true, "dcm_ekf_droll_deg": 0.012671217305114914, "dcm_ekf_dpitch_deg": 2.5236591189238258, "arm_attempt_0": {"ack": {"ma
+param preconditions: {"arspd_use_1_tecs_uses_airspeed_path": true, "arspd_type_100_sitl_backend": true, "airspeed_min_16": true, "airspeed_cruise_18": true, "airspeed_max_28": true, "ptch_trim_deg_2p49": true, "kff_thr2ptch_zero": true, "flight_options_zero": true, "fbwb_elev_rev_zero": true, "cruise_alt_floor_zero": true, "min_groundspeed_zero": true, "rc3_not_reversed": true, "rc2_not_reversed": true, "sim_wind_zero": true, "sim_opos_alt_zero_atmosphere_datum": true, "pids_unchanged": true, "tecs_at_firmware_defaults": false}
+param preconditions (extended): {"arspd_use_1_tecs_uses_airspeed_path": true, "arspd_type_100_sitl_backend": true, "airspeed_min_16": true, "airspeed_cruise_18": true, "airspeed_max_28": true, "ptch_trim_deg_2p49": true, "kff_thr2ptch_zero": true, "flight_options_zero": true, "fbwb_elev_rev_zero": true, "cruise_alt_floor_zero": true, "min_groundspeed_zero": true, "rc3_not_reversed": true, "rc2_not_reversed": true, "sim_wind_zero": true, "sim_opos_alt_zero_atmosphere_datum": true, "pids_unchanged": true, "tecs_at_firmware_defaults": false, "alt_offset_zero_for_target_readback": true, "terrain_follow_zero": true, "fbwb_climb_rate_2ms": true, "tecs_spdweight_readable": true}
+param preconditions: {"arspd_use_1_tecs_uses_airspeed_path": true, "arspd_type_100_sitl_backend": true, "airspeed_min_16": true, "airspeed_cruise_18": true, "airspeed_max_28": true, "ptch_trim_deg_2p49": true, "kff_thr2ptch_zero": true, "flight_options_zero": true, "fbwb_elev_rev_zero": true, "cruise_alt_floor_zero": true, "min_groundspeed_zero": true, "rc3_not_reversed": true, "rc2_not_reversed": true, "sim_wind_zero": true, "sim_opos_alt_zero_atmosphere_datum": true, "pids_unchanged": true, "tecs_at_firmware_defaults": false, "alt_offset_zero_for_target_readback": true, "terrain_follow_zero": true, "fbwb_climb_rate_2ms": true, "tecs_spdweight_readable": true}
+TECS delta from firmware defaults (REPORT-ONLY): {"TECS_PTCH_DAMP": {"live": 0.6000000238418579, "default": 0.3}}
+TECS delta from PROJECT baseline (gated): {}
+ground settle: {'settled': True, 'elapsed_s': 1.0009901523590088}
+PHASE 2 (teleport+verify): True
+PHASE 3 (hold-to-trim): aborted = False reason = None
+command derivation: {"v_target_ms": 18.0, "rc3_pwm_us": 1258.3333333333333, "rc3_pwm_us_rounded": 1258, "predicted_target_airspeed_ms": 17.92, "error": null, "rc2_up_us": 1900.0, "rc2_down_us": 1100.0, "rc2_neutral_us": 1500.0, "formula": "ArduPlane/navigation.cpp:187-189 inverted through RC_Channel.cpp:388-402 (imported from the 2026-09-02 cruise stage, unchanged)."}
+R1 CRUISE: 36.0s level cruise (rc2=1500, rc3=1258 -> TECS target 17.920 m/s)
+reference altitude (R1 settled mean): 89.208 m
+R2 CLIMB: up-stick rc2=1900, cap 15.0s, stop at z >= 99.21 m
+R3 SETTLE: 34.0s at the new altitude (rc2=1500 -> set_target_altitude_current(), ArduPlane/navigation.cpp:418-424)
+R4 DESCENT: down-stick rc2=1100, cap 15.0s, stop at z <= 89.21 m (the ORIGINAL altitude)
+R5 RESETTLE: 34.0s near the original altitude (rc2=1500)
+------------------------------------------------------------------------------
+parameter writes: NONE (PROJECT baseline)
+is_project_baseline: True | is_firmware_default_baseline (report-only): False
+TECS delta vs firmware defaults (REPORT-ONLY): {"TECS_PTCH_DAMP": {"live": 0.6000000238418579, "default": 0.3}}
+TECS delta vs PROJECT baseline (gated): {}
+altitude step   : climb 10.584159421906634 m in 8.519183874130249 s | descent -11.11710948350526 m in 9.082456827163696 s | roundtrip -0.5329500615986262 m
+------------------------------------------------------------------------------
+METRIC                                         MEAS     REF_A     REF_B                 LIMIT  OK
+cruise_airspeed_mean_ms                     17.9123   17.9260   17.9256 [  17.6535,  18.1981]  PASS
+cruise_airspeed_mean_vs_tecs_target_ms      -0.0075    0.0000         -                0.5000  PASS
+cruise_airspeed_std_ms                       0.0606    0.1870    0.2390                0.5203  PASS
+cruise_airspeed_std_absolute_ms              0.0606    0.1870    0.2390                0.5000  PASS
+hold_vz_max_abs_ms                           0.0120    0.0083    0.0085                0.0289  PASS
+hold_vz_absolute_ms                          0.0120    0.0083    0.0085                0.1000  PASS
+hold_alt_p2p_max_m                           0.6680    2.1790    2.4920                2.8350  PASS
+hold_alt_p2p_absolute_m                      0.6680    2.1790    2.4920                5.0000  PASS
+achieved_climb_m                            10.5842   10.2390   10.5212 [   9.3864,  11.3738]  PASS
+achieved_descent_magnitude_m                11.1171   10.3140   11.1537 [   9.4614,  12.0062]  PASS
+achieved_climb_absolute_m                    0.5842    0.0000         -                3.0000  PASS
+achieved_descent_absolute_m                  1.1171    0.0000         -                3.0000  PASS
+roundtrip_alt_residual_abs_m                 0.5330    0.0740    0.6324                1.3474  PASS
+roundtrip_alt_residual_absolute_m           -0.5330    0.0740    0.6324                2.0000  PASS
+climb_ramp_vz_mean_ms                        1.2058    1.3010    1.1534                0.9021  PASS
+climb_ramp_vz_peak_ms                        2.0231    1.9510    2.1311                1.6997  PASS
+descent_ramp_vz_mean_magnitude_ms            1.1806    1.3010    1.1468                0.8955  PASS
+descent_ramp_vz_peak_magnitude_ms            1.7841    1.9510    1.9370                1.6857  PASS
+descent_ramp_direction_ms                   -1.1806         -   -1.1468               -0.2000  PASS
+climb_ramp_duration_s                        8.5192         -    8.7191               10.6190  PASS
+descent_ramp_duration_s                      9.0825         -    9.2606               11.2785  PASS
+level_throttle                               0.4899    0.4911    0.4909 [   0.4409,   0.5411]  PASS
+climb_throttle                               0.5391    0.5398    0.5404 [   0.4898,   0.5904]  PASS
+descent_throttle                             0.4265    0.4251    0.4201 [   0.3701,   0.4751]  PASS
+level_pitch_deg                              2.6947    2.6630    2.6841 [   1.1630,   4.1841]  PASS
+climb_pitch_deg                              6.9014    6.6830    6.7186 [   5.1830,   8.2186]  PASS
+descent_pitch_deg                           -1.3999   -1.2530   -1.3320 [  -2.8320,   0.2470]  PASS
+level_STEdot_W_per_kg                       -0.0189    0.0500   -0.0061                1.0000  PASS
+climb_STEdot_W_per_kg                       11.9380   10.3700   11.9032                7.9045  PASS
+climb_STEdot_sign_W_per_kg                  11.9380   10.3700   11.9032                2.0000  PASS
+descent_STEdot_W_per_kg                    -11.5197   -9.6000  -11.4715               -7.1345  PASS
+descent_STEdot_sign_W_per_kg               -11.5197   -9.6000  -11.4715               -2.0000  PASS
+whole_flight_airspeed_min_ms                17.1685   16.7800   16.6509               16.0899  PASS
+whole_flight_airspeed_min_absolute_ms       17.1685   16.7800   16.6509               16.0000  PASS
+whole_flight_airspeed_max_ms                18.9179   19.3420   19.4974               20.0584  PASS
+whole_flight_elevator_max_abs_deg            6.2903    6.3680    6.3336               10.0000  PASS
+------------------------------------------------------------------------------
+whole flight    : 121.57769513130188 s | V 17.168485641479492..18.917922973632812 m/s | thr 0.24..0.585 | elev_max 6.290291749016513 deg | finite True
+HIGH-J (OPEN_LIMITATION, NON-GATING): interpClamped 180/4658 motor-samples, zero-thrust 174, J {'min': 0.47263968685240587, 'max': 1.4178362096452692, 'mean': 0.5507285813769007, 'std': 0.04458801566594358, 'n': 4658}
+------------------------------------------------------------------------------
+VERDICT: TECS_PTCH_DAMP_NO_PERFORMANCE_REGRESSION  failed_checks=[]
+RESULT: FLIGHT_COMPLETED_NO_ABORT TECS_PTCH_DAMP_NO_PERFORMANCE_REGRESSION -> /home/emirhan/Desktop/FalconV2/tests/gazebo/results/ardupilot_tecs_ptch_damp_regression_result_adopted.json
+TIMESERIES: /home/emirhan/Desktop/FalconV2/tests/gazebo/results/ardupilot_tecs_ptch_damp_regression_timeseries_adopted.json
+PER-SAMPLE TRACE: /home/emirhan/Desktop/FalconV2/tests/gazebo/results/ardupilot_tecs_ptch_damp_regression_per_sample_adopted.json

@@ -37,16 +37,28 @@
 #   It never gates on BEATING a reference.
 #
 # PARAMETER POLICY
-#   With NO --set-param this run writes NO parameter of any kind: `arduplane -w`
-#   wipes its own scratch EEPROM and config/ardupilot/falcon_v2_sitl.parm sets
-#   no TECS_* value, so TECS runs on the compiled firmware defaults. That makes
-#   a no-flag run the DEFAULTS BASELINE of this same harness.
+#   With NO --set-param this run writes NO runtime parameter of any kind:
+#   `arduplane -w` wipes its own scratch EEPROM, so every TECS_* value the
+#   vehicle flies with comes either from the ArduPlane compiled firmware
+#   defaults or from the checked-in config/ardupilot/falcon_v2_sitl.parm.
+#   UPDATED 2026-09-05 (stage ARDUPLANE_TECS_PTCH_DAMP_ADOPTION_INTEGRATION):
+#   falcon_v2_sitl.parm now SETS exactly one TECS value, TECS_PTCH_DAMP 0.6
+#   (section FALCON_V2_SIM_VALIDATED_TECS_PITCH_DAMPING, superseding the
+#   AP_TECS.cpp:107 default 0.3). Every OTHER TECS_* parameter is still an
+#   ArduPlane compiled firmware default. A no-flag run is therefore the
+#   PROJECT BASELINE of this same harness - "firmware defaults EXCEPT
+#   TECS_PTCH_DAMP 0.6" - and is NOT the firmware-defaults baseline. The
+#   previous wording here ("the .parm sets no TECS_* value", "a no-flag run is
+#   the DEFAULTS BASELINE") was true before that stage and is SUPERSEDED.
+#   The harness itself still writes NO parameter on a no-flag run.
 #   `--set-param NAME=VALUE` does a RUNTIME MAVLink PARAM_SET restricted to the
 #   TECS energy-loop whitelist (SETTABLE_PARAMS in the test module) and to each
 #   parameter's own ArduPilot @Range; every other name - any PID, PTCH_TRIM_DEG,
 #   any SERVOn_*, ARSPD_*, SIM_*, aero/propulsion/actuator/sensor/mass value -
-#   is REFUSED with a non-zero exit. NO TECS default change is written to any
-#   checked-in file; config/ardupilot/falcon_v2_sitl.parm is READ-ONLY input.
+#   is REFUSED with a non-zero exit. This harness writes NO change of any kind
+#   to any checked-in file; config/ardupilot/falcon_v2_sitl.parm is READ-ONLY
+#   input to it (the 0.6 in that file was put there by the adoption stage, not
+#   by this harness).
 #
 # ARGUMENTS - all forwarded verbatim to the test:
 #   --set-param TECS_PTCH_DAMP=0.6    runtime candidate value (part 3a)
@@ -59,9 +71,13 @@
 #   ./tests/gazebo/scripts/run_ardupilot_tecs_ptch_damp_regression.sh \
 #       --set-param TECS_PTCH_DAMP=0.6 --tag ptchdamp06
 #
-# OPTIONAL same-harness defaults comparison (only if requested):
+# OPTIONAL same-harness PROJECT-BASELINE run (only if requested). As of
+# 2026-09-05 a no-flag run is the PROJECT baseline (TECS_PTCH_DAMP 0.6 from the
+# .parm), NOT the firmware-defaults baseline; there is no flag that reproduces
+# the firmware default 0.3 other than an explicit runtime
+# `--set-param TECS_PTCH_DAMP=0.3`:
 #   ./tests/gazebo/scripts/run_ardupilot_tecs_ptch_damp_regression.sh \
-#       --tag defaults
+#       --tag baseline
 #
 # Expected wall-clock: ~4-5 min (preconditions + ~121 s of flight + teardown).
 #
@@ -127,8 +143,10 @@ for f in "$ARDUPLANE_BIN" "$SITL_PARM" "$WORLD" "$TEST_PY"; do
 done
 
 if [[ "$*" != *"--set-param"* ]]; then
-  echo "NOTE: no --set-param given -> this is the FIRMWARE-DEFAULTS baseline of"
-  echo "NOTE: this harness (TECS on compiled defaults, no parameter written)."
+  echo "NOTE: no --set-param given -> this is the PROJECT BASELINE of this"
+  echo "NOTE: harness (TECS on compiled firmware defaults EXCEPT TECS_PTCH_DAMP"
+  echo "NOTE: = 0.6, which comes from config/ardupilot/falcon_v2_sitl.parm;"
+  echo "NOTE: parameter writes: NONE (PROJECT baseline))."
 fi
 echo "NOTE: arguments forwarded to the test: ${*:-<none>}"
 echo "NOTE: output suffix: '${SFX:-<none>}'"
