@@ -1,0 +1,747 @@
+# =============================================================================
+# FALCON V2 - ArduPlane TECS PITCH / ENERGY-BALANCE LOOP:
+# gain structure derived from AP_TECS source, the measured closed-loop
+# longitudinal energy mode, and the VALIDATED-BUT-NOT-ADOPTED candidate
+# TECS_PTCH_DAMP = 0.6
+# =============================================================================
+# Owner: controls-integration.
+# Stage: ARDUPLANE_LONGITUDINAL_PHUGOID_DAMPING_VALIDATION (2026-09-05).
+#
+# WHAT THIS FILE IS
+#   The provenance-carrying reference for
+#     (a) WHICH TECS parameters actually set the damping of the longitudinal
+#         energy mode, derived algebraically from ArduPlane's own AP_TECS.cpp
+#         rather than guessed,
+#     (b) the MEASURED closed-loop mode at firmware defaults and the evidence
+#         that it is NOT the bare-airframe phugoid,
+#     (c) the MEASURED effect of TECS_PTCH_DAMP = 0.6, recorded with status
+#         VALIDATED_NOT_ADOPTED, together with the explicit gate a future
+#         adoption stage must pass,
+#     (d) the estimator correction applied to the envelope-decay analysis and
+#         exactly what it does and does not validate,
+#     (e) every declared limitation, each one NON-GATING and each one tagged.
+#
+# WHAT THIS FILE IS NOT
+#   It is NOT a parameter file and it does NOT adopt anything. NO TECS_* value,
+#   NO PID, NO PTCH_TRIM_DEG, NO control-surface mapping, NO aerodynamic,
+#   propulsion, actuator, sensor, mass, CG or inertia quantity is written or
+#   changed by this stage.
+#
+#   config/ardupilot/falcon_v2_sitl.parm is UNCHANGED
+#   (md5 180e56711bdf18c658f6ded8031421f1) and sets no TECS_* value at all.
+#
+#   docs/source_of_truth/controls/ardupilot_fbwb_tecs_baseline.yaml line 183
+#   remains the authoritative record of the LIVE value:
+#       TECS_PTCH_DAMP: {value: 0.3, source: "libraries/AP_TECS/AP_TECS.cpp:107"}
+#   That line is CORRECT and was not edited. 0.6 appears in this repository
+#   ONLY as a runtime MAVLink PARAM_SET inside two measurement runs.
+#
+# WHY A SIBLING FILE RATHER THAN AN EXTENSION OF THE 2026-09-03 FILE
+#   docs/source_of_truth/controls/ already follows one-file-per-subject:
+#     actuator_v1_config.yaml            - servo / surface actuation
+#     CONTROLS.md                        - control architecture narrative
+#     ardupilot_fbwb_tecs_baseline.yaml  - FBWB mode proof, RC->demand mapping,
+#                                          TECS parameter table w/ provenance
+#     ardupilot_tecs_energy_management.yaml
+#                                        - energy definitions, the 2026-09-03
+#                                          campaign and its thresholds; its own
+#                                          header declares it scoped to
+#                                          ARDUPLANE_TECS_CLIMB_DESCENT_AND_
+#                                          ENERGY_VALIDATION.
+#   The subject here - the ALGEBRAIC GAIN STRUCTURE of the pitch/energy loop
+#   plus a NOT-ADOPTED candidate parameter - is a distinct subject from that
+#   stage's energy bookkeeping. Folding it into a document whose header claims
+#   a different stage would blur which stage measured what, and would bury a
+#   NOT-ADOPTED value inside a closed stage's record. Kept separate.
+#
+# COMPANION FILES (read in this order)
+#   1. docs/source_of_truth/controls/ardupilot_fbwb_tecs_baseline.yaml
+#   2. docs/source_of_truth/controls/ardupilot_tecs_energy_management.yaml
+#   3. docs/validation/2026-09-05_ardupilot_longitudinal_phugoid_damping_validation.md
+#      (the full stage record; this file is its machine-readable core)
+#
+# FIRMWARE UNDER TEST
+#   ArduPlane V4.8.0-dev, ArduPilot commit 409226a637, installed at
+#   /home/emirhan/gazebo_sim/ardupilot  (ArduPlane/version.h:10).
+# =============================================================================
+
+stage:
+  id: ARDUPLANE_LONGITUDINAL_PHUGOID_DAMPING_VALIDATION
+  date: 2026-09-05
+  mode: FBWB
+  mavlink_custom_mode: 6              # ArduPlane/mode.h:45 FLY_BY_WIRE_B
+  verdict: PASS
+  stage_blocking_findings: 0
+  parameters_written_by_this_stage: NONE
+  parm_file_md5_unchanged: 180e56711bdf18c658f6ded8031421f1
+  tests:
+    phugoid: tests/gazebo/scripts/test_ardupilot_longitudinal_phugoid_damping.py
+    phugoid_runner: tests/gazebo/scripts/run_ardupilot_longitudinal_phugoid_damping.sh
+    regression: tests/gazebo/scripts/test_ardupilot_tecs_ptch_damp_regression.py
+    regression_runner: tests/gazebo/scripts/run_ardupilot_tecs_ptch_damp_regression.sh
+  artifacts:
+    phugoid_baseline: tests/gazebo/results/ardupilot_longitudinal_phugoid_damping_result_baseline_reanalyzed.json
+    phugoid_candidate: tests/gazebo/results/ardupilot_longitudinal_phugoid_damping_result_ptchdamp06_reanalyzed.json
+    regression_defaults: tests/gazebo/results/ardupilot_tecs_ptch_damp_regression_result_defaults.json
+    regression_candidate: tests/gazebo/results/ardupilot_tecs_ptch_damp_regression_result_ptchdamp06.json
+  excitation:
+    description: >-
+      ONE full-up FBWB pitch-stick pulse (RC2 1500 -> 1900 us), then release to
+      RC2 trim for the entire ring-down. No repeating cadence, no sustained
+      input, no wrench, no pose/velocity set - free 6-DOF throughout.
+    pulse_duration_s: 4.002788782119751
+    ringdown_segment_s: 65.0
+    analysed_window: "t_seg >= 10.0 s -> 54.951 s of free decay"
+    why_the_demands_are_constant: >-
+      The pitch stick passing back through zero calls
+      set_target_altitude_current(), LOCKING the height demand to the current
+      altitude (ArduPlane/navigation.cpp:418-424, ArduPlane/altitude.cpp:191-195).
+      The airspeed demand is unchanged. Constant demands are what make the
+      AP_TECS algebra in section 1 EXACT rather than approximate.
+
+# -----------------------------------------------------------------------------
+# 1. ROOT CAUSE - the gain structure of the TECS pitch / energy-balance loop
+#    DERIVED ALGEBRAICALLY from ArduPlane's own source. Not fitted, not guessed.
+#    Provenance class: DERIVED_CALCULATION (from firmware source).
+#    Independently re-derived and every cited line resolved by `validation`.
+# -----------------------------------------------------------------------------
+loop_gain_derivation:
+  firmware: "ArduPlane V4.8.0-dev, commit 409226a637, libraries/AP_TECS/AP_TECS.cpp"
+  preconditions:
+    - "constant height demand  ->  _hgt_rate_dem = 0"
+    - "constant SEB demand     ->  d(SEB_dem)/dt = 0"
+    - "both hold throughout the analysed ring-down (see stage.excitation)"
+  symbols:
+    S:    "SEB_error = SEB_dem - SEB_est          [AP_TECS.cpp:1033]"
+    Sdot: "d(S)/dt = -SEBdot_est                  (exact, given constant demand)"
+    Tc:   "timeConstant() = TECS_TIME_CONST"
+    Kd:   "TECS_PTCH_DAMP"
+    Ki:   "TECS_INTEG_GAIN, via _get_i_gain()     [AP_TECS.cpp:1086]"
+  steps:
+    - id: SEBdot_dem
+      line: "AP_TECS.cpp:1036"
+      expression: "SEBdot_dem = _hgt_rate_dem*g*SPE_w + S/Tc  =  S/Tc"
+    - id: SEBdot_est
+      line: "AP_TECS.cpp:1050"
+      expression: "SEBdot_est = _SPEdot*SPE_w - _SKEdot*SKE_w"
+    - id: SEBdot_error
+      line: "AP_TECS.cpp:1051"
+      expression: "SEBdot_error = SEBdot_dem - SEBdot_est  =  Sdot + S/Tc     (EXACT)"
+      significance: >-
+        This identity is the whole root cause. Because SEBdot_error already
+        contains a DERIVATIVE term, anything that integrates it returns
+        proportional stiffness.
+    - id: SEBdot_dem_total
+      line: "AP_TECS.cpp:1062"
+      expression: "SEBdot_dem_total = SEBdot_dem + SEBdot_error*Kd = S*(1+Kd)/Tc + Kd*Sdot"
+    - id: integSEBdot
+      line: "AP_TECS.cpp:1086, :1095"
+      expression: "_integSEBdot = INTEGRAL[Ki*(Sdot + S/Tc)] dt = Ki*S + (Ki/Tc)*INTEGRAL[S] dt"
+    - id: pitch_demand
+      line: "AP_TECS.cpp:1108 (gainInv at :1065)"
+      expression: "_pitch_dem_unc = (SEBdot_dem_total + _integSEBdot + _integKE) / (TAS*g)"
+  effective_gains:
+    Kp_eff:
+      formula: "(1 + TECS_PTCH_DAMP)/TECS_TIME_CONST + TECS_INTEG_GAIN"
+      units: "1/s"
+    Kd_eff:
+      formula: "TECS_PTCH_DAMP"
+      units: "-"
+      note: "the ONLY derivative term in the pitch/energy loop"
+    Ki_true:
+      formula: "TECS_INTEG_GAIN / TECS_TIME_CONST"
+      units: "1/s^2"
+  findings:
+    - id: INTEG_GAIN_IS_DAMPING_DEGRADING
+      severity: ROOT_CAUSE
+      detail: >-
+        _integSEBdot integrates a signal that already contains Sdot. The
+        integral of a derivative returns PURE PROPORTIONAL stiffness Ki*S with
+        NO phase lead. At firmware defaults TECS_INTEG_GAIN supplies
+        0.30/0.56 = 53.6 % (~54 %) of the total loop stiffness with zero
+        damping contribution. This is the single largest reason the loop is
+        stiff but under-damped.
+    - id: PTCH_DAMP_IS_THE_ONLY_DERIVATIVE_TERM
+      severity: ROOT_CAUSE
+      detail: >-
+        No other term in the _pitch_dem_unc numerator carries Sdot. _integKE
+        (AP_TECS.cpp:1096) integrates (SKE_est - SKE_dem)*SKE_w with gain
+        1/timeConstant() - NOT TECS_INTEG_GAIN - and adds phase LAG, not lead.
+    - id: THR_DAMP_IS_NEARLY_BLIND_TO_THIS_MODE
+      severity: INFO
+      detail: >-
+        TECS_THR_DAMP multiplies STEdot_error (AP_TECS.cpp:740), the TOTAL
+        energy-rate error, after a 0.5 s first-order filter (:744-746). A pure
+        energy-BALANCE oscillation has SPEdot ~= -SKEdot, so STE_error and
+        STEdot_error are ~0 through it. The throttle loop cannot damp this mode
+        even though throttle is far from saturation. TECS_THR_DAMP is
+        therefore NOT a candidate fix.
+    - id: SPDWEIGHT_IS_ARCHITECTURE_NOT_A_DAMPING_KNOB
+      severity: INFO
+      detail: >-
+        TECS_SPDWEIGHT = 1.0 gives w_SPE = w_SKE = 1.0 (AP_TECS.cpp:1003, 1024,
+        1027-1028), which is exactly what makes SEB the PURE energy-balance
+        coordinate. Changing it changes WHAT is controlled, not HOW WELL it is
+        damped.
+    - id: HGT_OMEGA_IS_A_DEAD_CODE_PATH
+      severity: INFO
+      detail: >-
+        _hgtCompFiltOmega appears at exactly three places - AP_TECS.cpp:357,
+        :359, :367 - and all three are inside the ELSE of
+        `if (_ahrs.get_velocity_NED(velned))` at :344. With an EKF vertical
+        velocity available that branch NEVER executes: _climb_rate = -velned.z
+        is taken at :346 and _height comes from get_relative_position_D_home at
+        :327-328. AHRS_EKF_TYPE was read LIVE = 10, so this is verified, not
+        assumed. TECS_HGT_OMEGA cannot influence this result.
+  citation_corrections_2026_09_05:
+    source: "validation, independent review of this stage"
+    class: COSMETIC_NO_NUMBER_AFFECTED
+    corrections:
+      - "_height source: the result artifacts cite AP_TECS.cpp:330-331. Correct lines are :327-328."
+      - "EKF branch: the result artifacts cite AP_TECS.cpp:343-345. The condition `if (_ahrs.get_velocity_NED(velned))` is at :344."
+    note: >-
+      Recorded so the citation trail is exact. Neither correction changes any
+      value, conclusion, gate or verdict. Both were re-verified against the
+      firmware source while writing this file.
+
+# -----------------------------------------------------------------------------
+# 2. LOOP-GAIN MODEL CORROBORATION - REPORT_ONLY, NEVER GATED
+#    Source: analysis.tecs_energy_loop_gains in both phugoid result artifacts.
+#    ASSUMPTION: TECS_SEB_MANIFOLD_LINEARISATION.
+# -----------------------------------------------------------------------------
+loop_gain_model_corroboration:
+  status: REPORT_ONLY_DIAGNOSTIC
+  never_gated: true
+  assumption: TECS_SEB_MANIFOLD_LINEARISATION
+  assumption_detail: >-
+    The height-loop numbers assume the constant-total-energy manifold
+    SPEdot = -SKEdot, on which S = -2*g*dh, and a small-signal linearisation
+    about trim. Exact only for a lossless energy exchange. DIAGNOSTIC ONLY -
+    it corroborates the mechanism, it never gates and it is never used as a
+    design value.
+  model: "closed-loop energy-mode frequency omega ~= 2 * Kp_eff"
+  rows:
+    - setting: "firmware defaults (TECS_PTCH_DAMP 0.3)"
+      TECS_TIME_CONST: 5.0
+      TECS_PTCH_DAMP: 0.3
+      TECS_INTEG_GAIN: 0.3
+      TECS_THR_DAMP: 0.5
+      Kp_eff_per_s: 0.56
+      Kd_eff: 0.3
+      Kp_fraction_from_INTEG_GAIN: 0.5357142933169188
+      pd_corner_rad_s: 1.8666666401757144
+      predicted_omega_rad_s: 1.12
+      predicted_period_s: 5.610
+      measured_period_s: 5.6474
+      measured_omega_d_rad_s: 1.1125874324652014
+      model_error_percent: 0.7
+      regime: "PD corner 1.8667 rad/s is ABOVE the mode at 1.1126 rad/s -> to this mode the loop looks PROPORTIONAL: it stiffens without damping"
+    - setting: "candidate TECS_PTCH_DAMP 0.6 (VALIDATED_NOT_ADOPTED)"
+      TECS_TIME_CONST: 5.0
+      TECS_PTCH_DAMP: 0.6
+      TECS_INTEG_GAIN: 0.3
+      TECS_THR_DAMP: 0.5
+      Kp_eff_per_s: 0.62
+      Kd_eff: 0.6
+      Kp_fraction_from_INTEG_GAIN: 0.48387097394429174
+      pd_corner_rad_s: 1.0333333200878572
+      predicted_omega_rad_s: 1.24
+      predicted_period_s: 5.067
+      measured_period_s: 4.756
+      measured_omega_d_rad_s: 1.3210883241531117
+      model_error_percent: 6.5
+      regime: "PD corner 1.0333 rad/s is BELOW the mode at 1.3211 rad/s -> the PD pair delivers REAL PHASE LEAD at the mode frequency"
+  significance: >-
+    A 0.7 % first-principles prediction of the BASELINE period, from firmware
+    gains alone, is strong evidence that the mechanism derived in section 1 is
+    the actual mechanism. The REGIME CHANGE (corner above the mode vs below
+    it) is the physical explanation of why TECS_PTCH_DAMP 0.6 damps and
+    TECS_PTCH_DAMP 0.3 does not.
+
+# -----------------------------------------------------------------------------
+# 3. MODE IDENTIFICATION - the observed mode is NOT the bare-airframe phugoid
+# -----------------------------------------------------------------------------
+mode_identification:
+  conclusion: >-
+    The mode measured in the ring-down is a TECS-GENERATED CLOSED-LOOP
+    LONGITUDINAL ENERGY MODE, not the free-airframe phugoid. Future stages must
+    not call it "the phugoid". The Lanchester phugoid remains the REFERENCE it
+    is compared against, nothing more.
+  decisive_evidence:
+    id: A_PURE_CONTROLLER_GAIN_MOVED_THE_PERIOD
+    detail: >-
+      With aircraft, mass, CG, inertia, aerodynamic tables, propulsion tables,
+      actuator model and every PID byte-identical, and exactly ONE functional
+      parameter different, the mode period moved 5.6474 -> 4.7317 s (-16.21 %).
+      These are the RAW all-extrema periods of both runs, so the comparison is
+      independent of the SNR truncation. A controller gain CANNOT move a
+      free-airframe eigenvalue.
+  estimator_free_corroboration:
+    source: "validation, independent - zero-crossing periods on the high-SNR early window, no envelope estimator, no extremum detection, no truncation"
+    baseline_periods_s: {window_16s: 5.58, window_20s: 5.68, window_25s: 5.65}
+    candidate_periods_s: {window_16s: 4.67, window_20s: 4.54, window_25s: 4.68}
+    shift: "robust -18 %, stable across all three windows"
+  caveats_recorded_honestly:
+    - id: DFT_CONFIRMATION_IS_WEAK_ON_ITS_OWN
+      detail: >-
+        Over a 55 s window the DFT bin spacing is 1/55 = 0.01818 Hz; at the
+        mode frequency f = 1/5.647 = 0.1771 Hz that maps to a PERIOD resolution
+        of df/f^2 = 0.58 s - WIDER than the shift being claimed. The DFT is
+        consistent with the shift but cannot by itself resolve it. The claim is
+        carried by the full-window fit and the zero-crossing periods.
+    - id: UNCHANGED_T_REF_IS_NOT_EVIDENCE
+      detail: >-
+        T_ref moved only 8.1193 -> 8.1153 s between the two runs, but
+        T_ref = pi*sqrt(2)*V/g depends ONLY on V and g. Since both runs trimmed
+        at essentially the same airspeed, its near-constancy is an ARITHMETIC
+        NEAR-TAUTOLOGY and proves nothing about the mode. Recorded so no future
+        reader mistakes it for corroboration.
+
+# -----------------------------------------------------------------------------
+# 4. MEASUREMENTS
+# -----------------------------------------------------------------------------
+measurements:
+  baseline_firmware_defaults:
+    artifact: tests/gazebo/results/ardupilot_longitudinal_phugoid_damping_result_baseline_reanalyzed.json
+    verdict: PHUGOID_DAMPING_BASELINE_MEASURED
+    failed_checks: []
+    acceptance_checks: "35 / 35 PASS"
+    analysed_free_ringdown_s: 54.951072692871094
+    period_s: 5.647363185882568
+    zeta_legacy: 0.03919583794283621
+    tau_log_decrement_legacy_s: 22.913531752674867
+    tau_from_zeta_legacy_s: 22.93115324589403
+    tau_lsq_envelope_fit_s: 22.59312892079595
+    lsq_envelope_fit_r2: 0.9921168586792191
+    tau_corrected_s: 22.07409212231074
+    zeta_corrected: 0.040683966003467964
+    omega_d_rad_s: 1.1125874324652014
+    tau_ref_lanchester_s: 20.87319581771331
+    T_ref_lanchester_s: 8.119273874497658
+    tau_ratio_closed_over_free: 1.057532939138066
+    period_ratio_closed_over_free: 0.6955502761916591
+    extrema_admitted: "20 of 20 (0 rejected - the SNR truncation is INERT on the baseline)"
+    window_over_tau:
+      recorded_value: 2.4893921973502553
+      basis: "analysed span 54.951 s / corrected tau 22.074 s (ringdown.measurability.window_over_tau)"
+      alternative: "2.398 if computed against the LEGACY tau 22.914 s"
+      gate: "TH_MIN_WINDOW_TAU = 2.0 - PASS on either basis"
+  candidate_ptch_damp_0p6:
+    status: VALIDATED_NOT_ADOPTED
+    artifact: tests/gazebo/results/ardupilot_longitudinal_phugoid_damping_result_ptchdamp06_reanalyzed.json
+    tau_corrected_s: 8.65156302075928
+    zeta_corrected: 0.08716008208404893
+    period_s: 4.756067548479352
+    period_raw_all_extrema_s: 4.7316883910786025
+    omega_d_rad_s: 1.3210883241531117
+    tau_ref_lanchester_s: 20.86398787609559
+    tau_ratio_closed_over_free: 0.41466487960681764
+    extrema_admitted: "8 of 23 (15 rejected below the 3-sigma incoherent floor)"
+    harness_verdict_reported_honestly:
+      verdict: PHUGOID_DAMPING_BASELINE_FAILED
+      failed_checks: [is_firmware_default_baseline]
+      interpretation: >-
+        BY DESIGN AND CORRECT. The part-1 harness GATES that the aircraft is
+        flying at firmware defaults; the candidate run deliberately is not.
+        This is not an aircraft, physics or control failure. All 34 other
+        checks passed on that run.
+  improvement_four_independent_methods:
+    ordering: "most conservative first"
+    methods:
+      - id: HARNESS_POOLED_LOG_DECREMENT
+        defaults: 22.07409212231074
+        candidate: 8.65156302075928
+        units: s
+        factor: 2.55
+      - id: ESTIMATOR_INDEPENDENT_RESIDUAL_RATIO
+        description: "2nd-half / 1st-half detrended residual std, altitude channel. No extremum detection, no truncation, no logarithm."
+        defaults: 0.30523906104623494
+        candidate: 0.10498276987932663
+        units: "-"
+        factor: 2.91
+      - id: LSQ_REGRESSION_OVER_ADMITTED_EXTREMA
+        defaults: 22.59312892079595
+        candidate: 7.150077006424153
+        units: s
+        factor: 3.16
+      - id: VALIDATION_FULL_WINDOW_NONLINEAR_DAMPED_SINUSOID_FIT
+        source: "validation, independent - no extrema, no truncation"
+        defaults: 23.67
+        candidate: 6.70
+        units: s
+        factor: 3.53
+    honest_precision_statement: >-
+      Roughly 2.5x to 3.5x faster envelope decay. validation assessed the
+      originally claimed +/-20 % uncertainty on tau as SLIGHTLY OPTIMISTIC and
+      ruled +/-25-30 % defensible. That is the figure of record. n = 1 run per
+      setting, so no run-to-run scatter estimate exists for the damping
+      measurement itself.
+
+# -----------------------------------------------------------------------------
+# 5. PRIOR-STAGE CORRECTION
+#    The 2026-09-03 MAJOR's "1.24x slower" figure is SUPERSEDED.
+#    The MAJOR itself STAYS OPEN.
+# -----------------------------------------------------------------------------
+prior_stage_correction:
+  finding_id: CLOSED_LOOP_LONGITUDINAL_DAMPING_WEAKER_THAN_FREE_AIRFRAME
+  status: OPEN_MAJOR
+  gating: false
+  gating_rationale: >-
+    Part 1 exists to MEASURE this ratio on a purpose-built free decay. Gating
+    the baseline on it would be circular and would invite tuning to pass, which
+    CLAUDE.md's simulation tuning policy forbids.
+  decomposition:
+    - step: "2026-09-03 as published"
+      tau_closed_s: 25.9086
+      tau_ref_s: 20.894744
+      ratio: 1.240
+      what_changed: "-"
+    - step: "legacy estimator, this stage's 55 s purpose-built free decay"
+      tau_closed_s: 22.913531752674867
+      tau_ref_s: 20.87319581771331
+      ratio: 1.098
+      what_changed: "DATA + WINDOW (55 s free decay vs a 30 s settle tail). NOT code."
+    - step: "corrected estimator, same data"
+      tau_closed_s: 22.07409212231074
+      tau_ref_s: 20.87319581771331
+      ratio: 1.0575
+      what_changed: "ESTIMATOR (section 6)"
+    - step: "validation independent full-window damped-sinusoid fit"
+      tau_closed_s: 23.67
+      tau_ref_s: 20.87319581771331
+      ratio: 1.134
+      what_changed: "independent method"
+  proof_the_shift_is_data_not_code:
+    method: >-
+      The new harness's estimator module was run on THE PRIOR STAGE'S OWN raw
+      timeseries (tests/gazebo/results/ardupilot_tecs_climb_descent_energy_
+      timeseries.json, segment P3_settle, window t_seg >= 10 s).
+    reproduced:
+      period_s: 5.632851
+      zeta: 0.0345816
+      tau_s: 25.9086
+      n_extrema: 11
+      analysed_span_s: 29.939
+    published_2026_09_03:
+      period_s: 5.632851
+      zeta: 0.0345816
+      tau_s: 25.909
+    conclusion: >-
+      EXACT reproduction. Because the legacy code reproduces the legacy answer
+      bit-for-bit on the legacy data, the 1.240 -> 1.098 movement is
+      attributable to the MEASUREMENT, not to any change in analysis code.
+  ruling: >-
+    The true ratio is ~1.06-1.13 depending on estimator, and it is > 1 under
+    EVERY estimator tried. The closed loop still damps the longitudinal energy
+    mode MORE SLOWLY than the free airframe would. The MAJOR is therefore NOT
+    CLOSED; only its magnitude is corrected downward.
+
+# -----------------------------------------------------------------------------
+# 6. ESTIMATOR CORRECTION - a defect in the ANALYSIS code, not a threshold change
+# -----------------------------------------------------------------------------
+estimator_correction:
+  defect:
+    location: "tests/gazebo/scripts/test_ardupilot_tecs_climb_descent_energy.py:713 energy.damping_estimate() (READ-ONLY, closed stage - NOT edited)"
+    code: "r_half = mean(ratios)   # ARITHMETIC mean of successive extremum amplitude ratios"
+    why_it_is_wrong: >-
+      The ARITHMETIC mean of ratios is a BIASED estimator of exponential decay
+      for ANY dataset. By Jensen's inequality AM >= GM, so r_half is biased
+      HIGH, the logarithmic decrement biased LOW and tau biased LONG - i.e. the
+      legacy estimator systematically reports a system as LESS DAMPED than it
+      is. This is a property of the estimator, independent of aircraft or run.
+  replacement:
+    definition: "delta = (1/(n-1)) * SUM_i ln(A_i / A_{i+1})"
+    name: "pooled logarithmic decrement, mean-of-logs (equivalently the geometric mean of the ratios)"
+    plus: "an a-priori 3-sigma SNR truncation of extrema"
+    truncation_rule: "leading contiguous run with amplitude >= TH_SNR_DETECTION_MULTIPLE * sigma_incoherent"
+  assumption:
+    tag: ASSUMPTION_EXTREMUM_SNR_DETECTION_THRESHOLD
+    settings:
+      TH_SNR_DETECTION_MULTIPLE: 3.0
+      TH_NOISE_TAIL_CYCLES: 3.0
+      TH_MIN_ADMITTED_EXTREMA: 3
+    noise_floor_model: >-
+      linear trend + best-fit sinusoid at the measured mode period removed by
+      least squares from the last TH_NOISE_TAIL_CYCLES periods; the floor is the
+      RMS of the leftover INCOHERENT content. The coherent component at the mode
+      period is deliberately EXCLUDED because it is the signal being measured.
+    rationale: >-
+      3 sigma is the conventional limit of detection (ISO 11843 / IUPAC),
+      ~0.13 % one-sided Gaussian false-admission rate per extremum. Below it,
+      ln(A) is dominated by the floor rather than by the decay. The multiple is
+      FIXED A PRIORI, identical for every channel and every run, references no
+      run's outcome, and its influence is reported in full
+      (corrected_log_decrement.snr_sensitivity) rather than hidden.
+    data_required: >-
+      DATA_REQUIRED to remove this assumption entirely: an independently
+      characterised altitude measurement-noise spectrum for the Gazebo/SITL
+      sensor chain.
+  no_acceptance_threshold_was_changed:
+    verified_by: validation
+    evidence:
+      threshold_key_count: "29 -> 34"
+      changed: 0
+      removed: 0
+      additions_location: "all 5 inside a block named ESTIMATOR_SETTINGS_NOT_ACCEPTANCE_THRESHOLDS"
+      baseline_acceptance_dict: "bit-identical, 35/35"
+      prior_stage_reanalysis: "byte-identical"
+    legacy_retained: >-
+      energy.damping_estimate() is still imported UNCHANGED and its result is
+      kept in every artifact under
+      corrected_log_decrement.legacy_arithmetic_mean_estimator, so both numbers
+      are visible side by side and nothing was quietly replaced.
+  validation_major_1_recorded_honestly:
+    severity: MAJOR
+    blocking: false
+    finding: >-
+      The "baseline unchanged" argument validates the MEAN-OF-LOGS change but
+      NOT the TRUNCATION step. The truncation is INERT on the baseline (0 of 20
+      extrema rejected) and LOAD-BEARING on the candidate (15 of 23 rejected),
+      so an unchanged baseline says nothing about it.
+    justification_of_the_truncation_instead:
+      - "the rejected tail is demonstrably NON-MONOTONE FLOOR NOISE - the raw amplitude sequence stops decaying and starts wandering, which is what a floor looks like and is not a measurement of a decay rate"
+      - "THE CONCLUSION SURVIVES WITHOUT TRUNCATION: the estimator-independent residual-ratio method uses no truncation and still gives 2.91x; validation's full-window fit uses no truncation and gives 3.53x"
+    transparency: >-
+      The snr_sensitivity sweep over TH_SNR_DETECTION_MULTIPLE in {2,3,4,5} and
+      TH_NOISE_TAIL_CYCLES in {2,3} is recorded in full in both result
+      artifacts.
+    ownership_note: >-
+      gazebo-testing is adding the corresponding explicit reporting to
+      tests/gazebo/scripts/test_ardupilot_longitudinal_phugoid_damping.py in
+      parallel. controls-integration did NOT edit that file in this stage.
+
+# -----------------------------------------------------------------------------
+# 7. PERFORMANCE REGRESSION - TECS_PTCH_DAMP 0.6 costs nothing measurable
+# -----------------------------------------------------------------------------
+performance_regression:
+  design: "the 5-phase climb/descent/energy profile flown twice, with EXACTLY ONE FUNCTIONAL parameter differing"
+  anti_tuning_provenance:
+    order: "DEFAULTS TAKEN FIRST, verified by mtime"
+    mtimes:
+      regression_harness_frozen: "2026-09-04 23:17:40"
+      result_defaults: "2026-09-04 23:22:20"
+      result_ptchdamp06: "2026-09-05 08:35:46"
+    significance: >-
+      The regression harness was frozen BEFORE EITHER RUN EXISTED, so its gates
+      could not have been tuned to the outcome.
+  both_runs:
+    verdict: TECS_PTCH_DAMP_NO_PERFORMANCE_REGRESSION
+    failed_checks: []
+    regression_gates_failed: []
+    regression_gates: "36 / 36 PASS"
+    acceptance_checks: "66 / 66 PASS"
+    counting_note: >-
+      Recorded as MEASURED: analysis.regression_gates contains 36 entries, one
+      per regression_* acceptance check. A count of 37 elsewhere would include
+      the aggregate.
+  deltas:
+    cruise_airspeed_std_ms:        {defaults: 0.1857909301264457,  candidate: 0.06596068425400152, direction: BETTER}
+    hold_alt_p2p_max_m:            {defaults: 2.147704401264704,   candidate: 0.6344848669319276,  direction: BETTER}
+    hold_alt_p2p_per_window_m:
+      defaults:  {R1: 1.0112627035438777, R3: 2.147704401264704,  R5: 0.9586772232706409}
+      candidate: {R1: 0.41219203797348314, R3: 0.6344848669319276, R5: 0.42242229506268814}
+      direction: BETTER_IN_ALL_THREE
+    achieved_climb_m:              {defaults: 10.431904878819836,  candidate: 10.3843042364188,    direction: UNCHANGED}
+    achieved_descent_m:            {defaults: -11.011376273583465, candidate: -10.916752715432082, direction: UNCHANGED}
+    roundtrip_alt_residual_m:      {defaults: -0.5794713947636296, candidate: -0.5324484790132828, direction: SLIGHTLY_BETTER}
+    descent_ramp_duration_s:       {defaults: 9.28311800956726,    candidate: 8.889539241790771,   direction: BETTER}
+    whole_flight_airspeed_min_ms:  {defaults: 16.867420196533203,  candidate: 17.117080688476562,  direction: BETTER}
+    whole_flight_airspeed_max_ms:  {defaults: 19.271940231323242,  candidate: 18.91777801513672,   direction: BETTER}
+    whole_flight_elevator_max_abs_deg: {defaults: 6.405906764194276, candidate: 6.289486323497678, direction: BETTER}
+    cruise_drag_mean_N:            {defaults: 5.145201987289052,   candidate: 5.1487276192322975,  direction: IDENTICAL, note: "confirms trim / aero state unchanged"}
+    hold_vz_max_abs_ms:            {defaults: 0.01039866047262854, candidate: 0.012576902517784695, direction: WORSE, see: the_one_adverse_metric}
+  the_one_adverse_metric:
+    metric: hold_vz_max_abs_ms
+    gate_TH_REG_HOLD_VZ_MAX_MS: 0.028935151377289716
+    harness_declared_lsq_slope_bias_floor_ms: 0.020401151377289716
+    floor_definition: >-
+      the worst-case least-squares slope a residual oscillation of the observed
+      amplitude can imprint over a 24 s window: 12*A_hold/(w*W^2).
+    ruling: >-
+      BOTH values sit far below the gate AND below the harness's own declared
+      slope-bias floor, i.e. the metric CANNOT RESOLVE a change at that level;
+      the 0.0022 m/s difference lies inside its own stated noise. RECORDED, not
+      explained away, and NOT compensated for.
+  tightest_margin:
+    metric: descent_ramp_vz_peak_ms
+    measured: 1.7563457489013672
+    floor: 1.6856585870818916
+    margin_percent: 4.2
+    context: >-
+      The descent ramp DURATION nevertheless IMPROVED (9.2831 -> 8.8895 s) with
+      the achieved descent essentially unchanged - a smoother, less-overshooting
+      ramp, which is exactly what higher damping should produce.
+  gate_construction:
+    form: "band: min(A,B)-TOL <= x <= max(A,B)+TOL | max: x <= max(A,B)+TOL | min: x >= min(A,B)-TOL"
+    references:
+      A: "2026-09-02 cruise stage"
+      B: "2026-09-03 climb/descent/energy stage"
+    validation_ruling: >-
+      LEGITIMATE use of measured run-to-run scatter, NOT tolerance widening:
+      min/max over two real recorded realisations IS the observed scatter and
+      is not a chosen number. TOL is added once and only once.
+    caveat: >-
+      n = 2 is a COARSE scatter estimate. The harness itself flags this on the
+      cruise_airspeed_std_ms gate ("RESOLUTION LIMITATION ... More repeats are
+      DATA_REQUIRED").
+
+# -----------------------------------------------------------------------------
+# 8. CANDIDATE PARAMETER RECORD
+# -----------------------------------------------------------------------------
+candidate_parameter:
+  name: TECS_PTCH_DAMP
+  candidate_value: 0.6
+  status: VALIDATED_NOT_ADOPTED
+  live_value_unchanged: 0.3
+  live_value_source: "libraries/AP_TECS/AP_TECS.cpp:107 (firmware default) - recorded at docs/source_of_truth/controls/ardupilot_fbwb_tecs_baseline.yaml:183, NOT edited by this stage"
+  where_0p6_exists_in_this_repository: >-
+    ONLY as a runtime MAVLink PARAM_SET issued by the test harness for the
+    duration of two measurement runs. It is NOT in config/ardupilot/
+    falcon_v2_sitl.parm, NOT in any SOT parameter table, and is NOT a default.
+  provenance_class_if_adopted: [DERIVED_CALCULATION, GAZEBO_VALIDATION]
+  adoption_requirements:
+    - id: SOT_ENTRY
+      requirement: >-
+        A source-of-truth entry carrying the AP_TECS algebraic derivation, the
+        PD-corner-vs-mode-frequency argument and both measured runs, with
+        provenance class DERIVED_CALCULATION + GAZEBO_VALIDATION.
+      status: SATISFIED_BY_THIS_FILE
+    - id: RUN_TO_RUN_SCATTER
+      requirement: "Repeat runs to establish run-to-run scatter."
+      status: NOT_SATISFIED
+      detail: "n = 1 per setting on the damping measurement; n = 2 total realisations behind the regression reference bands."
+    - id: ENVELOPE_COVERAGE
+      requirement: >-
+        Envelope coverage. Currently ONE airspeed (18 m/s), ONE step size
+        (+/-10 m), ZERO wind, ONE mass/CG. The wind/gust model is already
+        validated (commit efb5624) and should be exercised.
+      status: NOT_SATISFIED
+    - id: REAL_AIRCRAFT_DIVERGENCE_DECLARED
+      requirement: >-
+        Explicit record of the divergence from the real aircraft parameter set.
+      status: RECORDED_HERE_MUST_BE_RESTATED_AT_ADOPTION
+      detail: >-
+        docs/source_of_truth/autopilot/real_aircraft/yeni_pixhawk.param:1035
+        carries TECS_PTCH_DAMP,0.3. Per docs/source_of_truth/autopilot/
+        SITL_PARAM_MIGRATION.md section 3 the whole TECS_* group is classified
+        REVIEW_AND_ADAPT and explicitly "not authoritative Falcon V2 truth", so
+        this is NOT A BLOCKER - but 0.6 would be the project's FIRST
+        Falcon-specific TECS value and the divergence must be EXPLICIT rather
+        than silent.
+    - id: PITCH_DEMAND_MARGIN_DECLARED
+      requirement: "The reduced pitch-demand margin declared as a limitation."
+      status: SATISFIED_BY_THIS_FILE
+      see: "open_limitations -> REDUCED_PITCH_DEMAND_MARGIN_AT_PTCH_DAMP_0P6"
+
+# -----------------------------------------------------------------------------
+# 9. OPEN LIMITATIONS - ALL NON-GATING
+# -----------------------------------------------------------------------------
+open_limitations:
+  - id: PROPULSION_HIGH_J_WINDMILLING
+    status: OPEN_LIMITATION
+    severity: DATA_REQUIRED
+    owner: propulsion
+    carried_from: "docs/source_of_truth/controls/ardupilot_tecs_energy_management.yaml open_limitations (unchanged)"
+    detail: >-
+      The APC 13x6.5E Ct/Cp source table contains no windmilling data above the
+      zero-thrust advance ratio (~J 0.64). Ct is clamped to the table's last
+      value, flooring thrust at 0 N where a real fixed-pitch propeller would
+      windmill and produce NEGATIVE thrust. HIGH-J DESCENT PERFORMANCE IS
+      THEREFORE NOT ABSOLUTE HIGH-FIDELITY TRUTH. Direction, controllability,
+      settling and the kinematic energy bookkeeping remain valid.
+    required_data: >-
+      DATA_REQUIRED - measured or defensibly extrapolated APC 13x6.5E Ct/Cp for
+      J beyond the zero-thrust point, or an explicit out-of-domain declaration
+      in docs/source_of_truth/propulsion/.
+    apparent_worsening_is_an_artifact:
+      observation: "whole-flight advance-ratio max in the regression pair moved J 1.3063 -> 1.7572"
+      verified_by: validation
+      finding: >-
+        A t = 0.00 s FBWB-entry SPIN-DOWN artifact. Only 2 of 2315 RUN 2
+        samples exceed RUN 1's maximum, and BOTH are inside the discarded 12 s
+        transient. EXCLUDING the transient, RUN 2's J max (0.5525) is LOWER
+        than RUN 1's (0.5759), and the interp-clamped fraction IMPROVED
+        0.041667 -> 0.039309.
+    action_this_stage: "COUNTED and REPORTED in every artifact's high_j block. Never gated, never compensated for."
+  - id: WINDOW_OVER_TAU_USES_FULL_SPAN_NOT_SNR_ADMITTED_SPAN
+    status: OPEN_LIMITATION
+    severity: MINOR
+    owner: controls-integration
+    first_observed: "validation MINOR-1, this stage"
+    detail: >-
+      ringdown.measurability.window_over_tau is computed on the FULL analysed
+      span, not on the span actually ADMITTED by the SNR truncation. Candidate:
+      full span 54.906/8.652 = 6.35 tau -> PASS, but the SNR-ADMITTED span is
+      16.646 s = 1.92 tau, BELOW the documented intent of TH_MIN_WINDOW_TAU =
+      2.0. The baseline is unaffected (0 extrema rejected, so admitted span =
+      full span).
+    action_this_stage: >-
+      DELIBERATELY NOT CHANGED post-hoc. Redefining a measurability gate after
+      seeing which run it would have caught is exactly the after-the-fact
+      adjustment CLAUDE.md's simulation tuning policy forbids. Deferred to a
+      future stage that defines it BEFORE the runs.
+  - id: REDUCED_PITCH_DEMAND_MARGIN_AT_PTCH_DAMP_0P6
+    status: OPEN_LIMITATION
+    severity: MINOR
+    owner: controls-integration
+    measurement:
+      window: "regression runs, R1 cruise, nav_pitch_raw (TECS demand before PTCH_TRIM_DEG)"
+      TECS_PITCH_MAX_deg: 15
+      defaults:  {nav_pitch_raw_max_deg: 8.710000038146973,  margin_deg: 6.29}
+      candidate: {nav_pitch_raw_max_deg: 10.6899995803833,   margin_deg: 4.31}
+      required_margin_deg: 1.0
+      pitch_demand_not_clipped: "true in every window of every run"
+    detail: >-
+      Still 4.3x the required 1.0 deg margin, but the trend is REAL and WILL
+      MATTER at larger altitude steps or higher gains. Declared, not gated.
+  - id: PHUGOID_REFERENCE_IS_LANCHESTER
+    status: ASSUMPTION
+    owner: controls-integration
+    carried_from: "energy.phugoid_reference(), inherited unchanged"
+    model:
+      tau_ref: "V*(L/D)/g"
+      T_ref: "pi*sqrt(2)*V/g"
+      zeta_ref: "1/(sqrt(2)*(L/D))"
+    verification_by_validation:
+      algebraic: "derivation verified"
+      numerical: >-
+        back-solving tau_ref = 20.873 s at V = 17.9276 m/s, g = 9.81 gives
+        L/D = 11.42, matching the aerodynamics plugin's own measured
+        CL/CD = 0.66009/0.057792 = 11.4219 over the ring-down window
+        (validation's own window gave ~0.6789/0.0591 = 11.49, the same to
+        better than 0.7 %). A third, independent level-flight identity
+        L/D = m*g/T_thrust gives 11.4906 (REPORT ONLY; affected by
+        PROPULSION_HIGH_J_WINDMILLING).
+    data_required: >-
+      DATA_REQUIRED - a MEASURED Falcon V2 stick-fixed phugoid (period AND
+      damping) from an open-loop fixed-stick, fixed-throttle run would replace
+      this assumption directly.
+  - id: N_EQUALS_1_PER_SETTING
+    status: OPEN_LIMITATION
+    severity: METHODOLOGICAL
+    owner: controls-integration
+    detail: >-
+      ONE phugoid run and ONE regression run per TECS_PTCH_DAMP setting. NO
+      run-to-run scatter estimate exists for the damping measurement itself.
+      This is why adoption requirement RUN_TO_RUN_SCATTER is unsatisfied and
+      why the improvement is quoted as a RANGE (2.5x-3.5x) rather than a point
+      value.
+
+# -----------------------------------------------------------------------------
+# 10. TECS PARAMETER POLICY FOR THIS STAGE
+# -----------------------------------------------------------------------------
+tecs_parameter_policy:
+  changed_this_stage: NONE
+  adopted_this_stage: NONE
+  runtime_only_writes:
+    - {param: TECS_PTCH_DAMP, value: 0.6, scope: "two measurement runs only, via MAVLink PARAM_SET, inside the harness's settable-params whitelist"}
+  rule: >-
+    A candidate TECS value may be MEASURED at runtime under a whitelist, but is
+    ADOPTED only by a dedicated stage that satisfies every item in
+    candidate_parameter.adoption_requirements. Measuring is not adopting.
+  enforcement_in_the_tests: >-
+    `tecs_at_firmware_defaults` / `is_firmware_default_baseline` and
+    `pids_unchanged` are GATING acceptance checks evaluated against the LIVE
+    parameter dump, so a run that quietly tuned something cannot report a clean
+    baseline. This is why the candidate phugoid run correctly reports
+    is_firmware_default_baseline = FAIL: the gate is doing its job.

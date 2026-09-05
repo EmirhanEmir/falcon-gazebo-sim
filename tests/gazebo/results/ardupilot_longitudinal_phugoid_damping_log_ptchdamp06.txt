@@ -1,0 +1,32 @@
+WARNING: --set-param requested; this run is NOT the stage baseline: ['TECS_PTCH_DAMP=0.6']
+PHASE 1 (mavlink arm): {"ok": true, "heartbeat": {"mavpackettype": "HEARTBEAT", "type": 1, "autopilot": 3, "base_mode": 17, "custom_mode": 16, "system_status": 2, "mavlink_version": 3}, "dcm_ekf_ready": true, "dcm_ekf_droll_deg": 0.005954128130330707, "dcm_ekf_dpitch_deg": 2.523779834513278, "arm_attempt_0": {"ack": {"mav
+PARAM_SET: {"name": "TECS_PTCH_DAMP", "requested": 0.6, "before": 0.30000001192092896, "after": 0.6000000238418579, "confirmed": true}
+param preconditions: {"arspd_use_1_tecs_uses_airspeed_path": true, "arspd_type_100_sitl_backend": true, "airspeed_min_16": true, "airspeed_cruise_18": true, "airspeed_max_28": true, "ptch_trim_deg_2p49": true, "kff_thr2ptch_zero": true, "flight_options_zero": true, "fbwb_elev_rev_zero": true, "cruise_alt_floor_zero": true, "min_groundspeed_zero": true, "rc3_not_reversed": true, "rc2_not_reversed": true, "sim_wind_zero": true, "sim_opos_alt_zero_atmosphere_datum": true, "pids_unchanged": true, "tecs_at_firmware_defaults": false}
+param preconditions (extended): {"arspd_use_1_tecs_uses_airspeed_path": true, "arspd_type_100_sitl_backend": true, "airspeed_min_16": true, "airspeed_cruise_18": true, "airspeed_max_28": true, "ptch_trim_deg_2p49": true, "kff_thr2ptch_zero": true, "flight_options_zero": true, "fbwb_elev_rev_zero": true, "cruise_alt_floor_zero": true, "min_groundspeed_zero": true, "rc3_not_reversed": true, "rc2_not_reversed": true, "sim_wind_zero": true, "sim_opos_alt_zero_atmosphere_datum": true, "pids_unchanged": true, "tecs_at_firmware_defaults": false, "alt_offset_zero_for_target_readback": true, "terrain_follow_zero": true, "fbwb_climb_rate_2ms": true, "tecs_spdweight_readable": true}
+param preconditions: {"arspd_use_1_tecs_uses_airspeed_path": true, "arspd_type_100_sitl_backend": true, "airspeed_min_16": true, "airspeed_cruise_18": true, "airspeed_max_28": true, "ptch_trim_deg_2p49": true, "kff_thr2ptch_zero": true, "flight_options_zero": true, "fbwb_elev_rev_zero": true, "cruise_alt_floor_zero": true, "min_groundspeed_zero": true, "rc3_not_reversed": true, "rc2_not_reversed": true, "sim_wind_zero": true, "sim_opos_alt_zero_atmosphere_datum": true, "pids_unchanged": true, "tecs_at_firmware_defaults": true, "alt_offset_zero_for_target_readback": true, "terrain_follow_zero": true, "fbwb_climb_rate_2ms": true, "tecs_spdweight_readable": true, "tecs_pitch_max_15": true, "ptch_lim_min_deg_minus25": true}
+ground settle: {'settled': True, 'elapsed_s': 1.0013773441314697}
+PHASE 2 (teleport+verify): True
+PHASE 3 (hold-to-trim): aborted = False reason = None
+command derivation: {"v_target_ms": 18.0, "rc3_pwm_us": 1258.3333333333333, "rc3_pwm_us_rounded": 1258, "predicted_target_airspeed_ms": 17.92, "error": null, "rc2_up_us": 1900.0, "rc2_neutral_us": 1500.0, "formula": "ArduPlane/navigation.cpp:187-189 inverted through RC_Channel.cpp:388-402 (imported from the 2026-09-02 cruise stage, unchanged)."}
+P1 TRIM: 30.0s level cruise (rc2=1500, rc3=1258 -> TECS target 17.920 m/s)
+P2 EXCITE: ONE 4.0s full-up pitch-stick pulse (rc2=1900)
+P3 RINGDOWN: 65.0s free decay, stick released to neutral (rc2=1500) -> set_target_altitude_current() locks the height demand (navigation.cpp:418-424)
+------------------------------------------------------------------------------
+excitation      : single pulse 4.0041344165802 s rc2 1900 -> neutral 1500 | alt gain 2.507281807463073 m | vz@release 1.6153956651687622 m/s | V@release 17.854021072387695 m/s
+ring-down A0    : alt 2.1460779639582057 m @ 1.8657605648040771 s | V 0.7149906949058114 m/s @ 1.9731411933898926 s
+MEASURED  mode  : T 4.7316883910786025 s | zeta None | r_cycle 1.6659588565694656 | n_extrema 23
+MEASURED  tau   : log-dec None s | from-zeta None s | envelope-fit 17.181349809771802 s (r2 0.5950649368866239)
+FREE AIRFRAME   : tau_ref 20.86398787609559 s | T_ref 8.1152541023569 s | zeta_ref 0.06190488666438895
+RATIOS          : tau closed/free None (prior stage 1.240) | period closed/free 0.5830610269744216 (prior stage 0.693)
+decay ratios    : {'altitude': 0.10498276987932663, 'airspeed': 0.3899605854697003, 'pitch_physical': 0.06751814059597737, 'throttle': 0.3244930598146404} (limit 0.9)
+TECS gains (REPORT ONLY): Kp_eff 0.6200000166893005 1/s (INTEG_GAIN share 0.48387097394429174) | Kd_eff 0.6000000238418579 | PD zero 1.0333333200878572 rad/s | ideal loop gain 1.240000033378601 rad/s
+omega_d / ideal loop gain: 1.0708830273569292
+OPEN MAJOR      : CLOSED_LOOP_LONGITUDINAL_DAMPING_WEAKER_THAN_FREE_AIRFRAME satisfied=False (NON-GATING in part 1)
+ring-down env   : V_min 17.204553604125977 m/s | elev_max 5.889601032268812 deg | thr 0.46..0.538 | nav_pitch margins 17.070000171661377 / 9.300000190734863 deg
+HIGH-J (OPEN_LIMITATION): interpClamped 12/3804 motor-samples, zero-thrust 4
+parameter writes: [{'name': 'TECS_PTCH_DAMP', 'requested': 0.6, 'before': 0.30000001192092896, 'after': 0.6000000238418579, 'confirmed': True}]
+------------------------------------------------------------------------------
+VERDICT: PHUGOID_DAMPING_BASELINE_FAILED  failed_checks=['is_firmware_default_baseline', 'mode_is_not_growing', 'ringdown_window_spans_two_tau', 'tau_env_measured', 'tau_ratio_reported']
+RESULT: FLIGHT_COMPLETED_NO_ABORT PHUGOID_DAMPING_BASELINE_FAILED -> /home/emirhan/Desktop/FalconV2/tests/gazebo/results/ardupilot_longitudinal_phugoid_damping_result.json
+TIMESERIES: /home/emirhan/Desktop/FalconV2/tests/gazebo/results/ardupilot_longitudinal_phugoid_damping_timeseries.json
+PER-SAMPLE TRACE: /home/emirhan/Desktop/FalconV2/tests/gazebo/results/ardupilot_longitudinal_phugoid_damping_per_sample.json
