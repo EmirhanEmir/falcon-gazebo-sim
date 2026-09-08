@@ -1,0 +1,35 @@
+--------------------------------------------------------------------------
+scenario D (GUIDED_SEQUENTIAL_WAYPOINTS)  n=1564 steady=1374  modes=['FBWA', 'GUIDED']
+  aileron   p95=1.74 deg  max=4.46 deg  frac>10deg=0.000
+  elevator  p95=8.52 deg  max=11.37 deg  frac>10deg=0.017
+  rudder    p95=0.60 deg  max=2.14 deg  frac>10deg=0.000
+  hard-limit duty=0.0 longest run=0.0 s
+  airspeed min steady=16.56970977783203 (AIRSPEED_MIN=16.0) p2p=4.395992279052734
+  altitude p2p steady=17.860763830631427 m
+  oscillation growing channels=[]
+  nav sign agreement=0.976271186440678 inner roll=0.8754208754208754
+  autotune decision support={'roll_rms_deg': 8.218196793144122, 'pitch_rms_deg': 7.554213522532562, 'saturation_duty_max': 0.0, 'oscillation_growing_channels': [], 'roll_rms_exceeds_threshold': True, 'pitch_rms_exceeds_threshold': True, 'saturation_exceeds_threshold': False, 'autotune_indicated_by_this_scenario': True, 'policy': 'NON-GATING DECISION SUPPORT ONLY. A true value here does NOT authorise running AUTOTUNE and does NOT fail this stage. AUTOTUNE is run only if an independent evidence review concludes the current PIDs are genuinely inadequate during navigation. See autotune_procedure_stub() - dormant, never executed by this file.'}
+   PASS  BLOCKER_airspeed_above_hard_floor
+   PASS  BLOCKER_no_continuous_hard_limit_pinning
+   PASS  airspeed_bounded
+   PASS  airspeed_never_below_min_in_steady_window
+   PASS  all_legs_flown
+   PASS  altitude_bounded
+   PASS  altitude_change_leg_achieved
+   PASS  armed_throughout
+   PASS  heading_error_converged
+   PASS  heading_frame_consistent
+   PASS  inner_loop_roll_sign_correct
+   PASS  navigated_toward_target
+   PASS  no_growing_oscillation
+   PASS  no_wrong_sign_navigation_response
+   PASS  roll_sign_gz_mav_agree
+   PASS  route_xtrack_not_growing_per_leg
+   PASS  surface_aileron_p95_within_linear_range
+   PASS  surface_elevator_p95_within_linear_range
+   PASS  surface_rudder_p95_within_linear_range
+   PASS  target_mode_stable
+   PASS  xtrack_identity_consistent
+VERDICT: NAVIGATION_PASS  failed=[]  blockers=[]
+RESULT: /home/emirhan/Desktop/FalconV2/tests/gazebo/results/ardupilot_navigation_scenario_D_result.json
+TIMESERIES: /home/emirhan/Desktop/FalconV2/tests/gazebo/results/ardupilot_navigation_scenario_D_timeseries.json

@@ -1,0 +1,8 @@
+--------------------------------------------------------------------------
+  A GUIDED_SINGLE_TARGET             NAVIGATION_PASS  fails=[]
+  B LOITER_ORBIT                     NAVIGATION_PASS  fails=[]
+  C RTL_RETURN_TO_HOME               NAVIGATION_PASS  fails=[]
+  D GUIDED_SEQUENTIAL_WAYPOINTS      NAVIGATION_PASS  fails=[]
+CAMPAIGN VERDICT: NAVIGATION_PASS
+AUTOTUNE review indicated: True
+SUMMARY: /home/emirhan/Desktop/FalconV2/tests/gazebo/results/ardupilot_navigation_validation_summary.json

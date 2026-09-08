@@ -1,0 +1,1255 @@
+{
+  "stage": "ARDUPLANE_NAVIGATION_AND_AUTOTUNE_VALIDATION",
+  "scenario": "B",
+  "scenario_name": "LOITER_ORBIT",
+  "scenario_purpose": "Orbit about the fixed centre ArduPlane latches at LOITER entry (ModeLoiter::_enter -> do_loiter_at_location, mode_loiter.cpp:4-6). Verifies bounded orbit radius, correct orbit direction, bounded altitude/airspeed and no growing spiral or oscillation.",
+  "scenario_config": {
+    "mode": 12,
+    "name": "LOITER_ORBIT",
+    "duration_s": 150.0
+  },
+  "timestamp": "2026-09-07T20:33:14Z",
+  "mode": {
+    "number": 12,
+    "name": "LOITER",
+    "evidence": "ArduPlane/mode.h - see module docstring sec 1"
+  },
+  "writes_parameters": false,
+  "wind": "ZERO. The world declares no wind system and model/model.sdf's FalconV2Wind plugin defaults to <steady_wind_mps>0 0 0. SIM_WIND_SPD is additionally live-read and asserted zero.",
+  "physics_bypass": "NONE during any measured window. The airborne initial condition is established by the project's already-validated teleport + hold-to-trim bring-up, which fully releases (clear_wrench) before the autopilot takes over. See module docstring sec 5.",
+  "thresholds": {
+    "TH_SURF_LINEAR_DEG": 10.0,
+    "TH_SURF_PERCENTILE": 95.0,
+    "TH_SURF_HARD_LIMIT_DEG": 45.0,
+    "TH_SURF_PIN_MARGIN_DEG": 0.5,
+    "TH_SURF_PIN_RUN_MAX_S": 0.5,
+    "TH_SURF_PIN_DUTY_MAX": 0.01,
+    "TH_AIRSPEED_MIN_MS": 16.0,
+    "TH_AIRSPEED_HARD_FLOOR_FRAC": 0.9,
+    "TH_MODE_TRANSIENT_S": 10.0,
+    "TH_ALT_FLOOR_M": 40.0,
+    "TH_ALT_CEILING_M": 260.0,
+    "TH_ATT_ABORT_DEG": 60.0,
+    "TH_ALT_P2P_MAX_M": 25.0,
+    "TH_AIRSPEED_P2P_MAX_MS": 6.0,
+    "TH_OSC_GROWTH_RATIO": 1.3,
+    "TH_OSC_ENVELOPE_RATIO": 1.3,
+    "TH_OSC_PEAK_PROMINENCE_FRAC": 0.05,
+    "TH_OSC_MIN_PEAKS": 6,
+    "TH_OSC_ENDPOINT_CONSISTENCY": true,
+    "TH_NAV_SIGN_AGREE_FRAC": 0.8,
+    "TH_NAV_SIGN_DEADBAND_DEG": 5.0,
+    "TH_HEADING_FRAME_TOL_DEG": 10.0,
+    "TH_XTRACK_IDENTITY_TOL_M": 3.0,
+    "TH_LOITER_RADIUS_TOL_M": 20.0,
+    "TH_LOITER_RADIUS_STD_MAX_M": 15.0,
+    "TH_APPROACH_CLOSURE_FRAC": 0.5,
+    "TH_AUTOTUNE_ROLL_RMS_DEG": 5.0,
+    "TH_AUTOTUNE_PITCH_RMS_DEG": 5.0,
+    "TH_AUTOTUNE_SAT_DUTY": 0.05
+  },
+  "threshold_provenance": {
+    "TH_SURF_LINEAR_DEG": {
+      "value": 10.0,
+      "provenance": "XFLR5 validated linear control-derivative range +/-10 deg (docs/source_of_truth/controls/CONTROLS.md sec 1; master dataset sec 65, sweeps sec 22/32/36 run -10..+10)",
+      "gating": true
+    },
+    "TH_SURF_PERCENTILE": {
+      "value": 95.0,
+      "provenance": "ASSUMPTION - quantifies the stage instruction's word 'predominantly'. p95 admits short transients (<=5 % of samples) but fails sustained out-of-linear-range operation. Non-derived; declared, not discovered.",
+      "gating": true
+    },
+    "TH_SURF_HARD_LIMIT_DEG": {
+      "value": 45.0,
+      "provenance": "model/model.sdf control-surface joint <limit> +/-0.7853981634 rad and actuator_v1_config.yaml min/max_angle_rad (USER_CONFIRMED_MECHANICAL_CAPABILITY)",
+      "gating": true
+    },
+    "TH_SURF_PIN_MARGIN_DEG": {
+      "value": 0.5,
+      "provenance": "ASSUMPTION - 'at the limit' band. 0.5 deg is ~1 % of the 45 deg limit and far above actuator numerical jitter.",
+      "gating": true
+    },
+    "TH_SURF_PIN_RUN_MAX_S": {
+      "value": 0.5,
+      "provenance": "ASSUMPTION - quantifies 'CONTINUOUSLY pinning'. At the 20 Hz sample rate 0.5 s is 10 consecutive samples: long enough to reject a single-sample touch, short enough to catch genuine sustained saturation.",
+      "gating": true
+    },
+    "TH_SURF_PIN_DUTY_MAX": {
+      "value": 0.01,
+      "provenance": "ASSUMPTION - total fraction of samples allowed at the hard limit (1 %).",
+      "gating": true
+    },
+    "TH_AIRSPEED_MIN_MS": {
+      "value": 16.0,
+      "provenance": "AIRSPEED_MIN, live-read; falcon_v2_sitl.parm SIMULATION_DERIVED_FROM_GAZEBO_ENVELOPE (docs/test_results/2026-08-27_flight_envelope_validation.md)",
+      "gating": true
+    },
+    "TH_AIRSPEED_HARD_FLOOR_FRAC": {
+      "value": 0.9,
+      "provenance": "Same convention as the TECS cruise stage (TH_SPEED_HARD_FLOOR_MS = 0.9 * AIRSPEED_MIN): a 10 % excursion below AIRSPEED_MIN is a hard failure anywhere in the record, transient or not.",
+      "gating": true
+    },
+    "TH_MODE_TRANSIENT_S": {
+      "value": 10.0,
+      "provenance": "ASSUMPTION - post-mode-change transient excluded from the steady-window gates. 10 s is ~2 TECS_TIME_CONST (live-read 5.0 s).",
+      "gating": true
+    },
+    "TH_ALT_FLOOR_M": {
+      "value": 40.0,
+      "provenance": "Run-abort guard. Start altitude is 90 m; 40 m still leaves ample margin. Same value as the TECS stages.",
+      "gating": true
+    },
+    "TH_ALT_CEILING_M": {
+      "value": 260.0,
+      "provenance": "Run-abort guard. RTL_ALTITUDE is live-read (100 m); 260 m is a runaway-climb trip well above any commanded altitude in this campaign.",
+      "gating": true
+    },
+    "TH_ATT_ABORT_DEG": {
+      "value": 60.0,
+      "provenance": "Run-abort guard on |roll| and |pitch|. ROLL_LIMIT_DEG is live-read (45 deg); 60 deg means the attitude controller has lost the aircraft.",
+      "gating": true
+    },
+    "TH_ALT_P2P_MAX_M": {
+      "value": 25.0,
+      "provenance": "ASSUMPTION - 'altitude stays bounded' during navigation. Navigation modes bank hard, and TECS trades height for speed in turns, so this is deliberately looser than the TECS altitude-hold stage's own straight-flight number. It is a BOUNDEDNESS gate, not a hold-quality gate.",
+      "gating": true
+    },
+    "TH_AIRSPEED_P2P_MAX_MS": {
+      "value": 6.0,
+      "provenance": "ASSUMPTION - 'airspeed stays bounded'. AIRSPEED_MAX-AIRSPEED_MIN is 12 m/s (live-read); half of the full commandable envelope is a generous boundedness gate that still fails a divergence.",
+      "gating": true
+    },
+    "TH_OSC_GROWTH_RATIO": {
+      "value": 1.3,
+      "provenance": "fbwa.detrended_growth()'s own criterion, reused verbatim from the validated phugoid-damping and TECS stages. REPORTED FOR COMPARABILITY, NOT GATED - see TH_OSC_ENVELOPE_RATIO and the ESTIMATOR NOTE below.",
+      "gating": false
+    },
+    "TH_OSC_ENVELOPE_RATIO": {
+      "value": 1.3,
+      "provenance": "GATING. Peak-envelope growth exp(sigma*T) across the analysis window. The 1.3x figure is taken deliberately unchanged from fbwa.detrended_growth() so the acceptance STRENGTH matches the validated stages while the ESTIMATOR is the well-posed one - see the ESTIMATOR NOTE above.",
+      "gating": true
+    },
+    "TH_OSC_PEAK_PROMINENCE_FRAC": {
+      "value": 0.05,
+      "provenance": "ASSUMPTION - a half-cycle peak below 5 % of the detrended peak-to-peak is treated as noise and not counted as an oscillation peak.",
+      "gating": true
+    },
+    "TH_OSC_MIN_PEAKS": {
+      "value": 6,
+      "provenance": "IDENTIFIABILITY REQUIREMENT (raised from 4 to 6 on 2026-09-07 during harness construction - see the IDENTIFIABILITY NOTE below). 6 half-cycle peaks = 3 complete cycles, the minimum over which an exponential envelope fit is identifiable at all. With fewer, the channel is reported UNDERDETERMINED_TOO_FEW_CYCLES and is neither passed nor failed on this metric; raw-state divergence over such a short window is instead covered by the boundedness and run-abort gates.",
+      "gating": true
+    },
+    "TH_OSC_ENDPOINT_CONSISTENCY": {
+      "value": true,
+      "provenance": "GATING RULE (not a magnitude): a 'growing' verdict additionally requires last_half_cycle_peak >= first_half_cycle_peak. See the IDENTIFIABILITY NOTE.",
+      "gating": true
+    },
+    "TH_NAV_SIGN_AGREE_FRAC": {
+      "value": 0.8,
+      "provenance": "ASSUMPTION - fraction of capture-window samples in which sign(nav_roll) must equal sign(heading error to target). Not 1.0: the L1 law legitimately reverses briefly at overshoot and near |err|~0, where the sign is noise.",
+      "gating": true
+    },
+    "TH_NAV_SIGN_DEADBAND_DEG": {
+      "value": 5.0,
+      "provenance": "ASSUMPTION - heading errors below this are excluded from the sign vote; their sign carries no navigation information.",
+      "gating": true
+    },
+    "TH_HEADING_FRAME_TOL_DEG": {
+      "value": 10.0,
+      "provenance": "ASSUMPTION - agreement required between ArduPlane's reported heading and the heading derived from Gazebo ground-truth yaw via the documented ENU-> compass conversion. A frame regression would blow far past 10 deg.",
+      "gating": true
+    },
+    "TH_XTRACK_IDENTITY_TOL_M": {
+      "value": 3.0,
+      "provenance": "ASSUMPTION - tolerance on the source-derived identity xtrack_error == wp_dist - loiter_radius (see docstring sec 2). wp_dist is a uint16 in WHOLE METRES, so >=1 m of quantisation is unavoidable; 3 m allows for that plus the ~0.05 s sampling skew between the two fields.",
+      "gating": true
+    },
+    "TH_LOITER_RADIUS_TOL_M": {
+      "value": 20.0,
+      "provenance": "ASSUMPTION - allowed |mean orbit radius - WP_LOITER_RAD| (live-read, 60 m). 20 m is 33 % of the commanded radius: loose enough not to be a disguised L1-tuning gate, tight enough to fail a genuine spiral.",
+      "gating": true
+    },
+    "TH_LOITER_RADIUS_STD_MAX_M": {
+      "value": 15.0,
+      "provenance": "ASSUMPTION - orbit-radius std over the steady window; a growing spiral fails this and the oscillation-growth metric together.",
+      "gating": true
+    },
+    "TH_APPROACH_CLOSURE_FRAC": {
+      "value": 0.5,
+      "provenance": "ASSUMPTION - a GUIDED/RTL capture must reduce the distance to the target by at least this fraction of the initial distance within the window, otherwise it is not navigating toward it at all.",
+      "gating": true
+    },
+    "TH_AUTOTUNE_ROLL_RMS_DEG": {
+      "value": 5.0,
+      "provenance": "ASSUMPTION - DECISION SUPPORT ONLY, NON-GATING. RMS(nav_roll - roll) above which the roll rate loop is FLAGGED for an evidence review. No measured Falcon V2 tracking-error reference exists yet: DATA_REQUIRED.",
+      "gating": false
+    },
+    "TH_AUTOTUNE_PITCH_RMS_DEG": {
+      "value": 5.0,
+      "provenance": "ASSUMPTION - DECISION SUPPORT ONLY, NON-GATING. Same basis as the roll figure. DATA_REQUIRED.",
+      "gating": false
+    },
+    "TH_AUTOTUNE_SAT_DUTY": {
+      "value": 0.05,
+      "provenance": "ASSUMPTION - DECISION SUPPORT ONLY, NON-GATING. Fraction of steady-window samples with a surface at the hard limit above which the control loop is flagged as authority-limited.",
+      "gating": false
+    }
+  },
+  "known_open_limitations": [
+    {
+      "item": "HIGH_ADVANCE_RATIO_WINDMILLING_PROPELLER_REGIME",
+      "status": "OPEN / DATA_REQUIRED / NON_GATING",
+      "statement": "The propulsion model's behaviour in the high-J / windmilling regime is not validated and the required data does not exist in this repository. This stage does NOT resolve, work around, or tune anything related to it. It is carried forward unchanged. It is explicitly NON-GATING for this stage's verdict; where a descent or an idle-throttle segment enters that regime, any propulsion number recorded there is reported as-is and must not be read as validated.",
+      "owner": "propulsion"
+    }
+  ],
+  "nav_window_rule": "The target-bearing navigation-sign and heading-convergence metrics are evaluated only where wp_dist > 3 * WP_LOITER_RAD, i.e. where ArduPlane is still running the waypoint-capture law (navigation.cpp:343-359). Inside that distance the aircraft is deliberately flying a circle and the target bearing no longer defines a desired heading.",
+  "autotune": {
+    "status": "DORMANT_NOT_EXECUTED",
+    "authorisation": "AUTOTUNE is NOT authorised by this stage and is NOT run by this file. It may only be run after an INDEPENDENT evidence review concludes, from the navigation campaign data, that the current PIDs are genuinely inadequate during navigation. The decision inputs are recorded per scenario in analysis.autotune_decision_support (roll/pitch tracking error statistics, saturation duty cycle, oscillation growth). Those numbers are DECISION SUPPORT ONLY and never gate this stage.",
+    "level": {
+      "AUTOTUNE_LEVEL": 8,
+      "provenance": "config/ardupilot/falcon_v2_sitl.parm, section MANUFACTURER_RECOMMENDED_AUTOTUNE_LEVEL (Titan Dynamics Falcon V2 Build & User Manual Rev 1.0). Already present in the live parameter set; setting it is NOT part of running autotune.",
+      "note": "ArduPlane compiled default is 6 (ArduPlane/Parameters.cpp:29)."
+    },
+    "mode": {
+      "AUTOTUNE": 8,
+      "source": "ArduPlane/mode.h AUTOTUNE = 8"
+    },
+    "before_after_parameter_capture": [
+      "RLL_RATE_P",
+      "RLL_RATE_I",
+      "RLL_RATE_D",
+      "RLL_RATE_FF",
+      "RLL_RATE_IMAX",
+      "RLL_RATE_SMAX",
+      "RLL2SRV_TCONST",
+      "RLL2SRV_RMAX",
+      "PTCH_RATE_P",
+      "PTCH_RATE_I",
+      "PTCH_RATE_D",
+      "PTCH_RATE_FF",
+      "PTCH_RATE_IMAX",
+      "PTCH_RATE_SMAX",
+      "PTCH2SRV_TCONST",
+      "PTCH2SRV_RMAX_UP",
+      "PTCH2SRV_RMAX_DN",
+      "AUTOTUNE_LEVEL"
+    ],
+    "procedure": [
+      "0. PRECONDITION: an independent evidence review has concluded the    current PIDs are inadequate, and has said so in writing. Without    that, stop here.",
+      "1. Capture the FULL live parameter set BEFORE (fetch_all_params) and    archive it verbatim as the 'before' record.",
+      "2. Bring the aircraft to the same airborne initial condition this file    uses (bring_up()), stabilise in FBWA at AIRSPEED_CRUISE.",
+      "3. ROLL AXIS, EVALUATED SEPARATELY: enter AUTOTUNE (custom_mode 8) and    command ROLL ONLY - repeated full-authority roll stick reversals    with pitch held neutral - for a fixed, recorded number of    reversals. Do not touch pitch during this block.",
+      "4. Read back and archive the roll gains produced. Return to FBWA. Fly    the SAME scenario A/B/C/D harness in this file and compare the    roll tracking-error / saturation / oscillation metrics before vs    after. Roll is accepted or rejected on that comparison ALONE.",
+      "5. PITCH AXIS, EVALUATED SEPARATELY: repeat steps 3-4 commanding PITCH    ONLY, with roll held neutral, and compare the pitch metrics.",
+      "6. Capture the FULL live parameter set AFTER and diff it against the    'before' record. Every changed parameter must be listed explicitly.",
+      "7. Nothing is adopted implicitly. Any gain change is a separate,    explicitly authorised source-of-truth change to    config/ardupilot/falcon_v2_sitl.parm with its own provenance entry,    reviewed by `validation` - exactly as TECS_PTCH_DAMP 0.6 was."
+    ],
+    "caveats": [
+      "ArduPlane's AUTOTUNE mode tunes whichever axis is being EXERCISED; it does not have separate roll-only/pitch-only sub-modes. Separating the axes is therefore done by the STICK INPUT and by evaluating the two axes' metrics independently, not by a mode setting.",
+      "AUTOTUNE writes parameters to the vehicle. Any run must use a scratch EEPROM (arduplane -w) and must never write config/ardupilot/falcon_v2_sitl.parm.",
+      "A gain produced by AUTOTUNE against the GAZEBO model is SIM-SPECIFIC and is not transferable to the real aircraft without separate flight validation - the same rule already recorded for TECS_PTCH_DAMP."
+    ]
+  },
+  "params_live": {
+    "WP_LOITER_RAD": 60.0,
+    "WP_RADIUS": 90.0,
+    "NAVL1_PERIOD": 17.0,
+    "NAVL1_DAMPING": 0.75,
+    "NAVL1_XTRACK_I": 0.019999999552965164,
+    "RTL_ALTITUDE": 100.0,
+    "RTL_AUTOLAND": 0.0,
+    "RTL_CLIMB_MIN": 0.0,
+    "RTL_RADIUS": 0.0,
+    "ROLL_LIMIT_DEG": 45.0,
+    "PTCH_LIM_MAX_DEG": 20.0,
+    "PTCH_LIM_MIN_DEG": -25.0,
+    "PTCH_TRIM_DEG": 2.490000009536743,
+    "STICK_MIXING": 1.0,
+    "FLIGHT_OPTIONS": 0.0,
+    "FENCE_ENABLE": 0.0,
+    "FENCE_ACTION": 1.0,
+    "TERRAIN_FOLLOW": 0.0,
+    "GUIDED_TIMEOUT": 3.0,
+    "AIRSPEED_MIN": 16.0,
+    "AIRSPEED_CRUISE": 18.0,
+    "AIRSPEED_MAX": 28.0,
+    "AIRSPEED_STALL": 0.0,
+    "ARSPD_USE": 1.0,
+    "ARSPD_TYPE": 100.0,
+    "MIN_GROUNDSPEED": 0.0,
+    "THROTTLE_NUDGE": 1.0,
+    "THR_MIN": 0.0,
+    "THR_MAX": 100.0,
+    "TRIM_THROTTLE": 45.0,
+    "THR_SLEWRATE": 100.0,
+    "KFF_THR2PTCH": 0.0,
+    "TECS_PTCH_DAMP": 0.6000000238418579,
+    "TECS_TIME_CONST": 5.0,
+    "TECS_CLMB_MAX": 5.0,
+    "TECS_SINK_MIN": 2.0,
+    "TECS_SINK_MAX": 5.0,
+    "TECS_SPDWEIGHT": 1.0,
+    "TECS_RLL2THR": 10.0,
+    "TECS_PITCH_MAX": 15.0,
+    "TECS_PITCH_MIN": 0.0,
+    "TECS_THR_DAMP": 0.5,
+    "TECS_INTEG_GAIN": 0.30000001192092896,
+    "TECS_HDEM_TCONST": 3.0,
+    "RLL_RATE_P": 0.25,
+    "RLL_RATE_I": 0.125,
+    "RLL_RATE_D": 0.0020000000949949026,
+    "RLL_RATE_FF": 0.125,
+    "PTCH_RATE_P": 0.25,
+    "PTCH_RATE_I": 0.125,
+    "PTCH_RATE_D": 0.0020000000949949026,
+    "PTCH_RATE_FF": 0.125,
+    "RLL2SRV_TCONST": 0.5,
+    "PTCH2SRV_TCONST": 0.5,
+    "AUTOTUNE_LEVEL": 8.0,
+    "RC1_MIN": 1100.0,
+    "RC1_MAX": 1900.0,
+    "RC1_TRIM": 1500.0,
+    "RC1_DZ": 30.0,
+    "RC1_REVERSED": 0.0,
+    "RC2_MIN": 1100.0,
+    "RC2_MAX": 1900.0,
+    "RC2_TRIM": 1500.0,
+    "RC2_DZ": 30.0,
+    "RC2_REVERSED": 0.0,
+    "RC3_MIN": 1100.0,
+    "RC3_MAX": 1900.0,
+    "RC3_TRIM": 1500.0,
+    "RC3_DZ": 30.0,
+    "RC3_REVERSED": 0.0,
+    "RC4_MIN": 1100.0,
+    "RC4_MAX": 1900.0,
+    "RC4_TRIM": 1500.0,
+    "RC4_DZ": 30.0,
+    "RC4_REVERSED": 0.0,
+    "SIM_WIND_SPD": 0.0,
+    "SIM_WIND_DIR": 180.0,
+    "SIM_WIND_TURB": 0.0,
+    "SIM_OPOS_LAT": -35.36326217651367,
+    "SIM_OPOS_LNG": 149.1652374267578,
+    "SIM_OPOS_ALT": 0.0,
+    "SIM_OPOS_HDG": 0.0,
+    "AHRS_EKF_TYPE": 10.0
+  },
+  "scenario_geometry": {
+    "start": {
+      "lat": -35.3632622,
+      "lon": 149.1671283,
+      "rel_alt_m": 84.31,
+      "amsl_alt_m": 84.31,
+      "hdg_deg": 89.88
+    },
+    "commanded_radius_m": 60.0,
+    "expected_direction": "CLOCKWISE",
+    "direction_evidence": "Plane::update_loiter() (navigation.cpp:362-372) sets loiter.direction = -1 only when aparm.loiter_radius < 0 or the WP carries loiter_ccw; WP_LOITER_RAD is live-read POSITIVE and LOITER mode sets no ccw flag, so direction = +1 = clockwise. A clockwise orbit means increasing compass heading and a sustained RIGHT (positive) bank."
+  },
+  "route_plan": null,
+  "home_position": {
+    "lat": -35.3632621,
+    "lon": 149.1652374,
+    "alt_m": 0.0
+  },
+  "guided_targets": null,
+  "reanalyzed_from": "/home/emirhan/Desktop/FalconV2/tests/gazebo/results/ardupilot_navigation_scenario_B_smoke_timeseries.json",
+  "analysis": {
+    "scenario": "B",
+    "n_samples": 857,
+    "t_start": 8.037231922149658,
+    "t_end": 53.0354483127594,
+    "duration_s": 44.99821639060974,
+    "steady_window_start_offset_s": 10.0,
+    "n_steady_samples": 667,
+    "mode_seen": [
+      5,
+      12
+    ],
+    "mode_names_seen": [
+      "FBWA",
+      "LOITER"
+    ],
+    "target_mode": 12,
+    "mode_entry_latency_allowance_s": 2.0,
+    "mode_stable_after_entry": true,
+    "mode_frac_on_target": 0.9953325554259043,
+    "armed_throughout": true,
+    "surfaces_steady": {
+      "label": "steady",
+      "n": 667,
+      "aileron": {
+        "n": 667,
+        "mean_abs": 0.31513465679145825,
+        "p50": 0.17327103449197756,
+        "percentile_used": 95.0,
+        "p95": 1.3247909244031315,
+        "p99": 1.9370396685810916,
+        "max_abs": 2.206937206594981,
+        "frac_over_linear": 0.0
+      },
+      "elevator": {
+        "n": 667,
+        "mean_abs": 6.590977824990494,
+        "p50": 6.907157101919008,
+        "percentile_used": 95.0,
+        "p95": 7.529501635370943,
+        "p99": 7.865926805678386,
+        "max_abs": 7.968490689984108,
+        "frac_over_linear": 0.0
+      },
+      "rudder": {
+        "n": 667,
+        "mean_abs": 0.09328179397902327,
+        "p50": 0.06341494026911274,
+        "percentile_used": 95.0,
+        "p95": 0.428136004854742,
+        "p99": 0.5660819413685434,
+        "max_abs": 0.6820666146478079,
+        "frac_over_linear": 0.0
+      },
+      "hard_limit_per_surface": {
+        "left_aileron": {
+          "n": 667,
+          "hard_limit_duty": 0.0,
+          "hard_limit_longest_run_s": 0.0
+        },
+        "right_aileron": {
+          "n": 667,
+          "hard_limit_duty": 0.0,
+          "hard_limit_longest_run_s": 0.0
+        },
+        "left_elevator": {
+          "n": 667,
+          "hard_limit_duty": 0.0,
+          "hard_limit_longest_run_s": 0.0
+        },
+        "right_elevator": {
+          "n": 667,
+          "hard_limit_duty": 0.0,
+          "hard_limit_longest_run_s": 0.0
+        },
+        "rudder": {
+          "n": 667,
+          "hard_limit_duty": 0.0,
+          "hard_limit_longest_run_s": 0.0
+        }
+      },
+      "hard_limit_duty_max": 0.0,
+      "hard_limit_longest_run_s": 0.0,
+      "hard_limit_deg": 45.0
+    },
+    "surfaces_whole": {
+      "label": "whole",
+      "n": 857,
+      "aileron": {
+        "n": 857,
+        "mean_abs": 0.5093555689049202,
+        "p50": 0.21353572324428616,
+        "percentile_used": 95.0,
+        "p95": 1.5996875647531201,
+        "p99": 2.392729837004149,
+        "max_abs": 2.534607850931205,
+        "frac_over_linear": 0.0
+      },
+      "elevator": {
+        "n": 857,
+        "mean_abs": 6.622599201206099,
+        "p50": 6.906192682031818,
+        "percentile_used": 95.0,
+        "p95": 8.879043259908109,
+        "p99": 11.091692289407526,
+        "max_abs": 11.289921679030618,
+        "frac_over_linear": 0.03150525087514586
+      },
+      "rudder": {
+        "n": 857,
+        "mean_abs": 0.1452594061218266,
+        "p50": 0.0644839508908487,
+        "percentile_used": 95.0,
+        "p95": 0.5708697937373864,
+        "p99": 0.7748579444178272,
+        "max_abs": 0.8184617698624829,
+        "frac_over_linear": 0.0
+      },
+      "hard_limit_per_surface": {
+        "left_aileron": {
+          "n": 857,
+          "hard_limit_duty": 0.0,
+          "hard_limit_longest_run_s": 0.0
+        },
+        "right_aileron": {
+          "n": 857,
+          "hard_limit_duty": 0.0,
+          "hard_limit_longest_run_s": 0.0
+        },
+        "left_elevator": {
+          "n": 857,
+          "hard_limit_duty": 0.0,
+          "hard_limit_longest_run_s": 0.0
+        },
+        "right_elevator": {
+          "n": 857,
+          "hard_limit_duty": 0.0,
+          "hard_limit_longest_run_s": 0.0
+        },
+        "rudder": {
+          "n": 857,
+          "hard_limit_duty": 0.0,
+          "hard_limit_longest_run_s": 0.0
+        }
+      },
+      "hard_limit_duty_max": 0.0,
+      "hard_limit_longest_run_s": 0.0,
+      "hard_limit_deg": 45.0
+    },
+    "oscillation_gating_exclusions_reason": "none",
+    "oscillation_steady": {
+      "roll_err_deg": {
+        "label": "roll_err_deg",
+        "n": 667,
+        "detrended_p2p": 27.01835740141209,
+        "n_half_cycle_peaks": 3,
+        "peak_prominence_threshold": 1.3509178700706046,
+        "min_peaks_required": 6,
+        "status": "UNDERDETERMINED_TOO_FEW_CYCLES",
+        "growing": false,
+        "cycles_observed": 1.5,
+        "first_peak": 17.246347957550448,
+        "last_peak": 2.165836208597418,
+        "peak_max": 17.246347957550448,
+        "linear_detrend_growth_reported_only": {
+          "n": 667,
+          "resid_std_first_half": 4.101908472314357,
+          "resid_std_second_half": 0.3148447868618435,
+          "resid_p2p_first_half": 27.01835740141209,
+          "resid_p2p_second_half": 1.2190387567280436,
+          "ratio_second_over_first": 0.07675568311357357,
+          "growing": false
+        },
+        "series": {
+          "label": "roll_err_deg",
+          "n": 667,
+          "mean": -0.029692087252812055,
+          "std": 2.975019258197213,
+          "min": -16.18512382405836,
+          "max": 10.636661258119508,
+          "slope_per_s": -0.06233210376718338,
+          "drift_over_window": -2.1813529660613584,
+          "endpoint_delta": 15.706019668754362,
+          "t_start": 18.039790630340576,
+          "t_end": 53.0354483127594
+        },
+        "gating": true
+      },
+      "underdetermined_channels": [
+        "roll_err_deg",
+        "xtrack_error_m",
+        "roll_deg"
+      ],
+      "pitch_err_deg": {
+        "label": "pitch_err_deg",
+        "n": 667,
+        "detrended_p2p": 23.229977144969588,
+        "n_half_cycle_peaks": 7,
+        "peak_prominence_threshold": 1.1614988572484795,
+        "min_peaks_required": 6,
+        "status": "OSCILLATORY",
+        "sigma_per_s": -0.14022807414502958,
+        "window_s": 16.094348907470703,
+        "envelope_ratio": 0.10467661359474452,
+        "first_peak": 13.066972140280429,
+        "last_peak": 1.3086080968745653,
+        "peak_max": 13.066972140280429,
+        "period_s": 5.364782969156901,
+        "omega_rad_s": 1.1711909583859672,
+        "zeta_estimate": 0.11888209070587955,
+        "tau_s": 7.131239632983616,
+        "cycles_observed": 3.5,
+        "endpoint_consistent": false,
+        "growing": false,
+        "growth_criterion": "exp(sigma*T) >= 1.3 AND last_peak >= first_peak AND >= 6 half-cycle peaks",
+        "linear_detrend_growth_reported_only": {
+          "n": 667,
+          "resid_std_first_half": 4.647568802739296,
+          "resid_std_second_half": 0.45863588856229137,
+          "resid_p2p_first_half": 23.229977144969588,
+          "resid_p2p_second_half": 1.7522562834937356,
+          "ratio_second_over_first": 0.09868296910246267,
+          "growing": false
+        },
+        "series": {
+          "label": "pitch_err_deg",
+          "n": 667,
+          "mean": -0.045839470595864545,
+          "std": 3.309455781999054,
+          "min": -13.513365624859341,
+          "max": 9.780084930990517,
+          "slope_per_s": 0.023235718901984795,
+          "drift_over_window": 0.8131492646987685,
+          "endpoint_delta": 12.28313211797747,
+          "t_start": 18.039790630340576,
+          "t_end": 53.0354483127594
+        },
+        "gating": true
+      },
+      "alt_error_m": {
+        "label": "alt_error_m",
+        "n": 667,
+        "detrended_p2p": 2.9247906214062986,
+        "n_half_cycle_peaks": 9,
+        "peak_prominence_threshold": 0.14623953107031493,
+        "min_peaks_required": 6,
+        "status": "OSCILLATORY",
+        "sigma_per_s": -0.08051091579590554,
+        "window_s": 22.30190110206604,
+        "envelope_ratio": 0.16603669153324646,
+        "first_peak": 0.3797618650982182,
+        "last_peak": 0.14737863003435614,
+        "peak_max": 1.4711024537975441,
+        "period_s": 5.57547527551651,
+        "omega_rad_s": 1.1269326822720982,
+        "zeta_estimate": 0.07126089696093021,
+        "tau_s": 12.420676005412622,
+        "cycles_observed": 4.5,
+        "endpoint_consistent": false,
+        "growing": false,
+        "growth_criterion": "exp(sigma*T) >= 1.3 AND last_peak >= first_peak AND >= 6 half-cycle peaks",
+        "linear_detrend_growth_reported_only": {
+          "n": 667,
+          "resid_std_first_half": 0.607523612994524,
+          "resid_std_second_half": 0.07378918534406356,
+          "resid_p2p_first_half": 2.9247906214062986,
+          "resid_p2p_second_half": 0.3416533550476181,
+          "ratio_second_over_first": 0.12145895857504502,
+          "growing": false
+        },
+        "series": {
+          "label": "alt_error_m",
+          "n": 667,
+          "mean": 0.14826086614241843,
+          "std": 0.45141021219756833,
+          "min": -1.100000023841858,
+          "max": 1.7899999618530273,
+          "slope_per_s": -0.012683201411027563,
+          "drift_over_window": -0.443856974897492,
+          "endpoint_delta": -0.7300000004470348,
+          "t_start": 18.039790630340576,
+          "t_end": 53.0354483127594
+        },
+        "gating": true
+      },
+      "aspd_error_ms": {
+        "label": "aspd_error_ms",
+        "n": 667,
+        "detrended_p2p": 2.137797474255967,
+        "n_half_cycle_peaks": 7,
+        "peak_prominence_threshold": 0.10688987371279834,
+        "min_peaks_required": 6,
+        "status": "OSCILLATORY",
+        "sigma_per_s": -0.1093759207817676,
+        "window_s": 23.346242666244507,
+        "envelope_ratio": 0.07780755158644502,
+        "first_peak": 0.8707328416622705,
+        "last_peak": 0.11066580255693381,
+        "peak_max": 1.2670646325936965,
+        "period_s": 7.782080888748169,
+        "omega_rad_s": 0.8073914158697859,
+        "zeta_estimate": 0.13424209095374778,
+        "tau_s": 9.142780173665928,
+        "cycles_observed": 3.5,
+        "endpoint_consistent": false,
+        "growing": false,
+        "growth_criterion": "exp(sigma*T) >= 1.3 AND last_peak >= first_peak AND >= 6 half-cycle peaks",
+        "linear_detrend_growth_reported_only": {
+          "n": 667,
+          "resid_std_first_half": 0.44840173667056643,
+          "resid_std_second_half": 0.04986988211913012,
+          "resid_p2p_first_half": 2.137797474255967,
+          "resid_p2p_second_half": 0.21969887546635997,
+          "ratio_second_over_first": 0.111216969161225,
+          "growing": false
+        },
+        "series": {
+          "label": "aspd_error_ms",
+          "n": 667,
+          "mean": 0.047724630421605616,
+          "std": 0.32741384491916087,
+          "min": -0.6997280120849609,
+          "max": 1.4225730895996094,
+          "slope_per_s": -0.007043908615608769,
+          "drift_over_window": -0.24650621465808514,
+          "endpoint_delta": 0.6867275238037109,
+          "t_start": 18.039790630340576,
+          "t_end": 53.0354483127594
+        },
+        "gating": true
+      },
+      "xtrack_error_m": {
+        "label": "xtrack_error_m",
+        "n": 667,
+        "detrended_p2p": 23.463928291220814,
+        "n_half_cycle_peaks": 3,
+        "peak_prominence_threshold": 1.1731964145610407,
+        "min_peaks_required": 6,
+        "status": "UNDERDETERMINED_TOO_FEW_CYCLES",
+        "growing": false,
+        "cycles_observed": 1.5,
+        "first_peak": 20.540506939566058,
+        "last_peak": 2.6052229298808047,
+        "peak_max": 20.540506939566058,
+        "linear_detrend_growth_reported_only": {
+          "n": 667,
+          "resid_std_first_half": 4.670939855687606,
+          "resid_std_second_half": 1.2532223541038123,
+          "resid_p2p_first_half": 23.463928291220814,
+          "resid_p2p_second_half": 4.399821093859796,
+          "ratio_second_over_first": 0.26830196766028075,
+          "growing": false
+        },
+        "series": {
+          "label": "xtrack_error_m",
+          "n": 667,
+          "mean": 1.1424054684846296,
+          "std": 4.2897818503737515,
+          "min": -0.7067604064941406,
+          "max": 26.103378295898438,
+          "slope_per_s": -0.252573876142824,
+          "drift_over_window": -8.838988909015919,
+          "endpoint_delta": -26.774272918701172,
+          "t_start": 18.039790630340576,
+          "t_end": 53.0354483127594
+        },
+        "gating": true
+      },
+      "roll_deg": {
+        "label": "roll_deg",
+        "n": 667,
+        "detrended_p2p": 26.56389807220438,
+        "n_half_cycle_peaks": 3,
+        "peak_prominence_threshold": 1.3281949036102192,
+        "min_peaks_required": 6,
+        "status": "UNDERDETERMINED_TOO_FEW_CYCLES",
+        "growing": false,
+        "cycles_observed": 1.5,
+        "first_peak": 19.029938401788918,
+        "last_peak": 4.264950038274694,
+        "peak_max": 19.029938401788918,
+        "linear_detrend_growth_reported_only": {
+          "n": 667,
+          "resid_std_first_half": 7.902958959140828,
+          "resid_std_second_half": 1.9479232444192742,
+          "resid_p2p_first_half": 26.56389807220438,
+          "resid_p2p_second_half": 6.494642231791193,
+          "ratio_second_over_first": 0.24648024296852014,
+          "growing": false
+        },
+        "series": {
+          "label": "roll_deg",
+          "n": 667,
+          "mean": 26.457322655782,
+          "std": 7.0486729994345225,
+          "min": 1.1298948458659455,
+          "max": 29.66474734650162,
+          "slope_per_s": 0.3948060647967368,
+          "drift_over_window": 13.816497894569466,
+          "endpoint_delta": 13.363979251209477,
+          "t_start": 18.039790630340576,
+          "t_end": 53.0354483127594
+        },
+        "gating": false
+      },
+      "pitch_phys_deg": {
+        "label": "pitch_phys_deg",
+        "n": 667,
+        "detrended_p2p": 12.924820707301034,
+        "n_half_cycle_peaks": 7,
+        "peak_prominence_threshold": 0.6462410353650517,
+        "min_peaks_required": 6,
+        "status": "OSCILLATORY",
+        "sigma_per_s": -0.14068290682574522,
+        "window_s": 15.549034118652344,
+        "envelope_ratio": 0.11219876218824779,
+        "first_peak": 6.930398078804234,
+        "last_peak": 0.9950177626694416,
+        "peak_max": 6.930398078804234,
+        "period_s": 5.183011372884114,
+        "omega_rad_s": 1.2122653907439285,
+        "zeta_estimate": 0.11527595047778229,
+        "tau_s": 7.108184089760351,
+        "cycles_observed": 3.5,
+        "endpoint_consistent": false,
+        "growing": false,
+        "growth_criterion": "exp(sigma*T) >= 1.3 AND last_peak >= first_peak AND >= 6 half-cycle peaks",
+        "linear_detrend_growth_reported_only": {
+          "n": 667,
+          "resid_std_first_half": 2.3176924618529755,
+          "resid_std_second_half": 0.2259362509310233,
+          "resid_p2p_first_half": 12.924820707301034,
+          "resid_p2p_second_half": 0.9301955228653678,
+          "ratio_second_over_first": 0.09748327470090194,
+          "growing": false
+        },
+        "series": {
+          "label": "pitch_phys_deg",
+          "n": 667,
+          "mean": 3.7292427525683713,
+          "std": 1.6547881077734143,
+          "min": -2.5112492943723637,
+          "max": 10.37520218965042,
+          "slope_per_s": 0.016252081135174387,
+          "drift_over_window": 0.5687522680334596,
+          "endpoint_delta": -6.663132232418388,
+          "t_start": 18.039790630340576,
+          "t_end": 53.0354483127594
+        },
+        "gating": false
+      },
+      "altitude_m": {
+        "label": "altitude_m",
+        "n": 667,
+        "detrended_p2p": 2.9201652367266178,
+        "n_half_cycle_peaks": 9,
+        "peak_prominence_threshold": 0.1460082618363309,
+        "min_peaks_required": 6,
+        "status": "OSCILLATORY",
+        "sigma_per_s": -0.07970932128329736,
+        "window_s": 22.55978274345398,
+        "envelope_ratio": 0.16559255913844192,
+        "first_peak": 0.36764264631091237,
+        "last_peak": 0.14818969764863255,
+        "peak_max": 1.470818118740766,
+        "period_s": 5.639945685863495,
+        "omega_rad_s": 1.114050676574487,
+        "zeta_estimate": 0.07136665869333864,
+        "tau_s": 12.545584178867477,
+        "cycles_observed": 4.5,
+        "endpoint_consistent": false,
+        "growing": false,
+        "growth_criterion": "exp(sigma*T) >= 1.3 AND last_peak >= first_peak AND >= 6 half-cycle peaks",
+        "linear_detrend_growth_reported_only": {
+          "n": 667,
+          "resid_std_first_half": 0.6079130312742047,
+          "resid_std_second_half": 0.07327651942752608,
+          "resid_p2p_first_half": 2.9201652367266178,
+          "resid_p2p_second_half": 0.33495771557862497,
+          "ratio_second_over_first": 0.12053783297577321,
+          "growing": false
+        },
+        "series": {
+          "label": "altitude_m",
+          "n": 667,
+          "mean": 84.16736658177173,
+          "std": 0.45137752214780663,
+          "min": 82.52575085013541,
+          "max": 85.41332818056337,
+          "slope_per_s": 0.012596647169787091,
+          "drift_over_window": 0.44082795230007893,
+          "endpoint_delta": 0.7149302642591238,
+          "t_start": 18.039790630340576,
+          "t_end": 53.0354483127594
+        },
+        "gating": false
+      },
+      "airspeed_ms": {
+        "label": "airspeed_ms",
+        "n": 667,
+        "detrended_p2p": 2.005282184450529,
+        "n_half_cycle_peaks": 8,
+        "peak_prominence_threshold": 0.10026410922252645,
+        "min_peaks_required": 6,
+        "status": "OSCILLATORY",
+        "sigma_per_s": -0.07889849851003504,
+        "window_s": 33.0348002910614,
+        "envelope_ratio": 0.07380002995041486,
+        "first_peak": 0.7465770708823598,
+        "last_peak": 0.1087754796434588,
+        "peak_max": 1.258705113568169,
+        "period_s": 9.438514368874687,
+        "omega_rad_s": 0.6656964286561449,
+        "zeta_estimate": 0.11769647584862265,
+        "tau_s": 12.674512429064931,
+        "cycles_observed": 4.0,
+        "endpoint_consistent": false,
+        "growing": false,
+        "growth_criterion": "exp(sigma*T) >= 1.3 AND last_peak >= first_peak AND >= 6 half-cycle peaks",
+        "linear_detrend_growth_reported_only": {
+          "n": 667,
+          "resid_std_first_half": 0.4444494889022768,
+          "resid_std_second_half": 0.05076906330748718,
+          "resid_p2p_first_half": 2.005282184450529,
+          "resid_p2p_second_half": 0.22115200353549014,
+          "ratio_second_over_first": 0.11422909593816635,
+          "growing": false
+        },
+        "series": {
+          "label": "airspeed_ms",
+          "n": 667,
+          "mean": 17.950680050714084,
+          "std": 0.32575784718911327,
+          "min": 16.577621459960938,
+          "max": 18.56692123413086,
+          "slope_per_s": 0.007447052218680281,
+          "drift_over_window": 0.26061449018803273,
+          "endpoint_delta": -0.5541934967041016,
+          "t_start": 18.039790630340576,
+          "t_end": 53.0354483127594
+        },
+        "gating": false
+      },
+      "growing_channels": [],
+      "growing_channels_non_gating": [],
+      "any_growing": false,
+      "gating_channels": [
+        "roll_err_deg",
+        "pitch_err_deg",
+        "alt_error_m",
+        "aspd_error_ms",
+        "xtrack_error_m"
+      ],
+      "gating_excluded_channels": [],
+      "underdetermined_note": "Channels with fewer than 6 half-cycle peaks (< 3 complete cycles) in the window. An exponential envelope fit is not identifiable there, so they are neither passed nor failed on the oscillation metric. They are listed so the gap is visible rather than silent; raw-state divergence over such a window is covered by the boundedness and run-abort gates.",
+      "gated_channels_are_error_signals_because": "the commanded value of an error signal is identically zero in every window, so the oscillation-envelope metric is well posed regardless of manoeuvring or of a commanded altitude step. Raw-state divergence is covered by the separate boundedness gates.",
+      "criterion": "GATE: envelope_growth() - detrend, split at zero crossings, fit ln|half-cycle peak| = sigma*t + c; growing if exp(sigma*T) >= 1.3. REPORTED ONLY: fbwa.detrended_growth() half-vs-half residual std ratio >= 1.3, which is not well posed for manoeuvring flight - see the ESTIMATOR NOTE in this module."
+    },
+    "tracking_steady": {
+      "roll": {
+        "n": 667,
+        "mean": -0.029692087252812055,
+        "std": 2.975019258197213,
+        "rms": 2.9751674249846367,
+        "mean_abs": 1.4660633405782717,
+        "p95_abs": 8.703572034575748,
+        "max_abs": 16.18512382405836
+      },
+      "pitch": {
+        "n": 667,
+        "mean": -0.045839470595864545,
+        "std": 3.309455781999054,
+        "rms": 3.3097732294028064,
+        "mean_abs": 1.8153929773683313,
+        "p95_abs": 9.066347068202035,
+        "max_abs": 13.513365624859341
+      },
+      "roll_demand": {
+        "min": -1.75,
+        "max": 29.42999839782715,
+        "mean": 26.427630568529175,
+        "std": 6.830314051296642,
+        "n": 667
+      },
+      "roll_actual": {
+        "min": 1.1298948458659455,
+        "max": 29.66474734650162,
+        "mean": 26.457322655782,
+        "std": 7.0486729994345225,
+        "n": 667
+      },
+      "pitch_demand": {
+        "min": -5.980000257492065,
+        "max": 9.709999799728394,
+        "mean": 3.6834032819725047,
+        "std": 2.391021996277749,
+        "n": 667
+      },
+      "pitch_actual": {
+        "min": -2.5112492943723637,
+        "max": 10.37520218965042,
+        "mean": 3.7292427525683713,
+        "std": 1.6547881077734143,
+        "n": 667
+      }
+    },
+    "frames": {
+      "heading_gz_vs_ardupilot_absdiff_deg": {
+        "min": 0.00044341474438169826,
+        "max": 1.4265402903149322,
+        "mean": 0.33418113330249366,
+        "std": 0.2738866497508562,
+        "n": 857
+      },
+      "heading_frame_consistent": true,
+      "heading_conversion": "heading_compass = (90 - gz_yaw_deg) mod 360; world is ENU with heading_deg 0 so gz +X = East, +Y = North",
+      "roll_sign_gz_mav_agree_frac": 1.0,
+      "roll_sign_gz_mav_agree": true,
+      "roll_sign_n_compared": 824,
+      "xtrack_identity_residual_m": {
+        "min": 0.000713348388671875,
+        "max": 112.0,
+        "mean": 0.7126165098459607,
+        "std": 6.557835467792655,
+        "n": 857
+      },
+      "xtrack_identity_consistent": true,
+      "xtrack_identity_note": "AP_L1_Control.cpp:424-426 in the update_loiter() branch (the branch taken in GUIDED/LOITER/RTL because auto_state.crosstrack is false - commands.cpp:97, commands_logic.cpp:340) sets _crosstrack_error = A_air.length() - radius. wp_dist is a uint16 in whole metres, hence the 3.0 m tolerance."
+    },
+    "envelope": {
+      "airspeed_whole_window": {
+        "label": "airspeed",
+        "n": 857,
+        "mean": 18.249636012447894,
+        "std": 0.758335480550964,
+        "min": 16.577621459960938,
+        "max": 21.280513763427734,
+        "slope_per_s": -0.026160301629164946,
+        "drift_over_window": -1.1771669135527847,
+        "endpoint_delta": -0.6795158386230469,
+        "t_start": 8.037231922149658,
+        "t_end": 53.0354483127594
+      },
+      "airspeed_steady": {
+        "label": "airspeed_steady",
+        "n": 667,
+        "mean": 17.950680050714084,
+        "std": 0.32575784718911327,
+        "min": 16.577621459960938,
+        "max": 18.56692123413086,
+        "slope_per_s": 0.007447052218680281,
+        "drift_over_window": 0.26061449018803273,
+        "endpoint_delta": -0.5541934967041016,
+        "t_start": 18.039790630340576,
+        "t_end": 53.0354483127594
+      },
+      "airspeed_min_threshold_ms": 16.0,
+      "airspeed_hard_floor_ms": 14.4,
+      "airspeed_min_steady_ms": 16.577621459960938,
+      "airspeed_min_whole_ms": 16.577621459960938,
+      "n_samples_below_min_steady": 0,
+      "n_samples_below_hard_floor_whole": 0,
+      "airspeed_above_min_steady": true,
+      "airspeed_above_hard_floor": true,
+      "airspeed_bounded": true,
+      "airspeed_p2p_steady_ms": 1.9892997741699219,
+      "altitude_steady": {
+        "label": "altitude_steady",
+        "n": 667,
+        "mean": 84.16736658177173,
+        "std": 0.45137752214780663,
+        "min": 82.52575085013541,
+        "max": 85.41332818056337,
+        "slope_per_s": 0.012596647169787091,
+        "drift_over_window": 0.44082795230007893,
+        "endpoint_delta": 0.7149302642591238,
+        "t_start": 18.039790630340576,
+        "t_end": 53.0354483127594
+      },
+      "altitude_p2p_steady_m": 2.887577330427959,
+      "altitude_bounded": true,
+      "groundspeed_ms": {
+        "min": 16.530317306518555,
+        "max": 21.70475196838379,
+        "mean": 18.248344759679593,
+        "std": 0.7747507999919433,
+        "n": 857
+      },
+      "throttle_actual": {
+        "min": 0.186,
+        "max": 0.8935,
+        "mean": 0.4942707117852975,
+        "std": 0.06596226684591242,
+        "n": 857
+      },
+      "prop_rpm_left": {
+        "min": 4006.5598466970355,
+        "max": 9937.834397399562,
+        "mean": 6068.326886716004,
+        "std": 560.7870666159848,
+        "n": 857
+      },
+      "prop_rpm_right": {
+        "min": 4002.3190288916853,
+        "max": 9922.413713752972,
+        "mean": 6060.660489603409,
+        "std": 559.5592970394507,
+        "n": 857
+      },
+      "prop_thrust_left_N": {
+        "min": 0.0,
+        "max": 19.93050289555591,
+        "mean": 2.794771275257549,
+        "std": 1.9111098320275486,
+        "n": 857
+      },
+      "prop_thrust_right_N": {
+        "min": 0.0,
+        "max": 20.04394654648855,
+        "mean": 2.8878285068005494,
+        "std": 1.921988678443081,
+        "n": 857
+      },
+      "prop_advance_ratio_J_max": {
+        "min": 0.36917692339337155,
+        "max": 0.8183887153338836,
+        "mean": 0.5507857797954999,
+        "std": 0.04661411104823595,
+        "n": 857
+      },
+      "prop_note": "Propulsion numbers are RECORDED, not validated by this stage. The high-advance-ratio/windmilling regime remains OPEN / DATA_REQUIRED / NON-GATING (see known_open_limitations)."
+    },
+    "nav_sign": {
+      "label": "B",
+      "n_error_samples": 857,
+      "n_sign_votes": 857,
+      "sign_agreement_frac": 0.9638273045507585,
+      "heading_error_abs": {
+        "min": 54.420000000000016,
+        "max": 179.97000000000003,
+        "mean": 93.65291715285885,
+        "std": 25.97285969940798,
+        "n": 857
+      },
+      "heading_error_abs_first_fifth_mean": 130.4321052631578,
+      "heading_error_abs_last_fifth_mean": 87.53029239766082,
+      "heading_error_converged": true,
+      "nav_sign_correct": true,
+      "convention": "err = wrap180(target_bearing - heading); positive err = target to the RIGHT; correct response is positive nav_roll (right bank). Deadband 5.0 deg.",
+      "inner_roll_sign_agree_frac": 0.9987714987714987,
+      "inner_roll_sign_correct": true
+    },
+    "nav_sign_window_n": 857,
+    "approach": {
+      "n": 857,
+      "wp_dist_start_m": 170,
+      "wp_dist_min_m": 1,
+      "wp_dist_end_m": 59,
+      "closure_frac": 0.9941176470588236,
+      "closure_ok": true,
+      "wp_dist_series": {
+        "label": "wp_dist",
+        "n": 857,
+        "mean": 63.62777129521587,
+        "std": 17.251866759904164,
+        "min": 1,
+        "max": 172,
+        "slope_per_s": -0.30404997993062693,
+        "drift_over_window": -13.6817067904789,
+        "endpoint_delta": -111,
+        "t_start": 8.037231922149658,
+        "t_end": 53.0354483127594
+      }
+    },
+    "loiter": {
+      "commanded_radius_m": 60.0,
+      "circle_fit": {
+        "centre_east_m": 172.01812840908704,
+        "centre_north_m": -2.8381198751633527,
+        "radius_m": 61.60481209983464,
+        "radius_std_m": 3.8123793134058985,
+        "radius_min_m": 56.9759380735757,
+        "radius_max_m": 82.88782221293462,
+        "n": 667
+      },
+      "radius_envelope_growth": {
+        "label": "loiter_radius",
+        "n": 667,
+        "detrended_p2p": 21.811401197687566,
+        "n_half_cycle_peaks": 4,
+        "peak_prominence_threshold": 1.0905700598843784,
+        "min_peaks_required": 6,
+        "status": "UNDERDETERMINED_TOO_FEW_CYCLES",
+        "growing": false,
+        "cycles_observed": 2.0,
+        "first_peak": 18.10613832264336,
+        "last_peak": 3.948075643142616,
+        "peak_max": 18.10613832264336
+      },
+      "radius_growth_linear_detrend_reported_only": {
+        "n": 667,
+        "resid_std_first_half": 3.7347805670240604,
+        "resid_std_second_half": 2.8439460689729095,
+        "resid_p2p_first_half": 21.314398820316498,
+        "resid_p2p_second_half": 7.653338518186821,
+        "ratio_second_over_first": 0.7614760808394738,
+        "growing": false
+      },
+      "radius_slope_m_per_s": -0.1815181572445291,
+      "radius_drift_over_window_m": -6.352347294073013,
+      "radius_matches_command": true,
+      "radius_bounded": true,
+      "not_spiralling": true,
+      "not_spiralling_criterion": "|radius slope * window| <= TH_LOITER_RADIUS_TOL_M (20.0 m) AND the radius oscillation envelope is not growing",
+      "ardupilot_wp_dist_to_centre_m": {
+        "min": 59,
+        "max": 86,
+        "mean": 61.00449775112444,
+        "std": 4.3904261569009435,
+        "n": 667
+      },
+      "radius_gz_vs_ardupilot_delta_m": 0.6003143487101994,
+      "mean_roll_deg": 26.457322655782,
+      "total_heading_change_deg": 549.1845554539888,
+      "n_orbits": 1.5255126540388577,
+      "heading_rate_deg_s": 16.659049321797408,
+      "expected_direction": "CLOCKWISE (heading increasing, positive roll)",
+      "direction_correct": true
+    },
+    "autotune_decision_support": {
+      "roll_rms_deg": 2.9751674249846367,
+      "pitch_rms_deg": 3.3097732294028064,
+      "saturation_duty_max": 0.0,
+      "oscillation_growing_channels": [],
+      "roll_rms_exceeds_threshold": false,
+      "pitch_rms_exceeds_threshold": false,
+      "saturation_exceeds_threshold": false,
+      "autotune_indicated_by_this_scenario": false,
+      "policy": "NON-GATING DECISION SUPPORT ONLY. A true value here does NOT authorise running AUTOTUNE and does NOT fail this stage. AUTOTUNE is run only if an independent evidence review concludes the current PIDs are genuinely inadequate during navigation. See autotune_procedure_stub() - dormant, never executed by this file."
+    },
+    "checks": {
+      "BLOCKER_no_continuous_hard_limit_pinning": true,
+      "BLOCKER_airspeed_above_hard_floor": true,
+      "surface_aileron_p95_within_linear_range": true,
+      "surface_elevator_p95_within_linear_range": true,
+      "surface_rudder_p95_within_linear_range": true,
+      "airspeed_never_below_min_in_steady_window": true,
+      "airspeed_bounded": true,
+      "altitude_bounded": true,
+      "no_growing_oscillation": true,
+      "inner_loop_roll_sign_correct": true,
+      "heading_frame_consistent": true,
+      "roll_sign_gz_mav_agree": true,
+      "xtrack_identity_consistent": true,
+      "armed_throughout": true,
+      "target_mode_stable": true,
+      "orbit_direction_correct": true,
+      "orbit_radius_matches_command": true,
+      "orbit_radius_bounded": true,
+      "orbit_not_spiralling": true
+    }
+  },
+  "verdict": "NAVIGATION_PASS",
+  "failed_checks": [],
+  "blocking_checks": [],
+  "overall_result": "REANALYZED",
+  "segments_summary": {
+    "settle_fbwa": {
+      "label": "settle_fbwa",
+      "duration_s": 8.0,
+      "actual_duration_s": 8.003875970840454,
+      "rc1": 1500,
+      "rc2": 1500,
+      "rc3": 1496,
+      "n_samples": 153,
+      "aborted": false,
+      "abort_reason": null,
+      "stopped_early": false,
+      "stop_reason": null
+    },
+    "loiter": {
+      "label": "loiter",
+      "duration_s": 45.0,
+      "actual_duration_s": 45.00376486778259,
+      "rc1": 1500,
+      "rc2": 1500,
+      "rc3": 1496,
+      "n_samples": 857,
+      "aborted": false,
+      "abort_reason": null,
+      "stopped_early": false,
+      "stop_reason": null
+    }
+  },
+  "timeseries_file": "/home/emirhan/Desktop/FalconV2/tests/gazebo/results/ardupilot_navigation_scenario_B_smoke_timeseries.json"
+}

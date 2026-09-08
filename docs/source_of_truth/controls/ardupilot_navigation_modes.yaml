@@ -1,0 +1,1009 @@
+# =============================================================================
+# FALCON V2 - ArduPlane NAVIGATION MODE control mapping + acceptance record
+# =============================================================================
+# Owner: controls-integration.
+# Stage: ARDUPLANE_NAVIGATION_AND_AUTOTUNE_VALIDATION (2026-09-07).
+#
+# WHAT THIS FILE IS
+#   The source-of-truth record for how a NAVIGATION command becomes a Falcon V2
+#   control-surface / throttle actuation, and for every threshold the navigation
+#   acceptance harness applies. It exists so that none of those numbers live as
+#   undocumented magic constants inside test or plugin code.
+#
+# WHAT THIS FILE IS NOT
+#   It is NOT a parameter file. It SETS nothing. The live parameter set remains
+#   config/ardupilot/falcon_v2_sitl.parm. Every value below marked
+#   `source: live_readback` is READ from the running vehicle, never written.
+#
+# ArduPlane build referenced throughout:
+#   ArduPlane 4.8.0-dev, ArduPilot commit 409226a637
+#   (/home/emirhan/gazebo_sim/ardupilot). Line numbers are from that tree.
+# =============================================================================
+
+stage: ARDUPLANE_NAVIGATION_AND_AUTOTUNE_VALIDATION
+owner: controls-integration
+date: 2026-09-07
+writes_parameters: false
+runs_autotune: false
+
+# -----------------------------------------------------------------------------
+# 1. MODES
+# -----------------------------------------------------------------------------
+modes:
+  FBWA:
+    custom_mode: 5
+    source: ArduPlane/mode.h:44
+    use: bring-up / settle only; not a measured navigation window
+  RTL:
+    custom_mode: 11
+    source: ArduPlane/mode.h:49
+    navigation: ModeRTL::navigate() (mode_rtl.cpp:77)
+    entry: "ModeRTL::_enter -> plane.do_RTL(get_RTL_altitude_cm())
+            (commands_logic.cpp:337-357)"
+  LOITER:
+    custom_mode: 12
+    source: ArduPlane/mode.h:50
+    navigation: ModeLoiter::navigate() (mode_loiter.cpp:137)
+    entry: "ModeLoiter::_enter -> plane.do_loiter_at_location()
+            (mode_loiter.cpp:4-6); the loiter CENTRE is latched at the aircraft
+            position at mode entry"
+  GUIDED:
+    custom_mode: 15
+    source: ArduPlane/mode.h:53
+    navigation: ModeGuided::navigate() -> plane.update_loiter() (mode_guided.cpp:104-107)
+    entry: "ModeGuided::_enter sets the target to the CURRENT location
+            (mode_guided.cpp:4-27); a target must then be commanded explicitly"
+
+# -----------------------------------------------------------------------------
+# 2. HOW A NAVIGATION TARGET IS COMMANDED
+# -----------------------------------------------------------------------------
+guided_target_command:
+  message: MAV_CMD_DO_REPOSITION (192), sent as COMMAND_INT
+  frame: MAV_FRAME_GLOBAL_RELATIVE_ALT_INT (6)
+  params:
+    param1: -1        # ground speed: -1 = no change
+    param2: 1         # MAV_DO_REPOSITION_FLAGS_CHANGE_MODE (GCS_MAVLink_Plane.cpp:588)
+    param3: 0         # loiter radius 0 => WP_LOITER_RAD is used (GCS_MAVLink_Plane.cpp:602-605)
+    param4: NaN       # yaw/direction unset => loiter_ccw = 0 => clockwise
+    x: lat * 1e7
+    y: lng * 1e7
+    z: altitude above home, metres
+  handler: GCS_MAVLINK_Plane::handle_command_int_do_reposition, GCS_MAVLink_Plane.cpp:560-609
+  rejected_alternative:
+    message: SET_POSITION_TARGET_GLOBAL_INT
+    reason: >-
+      In ArduPlane this message only handles the ALTITUDE field. Its handler
+      (GCS_MAVLink_Plane.cpp:1101-1136) decodes the packet and calls
+      handle_change_alt_request() and nothing else - it CANNOT set a position
+      target. Using it would silently produce a no-op waypoint. NOT USED.
+  full_auto_mission:
+    status: DELIBERATELY NOT USED
+    reason: >-
+      The stage instruction excludes a full AUTO mission. The waypoint route
+      (scenario D) is flown as SEQUENTIAL GUIDED TARGETS, the minimal
+      equivalent.
+
+# -----------------------------------------------------------------------------
+# 3. TELEMETRY SEMANTICS - DERIVED FROM SOURCE, NOT ASSUMED
+# -----------------------------------------------------------------------------
+telemetry_semantics:
+  NAV_CONTROLLER_OUTPUT.nav_roll:
+    meaning: L1 / navigation ROLL DEMAND, degrees
+  NAV_CONTROLLER_OUTPUT.nav_pitch:
+    meaning: RAW TECS pitch demand, degrees, WITHOUT PTCH_TRIM_DEG
+    physical_demand: nav_pitch + PTCH_TRIM_DEG
+    source: ArduPlane/Attitude.cpp:244
+  ATTITUDE.pitch:
+    meaning: reported as (true_pitch - PTCH_TRIM_DEG)
+    source: ArduPlane/GCS_MAVLink_Plane.cpp:139
+  ATTITUDE.roll:
+    meaning: true roll, no offset applied
+  NAV_CONTROLLER_OUTPUT.xtrack_error:
+    meaning_in_these_modes: >-
+      RADIAL distance error from the loiter circle around the active target,
+      NOT a path cross-track error.
+    derivation: >-
+      set_guided_WP() (commands.cpp:97) and do_RTL() (commands_logic.cpp:340)
+      both set auto_state.crosstrack = false. update_loiter_update_nav()
+      (navigation.cpp:343-359) only takes the update_waypoint() branch when
+      auto_state.crosstrack is true, so update_loiter() is taken instead.
+      AP_L1_Control::update_loiter() sets
+      _crosstrack_error = xtrackErrCirc = A_air.length() - radius
+      (AP_L1_Control.cpp:424-426). Positive = outside the circle.
+    consequence_checked_in_harness: >-
+      The identity xtrack_error == wp_dist - WP_LOITER_RAD must hold. The
+      harness gates on it (`xtrack_identity_consistent`, tolerance 3 m, driven
+      by wp_dist being a uint16 in whole metres). If it fails, the assumed
+      semantics is wrong and every derived navigation metric is suspect.
+    other_branch_for_completeness: >-
+      In the update_waypoint() branch _crosstrack_error = A_air % AB with NE
+      components (AP_L1_Control.cpp:277), i.e. POSITIVE = aircraft LEFT of
+      track. That branch is NOT taken in GUIDED/LOITER/RTL.
+
+# -----------------------------------------------------------------------------
+# 4. FRAMES AND SIGN CONVENTIONS - STATED AND VERIFIED, NEVER ASSUMED
+# -----------------------------------------------------------------------------
+frames:
+  world:
+    convention: ENU
+    source: "test world <world_frame_orientation>ENU</world_frame_orientation>,
+             <heading_deg>0.0</heading_deg>"
+    consequence: "gz +X = EAST, +Y = NORTH, +Z = UP"
+  body:
+    convention: FLU
+    source: CLAUDE.md
+  heading_from_gz_yaw:
+    formula: heading_compass_deg = (90 - gz_yaw_deg) mod 360
+    verified_by: >-
+      harness check `heading_frame_consistent` - p95 |difference| against
+      ArduPlane's own GLOBAL_POSITION_INT.hdg must be <= 10 deg. Live result
+      on the 2026-09-07 harness smoke run: PASS.
+  ground_course_from_gz_velocity:
+    formula: course_compass_deg = atan2(v_east, v_north) mod 360
+  physical_pitch_from_gz:
+    formula: pitch_noseup_deg = -(gz_euler_pitch_deg)
+    note: gz Euler pitch is nose-DOWN-positive in this FLU world
+
+sign_conventions:
+  roll:
+    statement: >-
+      POSITIVE ROLL = RIGHT BANK (right wing down). Right-hand rule about body
+      +X carries +Y (left wing) toward +Z (up). ArduPilot's FRD convention
+      independently gives the same sign, so Gazebo ground-truth roll and
+      MAVLink ATTITUDE.roll must agree in sign.
+    command: RC1 > RC1_TRIM commands roll right
+    verified_where:
+      - "tests/gazebo/results/ardupilot_navigation_preflight_result.json
+         (2026-09-07): RC1 = 1500 + 400*(20/45) -> measured gz roll +19.63 deg,
+         MAVLink roll +19.62 deg; RC1 for -20 deg -> gz -19.42 deg, MAVLink
+         -19.41 deg. checks roll_sign_gazebo_correct / roll_sign_mavlink_correct
+         / roll_sign_gz_mav_agree all PASS."
+      - "harness check `roll_sign_gz_mav_agree` on every navigation scenario"
+    status: VERIFIED_LIVE_2026_09_07
+  navigation_turn_direction:
+    statement: >-
+      err = wrap180(target_bearing - heading). POSITIVE err means the target
+      lies to the RIGHT, and the correct response is a POSITIVE (right) nav_roll
+      demand with |err| decreasing.
+    verified_where: harness check `no_wrong_sign_navigation_response`
+    deadband_deg: 5.0
+    note: >-
+      NOT applied to LOITER: in a steady orbit the aircraft flies TANGENT to
+      the circle, so the bearing to the loiter CENTRE is ~90 deg off heading by
+      construction and never converges. Applying this test there would be a
+      measurement category error. LOITER uses `orbit_direction_correct` instead.
+  loiter_direction:
+    statement: >-
+      WP_LOITER_RAD is positive and LOITER sets no ccw flag, so
+      Plane::update_loiter() (navigation.cpp:362-372) leaves loiter.direction =
+      +1 = CLOCKWISE. A clockwise orbit means INCREASING compass heading and a
+      sustained RIGHT (positive) bank. Both must hold together.
+    verified_where: harness check `orbit_direction_correct` (scenario B)
+
+# -----------------------------------------------------------------------------
+# 5. COMMAND-PATH CONTAMINATION GUARDS
+#    Two ArduPlane defaults can silently alter a navigation flight. The harness
+#    asserts the PREMISE that makes each of them inert, rather than assuming the
+#    conclusion.
+# -----------------------------------------------------------------------------
+contamination_guards:
+  STICK_MIXING:
+    live_value: 1
+    source: live_readback
+    why_inert_here: >-
+      RC1/RC2/RC4 are held exactly at their TRIM (1500 us, live-read) with
+      RC*_DZ = 30, so get_control_in() is 0 and the mix contributes nothing.
+    harness_check: sticks_at_trim_so_stick_mixing_inert
+  THROTTLE_NUDGE:
+    live_value: 1 (ArduPlane default)
+    mechanism: >-
+      ArduPlane/radio.cpp:143-152 - when channel_throttle->get_control_in() > 50
+      the TECS TARGET AIRSPEED is nudged up by
+      (AIRSPEED_MAX - AIRSPEED_CRUISE) * (control_in - 50) * 0.02.
+    why_inert_here: >-
+      The harness holds RC3 = 1496 us. With RC3_MIN 1100, RC3_MAX 1900, RC3_DZ
+      30 (all live-read), control_in = 100*(1496-1130)/770 = 47.5 <= 50, so the
+      nudge term is exactly zero and the commanded cruise speed is
+      AIRSPEED_CRUISE unmodified.
+    harness_check: throttle_nudge_inactive
+
+# -----------------------------------------------------------------------------
+# 6. CONTROL-SURFACE LIMITS USED BY THE ACCEPTANCE GATES
+# -----------------------------------------------------------------------------
+control_surface_limits:
+  mechanical_hard_limit_deg: 45.0
+  mechanical_hard_limit_rad: 0.7853981634
+  mechanical_source:
+    - "model/model.sdf - <limit><lower>-0.7853981634</lower><upper>0.7853981634
+       </upper></limit> on all five control-surface joints"
+    - "docs/source_of_truth/controls/actuator_v1_config.yaml min_angle_rad /
+       max_angle_rad, USER_CONFIRMED_MECHANICAL_CAPABILITY"
+  aerodynamic_linear_range_deg: 10.0
+  aerodynamic_linear_range_source:
+    - "docs/source_of_truth/controls/CONTROLS.md sec 1, row 'Aero-derivative
+       validated linear range' = ~+/-10 deg"
+    - "master dataset sec 65; XFLR5 Type 7 sweeps actually run: sec 22
+       (elevator), sec 32 (rudder), sec 36 (aileron), all -10..+10 deg"
+  interpretation: >-
+    The two numbers are NOT interchangeable. 45 deg is what the servo/joint can
+    physically do. 10 deg is where this simulation's own aerodynamic model is
+    still validated. Beyond 10 deg the aerodynamics is EXTRAPOLATING, which is
+    why "normal usage predominantly <= 10 deg" is a MODEL-VALIDITY statement and
+    not a comfort or handling-quality statement.
+  detection_of_pinning: >-
+    The actuator plugin publishes target_clamp_active / effort_clamp_active in
+    its diagnostics; those flags - not an inferred angle comparison - are the
+    primary detector, with |angle| >= 44.5 deg as a redundant second detector.
+
+# -----------------------------------------------------------------------------
+# 7. ACCEPTANCE THRESHOLDS
+#    The authoritative machine-readable copy is emitted into every result JSON
+#    (`thresholds`, `threshold_provenance` - which now carries the same `class`
+#    field as this file, closing validation MINOR-3 - and
+#    `threshold_class_census`) by
+#    tests/gazebo/scripts/test_ardupilot_navigation_validation.py. Reproduced
+#    here so the reasoning is reviewable without reading test code.
+#
+#    PROVENANCE COUNTS ARE NEVER STATED BY HAND. `threshold_class_census` is
+#    computed from the code at runtime and emitted into every result JSON and
+#    into the campaign summary; quote that block rather than counting entries
+#    here. It also lists any threshold whose PROSE calls itself an assumption
+#    while its machine-readable class does not - the exact way a hand-counted
+#    total previously drifted from the code (closes validation MINOR-4).
+# -----------------------------------------------------------------------------
+acceptance_thresholds:
+  - name: TH_SURF_LINEAR_DEG
+    value: 10.0
+    gating: true
+    class: XFLR5_VALIDATED_RANGE
+    basis: see control_surface_limits.aerodynamic_linear_range_source
+  - name: TH_SURF_PERCENTILE
+    value: 95.0
+    gating: true
+    class: ASSUMPTION
+    basis: >-
+      Quantifies the word "predominantly". p95 admits transients of up to 5 %
+      of samples but fails sustained out-of-linear-range operation.
+  - name: TH_SURF_HARD_LIMIT_DEG
+    value: 45.0
+    gating: true
+    class: USER_CONFIRMED_MECHANICAL_CAPABILITY
+  - name: TH_SURF_PIN_MARGIN_DEG
+    value: 0.5
+    gating: true
+    class: ASSUMPTION
+  - name: TH_SURF_PIN_RUN_MAX_S
+    value: 0.5
+    gating: true
+    class: ASSUMPTION
+    basis: >-
+      Quantifies "CONTINUOUSLY pinning". 0.5 s is 10 consecutive samples at the
+      20 Hz sample rate. A longer run is a BLOCKER.
+  - name: TH_SURF_PIN_DUTY_MAX
+    value: 0.01
+    gating: true
+    class: ASSUMPTION
+  - name: TH_AIRSPEED_MIN_MS
+    value: 16.0
+    gating: true
+    class: LIVE_READBACK
+    basis: AIRSPEED_MIN, falcon_v2_sitl.parm SIMULATION_DERIVED_FROM_GAZEBO_ENVELOPE
+  - name: TH_AIRSPEED_HARD_FLOOR_FRAC
+    value: 0.9
+    gating: true
+    class: CONVENTION_REUSED
+    basis: same 0.9*AIRSPEED_MIN hard floor as the validated TECS cruise stage
+  - name: TH_MODE_TRANSIENT_S
+    value: 10.0
+    gating: true
+    class: ASSUMPTION
+    basis: ~2 x TECS_TIME_CONST (live-read 5.0 s)
+  - name: TH_ALT_P2P_MAX_M
+    value: 25.0
+    gating: true
+    class: ASSUMPTION
+    basis: >-
+      A BOUNDEDNESS gate, deliberately looser than the TECS altitude-HOLD stage:
+      navigation modes bank hard and TECS trades height for speed in turns.
+  - name: TH_AIRSPEED_P2P_MAX_MS
+    value: 6.0
+    gating: true
+    class: ASSUMPTION
+    basis: half of the commandable AIRSPEED_MAX-AIRSPEED_MIN envelope (12 m/s)
+  - name: TH_OSC_ENVELOPE_RATIO
+    value: 1.3
+    gating: true
+    class: CONVENTION_REUSED
+    basis: >-
+      Same acceptance STRENGTH as fbwa.detrended_growth() in the validated
+      phugoid/TECS stages, applied through a better-posed ESTIMATOR - see
+      section 8.
+  - name: TH_OSC_GROWTH_RATIO
+    value: 1.3
+    gating: false
+    class: REPORTED_FOR_COMPARABILITY
+  - name: TH_OSC_PEAK_PROMINENCE_MEDIAN_FRAC
+    value: 0.25
+    replaces: "TH_OSC_PEAK_PROMINENCE_FRAC = 0.05 of the detrended peak-to-peak"
+    gating: true
+    class: ASSUMPTION
+    basis: >-
+      A half-cycle peak below this fraction of the MEDIAN half-cycle peak is a
+      zero-crossing artefact, not a cycle of the mode being measured. ROOT-CAUSE
+      FIX of the 2026-09-08 coverage regression: peak-to-peak is an
+      EXTREME-VALUE statistic, so one large transient inflated the floor and
+      filtered out the ordinary cycles of the very oscillation being measured,
+      collapsing both the peak span and the spacing statistics. The exact
+      fraction is an assumption; using a robust amplitude scale rather than an
+      extreme one is not.
+  - name: TH_OSC_MIN_PEAKS
+    value: 6
+    previous_value: 4
+    gating: true
+    class: IDENTIFIABILITY_REQUIREMENT
+    basis: >-
+      6 half-cycle peaks = 3 complete cycles, the minimum over which an
+      exponential envelope fit is identifiable. Raised from 4 on 2026-09-07
+      during harness construction; see oscillation_estimator.identifiability.
+      FLAGGED FOR VALIDATION REVIEW - this change turned a smoke-run FAIL into a
+      PASS and must be judged on the identifiability argument, not the outcome.
+  - name: TH_OSC_ENDPOINT_RATIO_MIN
+    value: 1.15
+    status: RETIRED_AS_A_GATE_2026_09_08_RETAINED_AS_A_DIAGNOSTIC
+    gating: false
+    class: RETIRED_REPORTED_ONLY
+    why_retired: >-
+      Its purpose - stopping one large intermediate peak from dominating the
+      fit - now lives in the ESTIMATOR (Theil-Sen log-peak slope plus a robust
+      prominence scale and a robust detrend), which is the right place for it.
+      Measured on the real campaign channels the endpoint rule was load-bearing
+      in ZERO cases, while on injected genuine divergences it produced FALSE
+      NEGATIVES: a growing mode riding on a large early transient (e.g. the RTL
+      turn-in) has last_peak/first_peak ~ 1 even when the tail is plainly
+      diverging, so it suppressed exactly the case a divergence gate exists to
+      catch. MINOR-1's motivating shape, re-injected on top of a real channel,
+      is now rejected by the fit alone (envelope ratio 0.373 against 1.30).
+    historical_class: DERIVED_FROM_TH_OSC_ENVELOPE_RATIO
+    basis: >-
+      last_half_cycle_peak / first_half_cycle_peak must reach this before a
+      "growing" verdict is allowed. DERIVED, not chosen: half of the fitted
+      growth already required, 1 + (1.3 - 1)/2 = 1.15. The previous rule
+      (last >= first) did not bite - scenario C satisfied it by +0.03 %
+      (6.759 vs 6.757) while the fit claimed +53 % growth, so
+      TH_OSC_MIN_PEAKS was in fact the sole discriminator and the documented
+      second guard was decorative. Closes validation MINOR-1.
+  - name: TH_OSC_MIN_PEAK_SPAN_FRAC
+    value: 0.60
+    gating: true
+    class: ASSUMPTION
+    basis: >-
+      The half-cycle peaks must span at least 60 % of the analysis window. The
+      exact fraction is an assumption; the principle is not - a growth rate
+      fitted over a quarter of the window and then reported as that window's
+      envelope ratio is an EXTRAPOLATION, not a measurement. Scenario C's four
+      peaks spanned 25 %. Closes validation MINOR-2 (span half).
+  - name: TH_OSC_MAX_GAP_FRAC
+    value: 0.50
+    replaces: "TH_OSC_SPACING_RATIO_MAX = 3.0 (max/min half-cycle spacing)"
+    gating: true
+    class: DERIVED_IDENTIFIABILITY_CRITERION
+    basis: >-
+      max(half-cycle spacing) / (time spanned by the peaks). DERIVED: if a
+      SINGLE gap covers more than half the interval the peaks span, the train is
+      two clusters separated by a void and the envelope across that void is
+      INTERPOLATED rather than measured - a real identifiability defect. For a
+      uniform train of n peaks it equals 1/(n-1), so it relaxes automatically as
+      evidence accumulates, which is the correct behaviour for an
+      identifiability screen.
+    why_the_predecessor_was_withdrawn: >-
+      max/min is an unbounded extreme-value ratio. On real flight data the
+      detrended residual makes brief zero-crossing excursions, one half-cycle
+      collapses toward the sample interval, min(spacing) goes tiny and the ratio
+      explodes regardless of oscillation strength - measured 3.10-46.71 against
+      a limit of 3.0, rejecting scenario-D per-leg cross-track trains of 163, 72
+      and 226 half-cycle peaks as "incoherent". A criterion that TIGHTENS as
+      evidence accumulates is measuring the wrong thing. The gap fraction does
+      not depend on min(spacing) at all.
+    still_rejects_the_motivating_case: >-
+      The scenario-C 4-peak train that motivated the original criterion scores
+      0.711 and is still rejected.
+  - name: TH_RTL_ALT_TOL_M
+    value: 10.0
+    gating: true
+    class: ASSUMPTION
+    scenario: C only
+    basis: >-
+      |mean relative altitude in the post-arrival home loiter - RTL_ALTITUDE|
+      (live-read, 100 m). Tight enough to prove RTL actually CAPTURED its
+      commanded altitude rather than merely staying airborne (10 % of
+      RTL_ALTITUDE); deliberately not tighter, because TECS altitude-hold
+      QUALITY is a separate already-validated stage and this check must not
+      silently become a re-run of it.
+  - name: TH_NAV_SIGN_AGREE_FRAC
+    value: 0.80
+    gating: true
+    class: ASSUMPTION
+    basis: >-
+      Not 1.0, because the L1 law legitimately reverses briefly at overshoot
+      and near zero heading error, where the sign carries no information.
+  - name: TH_NAV_SIGN_DEADBAND_DEG
+    value: 5.0
+    gating: true
+    class: ASSUMPTION
+  - name: TH_HEADING_FRAME_TOL_DEG
+    value: 10.0
+    gating: true
+    class: ASSUMPTION
+    basis: a genuine frame regression would exceed this by an order of magnitude
+  - name: TH_XTRACK_IDENTITY_TOL_M
+    value: 3.0
+    gating: true
+    class: ASSUMPTION
+    basis: wp_dist is a uint16 in whole metres; plus ~0.05 s inter-field skew
+  - name: TH_LOITER_RADIUS_TOL_M
+    value: 20.0
+    gating: true
+    class: ASSUMPTION
+    basis: 33 % of the live-read WP_LOITER_RAD (60 m)
+  - name: TH_LOITER_RADIUS_STD_MAX_M
+    value: 15.0
+    gating: true
+    class: ASSUMPTION
+  - name: TH_APPROACH_CLOSURE_FRAC
+    value: 0.5
+    gating: true
+    class: ASSUMPTION
+  - name: TH_ALT_FLOOR_M
+    value: 40.0
+    gating: true
+    class: RUN_ABORT_GUARD
+  - name: TH_ALT_CEILING_M
+    value: 260.0
+    gating: true
+    class: RUN_ABORT_GUARD
+  - name: TH_ATT_ABORT_DEG
+    value: 60.0
+    gating: true
+    class: RUN_ABORT_GUARD
+  - name: TH_AUTOTUNE_ROLL_RMS_DEG
+    value: 5.0
+    gating: false
+    class: ASSUMPTION_DECISION_SUPPORT_ONLY
+    data_required: >-
+      No measured Falcon V2 roll tracking-error reference exists in this
+      repository. DATA_REQUIRED. This number flags evidence for review; it never
+      passes or fails anything and never authorises a gain change.
+  - name: TH_AUTOTUNE_PITCH_RMS_DEG
+    value: 5.0
+    gating: false
+    class: ASSUMPTION_DECISION_SUPPORT_ONLY
+    data_required: same as TH_AUTOTUNE_ROLL_RMS_DEG
+  - name: TH_AUTOTUNE_SAT_DUTY
+    value: 0.05
+    gating: false
+    class: ASSUMPTION_DECISION_SUPPORT_ONLY
+
+# -----------------------------------------------------------------------------
+# 8. OSCILLATION ESTIMATOR - why the gate is not the phugoid stage's estimator
+# -----------------------------------------------------------------------------
+oscillation_estimator:
+  reported_but_not_gated:
+    name: fbwa.detrended_growth()
+    method: remove a straight line, compare second-half vs first-half residual std
+    valid_for: straight, single-flight-condition windows (phugoid / TECS stages)
+    invalid_for: >-
+      navigation flight, where the aircraft deliberately CHANGES flight
+      condition inside the window (roll in, capture, circle). A larger
+      second-half residual then means "manoeuvring harder", not "diverging".
+  gated:
+    name: envelope_growth()
+    method: >-
+      Detrend; split the residual at its zero crossings; take the largest
+      |residual| in each half-cycle as a peak; discard peaks below 5 % of the
+      detrended peak-to-peak; fit ln|peak| = sigma*t + c. Growing if
+      exp(sigma * window) >= 1.3. Fewer than 4 peaks is reported
+      NOT_OSCILLATORY rather than pass or fail. Also reports period, omega, an
+      approximate damping ratio zeta and tau, so results are comparable with the
+      phugoid stage's own numbers.
+  evidence_this_change_was_necessary:
+    when: 2026-09-07, during HARNESS CONSTRUCTION, on a SMOKE run
+    important: >-
+      This decision was taken BEFORE any campaign data existed and is therefore
+      not a reaction to a campaign result. It is recorded here so that it can be
+      audited as such.
+    measurement: >-
+      On the harness smoke run of scenario A, the half-vs-half estimator flagged
+      pitch, altitude and airspeed as "growing" while the underlying signals
+      were plainly bounded and small (altitude residual p2p 1.91 -> 2.41 m;
+      airspeed 1.27 -> 1.81 m/s). The envelope estimator on the SAME data
+      returned sigma = -0.0241 /s for altitude (envelope ratio 0.494),
+      -0.0036 /s for airspeed (0.904) and -0.0022 /s for pitch (0.938) - i.e.
+      DECAYING - and correctly classified roll and xtrack_error as
+      NOT_OSCILLATORY monotonic manoeuvring trends.
+  gated_channels:
+    principle: >-
+      An oscillation gate is only well posed on a signal whose COMMANDED value
+      is constant over the window. In navigation flight the raw states are not:
+      the navigator commands roll, TECS commands pitch, and scenario D commands
+      a deliberate +15 m altitude step. The commanded value of an ERROR signal,
+      by contrast, is identically zero in every window and every flight
+      condition. The gate is therefore applied to the error signals.
+    gated:
+      - roll_err_deg          # nav_roll demand minus achieved roll
+      - pitch_err_deg         # (nav_pitch + PTCH_TRIM_DEG) minus physical pitch
+      - alt_error_m           # NAV_CONTROLLER_OUTPUT.alt_error
+      - aspd_error_ms         # NAV_CONTROLLER_OUTPUT.aspd_error / 100
+      - xtrack_error_m        # radial error; see telemetry_semantics
+    reported_only:
+      - roll_deg
+      - pitch_phys_deg
+      - altitude_m
+      - airspeed_ms
+    raw_state_divergence_still_covered_by: >-
+      the separate boundedness gates - altitude_bounded (TH_ALT_P2P_MAX_M),
+      airspeed_bounded (TH_AIRSPEED_P2P_MAX_MS), the AIRSPEED_MIN gate and hard
+      floor, and the run-abort attitude/altitude envelope.
+    evidence: >-
+      2026-09-07 harness smoke, scenario D: gating RAW altitude flagged a clean,
+      correctly-tracked commanded +15 m climb as a "growing oscillation"
+      (envelope ratio 3.52 on what is a monotonic step). A linear detrend cannot
+      remove a commanded step. The error channels are unaffected.
+  estimator_chain:
+    note: >-
+      Every stage of the estimator is now a ROBUST statistic. This was not
+      cosmetic: each non-robust stage was measured producing a concrete wrong
+      answer on real data before it was replaced.
+    stages:
+      - stage: detrend
+        estimator: Theil-Sen slope, median-residual intercept (robust_detrend)
+        replaced: least squares
+        why: >-
+          The trend is removed BEFORE peaks are found, so a tilted trend line
+          adds a ramp to the residual and inflates later half-cycle peaks, which
+          reads as envelope growth that is not there. Least squares has a 0 %
+          breakdown point. Measured on a fixture of a CONSTANT-amplitude 2 deg
+          oscillation plus one 6 s 25 deg burst: least-squares trend -0.00964 /s
+          and the channel was reported GROWING (envelope ratio 1.917);
+          Theil-Sen trend -0.00247 /s and it is correctly NOT growing (1.107).
+          Changes ZERO verdicts on the real campaign channels and IMPROVES
+          injection sensitivity.
+      - stage: peak prominence scale
+        estimator: fraction of the MEDIAN half-cycle peak
+        replaced: fraction of the detrended peak-to-peak
+        why: see TH_OSC_PEAK_PROMINENCE_MEDIAN_FRAC
+      - stage: coherence
+        estimator: largest gap as a fraction of the peak span
+        replaced: max/min half-cycle spacing
+        why: see TH_OSC_MAX_GAP_FRAC
+      - stage: envelope slope
+        estimator: Theil-Sen median pairwise slope on ln(peak)
+        replaced: least squares
+        why: >-
+          This is where validation MINOR-1's intent now lives. Least squares has
+          a 0 % breakdown point, so ONE large intermediate peak could dominate
+          the fit - the entire reason a bolt-on endpoint guard had been added.
+          Theil-Sen has a ~29 % breakdown point, so the guard became unnecessary
+          and could be retired along with its false negatives.
+  identifiability:
+    requirement: >-
+      A growth verdict requires ALL THREE of: (1) at least 3 complete cycles
+      (TH_OSC_MIN_PEAKS = 6 half-cycle peaks); (2) the peaks span at least
+      TH_OSC_MIN_PEAK_SPAN_FRAC of the analysis window; (3) no single gap
+      covering more than TH_OSC_MAX_GAP_FRAC of the peak span. Failing (1) gives
+      UNDERDETERMINED_TOO_FEW_CYCLES; failing (2) or (3) gives
+      UNDERDETERMINED_INCOHERENT. Either way the channel is neither passed nor
+      failed on this metric.
+    no_silent_holes: >-
+      Every ungated channel additionally carries an ADVISORY, NON-GATING
+      provisional growth estimate (provisional_sigma_per_s_NON_GATING,
+      provisional_envelope_ratio_NON_GATING) plus the project's validated
+      detrended_growth() as an independent second opinion, collected in
+      analysis.oscillation_steady.underdetermined_provisional_summary. Gating a
+      channel off says "this window cannot support a growth verdict"; it must
+      never also mean "nobody can see what the number would have been".
+    all_four_are_tightenings: >-
+      Each criterion can only turn a "growing" verdict into UNDERDETERMINED or
+      not-growing where the evidence does not support the claim. None can turn a
+      non-growing signal into a growing one.
+    evidence: >-
+      2026-09-07 harness smoke, scenario C, roll_err_deg. With the original
+      4-peak minimum the metric reported sigma = +0.0217 /s and envelope ratio
+      1.53 ("growing"), from only 4 peaks - period 13.1 s over a 19.7 s window,
+      i.e. 1.5 cycles. The underlying envelope was FLAT end to end
+      (first_peak 7.09 deg, last_peak 7.34 deg, +3 %), and the fit was dominated
+      by one 31.4 deg intermediate transient: the RTL turn-in step response. The
+      verdict was an artefact of fitting an exponential through a step response.
+    detection_not_weakened: >-
+      A genuine divergence produces many cycles with a monotonically rising
+      envelope. The injected exp(t/60) growing-oscillation negative control is
+      still DETECTED after this change (see negative_controls_2026_09_07).
+    validation_flag: >-
+      This change turned a smoke-run FAIL into a PASS. It is recorded here
+      explicitly so `validation` reviews it on the identifiability argument
+      rather than on the outcome.
+  scenario_D_xtrack_exception:
+    rule: >-
+      xtrack_error_m is demoted to report-only in the CONCATENATED scenario-D
+      window and gated PER LEG instead. This is a signal-DISCONTINUITY
+      exception, not a setpoint exception: wp_dist and hence xtrack_error RESET
+      at every waypoint change, so the concatenated series is a sawtooth whose
+      "peaks" are leg boundaries.
+    evidence: >-
+      2026-09-07 harness smoke, scenario D: concatenated detrended p2p 492 m
+      over a signal ranging 50-547 m across three separate 550 m legs. Per leg,
+      envelope ratios were 1.05 / 1.20 / 1.01 - not growing.
+    gating_check: route_xtrack_not_growing_per_leg
+  spiral_detection_note: >-
+    A loiter SPIRAL is a monotonic radius trend, which an oscillation-envelope
+    metric correctly classifies as NOT_OSCILLATORY. The spiral test is therefore
+    the radius TREND: |radius slope * window| must stay inside the SAME
+    TH_LOITER_RADIUS_TOL_M the orbit itself is held to. No new number.
+
+# -----------------------------------------------------------------------------
+# 9. AUTOTUNE - DORMANT, NOT EXECUTED
+# -----------------------------------------------------------------------------
+autotune:
+  status: DORMANT_NOT_EXECUTED
+  AUTOTUNE_LEVEL:
+    value: 8
+    class: MANUFACTURER_RECOMMENDED_AUTOTUNE_LEVEL
+    source: >-
+      config/ardupilot/falcon_v2_sitl.parm (Titan Dynamics Falcon V2 Build &
+      User Manual Rev 1.0). Already present in the live parameter set; its
+      presence is NOT the same as running autotune.
+    ardupilot_compiled_default: 6 (ArduPlane/Parameters.cpp:29)
+  mode: AUTOTUNE custom_mode 8 (ArduPlane/mode.h)
+  authorisation: >-
+    NOT authorised by this stage. AUTOTUNE may only be run after an INDEPENDENT
+    evidence review concludes, from the navigation campaign data, that the
+    current PIDs are genuinely inadequate during navigation. The decision inputs
+    (roll/pitch tracking-error statistics, saturation duty cycle, oscillation
+    growth) are recorded per scenario in analysis.autotune_decision_support and
+    are DECISION SUPPORT ONLY - they never gate this stage.
+  procedure_location: >-
+    tests/gazebo/scripts/test_ardupilot_navigation_validation.py,
+    AUTOTUNE_PROCEDURE (data) and autotune_procedure_stub() (raises
+    NotImplementedError so it cannot be run by accident).
+  axis_separation_caveat: >-
+    ArduPlane's AUTOTUNE tunes whichever axis is being EXERCISED; there are no
+    roll-only / pitch-only sub-modes. Separating the axes is done by the STICK
+    INPUT and by evaluating the two axes' metrics independently.
+  transferability: >-
+    A gain produced against the GAZEBO model is SIM-SPECIFIC and is NOT
+    transferable to the real aircraft without separate flight validation - the
+    same rule already recorded for TECS_PTCH_DAMP 0.6.
+
+# -----------------------------------------------------------------------------
+# 10. LIVE PARAMETER SNAPSHOT (readback, 2026-09-07 pre-flight)
+#     RECORD ONLY. This file sets none of these.
+# -----------------------------------------------------------------------------
+live_parameter_snapshot:
+  source: >-
+    tests/gazebo/results/ardupilot_navigation_preflight_result.json,
+    MAVLink PARAM_REQUEST_LIST from the running vehicle (1367 parameters).
+  verified_locked_values:
+    TECS_PTCH_DAMP: 0.6
+    PTCH_TRIM_DEG: 2.49
+    RLL_RATE_P: 0.25
+    RLL_RATE_I: 0.125
+    RLL_RATE_D: 0.002
+    RLL_RATE_FF: 0.125
+    PTCH_RATE_P: 0.25
+    PTCH_RATE_I: 0.125
+    PTCH_RATE_D: 0.002
+    PTCH_RATE_FF: 0.125
+    AIRSPEED_MIN: 16
+    AIRSPEED_CRUISE: 18
+    AIRSPEED_MAX: 28
+    ARSPD_USE: 1
+    ARSPD_TYPE: 100
+  navigation_relevant_readback:
+    WP_LOITER_RAD: 60.0
+    WP_RADIUS: 90.0
+    NAVL1_PERIOD: 17.0
+    NAVL1_DAMPING: 0.75
+    RTL_ALTITUDE: 100.0
+    RTL_AUTOLAND: 0.0
+    ROLL_LIMIT_DEG: 45.0
+    PTCH_LIM_MAX_DEG: 20.0
+    PTCH_LIM_MIN_DEG: -25.0
+    FENCE_ENABLE: 0.0
+    FLIGHT_OPTIONS: 0.0
+    TERRAIN_FOLLOW: 0.0
+    STICK_MIXING: 1.0
+    AUTOTUNE_LEVEL: 8.0
+    SIM_WIND_SPD: 0.0
+    SIM_OPOS_ALT: 0.0
+  parameters_that_do_not_exist_in_this_build:
+    note: >-
+      Requested during pre-flight and returned no PARAM_VALUE. Recorded so the
+      absence is not mistaken for an unread parameter. All have differently
+      named modern equivalents already captured above.
+    names: [GUIDED_OPTIONS, LOITER_RAD, ALT_HOLD_RTL, LIM_ROLL_CD, ARMING_CHECK]
+
+# -----------------------------------------------------------------------------
+# 11. CARRIED-FORWARD OPEN LIMITATION (not touched by this stage)
+# -----------------------------------------------------------------------------
+known_open_limitations:
+  - item: HIGH_ADVANCE_RATIO_WINDMILLING_PROPELLER_REGIME
+    status: OPEN / DATA_REQUIRED / NON_GATING
+    owner: propulsion
+    statement: >-
+      The propulsion model's behaviour in the high-J / windmilling regime is not
+      validated and the required data does not exist in this repository. This
+      stage does NOT resolve, work around or tune anything related to it. Where
+      a descent or idle-throttle segment enters that regime, any propulsion
+      number recorded there is reported as-is and must not be read as validated.
+
+# -----------------------------------------------------------------------------
+# 12. HARNESS DEFECTS FOUND AND FIXED DURING CONSTRUCTION (2026-09-07)
+#     Recorded so a reviewer can see that these were TEST-LOGIC fixes made on
+#     smoke data during harness construction, and that no aircraft parameter,
+#     gain, coefficient or geometry was changed to obtain them.
+# -----------------------------------------------------------------------------
+harness_defects_fixed:
+  - id: STALE_NAV_CONTROLLER_OUTPUT_AT_TARGET_CHANGE
+    class: TEST_HARNESS_BUG
+    symptom: >-
+      Scenario D leg 1 terminated after 0.0 s and was never flown, because the
+      leg-capture stop condition fired on leg 0's final wp_dist of 90 m. The
+      first sample of each leg also reported the previous leg's wp_dist,
+      corrupting the closure metric (wp_dist_start read 169 m for a target
+      550 m away).
+    root_cause: >-
+      The MAVLink `latest` dictionary is a last-value cache. After a new
+      MAV_CMD_DO_REPOSITION the cached NAV_CONTROLLER_OUTPUT still described the
+      PREVIOUS target until the next message arrived.
+    fix: >-
+      invalidate_nav_telemetry() drops the cached NAV_CONTROLLER_OUTPUT at every
+      mode entry and every target change, plus an independent LEG_MIN_S = 5 s
+      floor below which a leg may never terminate (a 550 m leg needs ~31 s at
+      AIRSPEED_CRUISE, so 5 s cannot mask a genuine early capture).
+    aircraft_change: none
+  - id: OSCILLATION_ESTIMATOR_NOT_WELL_POSED_FOR_MANOEUVRING_FLIGHT
+    class: MEASUREMENT_CATEGORY_ERROR
+    symptom: >-
+      The phugoid/TECS half-vs-half detrended-residual estimator flagged bounded
+      pitch, altitude and airspeed as "growing" during a normal GUIDED capture,
+      and later flagged a correctly-tracked commanded +15 m climb the same way.
+    root_cause: >-
+      The estimator cannot distinguish "changing flight condition" or "commanded
+      step" from "growing oscillation".
+    fix: >-
+      Gate on a peak-envelope growth metric applied to ERROR signals (commanded
+      value identically zero). Acceptance STRENGTH unchanged at 1.3x. The
+      original estimator is still computed and reported for comparability with
+      the earlier stages.
+    aircraft_change: none
+  - id: OSCILLATION_ENVELOPE_FIT_NOT_IDENTIFIABLE_OVER_FEW_CYCLES
+    class: MEASUREMENT_CATEGORY_ERROR
+    symptom: >-
+      Scenario C roll tracking error reported as a growing oscillation
+      (envelope ratio 1.53) while its envelope was flat end to end (7.09 ->
+      7.34 deg) over only 1.5 cycles.
+    root_cause: >-
+      An exponential envelope fit through 4 peaks dominated by a single large
+      step-response transient.
+    fix: >-
+      Require >= 3 complete cycles and last_peak >= first_peak; otherwise report
+      UNDERDETERMINED_TOO_FEW_CYCLES, listed explicitly in the result.
+    aircraft_change: none
+    validation_flag: "changed a smoke-run FAIL to PASS - review the argument, not the outcome"
+  - id: RTL_BEARING_METRICS_COMPUTED_OVER_THE_HOME_LOITER
+    class: WINDOW_COMPOSITION_ERROR
+    found_by: validation, 2026-09-07 (MAJOR)
+    symptom: >-
+      rtl_extra() computed its bearing / sign / convergence metrics over the
+      FULL sample set, which included the ~97 s post-arrival home loiter.
+    root_cause: >-
+      In that phase ArduPlane runs update_loiter() - it IS a loiter - so the
+      aircraft flies TANGENT to the circle and |bearing_to_home - heading| is
+      ~88.79 deg BY CONSTRUCTION and never converges. verdict_scenario() already
+      exempted LOITER mode from exactly these checks; the post-arrival RTL phase
+      is also a loiter and was simply never classified as one.
+    broken_in_both_directions: >-
+      The failing half was meaningless (a tangent aircraft is not
+      mis-navigating) and so was the passing half: post-arrival sign agreement
+      of 0.9929 arose because a +88.79 deg bearing error times a +28.27 deg
+      right bank always agree in a clockwise orbit. The smoke run PASSED this
+      check with 94.40 -> 88.87 deg, two tangent numbers that happened to fall
+      the right way. The verdict tracked window composition, not the aircraft.
+    thin_margin_also_removed: >-
+      Over the full set the PRE-arrival home-bearing sign agreement was 0.8058
+      against TH_NAV_SIGN_AGREE_FRAC = 0.80 - a 0.7 % margin - and all 40
+      disagreements fell in the final 2.0 s at loiter capture. Windowing gives
+      1.000. This is why BOTH halves are windowed, not only the convergence
+      half.
+    fix: >-
+      rtl_extra() now takes the nav window explicitly and splits into three
+      windows: CLOSURE on the FULL set (it needs the 501 -> 53.9 m approach and
+      windowing it would destroy the quantity being measured); BEARING / SIGN /
+      CONVERGENCE on nav_window() only; LOITER-AT-HOME on
+      home_loiter_window() only. Both call sites - run_scenario() and
+      reanalyze() - were fixed, so the correction takes effect through the
+      --reanalyze path that gazebo-testing uses.
+    aircraft_change: none
+  - id: COHERENCE_GATES_MADE_THE_OSCILLATION_GATE_VACUOUS
+    class: TEST_COVERAGE_REGRESSION
+    found_by: gazebo-testing, 2026-09-08 (MAJOR)
+    introduced_by: controls-integration's own first MINOR-2 tightening, same day
+    symptom: >-
+      Gated channels reported UNDERDETERMINED went from 6/19 to 19/19 across the
+      campaign. `no_growing_oscillation` returned True in all four scenarios
+      because NOTHING WAS BEING EVALUATED, not because nothing was growing.
+      Thirteen channels that had been evaluated and were passing on merit - all
+      with decaying envelopes and sigma < 0 - became ungated. Zero verdicts
+      changed, but only because evaluation had stopped.
+    root_cause: >-
+      Two non-robust statistics, with one shared root cause. (a) The coherence
+      criterion was max/min half-cycle spacing, an unbounded extreme-value
+      ratio: brief zero-crossing excursions collapse min(spacing) toward the
+      sample interval and the ratio explodes regardless of oscillation strength
+      (measured 3.10-46.71 against a limit of 3.0). (b) THE SHARED ROOT CAUSE -
+      the peak prominence floor was keyed to peak-to-peak, itself an extreme
+      statistic, so one large transient filtered out the ordinary cycles of the
+      oscillation being measured, which simultaneously collapsed the peak SPAN
+      (0.13-0.59 on plainly oscillatory channels) and manufactured the tiny
+      spacings that made (a) explode. Fixing the spacing statistic alone would
+      have left 16 of 19 channels ungated by the span criterion.
+    why_the_original_verification_missed_it: >-
+      The synthetic fixtures contained nothing but the injected oscillation, so
+      peak-to-peak and the median peak coincide and spacings are exactly
+      uniform; the same synthetic scores a spacing ratio of 1.79 at every
+      amplitude. A robustness property cannot be verified on a signal that has
+      no real content underneath it. Verification is now done by injection into
+      the actual captured campaign channels.
+    fix: >-
+      Robust statistics at every stage of the estimator (see
+      oscillation_estimator.estimator_chain), and an advisory non-gating
+      provisional estimate attached to every ungated channel.
+    measured_outcome:
+      ungated_channels: "19/19 -> 2/19 (better than the 6/19 pre-regression baseline)"
+      detection_floor_exp_t_over_60_T_6p3: "40 deg -> 1 deg"
+      detection_floor_exp_t_over_90_T_12: "not detected at any tested amplitude -> 3 deg"
+      real_channel_verdicts_changed: 0
+    aircraft_change: none
+  - id: SCENARIO_D_XTRACK_SAWTOOTH
+    class: MEASUREMENT_CATEGORY_ERROR
+    symptom: xtrack_error flagged as growing across a 3-waypoint route
+    root_cause: wp_dist/xtrack_error reset at each waypoint change
+    fix: gate per leg (route_xtrack_not_growing_per_leg), report concatenated
+    aircraft_change: none
+
+# -----------------------------------------------------------------------------
+# 12b. ACCEPTANCE-CHECK CHANGES, 2026-09-08
+# -----------------------------------------------------------------------------
+acceptance_check_changes_2026_09_08:
+  retired:
+    - name: rtl_turned_toward_home
+      reason: >-
+        REDUNDANT and, in its unwindowed form, invalid in both directions. The
+        generic no_wrong_sign_navigation_response and heading_error_converged
+        checks already answer the same question correctly, because
+        analyze_scenario() evaluates them over nav_window(): n = 517, sign
+        agreement 1.000, heading error 129.16 -> 0.369 deg. Retiring it removes
+        a broken check rather than relaxing one. Its windowed numbers are still
+        RECORDED under analysis.rtl for cross-checking; they gate nothing.
+  added:
+    - name: rtl_loiters_at_home
+      scenario: C
+      reason: >-
+        Replaces the retired check with a stronger, POSITIVE one, measured on
+        the post-arrival phase that previously only corrupted other metrics.
+      criterion: >-
+        orbit radius within TH_LOITER_RADIUS_TOL_M of WP_LOITER_RAD AND radius
+        std <= TH_LOITER_RADIUS_STD_MAX_M AND the fitted orbit centre within
+        TH_LOITER_RADIUS_TOL_M of HOME AND |mean relative altitude -
+        RTL_ALTITUDE| <= TH_RTL_ALT_TOL_M AND clockwise orbit direction.
+      frame_note: >-
+        The circle is fitted in the HOME-RELATIVE NE frame built from lat/lon,
+        so the fitted centre IS the offset from home - no assumption that the
+        Gazebo origin coincides with ArduPlane's home.
+      no_pass_on_absence_of_data: >-
+        Fewer than 20 post-arrival samples gives status
+        INSUFFICIENT_POST_ARRIVAL_SAMPLES and the check FAILS. It never passes
+        because the phase was not observed.
+      supported_by_captured_data: >-
+        Validation independently measured radius 60.21 +/- 1.45 m against
+        WP_LOITER_RAD 60.0, relative altitude 100.03 m against RTL_ALTITUDE
+        100.0, and 4.45 clockwise orbits at +16.66 deg/s.
+  unchanged:
+    - name: rtl_reduced_home_distance
+      note: still computed on the FULL sample set, deliberately not windowed
+
+# -----------------------------------------------------------------------------
+# 13. NEGATIVE CONTROLS - proof the gates can actually fail
+#     Synthetic timeseries with one defect injected each, run through the real
+#     analysis/verdict path. A gate that cannot fail is not a gate.
+# -----------------------------------------------------------------------------
+negative_controls_2026_09_07:
+  method: >-
+    Synthetic timeseries with exactly one defect injected each, run through the
+    REAL analysis and verdict path (no special-case code). Script kept out of
+    the repository; the outcome is recorded here.
+  result: "all 8 injected defects detected"
+  cases:
+    - injected: "800 samples of a control surface held at 44.9 deg"
+      detected_by: "BLOCKER_no_continuous_hard_limit_pinning"
+    - injected: "airspeed 13.0 m/s, below 0.9 * AIRSPEED_MIN"
+      detected_by: "BLOCKER_airspeed_above_hard_floor"
+    - injected: "airspeed 15.2 m/s, below AIRSPEED_MIN but above the hard floor"
+      detected_by: "airspeed_never_below_min_in_steady_window"
+    - injected: "nav_roll demand sign inverted"
+      detected_by: "no_wrong_sign_navigation_response, inner_loop_roll_sign_correct"
+    - injected: "elevator held at 14 deg, outside the XFLR5 linear range"
+      detected_by: "surface_elevator_p95_within_linear_range"
+    - injected: "exponentially growing altitude oscillation, envelope exp(t/60)"
+      detected_by: "no_growing_oscillation"
+    - injected: "reported heading offset by 40 deg, i.e. a frame regression"
+      detected_by: "heading_frame_consistent"
+    - injected: "xtrack_error decoupled from wp_dist"
+      detected_by: "xtrack_identity_consistent"
+  cases_2026_09_08:
+    context: >-
+      Re-verification after the validation MAJOR/MINOR fixes. Run against a
+      scratch results directory; no campaign artifact in tests/gazebo/results
+      was read or written.
+    detection_not_weakened:
+      - injected: "growing altitude oscillation, envelope exp(t/60), period ~6.3 s"
+        detected_by: "no_growing_oscillation"
+      - injected: "slower growing oscillation, envelope exp(t/90), period 12 s"
+        detected_by: "no_growing_oscillation"
+    tightening_works:
+      - injected: "8 peaks crammed into the first 11 % of the window"
+        outcome: "UNDERDETERMINED_INCOHERENT (peak_span_frac 0.113 < 0.60) - refused, not fitted"
+      - injected: "small regular oscillation plus ONE huge mid-window transient (the scenario C shape)"
+        outcome: "OSCILLATORY but growing=False - endpoint_ratio 0.432 < 1.15; the endpoint guard now bites"
+  cases_2026_09_08b:
+    context: >-
+      Re-verification after the coverage-regression fix. All sensitivity numbers
+      measured by INJECTION INTO THE REAL captured scenario-C roll_err_deg
+      channel, not into a clean synthetic - the failure that was missed the
+      first time. Read-only; no campaign artifact was written.
+    ungated_channel_census:
+      before_first_minor2_tightening: "6/19"
+      after_first_minor2_tightening: "19/19  (the regression)"
+      after_this_fix: "2/19"
+      still_ungated:
+        - channel: A/xtrack_error_m
+          reason: "3 half-cycle peaks - genuinely fewer than 3 complete cycles"
+        - channel: C/xtrack_error_m
+          reason: "5 half-cycle peaks - genuinely fewer than 3 complete cycles"
+      note: >-
+        Both were already ungated before the regression, both carry an advisory
+        non-gating provisional estimate, and both are strongly decaying.
+    detection_floor_real_channel:
+      - mode: "exp(t/60), period 6.3 s"
+        before: "40 deg end-amplitude"
+        after: "1 deg end-amplitude"
+      - mode: "exp(t/90), period 12 s"
+        before: "not detected at any tested amplitude up to 40 deg"
+        after: "3 deg end-amplitude"
+    scenario_C_roll_err_deg:
+      status: OSCILLATORY (evaluated, not ungated)
+      n_half_cycle_peaks: 48
+      sigma_per_s: -0.0396
+      envelope_ratio: 0.0093
+      growing: false
+      independent_cross_check: "detrended_growth ratio 0.0423, growing false"
+      note: >-
+        The conclusion is estimator-independent and is reached ON ITS MERITS,
+        not by ungating.
+    real_channel_verdicts_changed_by_the_fix: 0
+    false_positive_removed:
+      fixture: "constant-amplitude 2 deg oscillation plus one 6 s 25 deg burst"
+      before: "growing=true (envelope ratio 1.917) - least-squares detrend tilted by the burst"
+      after: "growing=false (envelope ratio 1.107) with the Theil-Sen detrend"
+    rtl_window_split:
+      - fixture: "inbound 500 -> 60 m, then a clockwise 60 m orbit at home, 100 m relative altitude"
+        outcome: >-
+          closure computed on the FULL set (500 -> 60 m, closure_frac 0.88);
+          bearing metrics restricted to nav_window (n=355); loiter metrics on
+          the post-arrival window (n=2733) giving radius 60.00 +/- 0.00 m,
+          centre offset 0.00 m, rel-alt 100.0 m, +17.19 deg/s clockwise;
+          rtl_loiters_at_home TRUE; measured tangency exactly 90.0 deg,
+          confirming the tangency-by-construction argument.
+      - fixture: "same, orbit centred 100 m away from home"
+        outcome: "rtl_loiters_at_home FALSE (centred_on_home False)"
+      - fixture: "same, loitering at 130 m instead of RTL_ALTITUDE 100 m"
+        outcome: "rtl_loiters_at_home FALSE (altitude_matches_rtl_altitude False)"

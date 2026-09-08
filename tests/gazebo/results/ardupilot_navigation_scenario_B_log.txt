@@ -1,0 +1,33 @@
+--------------------------------------------------------------------------
+scenario B (LOITER_ORBIT)  n=2851 steady=2660  modes=['FBWA', 'LOITER']
+  aileron   p95=0.35 deg  max=2.25 deg  frac>10deg=0.000
+  elevator  p95=7.14 deg  max=7.89 deg  frac>10deg=0.000
+  rudder    p95=0.07 deg  max=0.72 deg  frac>10deg=0.000
+  hard-limit duty=0.0 longest run=0.0 s
+  airspeed min steady=16.660808563232422 (AIRSPEED_MIN=16.0) p2p=2.0237903594970703
+  altitude p2p steady=2.822566931598544 m
+  oscillation growing channels=[]
+  nav sign agreement=0.9898245614035087 inner roll=0.9992872416250891
+  autotune decision support={'roll_rms_deg': 1.5796898848938121, 'pitch_rms_deg': 1.6693440749077615, 'saturation_duty_max': 0.0, 'oscillation_growing_channels': [], 'roll_rms_exceeds_threshold': False, 'pitch_rms_exceeds_threshold': False, 'saturation_exceeds_threshold': False, 'autotune_indicated_by_this_scenario': False, 'policy': 'NON-GATING DECISION SUPPORT ONLY. A true value here does NOT authorise running AUTOTUNE and does NOT fail this stage. AUTOTUNE is run only if an independent evidence review concludes the current PIDs are genuinely inadequate during navigation. See autotune_procedure_stub() - dormant, never executed by this file.'}
+   PASS  BLOCKER_airspeed_above_hard_floor
+   PASS  BLOCKER_no_continuous_hard_limit_pinning
+   PASS  airspeed_bounded
+   PASS  airspeed_never_below_min_in_steady_window
+   PASS  altitude_bounded
+   PASS  armed_throughout
+   PASS  heading_frame_consistent
+   PASS  inner_loop_roll_sign_correct
+   PASS  no_growing_oscillation
+   PASS  orbit_direction_correct
+   PASS  orbit_not_spiralling
+   PASS  orbit_radius_bounded
+   PASS  orbit_radius_matches_command
+   PASS  roll_sign_gz_mav_agree
+   PASS  surface_aileron_p95_within_linear_range
+   PASS  surface_elevator_p95_within_linear_range
+   PASS  surface_rudder_p95_within_linear_range
+   PASS  target_mode_stable
+   PASS  xtrack_identity_consistent
+VERDICT: NAVIGATION_PASS  failed=[]  blockers=[]
+RESULT: /home/emirhan/Desktop/FalconV2/tests/gazebo/results/ardupilot_navigation_scenario_B_result.json
+TIMESERIES: /home/emirhan/Desktop/FalconV2/tests/gazebo/results/ardupilot_navigation_scenario_B_timeseries.json

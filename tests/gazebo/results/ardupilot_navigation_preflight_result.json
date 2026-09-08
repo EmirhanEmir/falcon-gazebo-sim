@@ -1,0 +1,457 @@
+{
+  "stage": "ARDUPLANE_NAVIGATION_AND_AUTOTUNE_VALIDATION",
+  "check": "PRE_FLIGHT",
+  "timestamp": "2026-09-07T20:53:31Z",
+  "writes_parameters": false,
+  "expected_values": {
+    "TECS_PTCH_DAMP": 0.6,
+    "RLL_RATE_P": 0.25,
+    "RLL_RATE_I": 0.125,
+    "RLL_RATE_D": 0.002,
+    "RLL_RATE_FF": 0.125,
+    "PTCH_RATE_P": 0.25,
+    "PTCH_RATE_I": 0.125,
+    "PTCH_RATE_D": 0.002,
+    "PTCH_RATE_FF": 0.125,
+    "AIRSPEED_MIN": 16.0,
+    "AIRSPEED_CRUISE": 18.0,
+    "AIRSPEED_MAX": 28.0,
+    "ARSPD_USE": 1.0,
+    "ARSPD_TYPE": 100.0,
+    "PTCH_TRIM_DEG": 2.49
+  },
+  "expected_value_tolerance_abs": 1e-06,
+  "sign_convention_under_test": "FLU body frame (CLAUDE.md). Positive roll about +X carries +Y (left wing) toward +Z (up) => POSITIVE ROLL = RIGHT BANK. RC1 > RC1_TRIM is the commanded-right-roll input. Gating check requires measured roll > +5.0 deg for right command and < -5.0 deg for left command, in BOTH Gazebo ground truth and MAVLink ATTITUDE.",
+  "scope_note": "Roll axis only, single short window. This is a regression tripwire, NOT a re-run of test_control_surface_sign_mapping.py or the CONTROL_SURFACE_DIRECTION_TEST suite.",
+  "phase1_mavlink_arm": {
+    "ok": true,
+    "heartbeat": {
+      "mavpackettype": "HEARTBEAT",
+      "type": 1,
+      "autopilot": 3,
+      "base_mode": 17,
+      "custom_mode": 16,
+      "system_status": 2,
+      "mavlink_version": 3
+    },
+    "dcm_ekf_ready": true,
+    "dcm_ekf_droll_deg": 0.006114071867409032,
+    "dcm_ekf_dpitch_deg": 2.523941517897537,
+    "arm_attempt_0": {
+      "ack": {
+        "mavpackettype": "COMMAND_ACK",
+        "command": 400,
+        "result": 4,
+        "progress": 0,
+        "result_param2": 0,
+        "target_system": 255,
+        "target_component": 0
+      },
+      "statustexts": [
+        "Field Elevation Set: 0m",
+        "Arm: Accels inconsistent",
+        "Arm: AHRS: waiting for home",
+        "Arm: Airspeed: 1 pre-flight calibration in progres",
+        "s",
+        "Airspeed 1 calibrated"
+      ]
+    },
+    "arm_attempt_1": {
+      "ack": {
+        "mavpackettype": "COMMAND_ACK",
+        "command": 400,
+        "result": 4,
+        "progress": 0,
+        "result_param2": 0,
+        "target_system": 255,
+        "target_component": 0
+      },
+      "statustexts": [
+        "Arm: Accels inconsistent",
+        "Arm: AHRS: waiting for home",
+        "GPS 1: probing for u-blox at 230400 baud",
+        "GPS 1: detected u-blox",
+        "EKF3 IMU0 initialised",
+        "EKF3 IMU1 initialised"
+      ]
+    },
+    "arm_attempt_2": {
+      "ack": {
+        "mavpackettype": "COMMAND_ACK",
+        "command": 400,
+        "result": 0,
+        "progress": 0,
+        "result_param2": 0,
+        "target_system": 255,
+        "target_component": 0
+      },
+      "statustexts": [
+        "EKF3 IMU0 tilt alignment complete",
+        "EKF3 IMU1 tilt alignment complete",
+        "EKF3 IMU0 MAG0 initial yaw alignment complete",
+        "EKF3 IMU1 MAG0 initial yaw alignment complete",
+        "Throttle armed"
+      ]
+    },
+    "armed_confirmed": true
+  },
+  "live_params": {
+    "TECS_PTCH_DAMP": 0.6000000238418579,
+    "RLL_RATE_P": 0.25,
+    "RLL_RATE_I": 0.125,
+    "RLL_RATE_D": 0.0020000000949949026,
+    "RLL_RATE_FF": 0.125,
+    "PTCH_RATE_P": 0.25,
+    "PTCH_RATE_I": 0.125,
+    "PTCH_RATE_D": 0.0020000000949949026,
+    "PTCH_RATE_FF": 0.125,
+    "AIRSPEED_MIN": 16.0,
+    "AIRSPEED_CRUISE": 18.0,
+    "AIRSPEED_MAX": 28.0,
+    "ARSPD_USE": 1.0,
+    "ARSPD_TYPE": 100.0,
+    "PTCH_TRIM_DEG": 2.490000009536743,
+    "AUTOTUNE_LEVEL": 8.0,
+    "ROLL_LIMIT_DEG": 45.0,
+    "PTCH_LIM_MAX_DEG": 20.0,
+    "PTCH_LIM_MIN_DEG": -25.0,
+    "RC1_MIN": 1100.0,
+    "RC1_MAX": 1900.0,
+    "RC1_TRIM": 1500.0,
+    "RC1_DZ": 30.0,
+    "RC1_REVERSED": 0.0,
+    "RC2_MIN": 1100.0,
+    "RC2_MAX": 1900.0,
+    "RC2_TRIM": 1500.0,
+    "RC2_DZ": 30.0,
+    "RC2_REVERSED": 0.0,
+    "RC3_MIN": 1100.0,
+    "RC3_MAX": 1900.0,
+    "RC3_TRIM": 1500.0,
+    "RC3_DZ": 30.0,
+    "RC3_REVERSED": 0.0,
+    "RC4_MIN": 1100.0,
+    "RC4_MAX": 1900.0,
+    "RC4_TRIM": 1500.0,
+    "RC4_DZ": 30.0,
+    "RC4_REVERSED": 0.0,
+    "SERVO1_MIN": 800.0,
+    "SERVO1_MAX": 2200.0,
+    "SERVO1_TRIM": 1500.0,
+    "SERVO1_REVERSED": 1.0,
+    "SERVO2_MIN": 800.0,
+    "SERVO2_MAX": 2200.0,
+    "SERVO2_TRIM": 1500.0,
+    "SERVO2_REVERSED": 0.0,
+    "SERVO4_MIN": 800.0,
+    "SERVO4_MAX": 2200.0,
+    "SERVO4_TRIM": 1500.0,
+    "SERVO4_REVERSED": 1.0,
+    "THR_MIN": 0.0,
+    "THR_MAX": 100.0,
+    "TRIM_THROTTLE": 45.0,
+    "THR_SLEWRATE": 100.0,
+    "STICK_MIXING": 1.0,
+    "FLIGHT_OPTIONS": 0.0,
+    "FENCE_ENABLE": 0.0,
+    "FENCE_ACTION": 1.0,
+    "WP_LOITER_RAD": 60.0,
+    "WP_RADIUS": 90.0,
+    "NAVL1_PERIOD": 17.0,
+    "NAVL1_DAMPING": 0.75,
+    "RTL_ALTITUDE": 100.0,
+    "RTL_AUTOLAND": 0.0,
+    "ALT_HOLD_RTL": null,
+    "LIM_ROLL_CD": null,
+    "GUIDED_OPTIONS": null,
+    "LOITER_RAD": null,
+    "TERRAIN_FOLLOW": 0.0,
+    "SIM_WIND_SPD": 0.0,
+    "SIM_WIND_DIR": 180.0,
+    "SIM_WIND_TURB": 0.0,
+    "SIM_OPOS_LAT": -35.36326217651367,
+    "SIM_OPOS_LNG": 149.1652374267578,
+    "SIM_OPOS_ALT": 0.0,
+    "SIM_OPOS_HDG": 0.0,
+    "TECS_CLMB_MAX": 5.0,
+    "TECS_SINK_MIN": 2.0,
+    "TECS_SINK_MAX": 5.0,
+    "TECS_TIME_CONST": 5.0,
+    "TECS_THR_DAMP": 0.5,
+    "TECS_INTEG_GAIN": 0.30000001192092896,
+    "TECS_SPDWEIGHT": 1.0,
+    "TECS_PITCH_MAX": 15.0,
+    "TECS_PITCH_MIN": 0.0,
+    "TECS_HDEM_TCONST": 3.0,
+    "TECS_RLL2THR": 10.0,
+    "AHRS_EKF_TYPE": 10.0,
+    "ARSPD_OPTIONS": 11.0,
+    "MIN_GROUNDSPEED": 0.0,
+    "AIRSPEED_STALL": 0.0,
+    "KFF_THR2PTCH": 0.0,
+    "ARMING_CHECK": null,
+    "ARMING_REQUIRE": 1.0
+  },
+  "param_bulk_count": 1367,
+  "params_unreadable": [],
+  "param_readback_source": "MAVLink PARAM_REQUEST_LIST / PARAM_REQUEST_READ from the running vehicle - NOT parsed from the .parm file",
+  "expected_param_readback": {
+    "TECS_PTCH_DAMP": {
+      "expected": 0.6,
+      "live": 0.6000000238418579,
+      "ok": true
+    },
+    "RLL_RATE_P": {
+      "expected": 0.25,
+      "live": 0.25,
+      "ok": true
+    },
+    "RLL_RATE_I": {
+      "expected": 0.125,
+      "live": 0.125,
+      "ok": true
+    },
+    "RLL_RATE_D": {
+      "expected": 0.002,
+      "live": 0.0020000000949949026,
+      "ok": true
+    },
+    "RLL_RATE_FF": {
+      "expected": 0.125,
+      "live": 0.125,
+      "ok": true
+    },
+    "PTCH_RATE_P": {
+      "expected": 0.25,
+      "live": 0.25,
+      "ok": true
+    },
+    "PTCH_RATE_I": {
+      "expected": 0.125,
+      "live": 0.125,
+      "ok": true
+    },
+    "PTCH_RATE_D": {
+      "expected": 0.002,
+      "live": 0.0020000000949949026,
+      "ok": true
+    },
+    "PTCH_RATE_FF": {
+      "expected": 0.125,
+      "live": 0.125,
+      "ok": true
+    },
+    "AIRSPEED_MIN": {
+      "expected": 16.0,
+      "live": 16.0,
+      "ok": true
+    },
+    "AIRSPEED_CRUISE": {
+      "expected": 18.0,
+      "live": 18.0,
+      "ok": true
+    },
+    "AIRSPEED_MAX": {
+      "expected": 28.0,
+      "live": 28.0,
+      "ok": true
+    },
+    "ARSPD_USE": {
+      "expected": 1.0,
+      "live": 1.0,
+      "ok": true
+    },
+    "ARSPD_TYPE": {
+      "expected": 100.0,
+      "live": 100.0,
+      "ok": true
+    },
+    "PTCH_TRIM_DEG": {
+      "expected": 2.49,
+      "live": 2.490000009536743,
+      "ok": true
+    }
+  },
+  "ground_stream_scan": {
+    "nonfinite": [],
+    "nonfinite_count": 0,
+    "missing_counts": {},
+    "n_samples": 96
+  },
+  "ground_settle": {
+    "settled": true,
+    "elapsed_s": 1.0007309913635254
+  },
+  "phase2_teleport_verify": {
+    "target_pose": [
+      0.0,
+      0.0,
+      90.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "ok": true,
+    "samples_omitted": true
+  },
+  "phase3_hold_to_trim": {
+    "config": {
+      "kp_lin": 150.0,
+      "kp_ang": 100.0,
+      "hold_duration_s": 0.8,
+      "lin_target_body": [
+        18.145098783130404,
+        0.0,
+        -0.7833480391495663
+      ],
+      "ang_target_body": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "elev_rc2_target_us": 1536.373333333215,
+      "abort_v": 40.0,
+      "abort_att_deg": 60.0,
+      "note": "fixed hold_step()-style target reached fast (NOT a ramp) - see top-of-file update note for kp_ang's deviation from hold_step()'s own value"
+    },
+    "loop_dt_ms": {
+      "mean": 1.492986500820267,
+      "min": 0.004291534423828125,
+      "max": 4.006385803222656,
+      "n": 535
+    },
+    "aborted": false,
+    "abort_reason": null,
+    "n_iter": 535,
+    "end_state": {
+      "t": 0.7943587303161621,
+      "v_body": [
+        18.14133138261529,
+        -5.011817398589936e-05,
+        -0.7838694635294832
+      ],
+      "av_body_deg": [
+        0.0015504033591278318,
+        -0.14907525642481176,
+        0.0035428048869475992
+      ],
+      "att_deg": [
+        0.00022205957604791606,
+        0.28523881308750065,
+        0.005137214203397479
+      ],
+      "F_world": [
+        3.3560805692540345,
+        0.04491531256156684,
+        0.4474804132850921
+      ],
+      "T_world": [
+        -0.0020061617088648924,
+        0.06522832443893128,
+        -0.0058782764916358796
+      ]
+    },
+    "samples_omitted": true
+  },
+  "fbwa_handoff": {
+    "confirmed": true,
+    "custom_mode": 5,
+    "armed": true
+  },
+  "airborne_stream_scan": {
+    "nonfinite": [],
+    "nonfinite_count": 0,
+    "missing_counts": {},
+    "n_samples": 344
+  },
+  "roll_sign_sanity": {
+    "commanded_bank_deg": 20.0,
+    "rc1_right_us": 1677.7777777777778,
+    "rc1_left_us": 1322.2222222222222,
+    "rc1_trim_us": 1500.0,
+    "min_response_deg": 5.0,
+    "right": {
+      "gz_roll_deg_mean_tail": 19.63167254731317,
+      "gz_roll_deg_max_abs": 19.864663540502647,
+      "mav_roll_deg_mean_tail": 19.62713078251058,
+      "n_gz": 95,
+      "n_mav": 95
+    },
+    "left": {
+      "gz_roll_deg_mean_tail": -19.43087359410394,
+      "gz_roll_deg_max_abs": 19.881187285650686,
+      "mav_roll_deg_mean_tail": -19.422752383784555,
+      "n_gz": 96,
+      "n_mav": 96
+    },
+    "abort_right": null,
+    "abort_left": null
+  },
+  "checks": {
+    "mavlink_link_up": true,
+    "dcm_ekf_converged": true,
+    "normal_arming_succeeds": true,
+    "tecs_ptch_damp_0p6": true,
+    "roll_rate_pid_unchanged": true,
+    "pitch_rate_pid_unchanged": true,
+    "airspeed_envelope_16_18_28": true,
+    "airspeed_sensor_enabled": true,
+    "ptch_trim_deg_2p49": true,
+    "zero_wind": true,
+    "atmosphere_datum_sim_opos_alt_zero": true,
+    "ground_telemetry_finite": true,
+    "gazebo_ground_settle": true,
+    "airborne_teleport_verified": true,
+    "hold_to_trim_ok": true,
+    "fbwa_handoff_confirmed": true,
+    "airborne_telemetry_finite": true,
+    "no_flight_abort": true,
+    "roll_sign_gazebo_correct": true,
+    "roll_sign_mavlink_correct": true,
+    "roll_sign_gz_mav_agree": true
+  },
+  "failed_checks": [],
+  "overall_result": "PREFLIGHT_PASS",
+  "segments_summary": {
+    "settle": {
+      "label": "settle",
+      "rc1": 1500,
+      "rc2": 1500,
+      "rc3": 1496,
+      "n_samples": 96,
+      "aborted": false,
+      "abort_reason": null,
+      "actual_duration_s": 5.000596046447754
+    },
+    "roll_right_cmd": {
+      "label": "roll_right_cmd",
+      "rc1": 1677.7777777777778,
+      "rc2": 1500,
+      "rc3": 1496,
+      "n_samples": 95,
+      "aborted": false,
+      "abort_reason": null,
+      "actual_duration_s": 5.004965305328369
+    },
+    "roll_left_cmd": {
+      "label": "roll_left_cmd",
+      "rc1": 1322.2222222222222,
+      "rc2": 1500,
+      "rc3": 1496,
+      "n_samples": 96,
+      "aborted": false,
+      "abort_reason": null,
+      "actual_duration_s": 5.002580881118774
+    },
+    "recover": {
+      "label": "recover",
+      "rc1": 1500,
+      "rc2": 1500,
+      "rc3": 1496,
+      "n_samples": 57,
+      "aborted": false,
+      "abort_reason": null,
+      "actual_duration_s": 3.0024776458740234
+    }
+  }
+}

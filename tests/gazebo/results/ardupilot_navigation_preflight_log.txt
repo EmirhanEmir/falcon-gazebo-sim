@@ -1,0 +1,41 @@
+arming: True
+  TECS_PTCH_DAMP   expected      0.6  live 0.6000000238418579  OK
+  RLL_RATE_P       expected     0.25  live       0.25  OK
+  RLL_RATE_I       expected    0.125  live      0.125  OK
+  RLL_RATE_D       expected    0.002  live 0.0020000000949949026  OK
+  RLL_RATE_FF      expected    0.125  live      0.125  OK
+  PTCH_RATE_P      expected     0.25  live       0.25  OK
+  PTCH_RATE_I      expected    0.125  live      0.125  OK
+  PTCH_RATE_D      expected    0.002  live 0.0020000000949949026  OK
+  PTCH_RATE_FF     expected    0.125  live      0.125  OK
+  AIRSPEED_MIN     expected     16.0  live       16.0  OK
+  AIRSPEED_CRUISE  expected     18.0  live       18.0  OK
+  AIRSPEED_MAX     expected     28.0  live       28.0  OK
+  ARSPD_USE        expected      1.0  live        1.0  OK
+  ARSPD_TYPE       expected    100.0  live      100.0  OK
+  PTCH_TRIM_DEG    expected     2.49  live 2.490000009536743  OK
+roll right cmd -> gz 19.63167254731317 deg / mav 19.62713078251058 deg
+roll left  cmd -> gz -19.43087359410394 deg / mav -19.422752383784555 deg
+----------------------------------------------------------------------
+  PASS  airborne_telemetry_finite
+  PASS  airborne_teleport_verified
+  PASS  airspeed_envelope_16_18_28
+  PASS  airspeed_sensor_enabled
+  PASS  atmosphere_datum_sim_opos_alt_zero
+  PASS  dcm_ekf_converged
+  PASS  fbwa_handoff_confirmed
+  PASS  gazebo_ground_settle
+  PASS  ground_telemetry_finite
+  PASS  hold_to_trim_ok
+  PASS  mavlink_link_up
+  PASS  no_flight_abort
+  PASS  normal_arming_succeeds
+  PASS  pitch_rate_pid_unchanged
+  PASS  ptch_trim_deg_2p49
+  PASS  roll_rate_pid_unchanged
+  PASS  roll_sign_gazebo_correct
+  PASS  roll_sign_gz_mav_agree
+  PASS  roll_sign_mavlink_correct
+  PASS  tecs_ptch_damp_0p6
+  PASS  zero_wind
+RESULT: PREFLIGHT_PASS failed: [] -> /home/emirhan/Desktop/FalconV2/tests/gazebo/results/ardupilot_navigation_preflight_result.json
