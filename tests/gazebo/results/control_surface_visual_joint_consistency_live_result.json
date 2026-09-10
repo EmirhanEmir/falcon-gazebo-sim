@@ -1,0 +1,1001 @@
+{
+ "stage": "MANUAL_TAKEOFF_AND_LIVE_CONTROL_SURFACE_BEHAVIOR_VALIDATION",
+ "part": "1 - live visual/joint consistency",
+ "classification": "TEMPORARY_TEST_SETUP / MEASUREMENT-ONLY",
+ "owner": "controls-integration",
+ "physics_parameters_changed": "NONE - this harness measures only. It writes no aerodynamic or propulsion coefficient, no mass/CG/inertia, no actuator PID/rate/effort limit, no control-surface mapping, no PTCH_TRIM_DEG, no TECS_PTCH_DAMP, no roll/pitch PID, no sensor value, no landing gear, no friction or collision value.",
+ "world": "falcon_v2_manual_takeoff_runway",
+ "utc": "2026-09-09T22:14:20Z",
+ "sign_convention_sources": [
+  "docs/source_of_truth/controls/CONTROLS.md sec 10",
+  "docs/test_results/2026-08-22_control_surface_sign_mapping_test_report.md",
+  "docs/source_of_truth/autopilot/SITL_TRANSPORT_AND_ACTUATOR_MAPPING.md sec 3, 7.1-7.3",
+  "docs/test_results/2026-08-28_ardupilot_control_surface_travel_scaling_validation.md"
+ ],
+ "pre_registered_expectations": {
+  "roll_right": {
+   "rc_channel": 1,
+   "rc_direction": "above trim (stick right)",
+   "expected_aileron_pwm_vs_trim": "BELOW 1500 (SERVO1_REVERSED=1)",
+   "expected_left_aileron_joint": "negative -> LEFT aileron TE DOWN",
+   "expected_right_aileron_joint": "positive -> RIGHT aileron TE UP",
+   "expected_delta_a_aero_sign": "+",
+   "expected_Cl_sign": "+",
+   "expected_roll_rate_sign": "+ (roll right, right wing down)",
+   "source": "SITL_TRANSPORT_AND_ACTUATOR_MAPPING.md sec 7.1 + CONTROLS.md sec 10"
+  },
+  "roll_left": {
+   "rc_channel": 1,
+   "rc_direction": "below trim (stick left)",
+   "expected_aileron_pwm_vs_trim": "ABOVE 1500",
+   "expected_left_aileron_joint": "positive -> LEFT aileron TE UP",
+   "expected_right_aileron_joint": "negative -> RIGHT aileron TE DOWN",
+   "expected_delta_a_aero_sign": "-",
+   "expected_Cl_sign": "-",
+   "expected_roll_rate_sign": "- (roll left)",
+   "source": "mirror of roll_right, same sources"
+  },
+  "pitch_up": {
+   "rc_channel": 2,
+   "rc_direction": "ArduPlane pitch-up demand",
+   "expected_elevator_pwm_vs_trim": "ABOVE 1500 (SERVO2_REVERSED=0)",
+   "expected_left_elevator_joint": "positive -> TE UP",
+   "expected_right_elevator_joint": "positive -> TE UP (SAME sign as left)",
+   "expected_delta_e_aero_sign": "-",
+   "expected_Cm_sign": "+ (Cm>0 <=> My<0 <=> nose up in this plugin)",
+   "expected_pitch_rate_sign": "+ (nose up)",
+   "source": "SITL_TRANSPORT_AND_ACTUATOR_MAPPING.md sec 7.2 + CONTROLS.md sec 10 + 2026-08-22 report tests 5/6/10/11"
+  },
+  "pitch_down": {
+   "rc_channel": 2,
+   "rc_direction": "ArduPlane pitch-down demand",
+   "expected_elevator_pwm_vs_trim": "BELOW 1500",
+   "expected_left_elevator_joint": "negative -> TE DOWN",
+   "expected_right_elevator_joint": "negative -> TE DOWN (SAME sign)",
+   "expected_delta_e_aero_sign": "+",
+   "expected_Cm_sign": "-",
+   "expected_pitch_rate_sign": "- (nose down)",
+   "source": "mirror of pitch_up, same sources"
+  },
+  "yaw_right": {
+   "rc_channel": 4,
+   "rc_direction": "above trim (right rudder)",
+   "expected_rudder_pwm_vs_trim": "BELOW 1500 (SERVO4_REVERSED=1)",
+   "expected_rudder_joint": "positive -> rudder TE toward -Y (RIGHT)",
+   "expected_delta_r_aero_sign": "+",
+   "expected_Cn_sign": "- (Mz<0 = nose right)",
+   "expected_yaw_rate_sign": "- in FLU body frame (nose right is a NEGATIVE rotation about +Z-up); + in the MAVLink FRD yawspeed field",
+   "source": "SITL_TRANSPORT_AND_ACTUATOR_MAPPING.md sec 7.3 + CONTROLS.md sec 10 + 2026-08-22 report tests 7/9"
+  },
+  "yaw_left": {
+   "rc_channel": 4,
+   "rc_direction": "below trim (left rudder)",
+   "expected_rudder_pwm_vs_trim": "ABOVE 1500",
+   "expected_rudder_joint": "negative -> rudder TE toward +Y (LEFT)",
+   "expected_delta_r_aero_sign": "-",
+   "expected_Cn_sign": "+",
+   "expected_yaw_rate_sign": "+ in FLU body frame; - in MAVLink FRD",
+   "source": "mirror of yaw_right, same sources"
+  }
+ },
+ "known_data_required": [
+  {
+   "issue": "The aerodynamics plugin does NOT publish the delta_a/delta_e/delta_r it actually consumes.",
+   "evidence": "plugins/aerodynamics/AerodynamicsSystem.cc PreUpdate() computes state.deltaA/deltaE/deltaR locally and its diagnostics Double_V carries only V,alpha,beta,qbar,CL,CD,CY,Cl,Cm,Cn.",
+   "consequence": "The deflection the aero model consumed cannot be OBSERVED directly. It is RECONSTRUCTED here from the actuator plugin's actual_angle_rad using the CONTROLS.md sec 10 formulas, which is exact ONLY because both plugins read the SAME gz::sim::Joint(e).Position(_ecm) in the same PreUpdate tick (confirmed by source read of both). The reconstruction is INDEPENDENTLY CROSS-CHECKED against the published Cl/Cm/Cn via aero_lib.compute_aero(), so a mismatch is detectable rather than assumed away.",
+   "status": "DATA_REQUIRED",
+   "recommended_fix_owner": "aerodynamics",
+   "recommended_fix": "append deltaA, deltaE, deltaR to the aerodynamics diagnostics payload (additive, 3 extra Double_V fields, no coefficient change). NOT done by this stage - out of this agent's ownership and out of this stage's measurement-only scope."
+  }
+ ],
+ "thresholds": {
+  "discrimination_floor_deg": {
+   "value": 0.2,
+   "basis": "DERIVED. A sample can only discriminate 'visual follows actual' from 'visual follows cmd' if cmd and actual actually differ. 0.20 deg is ~3 PWM quanta of this transport (1 PWM = 0.0643 deg, derived in manual_takeoff_live_lib from model.sdf's own multiplier and servo_min/servo_max)."
+  },
+  "well_bound_max_dt_s": {
+   "value": 0.006,
+   "basis": "DERIVED from the two stream rates MEASURED in the 2026-09-10 smoke runs: the render pose stream runs at ~59 Hz and the actuator diagnostics at exactly 20 Hz (model.sdf <diagnostics_rate_hz>, which this stage may not change). Sampling at ~120 Hz, ~400 of ~2000 pose/actuator message pairs land within 6 ms of each other."
+  },
+  "min_discrimination_ratio_median": {
+   "value": 10.0,
+   "basis": "DERIVED. The two hypotheses are 'the visual follows actual_angle_rad' and 'the visual follows cmd_rad'. The ratio is formed LIKE FOR LIKE: median(|residual vs CMD|) over median(|residual vs ACTUAL|), on the same discriminating samples. A median-over-median ratio is used rather than a median-over-MAX form, which the 2026-09-10 smoke run showed is dominated by a single worst-case binding sample (max 0.45 deg vs rms 0.067 deg) and therefore measures outlier binding rather than the hypothesis separation it is meant to measure. 10:1 is a full order of magnitude."
+  },
+  "max_correction_effectiveness": {
+   "value": 0.3,
+   "basis": "DERIVED, and this is the criterion that makes the result defensible without inventing an absolute residual tolerance. If the residual against the ACTUAL hypothesis is a BINDING ARTEFACT it must scale with the binding window, and must therefore largely VANISH once the first-order rate correction (theta_pred = actual + rate*dt_bind) is applied. If instead the renderer genuinely disagreed with the joint, the residual would be independent of dt_bind and the correction would not reduce it. Requiring rms(corrected) <= 0.30 * rms(uncorrected) ON THE SAME SAMPLES is a direct test of which of those two situations holds, and it is self-calibrating: it needs no assumed arithmetic-noise floor."
+  },
+  "rms_residual_vs_actual_report_only_deg": {
+   "value": 0.1,
+   "basis": "REPORT-ONLY, NOT A GATE. Quoted so a reader can see at a glance whether the corrected residual sits at the second-order-binding scale. Second-order bound: with |dt_bind| <= 6 ms and the actuator's 300 deg/s rate ceiling (actuator_v1_config.yaml max_rate_rad_s), a rate change across the binding window contributes up to 0.5*(300/0.006)*0.006^2 ~ 0.9 deg in the very worst case, so an RMS at the 0.07 deg level is comfortably inside the binding artefact and cannot be a render discrepancy."
+  },
+  "off_axis_residual_max": {
+   "value": 1e-06,
+   "basis": "ASSUMPTION (measurement quality). A revolute joint's relative rotation must be purely about its declared axis. Any perpendicular quaternion vector component above float noise means the render transform is not a pure hinge rotation. 1e-6 is far above the ~1e-19 previously measured in-process and far below anything visible."
+  },
+  "min_discriminating_samples_per_surface": {
+   "value": 20,
+   "basis": "ASSUMPTION (statistics). Fewer than 20 well-bound samples in which cmd and actual are separated by more than the discrimination floor is not enough to call the result; the test reports INCONCLUSIVE instead of PASS."
+  }
+ },
+ "rc_step_programme": [
+  {
+   "label": "neutral",
+   "rc": {
+    "rc1": 1500,
+    "rc2": 1500,
+    "rc3": 1000,
+    "rc4": 1500,
+    "rc5": 1000
+   },
+   "hold_s": 2.0
+  },
+  {
+   "label": "rc1_max",
+   "rc": {
+    "rc1": 1900,
+    "rc2": 1500,
+    "rc3": 1000,
+    "rc4": 1500,
+    "rc5": 1000
+   },
+   "hold_s": 1.5
+  },
+  {
+   "label": "rc1_min",
+   "rc": {
+    "rc1": 1100,
+    "rc2": 1500,
+    "rc3": 1000,
+    "rc4": 1500,
+    "rc5": 1000
+   },
+   "hold_s": 1.5
+  },
+  {
+   "label": "rc1_max_again",
+   "rc": {
+    "rc1": 1900,
+    "rc2": 1500,
+    "rc3": 1000,
+    "rc4": 1500,
+    "rc5": 1000
+   },
+   "hold_s": 1.5
+  },
+  {
+   "label": "rc2_max",
+   "rc": {
+    "rc1": 1500,
+    "rc2": 1900,
+    "rc3": 1000,
+    "rc4": 1500,
+    "rc5": 1000
+   },
+   "hold_s": 1.5
+  },
+  {
+   "label": "rc2_min",
+   "rc": {
+    "rc1": 1500,
+    "rc2": 1100,
+    "rc3": 1000,
+    "rc4": 1500,
+    "rc5": 1000
+   },
+   "hold_s": 1.5
+  },
+  {
+   "label": "rc4_max",
+   "rc": {
+    "rc1": 1500,
+    "rc2": 1500,
+    "rc3": 1000,
+    "rc4": 1900,
+    "rc5": 1000
+   },
+   "hold_s": 1.5
+  },
+  {
+   "label": "rc4_min",
+   "rc": {
+    "rc1": 1500,
+    "rc2": 1500,
+    "rc3": 1000,
+    "rc4": 1100,
+    "rc5": 1000
+   },
+   "hold_s": 1.5
+  },
+  {
+   "label": "all_max",
+   "rc": {
+    "rc1": 1900,
+    "rc2": 1900,
+    "rc3": 1000,
+    "rc4": 1900,
+    "rc5": 1000
+   },
+   "hold_s": 1.5
+  },
+  {
+   "label": "all_min",
+   "rc": {
+    "rc1": 1100,
+    "rc2": 1100,
+    "rc3": 1000,
+    "rc4": 1100,
+    "rc5": 1000
+   },
+   "hold_s": 1.5
+  },
+  {
+   "label": "neutral_end",
+   "rc": {
+    "rc1": 1500,
+    "rc2": 1500,
+    "rc3": 1000,
+    "rc4": 1500,
+    "rc5": 1000
+   },
+   "hold_s": 2.0
+  }
+ ],
+ "geometry_self_test": {
+  "per_surface": {
+   "left_aileron": {
+    "max_error": 5.551795354783875e-17,
+    "axis": [
+     0.000994,
+     0.999899,
+     0.014146
+    ]
+   },
+   "right_aileron": {
+    "max_error": 5.551795354783875e-17,
+    "axis": [
+     -0.000994,
+     0.999899,
+     -0.014146
+    ]
+   },
+   "left_elevator": {
+    "max_error": 1.1102230246251565e-16,
+    "axis": [
+     0.002983,
+     0.999993,
+     -0.002072
+    ]
+   },
+   "right_elevator": {
+    "max_error": 1.1102230246251565e-16,
+    "axis": [
+     -0.002983,
+     0.999993,
+     0.002072
+    ]
+   },
+   "rudder": {
+    "max_error": 1.1102230246251565e-16,
+    "axis": [
+     0.010378,
+     0.0,
+     0.999946
+    ]
+   }
+  },
+  "worst_error": 1.1102230246251565e-16,
+  "pass": true
+ },
+ "sdf_cross_check": {
+  "control_blocks": [
+   {
+    "channel": 0,
+    "jointName": "left_aileron_joint",
+    "type": "COMMAND",
+    "cmd_topic": "/model/falcon_v2/actuators/left_aileron/cmd_rad",
+    "multiplier": 1.5707963268,
+    "offset": -0.5,
+    "servo_min": 800,
+    "servo_max": 2200
+   },
+   {
+    "channel": 0,
+    "jointName": "right_aileron_joint",
+    "type": "COMMAND",
+    "cmd_topic": "/model/falcon_v2/actuators/right_aileron/cmd_rad",
+    "multiplier": -1.5707963268,
+    "offset": -0.5,
+    "servo_min": 800,
+    "servo_max": 2200
+   },
+   {
+    "channel": 1,
+    "jointName": "left_elevator_joint",
+    "type": "COMMAND",
+    "cmd_topic": "/model/falcon_v2/actuators/left_elevator/cmd_rad",
+    "multiplier": 1.5707963268,
+    "offset": -0.5,
+    "servo_min": 800,
+    "servo_max": 2200
+   },
+   {
+    "channel": 1,
+    "jointName": "right_elevator_joint",
+    "type": "COMMAND",
+    "cmd_topic": "/model/falcon_v2/actuators/right_elevator/cmd_rad",
+    "multiplier": 1.5707963268,
+    "offset": -0.5,
+    "servo_min": 800,
+    "servo_max": 2200
+   },
+   {
+    "channel": 3,
+    "jointName": "rudder_joint",
+    "type": "COMMAND",
+    "cmd_topic": "/model/falcon_v2/actuators/rudder/cmd_rad",
+    "multiplier": -1.5707963268,
+    "offset": -0.5,
+    "servo_min": 800,
+    "servo_max": 2200
+   },
+   {
+    "channel": 2,
+    "jointName": "left_prop_joint",
+    "type": "COMMAND",
+    "cmd_topic": "/model/falcon_v2/propulsion/left/throttle_cmd",
+    "multiplier": 1.0,
+    "offset": 0.0,
+    "servo_min": 1000,
+    "servo_max": 2000
+   },
+   {
+    "channel": 4,
+    "jointName": "right_prop_joint",
+    "type": "COMMAND",
+    "cmd_topic": "/model/falcon_v2/propulsion/right/throttle_cmd",
+    "multiplier": 1.0,
+    "offset": 0.0,
+    "servo_min": 1000,
+    "servo_max": 2000
+   }
+  ],
+  "transport_constant_problems": [],
+  "pass": true,
+  "note": "model/model.sdf is READ ONLY here. A non-empty problem list means the SDF no longer matches the transport constants this harness derives its PWM quantum from - a finding, not something this stage fixes."
+ },
+ "model_structure_read_only": {
+  "left_aileron": {
+   "joint": "left_aileron_joint",
+   "parent_link": "base_link",
+   "child_link": "left_aileron",
+   "axis_xyz": [
+    0.000994,
+    0.999899,
+    0.014146
+   ],
+   "limit_lower_rad": -0.7853981634,
+   "limit_upper_rad": 0.7853981634,
+   "link_pose_xyz": [
+    0.032943,
+    0.31395,
+    0.110356
+   ],
+   "link_pose_rpy": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "visual_pose_xyz": [
+    -0.032943,
+    -0.31395,
+    -0.110356
+   ],
+   "visual_name": "left_aileron_visual"
+  },
+  "right_aileron": {
+   "joint": "right_aileron_joint",
+   "parent_link": "base_link",
+   "child_link": "right_aileron",
+   "axis_xyz": [
+    -0.000994,
+    0.999899,
+    -0.014146
+   ],
+   "limit_lower_rad": -0.7853981634,
+   "limit_upper_rad": 0.7853981634,
+   "link_pose_xyz": [
+    0.032943,
+    -0.31395,
+    0.110356
+   ],
+   "link_pose_rpy": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "visual_pose_xyz": [
+    -0.032943,
+    0.31395,
+    -0.110356
+   ],
+   "visual_name": "right_aileron_visual"
+  },
+  "left_elevator": {
+   "joint": "left_elevator_joint",
+   "parent_link": "base_link",
+   "child_link": "left_elevator",
+   "axis_xyz": [
+    0.002983,
+    0.999993,
+    -0.002072
+   ],
+   "limit_lower_rad": -0.7853981634,
+   "limit_upper_rad": 0.7853981634,
+   "link_pose_xyz": [
+    -0.474959,
+    0.0506,
+    0.087119
+   ],
+   "link_pose_rpy": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "visual_pose_xyz": [
+    0.474959,
+    -0.0506,
+    -0.087119
+   ],
+   "visual_name": "left_elevator_visual"
+  },
+  "right_elevator": {
+   "joint": "right_elevator_joint",
+   "parent_link": "base_link",
+   "child_link": "right_elevator",
+   "axis_xyz": [
+    -0.002983,
+    0.999993,
+    0.002072
+   ],
+   "limit_lower_rad": -0.7853981634,
+   "limit_upper_rad": 0.7853981634,
+   "link_pose_xyz": [
+    -0.474959,
+    -0.0506,
+    0.087119
+   ],
+   "link_pose_rpy": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "visual_pose_xyz": [
+    0.474959,
+    0.0506,
+    -0.087119
+   ],
+   "visual_name": "right_elevator_visual"
+  },
+  "rudder": {
+   "joint": "rudder_joint",
+   "parent_link": "base_link",
+   "child_link": "rudder",
+   "axis_xyz": [
+    0.010378,
+    0.0,
+    0.999946
+   ],
+   "limit_lower_rad": -0.7853981634,
+   "limit_upper_rad": 0.7853981634,
+   "link_pose_xyz": [
+    -0.476094,
+    0.0,
+    0.1305
+   ],
+   "link_pose_rpy": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "visual_pose_xyz": [
+    0.476094,
+    0.0,
+    -0.1305
+   ],
+   "visual_name": "rudder_visual"
+  }
+ },
+ "sign_scalars": {
+  "elevator_sign": -1.0,
+  "aileron_sign": 1.0,
+  "rudder_sign": 1.0
+ },
+ "static_pose_tree_entity_count": 32,
+ "mavlink_stream_rates": {
+  "requested": [
+   {
+    "stream": "EXTRA1",
+    "hz": 50,
+    "expected_messages": [
+     "ATTITUDE"
+    ]
+   },
+   {
+    "stream": "EXTRA2",
+    "hz": 50,
+    "expected_messages": [
+     "VFR_HUD"
+    ]
+   },
+   {
+    "stream": "RC_CHANNELS",
+    "hz": 50,
+    "expected_messages": [
+     "SERVO_OUTPUT_RAW",
+     "RC_CHANNELS"
+    ]
+   },
+   {
+    "stream": "POSITION",
+    "hz": 25,
+    "expected_messages": [
+     "GLOBAL_POSITION_INT"
+    ]
+   },
+   {
+    "stream": "EXTRA3",
+    "hz": 10,
+    "expected_messages": []
+   }
+  ],
+  "set_message_interval_results": {
+   "30": 2,
+   "36": 2,
+   "74": 2,
+   "33": 2,
+   "62": 2
+  },
+  "measured_hz": {
+   "STATUSTEXT": 1.0,
+   "PARAM_VALUE": 2.33,
+   "AHRS2": 39.0,
+   "ATTITUDE": 39.0,
+   "VFR_HUD": 39.0,
+   "SERVO_OUTPUT_RAW": 39.0,
+   "RC_CHANNELS": 39.0,
+   "SIMSTATE": 39.0,
+   "AOA_SSA": 39.0,
+   "GLOBAL_POSITION_INT": 25.0,
+   "LOCAL_POSITION_NED": 24.67,
+   "HEARTBEAT": 1.0,
+   "SYS_STATUS": 1.0,
+   "POWER_STATUS": 1.0,
+   "MEMINFO": 1.0,
+   "MISSION_CURRENT": 1.0,
+   "RAW_IMU": 1.0,
+   "SCALED_IMU2": 1.0,
+   "SCALED_IMU3": 1.0,
+   "SCALED_PRESSURE": 1.0,
+   "SCALED_PRESSURE2": 1.0,
+   "GPS_RAW_INT": 1.0,
+   "UNKNOWN_295": 1.0,
+   "AHRS": 9.67,
+   "SYSTEM_TIME": 9.67,
+   "WIND": 9.67,
+   "TERRAIN_REQUEST": 0.67,
+   "TERRAIN_REPORT": 9.67,
+   "EKF_STATUS_REPORT": 9.67,
+   "VIBRATION": 9.67
+  },
+  "measure_window_s": 3.0,
+  "mechanism_note": "SET_MESSAGE_INTERVAL is DENIED on this build; REQUEST_DATA_STREAM is the mechanism that works. Both are sent; the measured rates below are the ground truth."
+ },
+ "analysis": {
+  "per_surface": {
+   "left_aileron": {
+    "verdict": "PASS_VISUAL_FOLLOWS_ACTUAL_JOINT",
+    "primary_well_bound_rate_corrected": {
+     "n": 444,
+     "n_discriminating": 287,
+     "residual_vs_ACTUAL_on_discriminating_deg": {
+      "median": 0.005076332353843771,
+      "rms": 0.07046223255965445,
+      "max": 0.2624398367781425
+     },
+     "residual_vs_CMD_on_discriminating_deg": {
+      "median": 3.6648307364227524,
+      "rms": 20.1472702546158,
+      "max": 89.24740502195867,
+      "min": 0.2076865367426811
+     },
+     "discrimination_ratio_median_over_median": 721.9446011346681,
+     "discrimination_ratio_rms_over_rms": 285.9300581706491,
+     "max_visual_origin_error_m": 0.0005075581714279539,
+     "max_cmd_minus_actual_deg": 89.24795434415434
+    },
+    "well_bound_UNCORRECTED_same_samples": {
+     "n": 444,
+     "n_discriminating": 287,
+     "residual_vs_ACTUAL_on_discriminating_deg": {
+      "median": 0.01624221844962924,
+      "rms": 0.312961587593927,
+      "max": 1.531739775788489
+     },
+     "residual_vs_CMD_on_discriminating_deg": {
+      "median": 3.6648307364227524,
+      "rms": 20.1472702546158,
+      "max": 89.24740502195867,
+      "min": 0.2076865367426811
+     },
+     "discrimination_ratio_median_over_median": 225.63609446506428,
+     "discrimination_ratio_rms_over_rms": 64.37617603332595,
+     "max_visual_origin_error_m": 0.0029624966619576803,
+     "max_cmd_minus_actual_deg": 89.24795434415434
+    },
+    "all_samples_uncorrected": {
+     "n": 2085,
+     "n_discriminating": 1365,
+     "residual_vs_ACTUAL_on_discriminating_deg": {
+      "median": 0.1076745223268604,
+      "rms": 1.9763764229295833,
+      "max": 12.018710575380396
+     },
+     "residual_vs_CMD_on_discriminating_deg": {
+      "median": 3.562664445808478,
+      "rms": 19.09638702092889,
+      "max": 89.24740502195867,
+      "min": 0.18432786292597741
+     },
+     "discrimination_ratio_median_over_median": 33.087348509367274,
+     "discrimination_ratio_rms_over_rms": 9.662322824425475,
+     "max_visual_origin_error_m": 0.023202949363762684,
+     "max_cmd_minus_actual_deg": 89.24795434415434
+    },
+    "rate_correction_effectiveness_rms_corrected_over_uncorrected": 0.22514658460603285,
+    "rate_correction_effectiveness_threshold": 0.3,
+    "rate_correction_interpretation": "A value well below 1 means the residual against the ACTUAL joint angle SHRINKS when the known pose-vs-actuator binding offset is compensated, i.e. the residual is an artefact of the 20 Hz diagnostics publish rate and NOT a render/joint disagreement. A value near 1 would mean the opposite and would be a real finding.",
+    "n_well_bound": 444,
+    "well_bound_max_dt_s": 0.006,
+    "max_off_axis_residual": 1.4486695570560311e-09,
+    "off_axis_pass": true,
+    "max_actual_deg": 43.734374628312544,
+    "min_actual_deg": -44.24795434400812,
+    "any_target_clamp": false,
+    "any_effort_clamp": false
+   },
+   "right_aileron": {
+    "verdict": "PASS_VISUAL_FOLLOWS_ACTUAL_JOINT",
+    "primary_well_bound_rate_corrected": {
+     "n": 444,
+     "n_discriminating": 287,
+     "residual_vs_ACTUAL_on_discriminating_deg": {
+      "median": 0.00505018464471045,
+      "rms": 0.07185461098987111,
+      "max": 0.2778584772742538
+     },
+     "residual_vs_CMD_on_discriminating_deg": {
+      "median": 3.3315651430908537,
+      "rms": 19.98788281535217,
+      "max": 89.5188044830154,
+      "min": 0.2429689582008042
+     },
+     "discrimination_ratio_median_over_median": 659.6917494057027,
+     "discrimination_ratio_rms_over_rms": 278.1711923563226,
+     "max_visual_origin_error_m": 0.0005373647603892088,
+     "max_cmd_minus_actual_deg": 89.51975670220132
+    },
+    "well_bound_UNCORRECTED_same_samples": {
+     "n": 444,
+     "n_discriminating": 287,
+     "residual_vs_ACTUAL_on_discriminating_deg": {
+      "median": 0.016212835919794784,
+      "rms": 0.3212850158441091,
+      "max": 1.4859122351638592
+     },
+     "residual_vs_CMD_on_discriminating_deg": {
+      "median": 3.3315651430908537,
+      "rms": 19.98788281535217,
+      "max": 89.5188044830154,
+      "min": 0.2429689582008042
+     },
+     "discrimination_ratio_median_over_median": 205.4893517440238,
+     "discrimination_ratio_rms_over_rms": 62.21230941268204,
+     "max_visual_origin_error_m": 0.0028738538945512673,
+     "max_cmd_minus_actual_deg": 89.51975670220132
+    },
+    "all_samples_uncorrected": {
+     "n": 2085,
+     "n_discriminating": 1347,
+     "residual_vs_ACTUAL_on_discriminating_deg": {
+      "median": 0.10148108970712875,
+      "rms": 2.0108242707070434,
+      "max": 12.058428301206225
+     },
+     "residual_vs_CMD_on_discriminating_deg": {
+      "median": 3.4535706646518367,
+      "rms": 19.092682509815152,
+      "max": 89.5188044830154,
+      "min": 0.20305247496199236
+     },
+     "discrimination_ratio_median_over_median": 34.03166712752822,
+     "discrimination_ratio_rms_over_rms": 9.494953282566959,
+     "max_visual_origin_error_m": 0.023279329546061357,
+     "max_cmd_minus_actual_deg": 89.51975670220132
+    },
+    "rate_correction_effectiveness_rms_corrected_over_uncorrected": 0.22364756352265033,
+    "rate_correction_effectiveness_threshold": 0.3,
+    "rate_correction_interpretation": "A value well below 1 means the residual against the ACTUAL joint angle SHRINKS when the known pose-vs-actuator binding offset is compensated, i.e. the residual is an artefact of the 20 Hz diagnostics publish rate and NOT a render/joint disagreement. A value near 1 would mean the opposite and would be a real finding.",
+    "n_well_bound": 444,
+    "well_bound_max_dt_s": 0.006,
+    "max_off_axis_residual": 1.4485553850122342e-09,
+    "off_axis_pass": true,
+    "max_actual_deg": 44.519756702055105,
+    "min_actual_deg": -43.42518205889747,
+    "any_target_clamp": false,
+    "any_effort_clamp": false
+   },
+   "left_elevator": {
+    "verdict": "PASS_VISUAL_FOLLOWS_ACTUAL_JOINT",
+    "primary_well_bound_rate_corrected": {
+     "n": 444,
+     "n_discriminating": 254,
+     "residual_vs_ACTUAL_on_discriminating_deg": {
+      "median": 0.006211790976670915,
+      "rms": 0.07317560184919139,
+      "max": 0.22122155695983894
+     },
+     "residual_vs_CMD_on_discriminating_deg": {
+      "median": 4.160411863323235,
+      "rms": 22.788839841117415,
+      "max": 89.41786623520458,
+      "min": 0.2049307457844408
+     },
+     "discrimination_ratio_median_over_median": 669.7604409015264,
+     "discrimination_ratio_rms_over_rms": 311.42674969839334,
+     "max_visual_origin_error_m": 0.001864871997083941,
+     "max_cmd_minus_actual_deg": 89.42006799120078
+    },
+    "well_bound_UNCORRECTED_same_samples": {
+     "n": 444,
+     "n_discriminating": 254,
+     "residual_vs_ACTUAL_on_discriminating_deg": {
+      "median": 0.018132268209647716,
+      "rms": 0.35068949234022245,
+      "max": 1.4686659278216414
+     },
+     "residual_vs_CMD_on_discriminating_deg": {
+      "median": 4.160411863323235,
+      "rms": 22.788839841117415,
+      "max": 89.41786623520458,
+      "min": 0.2049307457844408
+     },
+     "discrimination_ratio_median_over_median": 229.44795517141017,
+     "discrimination_ratio_rms_over_rms": 64.98295597351047,
+     "max_visual_origin_error_m": 0.012381849584086682,
+     "max_cmd_minus_actual_deg": 89.42006799120078
+    },
+    "all_samples_uncorrected": {
+     "n": 2085,
+     "n_discriminating": 1194,
+     "residual_vs_ACTUAL_on_discriminating_deg": {
+      "median": 0.1084502145047783,
+      "rms": 1.7043998096972035,
+      "max": 9.82690371677554
+     },
+     "residual_vs_CMD_on_discriminating_deg": {
+      "median": 3.484796483447003,
+      "rms": 17.748457813954314,
+      "max": 89.41786623520458,
+      "min": 0.19107706210667044
+     },
+     "discrimination_ratio_median_over_median": 32.132684101730966,
+     "discrimination_ratio_rms_over_rms": 10.413318349940106,
+     "max_visual_origin_error_m": 0.08274705520722159,
+     "max_cmd_minus_actual_deg": 89.42006799120078
+    },
+    "rate_correction_effectiveness_rms_corrected_over_uncorrected": 0.20866208839299882,
+    "rate_correction_effectiveness_threshold": 0.3,
+    "rate_correction_interpretation": "A value well below 1 means the residual against the ACTUAL joint angle SHRINKS when the known pose-vs-actuator binding offset is compensated, i.e. the residual is an artefact of the 20 Hz diagnostics publish rate and NOT a render/joint disagreement. A value near 1 would mean the opposite and would be a real finding.",
+    "n_well_bound": 444,
+    "well_bound_max_dt_s": 0.006,
+    "max_off_axis_residual": 3.72142031373679e-10,
+    "off_axis_pass": true,
+    "max_actual_deg": 44.420067991054566,
+    "min_actual_deg": -43.27702418020262,
+    "any_target_clamp": false,
+    "any_effort_clamp": false
+   },
+   "right_elevator": {
+    "verdict": "PASS_VISUAL_FOLLOWS_ACTUAL_JOINT",
+    "primary_well_bound_rate_corrected": {
+     "n": 444,
+     "n_discriminating": 254,
+     "residual_vs_ACTUAL_on_discriminating_deg": {
+      "median": 0.006211790972027305,
+      "rms": 0.07317560184944699,
+      "max": 0.2212215569575712
+     },
+     "residual_vs_CMD_on_discriminating_deg": {
+      "median": 4.1604118633243035,
+      "rms": 22.78883984112058,
+      "max": 89.41786623520291,
+      "min": 0.20493074578408338
+     },
+     "discrimination_ratio_median_over_median": 669.7604414023763,
+     "discrimination_ratio_rms_over_rms": 311.4267496973487,
+     "max_visual_origin_error_m": 0.001864871997058986,
+     "max_cmd_minus_actual_deg": 89.42006799119994
+    },
+    "well_bound_UNCORRECTED_same_samples": {
+     "n": 444,
+     "n_discriminating": 254,
+     "residual_vs_ACTUAL_on_discriminating_deg": {
+      "median": 0.01813226821007391,
+      "rms": 0.35068949233961705,
+      "max": 1.4686659278282808
+     },
+     "residual_vs_CMD_on_discriminating_deg": {
+      "median": 4.1604118633243035,
+      "rms": 22.78883984112058,
+      "max": 89.41786623520291,
+      "min": 0.20493074578408338
+     },
+     "discrimination_ratio_median_over_median": 229.447955166076,
+     "discrimination_ratio_rms_over_rms": 64.98295597363168,
+     "max_visual_origin_error_m": 0.012381849584147559,
+     "max_cmd_minus_actual_deg": 89.42006799119994
+    },
+    "all_samples_uncorrected": {
+     "n": 2085,
+     "n_discriminating": 1194,
+     "residual_vs_ACTUAL_on_discriminating_deg": {
+      "median": 0.10845021450437756,
+      "rms": 1.704399809698853,
+      "max": 9.82690371678406
+     },
+     "residual_vs_CMD_on_discriminating_deg": {
+      "median": 3.48479648344762,
+      "rms": 17.7484578139542,
+      "max": 89.41786623520291,
+      "min": 0.19107706210630687
+     },
+     "discrimination_ratio_median_over_median": 32.132684101855396,
+     "discrimination_ratio_rms_over_rms": 10.41331834992996,
+     "max_visual_origin_error_m": 0.08274705520729853,
+     "max_cmd_minus_actual_deg": 89.42006799119994
+    },
+    "rate_correction_effectiveness_rms_corrected_over_uncorrected": 0.20866208839408792,
+    "rate_correction_effectiveness_threshold": 0.3,
+    "rate_correction_interpretation": "A value well below 1 means the residual against the ACTUAL joint angle SHRINKS when the known pose-vs-actuator binding offset is compensated, i.e. the residual is an artefact of the 20 Hz diagnostics publish rate and NOT a render/joint disagreement. A value near 1 would mean the opposite and would be a real finding.",
+    "n_well_bound": 444,
+    "well_bound_max_dt_s": 0.006,
+    "max_off_axis_residual": 3.7110489286896895e-10,
+    "off_axis_pass": true,
+    "max_actual_deg": 44.42006799105374,
+    "min_actual_deg": -43.277024180202936,
+    "any_target_clamp": false,
+    "any_effort_clamp": false
+   },
+   "rudder": {
+    "verdict": "PASS_VISUAL_FOLLOWS_ACTUAL_JOINT",
+    "primary_well_bound_rate_corrected": {
+     "n": 444,
+     "n_discriminating": 206,
+     "residual_vs_ACTUAL_on_discriminating_deg": {
+      "median": 0.008019663440689082,
+      "rms": 0.06863939126489421,
+      "max": 0.22105085866963958
+     },
+     "residual_vs_CMD_on_discriminating_deg": {
+      "median": 5.626467968806834,
+      "rms": 23.120441222843585,
+      "max": 88.53133460488962,
+      "min": 0.25271708890214056
+     },
+     "discrimination_ratio_median_over_median": 701.5840515525904,
+     "discrimination_ratio_rms_over_rms": 336.83925216668683,
+     "max_visual_origin_error_m": 0.0018419269563564964,
+     "max_cmd_minus_actual_deg": 88.53189706414125
+    },
+    "well_bound_UNCORRECTED_same_samples": {
+     "n": 444,
+     "n_discriminating": 206,
+     "residual_vs_ACTUAL_on_discriminating_deg": {
+      "median": 0.021381624228747988,
+      "rms": 0.3116429785037272,
+      "max": 1.4917811880721394
+     },
+     "residual_vs_CMD_on_discriminating_deg": {
+      "median": 5.626467968806834,
+      "rms": 23.120441222843585,
+      "max": 88.53133460488962,
+      "min": 0.25271708890214056
+     },
+     "discrimination_ratio_median_over_median": 263.1450215667874,
+     "discrimination_ratio_rms_over_rms": 74.18887258057401,
+     "max_visual_origin_error_m": 0.012430061859927791,
+     "max_cmd_minus_actual_deg": 88.53189706414125
+    },
+    "all_samples_uncorrected": {
+     "n": 2085,
+     "n_discriminating": 945,
+     "residual_vs_ACTUAL_on_discriminating_deg": {
+      "median": 0.13964371574642598,
+      "rms": 2.0780570306233064,
+      "max": 12.091432290228736
+     },
+     "residual_vs_CMD_on_discriminating_deg": {
+      "median": 4.602296090253921,
+      "rms": 22.99427479554388,
+      "max": 89.3696674025607,
+      "min": 0.23542519407339382
+     },
+     "discrimination_ratio_median_over_median": 32.95741641973395,
+     "discrimination_ratio_rms_over_rms": 11.06527610007259,
+     "max_visual_origin_error_m": 0.10056618363460253,
+     "max_cmd_minus_actual_deg": 89.37521702041603
+    },
+    "rate_correction_effectiveness_rms_corrected_over_uncorrected": 0.22025008102043056,
+    "rate_correction_effectiveness_threshold": 0.3,
+    "rate_correction_interpretation": "A value well below 1 means the residual against the ACTUAL joint angle SHRINKS when the known pose-vs-actuator binding offset is compensated, i.e. the residual is an artefact of the 20 Hz diagnostics publish rate and NOT a render/joint disagreement. A value near 1 would mean the opposite and would be a real finding.",
+    "n_well_bound": 444,
+    "well_bound_max_dt_s": 0.006,
+    "max_off_axis_residual": 1.021473592347216e-07,
+    "off_axis_pass": true,
+    "max_actual_deg": 44.37521702026984,
+    "min_actual_deg": -43.526994103127926,
+    "any_target_clamp": false,
+    "any_effort_clamp": false
+   }
+  },
+  "per_source_timing": {
+   "actuator_diag": {
+    "mean_abs_skew_s": 0.02058129665091169,
+    "max_abs_skew_s": 0.05125784873962402,
+    "distinct_message_arrivals": 351,
+    "effective_rate_hz": 19.996615573947427
+   },
+   "link_pose": {
+    "mean_abs_skew_s": 0.0037756113697299,
+    "max_abs_skew_s": 0.022737979888916016,
+    "distinct_message_arrivals": 1032,
+    "effective_rate_hz": 58.81051765235255
+   },
+   "servo_output_raw": {
+    "mean_abs_skew_s": 0.00557861376220967,
+    "max_abs_skew_s": 0.03435015678405762,
+    "distinct_message_arrivals": 701,
+    "effective_rate_hz": 39.97364582785332
+   },
+   "attitude": {
+    "mean_abs_skew_s": 0.005635713637734009,
+    "max_abs_skew_s": 0.03443121910095215,
+    "distinct_message_arrivals": 701,
+    "effective_rate_hz": 39.97362841221628
+   },
+   "aero_diag": {
+    "mean_abs_skew_s": 0.02056177571523104,
+    "max_abs_skew_s": 0.0513763427734375,
+    "distinct_message_arrivals": 351,
+    "effective_rate_hz": 19.99662619701353
+   },
+   "propulsion_diag": {
+    "mean_abs_skew_s": 0.020596914382861386,
+    "max_abs_skew_s": 0.051319122314453125,
+    "distinct_message_arrivals": 351,
+    "effective_rate_hz": 19.99661748065077
+   }
+  },
+  "capture": {
+   "n_samples": 2085,
+   "mean_sample_period_s": 0.008414796126323561,
+   "mean_rate_hz": 118.83829209738701,
+   "max_inter_source_skew_s": 0.0513763427734375,
+   "mean_inter_source_skew_s": 0.0221180446999822,
+   "skew_note": "Sources are NOT simultaneous. The actuator, aero and propulsion diagnostics are published at exactly 20 Hz by model.sdf's own <diagnostics_rate_hz>, which this stage is not permitted to change; the render pose stream runs at ~50 Hz. The primary verdict therefore uses only the WELL-BOUND subset and a first-order rate correction. The uncorrected numbers are reported alongside so the size of the artefact stays visible."
+  },
+  "overall_verdict": "PASS"
+ },
+ "overall": "PASS"
+}

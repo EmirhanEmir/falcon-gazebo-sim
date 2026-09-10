@@ -1,0 +1,7 @@
+wrote /home/emirhan/Desktop/FalconV2/tests/gazebo/results/control_surface_live_sign_summary.json
+  A roll_right   SEE_CHECKS               2/6
+  B roll_left    SEE_CHECKS               2/6
+  C pitch_up     PASS                     3/3
+  D pitch_down   PASS                     4/4
+  E yaw_right    PASS                     4/4
+  F yaw_left     SEE_CHECKS               4/5

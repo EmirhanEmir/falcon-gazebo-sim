@@ -1,0 +1,1201 @@
+{
+ "stage": "MANUAL_TAKEOFF_AND_LIVE_CONTROL_SURFACE_BEHAVIOR_VALIDATION",
+ "part": "2 - RE-JUDGEMENT of scenarios A-F on existing captured data",
+ "owner": "gazebo-testing",
+ "re_flown": false,
+ "physics_parameters_changed": "NONE",
+ "thresholds_changed": "NONE (all floors imported from the original harness's TH block)",
+ "expectations_changed": "NONE (all signs read from manual_takeoff_live_lib.PRE_REGISTERED_EXPECTATIONS)",
+ "why": "The original judgement used a CLOSED-LOOP EQUILIBRIUM observable. `aerodynamics` verified the plugin itself is correct against a C++ oracle; the defect is the harness's choice of observable, which is gazebo-testing's to fix.",
+ "summary_table": [
+  {
+   "scenario": "A",
+   "name": "roll_right",
+   "coefficient": "Cl",
+   "expected_sign": "+",
+   "OLD_observable_value": 1.339741055390079e-05,
+   "OLD_sign": "0",
+   "OLD_pass": false,
+   "OLD_scenario_verdict": "SEE_CHECKS",
+   "AS_STORED_pass": false,
+   "AS_STORED_verdict": "SEE_CHECKS",
+   "NEW_O1_value": 0.006057562830358494,
+   "NEW_O1_sign": "+",
+   "NEW_O1_pass": true,
+   "NEW_O2_pass": true,
+   "NEW_O3_pass_at_onset": true,
+   "NEW_O3_pass_steady": true,
+   "CORRECTED_scenario_verdict": "PASS"
+  },
+  {
+   "scenario": "B",
+   "name": "roll_left",
+   "coefficient": "Cl",
+   "expected_sign": "-",
+   "OLD_observable_value": -7.352322751015266e-06,
+   "OLD_sign": "0",
+   "OLD_pass": false,
+   "OLD_scenario_verdict": "SEE_CHECKS",
+   "AS_STORED_pass": false,
+   "AS_STORED_verdict": "SEE_CHECKS",
+   "NEW_O1_value": -0.005096929239825703,
+   "NEW_O1_sign": "-",
+   "NEW_O1_pass": true,
+   "NEW_O2_pass": true,
+   "NEW_O3_pass_at_onset": true,
+   "NEW_O3_pass_steady": true,
+   "CORRECTED_scenario_verdict": "PASS"
+  },
+  {
+   "scenario": "C",
+   "name": "pitch_up",
+   "coefficient": "Cm",
+   "expected_sign": "+",
+   "OLD_observable_value": 0.008847455275252377,
+   "OLD_sign": "+",
+   "OLD_pass": true,
+   "OLD_scenario_verdict": "PASS",
+   "AS_STORED_pass": null,
+   "AS_STORED_verdict": "PASS",
+   "NEW_O1_value": 0.005288634190646714,
+   "NEW_O1_sign": "+",
+   "NEW_O1_pass": true,
+   "NEW_O2_pass": true,
+   "NEW_O3_pass_at_onset": true,
+   "NEW_O3_pass_steady": true,
+   "CORRECTED_scenario_verdict": "PASS"
+  },
+  {
+   "scenario": "D",
+   "name": "pitch_down",
+   "coefficient": "Cm",
+   "expected_sign": "-",
+   "OLD_observable_value": -0.005420058778829357,
+   "OLD_sign": "-",
+   "OLD_pass": true,
+   "OLD_scenario_verdict": "PASS",
+   "AS_STORED_pass": true,
+   "AS_STORED_verdict": "PASS",
+   "NEW_O1_value": -0.010201623084213608,
+   "NEW_O1_sign": "-",
+   "NEW_O1_pass": true,
+   "NEW_O2_pass": true,
+   "NEW_O3_pass_at_onset": false,
+   "NEW_O3_pass_steady": true,
+   "CORRECTED_scenario_verdict": "PASS"
+  },
+  {
+   "scenario": "E",
+   "name": "yaw_right",
+   "coefficient": "Cn",
+   "expected_sign": "-",
+   "OLD_observable_value": 0.002157772151456051,
+   "OLD_sign": "+",
+   "OLD_pass": false,
+   "OLD_scenario_verdict": "SEE_CHECKS",
+   "AS_STORED_pass": null,
+   "AS_STORED_verdict": "PASS",
+   "NEW_O1_value": -0.0020592296949409586,
+   "NEW_O1_sign": "-",
+   "NEW_O1_pass": true,
+   "NEW_O2_pass": true,
+   "NEW_O3_pass_at_onset": true,
+   "NEW_O3_pass_steady": true,
+   "CORRECTED_scenario_verdict": "PASS"
+  },
+  {
+   "scenario": "F",
+   "name": "yaw_left",
+   "coefficient": "Cn",
+   "expected_sign": "+",
+   "OLD_observable_value": -0.002082066034038323,
+   "OLD_sign": "-",
+   "OLD_pass": false,
+   "OLD_scenario_verdict": "SEE_CHECKS",
+   "AS_STORED_pass": false,
+   "AS_STORED_verdict": "SEE_CHECKS",
+   "NEW_O1_value": 0.0004984633088460249,
+   "NEW_O1_sign": "+",
+   "NEW_O1_pass": true,
+   "NEW_O2_pass": true,
+   "NEW_O3_pass_at_onset": true,
+   "NEW_O3_pass_steady": true,
+   "CORRECTED_scenario_verdict": "PASS"
+  }
+ ],
+ "aero_deflection_cross_check": {
+  "status": "RUNNABLE",
+  "load_config": "OK",
+  "per_scenario": {
+   "A": {
+    "n": 392,
+    "residual_Cl": {
+     "max_abs": 0.0011199098810055564,
+     "mean": -2.6441127974791222e-05,
+     "rms": 0.00013608418985301465
+    },
+    "residual_Cm": {
+     "max_abs": 0.0001911655239446794,
+     "mean": 4.1833670742275006e-05,
+     "rms": 5.966315118430798e-05
+    },
+    "residual_Cn": {
+     "max_abs": 0.0001150784959958631,
+     "mean": -1.7526300333197672e-06,
+     "rms": 1.3875223839244703e-05
+    }
+   },
+   "B": {
+    "n": 392,
+    "residual_Cl": {
+     "max_abs": 0.0006857483022252491,
+     "mean": -2.0573089176346935e-05,
+     "rms": 9.633621651151105e-05
+    },
+    "residual_Cm": {
+     "max_abs": 0.00024922657119173797,
+     "mean": 3.9768782067231474e-05,
+     "rms": 5.8129686262911554e-05
+    },
+    "residual_Cn": {
+     "max_abs": 7.100546357736342e-05,
+     "mean": -6.4216705061747e-07,
+     "rms": 1.0489182387197436e-05
+    }
+   },
+   "C": {
+    "n": 392,
+    "residual_Cl": {
+     "max_abs": 9.011716651130615e-05,
+     "mean": -2.89857567617945e-05,
+     "rms": 3.0920935606851246e-05
+    },
+    "residual_Cm": {
+     "max_abs": 0.0004432629560501278,
+     "mean": 4.84295924441219e-05,
+     "rms": 7.352198208542695e-05
+    },
+    "residual_Cn": {
+     "max_abs": 8.111561515755365e-06,
+     "mean": -1.6235600920683309e-06,
+     "rms": 1.9734102508754388e-06
+    }
+   },
+   "D": {
+    "n": 392,
+    "residual_Cl": {
+     "max_abs": 0.00017264066191680763,
+     "mean": -2.3293439463018377e-05,
+     "rms": 2.945485489237377e-05
+    },
+    "residual_Cm": {
+     "max_abs": 0.0007488197846230813,
+     "mean": 3.977501330135091e-05,
+     "rms": 0.00010765158829176809
+    },
+    "residual_Cn": {
+     "max_abs": 1.750119902441056e-05,
+     "mean": -1.2961913474798573e-06,
+     "rms": 2.3165628134750394e-06
+    }
+   },
+   "E": {
+    "n": 393,
+    "residual_Cl": {
+     "max_abs": 0.00036784502950880545,
+     "mean": -2.6555340720362784e-05,
+     "rms": 7.217722695018047e-05
+    },
+    "residual_Cm": {
+     "max_abs": 0.0002929743514627544,
+     "mean": 4.2852639560041566e-05,
+     "rms": 7.013196919947993e-05
+    },
+    "residual_Cn": {
+     "max_abs": 0.00012863341390041,
+     "mean": -1.501545995568896e-06,
+     "rms": 2.1668745399671024e-05
+    }
+   },
+   "F": {
+    "n": 393,
+    "residual_Cl": {
+     "max_abs": 0.00037518677089436837,
+     "mean": -2.4990763075188753e-05,
+     "rms": 5.903278370624459e-05
+    },
+    "residual_Cm": {
+     "max_abs": 0.0003073752404062057,
+     "mean": 4.724579645884018e-05,
+     "rms": 6.44693058015408e-05
+    },
+    "residual_Cn": {
+     "max_abs": 0.00010874340886799991,
+     "mean": -2.0175925418245128e-06,
+     "rms": 1.4473381532995381e-05
+    }
+   }
+  },
+  "method": "aero_lib.compute_aero() fed with the aerodynamics plugin's OWN published V/alpha/beta and the deflections reconstructed from the actuator plugin's ACTUAL joint angles, compared against the same message's published Cl/Cm/Cn. Body rates come from MAVLink ATTITUDE (FRD) converted to FLU - an EKF-filtered estimate, not the plugin's own instantaneous rate - so a small residual from the rate terms is EXPECTED and is not evidence of a mapping error."
+ },
+ "known_unfixed_defect_reported_not_touched": {
+  "file": "tests/gazebo/scripts/test_control_authority_effectiveness.py",
+  "line": 629,
+  "symptom": "prints CFG.controlDeflectionClamp, an attribute that no longer exists since the 2026-08-26 retirement of control_deflection_clamp_deg from docs/source_of_truth/aerodynamics/aero_v1_config.yaml. It previously died earlier inside load_config(); now that load_config() works again it will reach this line and raise AttributeError.",
+  "action_taken": "NONE - reported only, out of scope for this stage."
+ },
+ "scenarios": [
+  {
+   "scenario": "A",
+   "name": "roll_right",
+   "axis": "roll",
+   "status": "RE_JUDGED",
+   "re_flown": false,
+   "source_timeseries": "/home/emirhan/Desktop/FalconV2/tests/gazebo/results/control_surface_live_sign_scenario_A_timeseries.json",
+   "source_result": "/home/emirhan/Desktop/FalconV2/tests/gazebo/results/control_surface_live_sign_scenario_A_result.json",
+   "pre_registered_expected_sign": "+",
+   "pre_registered_statement": "+",
+   "baseline": {
+    "delta_a_deg": -0.00337549957634544,
+    "Cl": -4.009033965314948e-06,
+    "beta_deg": -0.10698425526132997
+   },
+   "ORIGINAL_judgement": {
+    "observable": "mean coefficient over the LAST 75% of the input window, minus baseline (closed-loop equilibrium)",
+    "AS_STORED_in_result_json": {
+     "check": {
+      "check": "Cl",
+      "measured": 1.339741055390079e-05,
+      "measured_sign": "0",
+      "expected_sign": "+",
+      "floor": 0.0001,
+      "pass": false,
+      "note": "aero rolling-moment coefficient from the plugin's own diagnostics"
+     },
+     "scenario_verdict": "SEE_CHECKS",
+     "n_checks_pass": 2,
+     "n_checks_total": 6,
+     "note": "the coefficient check was UNJUDGED (pass=None) at capture time and did not count toward this verdict"
+    },
+    "CURRENT_HARNESS_CODE_on_the_same_data": {
+     "check": {
+      "check": "Cl",
+      "measured": 1.339741055390079e-05,
+      "measured_sign": "0",
+      "expected_sign": "+",
+      "floor": 0.0001,
+      "pass": false,
+      "note": "aero rolling-moment coefficient from the plugin's own diagnostics"
+     },
+     "scenario_verdict": "SEE_CHECKS",
+     "n_checks_pass": 2,
+     "n_checks_total": 6
+    }
+   },
+   "O1_at_control_onset": {
+    "status": "JUDGED",
+    "sample_index_in_input_window": 10,
+    "t_since_input_start_s": 0.2038440704345703,
+    "delta_a_deg": 1.150446117755882,
+    "delta_a_delta_vs_baseline_deg": 1.1538216173322275,
+    "beta_deg": -0.08596058276636666,
+    "Cl_raw": 0.0060535537963931785,
+    "delta_Cl_vs_baseline": 0.006057562830358494,
+    "measured_sign": "+",
+    "expected_sign": "+",
+    "floor": 0.0001,
+    "pass": true,
+    "body_rates_at_this_sample_deg_s": {
+     "roll": 2.6143876666243724,
+     "pitch": 0.03776913184117223,
+     "yaw_MAVLINK_FRD": 0.2243235027043321
+    }
+   },
+   "O1b_deflections_at_control_onset": {
+    "status": "JUDGED",
+    "sample_index_in_input_window": 10,
+    "joint_delta_deg": {
+     "left_aileron": -1.1850607667775037,
+     "right_aileron": 1.1225824678869514,
+     "left_elevator": 0.17291637136683624,
+     "right_elevator": 0.295450910476446,
+     "rudder": 0.3661514477885842
+    },
+    "aero_input_delta_deg": {
+     "delta_a": 1.1538216173322275,
+     "delta_e": -0.23418364092164046,
+     "delta_r": 0.3661514477885842
+    },
+    "circularity_declaration": "onset was defined by |delta_a| exceeding 0.5 deg, so the MAGNITUDE of the delta_a check is satisfied by construction here; only its SIGN is under test."
+   },
+   "O2_signed_extremum_of_first_excursion": {
+    "status": "JUDGED",
+    "definition": "extremum of the coefficient delta over the FIRST excursion after control onset (up to its first zero crossing), i.e. the excursion the control produced - not max(|.|) over the whole window",
+    "t_since_input_start_s": 0.2038440704345703,
+    "n_samples_in_first_excursion": 18,
+    "extremum_delta_Cl": 0.006057562830358494,
+    "measured_sign": "+",
+    "expected_sign": "+",
+    "pass": true,
+    "harness_max_by_abs_over_whole_window": 0.006057562830358494
+   },
+   "O3_isolated_control_term_lookup": {
+    "status": "JUDGED",
+    "definition": "interp_linear(ctrlBreakpointsRad, ctrl<roll>Cl table, delta_a) - the control term ONLY, no airframe feedback in it at all",
+    "lookup_sign_scalar_from_config": 1.0,
+    "value_at_control_onset": 0.008323477661963806,
+    "mean_over_steady_75pct_of_input_window": 0.0010805140276229194,
+    "max_abs_over_input_window": 0.012813838892214364,
+    "measured_sign_at_onset": "+",
+    "measured_sign_steady": "+",
+    "expected_sign": "+",
+    "pass_at_onset": true,
+    "pass_steady": true
+   },
+   "yaw_feedback_decomposition": {
+    "status": "NOT_APPLICABLE"
+   },
+   "CORRECTED_scenario_verdict": "PASS",
+   "corrected_check_list": [
+    {
+     "check": "left_aileron_joint_delta_deg (RE-JUDGED at control onset)",
+     "old_pass": false,
+     "pass": true,
+     "value": -1.1850607667775037,
+     "expected_sign": "-"
+    },
+    {
+     "check": "right_aileron_joint_delta_deg (RE-JUDGED at control onset)",
+     "old_pass": false,
+     "pass": true,
+     "value": 1.1225824678869514,
+     "expected_sign": "+"
+    },
+    {
+     "check": "ailerons_deflect_in_OPPOSITE_directions (RE-JUDGED at control onset)",
+     "old_pass": true,
+     "pass": true,
+     "value": [
+      -1.1850607667775037,
+      1.1225824678869514
+     ],
+     "expected_sign": null
+    },
+    {
+     "check": "delta_a_aero_deg (RE-JUDGED at control onset)",
+     "old_pass": false,
+     "pass": true,
+     "value": 1.1538216173322275,
+     "expected_sign": "+"
+    },
+    {
+     "check": "Cl (RE-JUDGED at control onset)",
+     "old_pass": false,
+     "pass": true,
+     "value": 0.006057562830358494
+    },
+    {
+     "check": "peak_roll_rate_deg_s",
+     "old_pass": true,
+     "pass": true,
+     "value": 19.18636508613912
+    }
+   ],
+   "beta_guard_deg": 2.0,
+   "beta_guard_basis": "WINDOW SELECTION ONLY - not a pass/fail threshold. Bounds how much sideslip the airframe may have built before the pre-registered sign test is applied, so the sample being judged is one where the CONTROL term still dominates the weathercock term Cnb*beta. With Cnb=+0.03554 (CLAUDE.md reference point) a 2 deg sideslip contributes Cnb*beta = +0.00124, while the measured rudder contribution at onset is ~-0.0096; the control term is therefore still ~8x the feedback term at the guard limit. O2 and O3 below use no beta guard at all.",
+   "floors_used": {
+    "min_surface_deflection_deg": 0.5,
+    "min_rate_response_deg_s": 2.0,
+    "min_coefficient_magnitude": 0.0001,
+    "source": "IMPORTED from test_control_surface_live_sign_scenarios.TH - unchanged"
+   }
+  },
+  {
+   "scenario": "B",
+   "name": "roll_left",
+   "axis": "roll",
+   "status": "RE_JUDGED",
+   "re_flown": false,
+   "source_timeseries": "/home/emirhan/Desktop/FalconV2/tests/gazebo/results/control_surface_live_sign_scenario_B_timeseries.json",
+   "source_result": "/home/emirhan/Desktop/FalconV2/tests/gazebo/results/control_surface_live_sign_scenario_B_result.json",
+   "pre_registered_expected_sign": "-",
+   "pre_registered_statement": "-",
+   "baseline": {
+    "delta_a_deg": -0.0035696759576477133,
+    "Cl": -6.416071900887432e-06,
+    "beta_deg": -0.10684148892046641
+   },
+   "ORIGINAL_judgement": {
+    "observable": "mean coefficient over the LAST 75% of the input window, minus baseline (closed-loop equilibrium)",
+    "AS_STORED_in_result_json": {
+     "check": {
+      "check": "Cl",
+      "measured": -7.352322751015266e-06,
+      "measured_sign": "0",
+      "expected_sign": "-",
+      "floor": 0.0001,
+      "pass": false,
+      "note": "aero rolling-moment coefficient from the plugin's own diagnostics"
+     },
+     "scenario_verdict": "SEE_CHECKS",
+     "n_checks_pass": 2,
+     "n_checks_total": 6,
+     "note": "the coefficient check was UNJUDGED (pass=None) at capture time and did not count toward this verdict"
+    },
+    "CURRENT_HARNESS_CODE_on_the_same_data": {
+     "check": {
+      "check": "Cl",
+      "measured": -7.352322751015266e-06,
+      "measured_sign": "0",
+      "expected_sign": "-",
+      "floor": 0.0001,
+      "pass": false,
+      "note": "aero rolling-moment coefficient from the plugin's own diagnostics"
+     },
+     "scenario_verdict": "SEE_CHECKS",
+     "n_checks_pass": 2,
+     "n_checks_total": 6
+    }
+   },
+   "O1_at_control_onset": {
+    "status": "JUDGED",
+    "sample_index_in_input_window": 8,
+    "t_since_input_start_s": 0.16301321983337402,
+    "delta_a_deg": -0.9293948785142426,
+    "delta_a_delta_vs_baseline_deg": -0.925825202556595,
+    "beta_deg": -0.13699792823053994,
+    "Cl_raw": -0.00510334531172659,
+    "delta_Cl_vs_baseline": -0.005096929239825703,
+    "measured_sign": "-",
+    "expected_sign": "-",
+    "floor": 0.0001,
+    "pass": true,
+    "body_rates_at_this_sample_deg_s": {
+     "roll": -1.7307723902804641,
+     "pitch": 0.12178824931685112,
+     "yaw_MAVLINK_FRD": -0.06077599707033871
+    }
+   },
+   "O1b_deflections_at_control_onset": {
+    "status": "JUDGED",
+    "sample_index_in_input_window": 8,
+    "joint_delta_deg": {
+     "left_aileron": 0.8951268685706257,
+     "right_aileron": -0.9565235365425643,
+     "left_elevator": 0.2491327439012312,
+     "right_elevator": 0.15327666775712068,
+     "rudder": -0.31087517500101786
+    },
+    "aero_input_delta_deg": {
+     "delta_a": -0.925825202556595,
+     "delta_e": -0.2012047058291757,
+     "delta_r": -0.31087517500101786
+    },
+    "circularity_declaration": "onset was defined by |delta_a| exceeding 0.5 deg, so the MAGNITUDE of the delta_a check is satisfied by construction here; only its SIGN is under test."
+   },
+   "O2_signed_extremum_of_first_excursion": {
+    "status": "JUDGED",
+    "definition": "extremum of the coefficient delta over the FIRST excursion after control onset (up to its first zero crossing), i.e. the excursion the control produced - not max(|.|) over the whole window",
+    "t_since_input_start_s": 0.22415733337402344,
+    "n_samples_in_first_excursion": 18,
+    "extremum_delta_Cl": -0.006041178371174558,
+    "measured_sign": "-",
+    "expected_sign": "-",
+    "pass": true,
+    "harness_max_by_abs_over_whole_window": -0.006041178371174558
+   },
+   "O3_isolated_control_term_lookup": {
+    "status": "JUDGED",
+    "definition": "interp_linear(ctrlBreakpointsRad, ctrl<roll>Cl table, delta_a) - the control term ONLY, no airframe feedback in it at all",
+    "lookup_sign_scalar_from_config": 1.0,
+    "value_at_control_onset": -0.006724171946050546,
+    "mean_over_steady_75pct_of_input_window": -0.0010882019214375183,
+    "max_abs_over_input_window": 0.01253811123792465,
+    "measured_sign_at_onset": "-",
+    "measured_sign_steady": "-",
+    "expected_sign": "-",
+    "pass_at_onset": true,
+    "pass_steady": true
+   },
+   "yaw_feedback_decomposition": {
+    "status": "NOT_APPLICABLE"
+   },
+   "CORRECTED_scenario_verdict": "PASS",
+   "corrected_check_list": [
+    {
+     "check": "left_aileron_joint_delta_deg (RE-JUDGED at control onset)",
+     "old_pass": false,
+     "pass": true,
+     "value": 0.8951268685706257,
+     "expected_sign": "+"
+    },
+    {
+     "check": "right_aileron_joint_delta_deg (RE-JUDGED at control onset)",
+     "old_pass": false,
+     "pass": true,
+     "value": -0.9565235365425643,
+     "expected_sign": "-"
+    },
+    {
+     "check": "ailerons_deflect_in_OPPOSITE_directions (RE-JUDGED at control onset)",
+     "old_pass": true,
+     "pass": true,
+     "value": [
+      0.8951268685706257,
+      -0.9565235365425643
+     ],
+     "expected_sign": null
+    },
+    {
+     "check": "delta_a_aero_deg (RE-JUDGED at control onset)",
+     "old_pass": false,
+     "pass": true,
+     "value": -0.925825202556595,
+     "expected_sign": "-"
+    },
+    {
+     "check": "Cl (RE-JUDGED at control onset)",
+     "old_pass": false,
+     "pass": true,
+     "value": -0.005096929239825703
+    },
+    {
+     "check": "peak_roll_rate_deg_s",
+     "old_pass": true,
+     "pass": true,
+     "value": -19.271843196054537
+    }
+   ],
+   "beta_guard_deg": 2.0,
+   "beta_guard_basis": "WINDOW SELECTION ONLY - not a pass/fail threshold. Bounds how much sideslip the airframe may have built before the pre-registered sign test is applied, so the sample being judged is one where the CONTROL term still dominates the weathercock term Cnb*beta. With Cnb=+0.03554 (CLAUDE.md reference point) a 2 deg sideslip contributes Cnb*beta = +0.00124, while the measured rudder contribution at onset is ~-0.0096; the control term is therefore still ~8x the feedback term at the guard limit. O2 and O3 below use no beta guard at all.",
+   "floors_used": {
+    "min_surface_deflection_deg": 0.5,
+    "min_rate_response_deg_s": 2.0,
+    "min_coefficient_magnitude": 0.0001,
+    "source": "IMPORTED from test_control_surface_live_sign_scenarios.TH - unchanged"
+   }
+  },
+  {
+   "scenario": "C",
+   "name": "pitch_up",
+   "axis": "pitch",
+   "status": "RE_JUDGED",
+   "re_flown": false,
+   "source_timeseries": "/home/emirhan/Desktop/FalconV2/tests/gazebo/results/control_surface_live_sign_scenario_C_timeseries.json",
+   "source_result": "/home/emirhan/Desktop/FalconV2/tests/gazebo/results/control_surface_live_sign_scenario_C_result.json",
+   "pre_registered_expected_sign": "+",
+   "pre_registered_statement": "+ (Cm>0 <=> My<0 <=> nose up in this plugin)",
+   "baseline": {
+    "delta_e_deg": -2.9865646326899493,
+    "Cm": 0.008032058212292099,
+    "beta_deg": -0.10646751786798508
+   },
+   "ORIGINAL_judgement": {
+    "observable": "mean coefficient over the LAST 75% of the input window, minus baseline (closed-loop equilibrium)",
+    "AS_STORED_in_result_json": {
+     "check": {
+      "check": "Cm",
+      "measured": 0.008847455275252377,
+      "measured_sign": "+",
+      "expected_sign": "+ (Cm>0 <=> My<0 <=> nose up in this plugin)",
+      "floor": 0.0001,
+      "pass": null,
+      "note": "Cm>0 <=> My<0 <=> nose up in this plugin's FLU convention"
+     },
+     "scenario_verdict": "PASS",
+     "n_checks_pass": 3,
+     "n_checks_total": 3,
+     "note": "the coefficient check was UNJUDGED (pass=None) at capture time and did not count toward this verdict"
+    },
+    "CURRENT_HARNESS_CODE_on_the_same_data": {
+     "check": {
+      "check": "Cm",
+      "measured": 0.008847455275252377,
+      "measured_sign": "+",
+      "expected_sign": "+",
+      "floor": 0.0001,
+      "pass": true,
+      "note": "Cm>0 <=> My<0 <=> nose up in this plugin's FLU convention"
+     },
+     "scenario_verdict": "PASS",
+     "n_checks_pass": 4,
+     "n_checks_total": 4
+    }
+   },
+   "O1_at_control_onset": {
+    "status": "JUDGED",
+    "sample_index_in_input_window": 7,
+    "t_since_input_start_s": 0.1428978443145752,
+    "delta_e_deg": -3.5132851777948324,
+    "delta_e_delta_vs_baseline_deg": -0.5267205451048831,
+    "beta_deg": -0.1189047943371543,
+    "Cm_raw": 0.013320692402938813,
+    "delta_Cm_vs_baseline": 0.005288634190646714,
+    "measured_sign": "+",
+    "expected_sign": "+",
+    "floor": 0.0001,
+    "pass": true,
+    "body_rates_at_this_sample_deg_s": {
+     "roll": 0.0669025900444542,
+     "pitch": 0.3793462785837017,
+     "yaw_MAVLINK_FRD": 0.0221207482359565
+    }
+   },
+   "O1b_deflections_at_control_onset": {
+    "status": "JUDGED",
+    "sample_index_in_input_window": 7,
+    "joint_delta_deg": {
+     "left_aileron": -0.00144872276849101,
+     "right_aileron": 0.004055990353161693,
+     "left_elevator": 0.5267453605814487,
+     "right_elevator": 0.5266957296283121,
+     "rudder": 0.0001750261194869417
+    },
+    "aero_input_delta_deg": {
+     "delta_a": 0.0027523565608263494,
+     "delta_e": -0.5267205451048831,
+     "delta_r": 0.0001750261194869417
+    },
+    "circularity_declaration": "onset was defined by |delta_e| exceeding 0.5 deg, so the MAGNITUDE of the delta_e check is satisfied by construction here; only its SIGN is under test."
+   },
+   "O2_signed_extremum_of_first_excursion": {
+    "status": "JUDGED",
+    "definition": "extremum of the coefficient delta over the FIRST excursion after control onset (up to its first zero crossing), i.e. the excursion the control produced - not max(|.|) over the whole window",
+    "t_since_input_start_s": 7.7962610721588135,
+    "n_samples_in_first_excursion": 385,
+    "extremum_delta_Cm": 0.012826497606327938,
+    "measured_sign": "+",
+    "expected_sign": "+",
+    "pass": true,
+    "harness_max_by_abs_over_whole_window": 0.012826497606327938
+   },
+   "O3_isolated_control_term_lookup": {
+    "status": "JUDGED",
+    "definition": "interp_linear(ctrlBreakpointsRad, ctrl<pitch>Cm table, delta_e) - the control term ONLY, no airframe feedback in it at all",
+    "lookup_sign_scalar_from_config": -1.0,
+    "value_at_control_onset": 0.06119647208111196,
+    "mean_over_steady_75pct_of_input_window": 0.12886894941207894,
+    "max_abs_over_input_window": 0.15827036169172048,
+    "measured_sign_at_onset": "+",
+    "measured_sign_steady": "+",
+    "expected_sign": "+",
+    "pass_at_onset": true,
+    "pass_steady": true
+   },
+   "yaw_feedback_decomposition": {
+    "status": "NOT_APPLICABLE"
+   },
+   "CORRECTED_scenario_verdict": "PASS",
+   "corrected_check_list": [
+    {
+     "check": "delta_e_aero_deg (RE-JUDGED at control onset)",
+     "old_pass": true,
+     "pass": true,
+     "value": -0.5267205451048831,
+     "expected_sign": "-"
+    },
+    {
+     "check": "elevators_deflect_in_the_SAME_direction (RE-JUDGED at control onset)",
+     "old_pass": true,
+     "pass": true,
+     "value": [
+      0.5267453605814487,
+      0.5266957296283121
+     ],
+     "expected_sign": null
+    },
+    {
+     "check": "Cm (RE-JUDGED at control onset)",
+     "old_pass": true,
+     "pass": true,
+     "value": 0.005288634190646714
+    },
+    {
+     "check": "peak_pitch_rate_deg_s",
+     "old_pass": true,
+     "pass": true,
+     "value": 4.557882563345181
+    }
+   ],
+   "beta_guard_deg": 2.0,
+   "beta_guard_basis": "WINDOW SELECTION ONLY - not a pass/fail threshold. Bounds how much sideslip the airframe may have built before the pre-registered sign test is applied, so the sample being judged is one where the CONTROL term still dominates the weathercock term Cnb*beta. With Cnb=+0.03554 (CLAUDE.md reference point) a 2 deg sideslip contributes Cnb*beta = +0.00124, while the measured rudder contribution at onset is ~-0.0096; the control term is therefore still ~8x the feedback term at the guard limit. O2 and O3 below use no beta guard at all.",
+   "floors_used": {
+    "min_surface_deflection_deg": 0.5,
+    "min_rate_response_deg_s": 2.0,
+    "min_coefficient_magnitude": 0.0001,
+    "source": "IMPORTED from test_control_surface_live_sign_scenarios.TH - unchanged"
+   }
+  },
+  {
+   "scenario": "D",
+   "name": "pitch_down",
+   "axis": "pitch",
+   "status": "RE_JUDGED",
+   "re_flown": false,
+   "source_timeseries": "/home/emirhan/Desktop/FalconV2/tests/gazebo/results/control_surface_live_sign_scenario_D_timeseries.json",
+   "source_result": "/home/emirhan/Desktop/FalconV2/tests/gazebo/results/control_surface_live_sign_scenario_D_result.json",
+   "pre_registered_expected_sign": "-",
+   "pre_registered_statement": "-",
+   "baseline": {
+    "delta_e_deg": -2.9800738760070113,
+    "Cm": 0.007987693362516854,
+    "beta_deg": -0.10716218817289642
+   },
+   "ORIGINAL_judgement": {
+    "observable": "mean coefficient over the LAST 75% of the input window, minus baseline (closed-loop equilibrium)",
+    "AS_STORED_in_result_json": {
+     "check": {
+      "check": "Cm",
+      "measured": -0.005420058778829357,
+      "measured_sign": "-",
+      "expected_sign": "-",
+      "floor": 0.0001,
+      "pass": true,
+      "note": "Cm>0 <=> My<0 <=> nose up in this plugin's FLU convention"
+     },
+     "scenario_verdict": "PASS",
+     "n_checks_pass": 4,
+     "n_checks_total": 4,
+     "note": "the coefficient check was UNJUDGED (pass=None) at capture time and did not count toward this verdict"
+    },
+    "CURRENT_HARNESS_CODE_on_the_same_data": {
+     "check": {
+      "check": "Cm",
+      "measured": -0.005420058778829357,
+      "measured_sign": "-",
+      "expected_sign": "-",
+      "floor": 0.0001,
+      "pass": true,
+      "note": "Cm>0 <=> My<0 <=> nose up in this plugin's FLU convention"
+     },
+     "scenario_verdict": "PASS",
+     "n_checks_pass": 4,
+     "n_checks_total": 4
+    }
+   },
+   "O1_at_control_onset": {
+    "status": "JUDGED",
+    "sample_index_in_input_window": 13,
+    "t_since_input_start_s": 0.2651402950286865,
+    "delta_e_deg": -2.437387367047699,
+    "delta_e_delta_vs_baseline_deg": 0.5426865089593123,
+    "beta_deg": -0.120436521313116,
+    "Cm_raw": -0.002213929721696755,
+    "delta_Cm_vs_baseline": -0.010201623084213608,
+    "measured_sign": "-",
+    "expected_sign": "-",
+    "floor": 0.0001,
+    "pass": true,
+    "body_rates_at_this_sample_deg_s": {
+     "roll": 0.05927342215400202,
+     "pitch": -3.2486140600726037,
+     "yaw_MAVLINK_FRD": 0.04299954596625453
+    }
+   },
+   "O1b_deflections_at_control_onset": {
+    "status": "JUDGED",
+    "sample_index_in_input_window": 13,
+    "joint_delta_deg": {
+     "left_aileron": 0.016466341075851935,
+     "right_aileron": 0.020190482179883187,
+     "left_elevator": -0.5425515832637258,
+     "right_elevator": -0.542821434654893,
+     "rudder": 4.606349003777454e-05
+    },
+    "aero_input_delta_deg": {
+     "delta_a": 0.0018620705520156434,
+     "delta_e": 0.5426865089593123,
+     "delta_r": 4.606349003777454e-05
+    },
+    "circularity_declaration": "onset was defined by |delta_e| exceeding 0.5 deg, so the MAGNITUDE of the delta_e check is satisfied by construction here; only its SIGN is under test."
+   },
+   "O2_signed_extremum_of_first_excursion": {
+    "status": "JUDGED",
+    "definition": "extremum of the coefficient delta over the FIRST excursion after control onset (up to its first zero crossing), i.e. the excursion the control produced - not max(|.|) over the whole window",
+    "t_since_input_start_s": 0.9983251094818115,
+    "n_samples_in_first_excursion": 379,
+    "extremum_delta_Cm": -0.012450822769277423,
+    "measured_sign": "-",
+    "expected_sign": "-",
+    "pass": true,
+    "harness_max_by_abs_over_whole_window": -0.012450822769277423
+   },
+   "O3_isolated_control_term_lookup": {
+    "status": "JUDGED",
+    "definition": "interp_linear(ctrlBreakpointsRad, ctrl<pitch>Cm table, delta_e) - the control term ONLY, no airframe feedback in it at all",
+    "lookup_sign_scalar_from_config": -1.0,
+    "value_at_control_onset": 0.042450745891861076,
+    "mean_over_steady_75pct_of_input_window": -0.00020379802285532437,
+    "max_abs_over_input_window": 0.055863165829740616,
+    "measured_sign_at_onset": "+",
+    "measured_sign_steady": "-",
+    "expected_sign": "-",
+    "pass_at_onset": false,
+    "pass_steady": true
+   },
+   "yaw_feedback_decomposition": {
+    "status": "NOT_APPLICABLE"
+   },
+   "CORRECTED_scenario_verdict": "PASS",
+   "corrected_check_list": [
+    {
+     "check": "delta_e_aero_deg (RE-JUDGED at control onset)",
+     "old_pass": true,
+     "pass": true,
+     "value": 0.5426865089593123,
+     "expected_sign": "+"
+    },
+    {
+     "check": "elevators_deflect_in_the_SAME_direction (RE-JUDGED at control onset)",
+     "old_pass": true,
+     "pass": true,
+     "value": [
+      -0.5425515832637258,
+      -0.542821434654893
+     ],
+     "expected_sign": null
+    },
+    {
+     "check": "Cm (RE-JUDGED at control onset)",
+     "old_pass": true,
+     "pass": true,
+     "value": -0.010201623084213608
+    },
+    {
+     "check": "peak_pitch_rate_deg_s",
+     "old_pass": true,
+     "pass": true,
+     "value": -5.417497728884428
+    }
+   ],
+   "beta_guard_deg": 2.0,
+   "beta_guard_basis": "WINDOW SELECTION ONLY - not a pass/fail threshold. Bounds how much sideslip the airframe may have built before the pre-registered sign test is applied, so the sample being judged is one where the CONTROL term still dominates the weathercock term Cnb*beta. With Cnb=+0.03554 (CLAUDE.md reference point) a 2 deg sideslip contributes Cnb*beta = +0.00124, while the measured rudder contribution at onset is ~-0.0096; the control term is therefore still ~8x the feedback term at the guard limit. O2 and O3 below use no beta guard at all.",
+   "floors_used": {
+    "min_surface_deflection_deg": 0.5,
+    "min_rate_response_deg_s": 2.0,
+    "min_coefficient_magnitude": 0.0001,
+    "source": "IMPORTED from test_control_surface_live_sign_scenarios.TH - unchanged"
+   }
+  },
+  {
+   "scenario": "E",
+   "name": "yaw_right",
+   "axis": "yaw",
+   "status": "RE_JUDGED",
+   "re_flown": false,
+   "source_timeseries": "/home/emirhan/Desktop/FalconV2/tests/gazebo/results/control_surface_live_sign_scenario_E_timeseries.json",
+   "source_result": "/home/emirhan/Desktop/FalconV2/tests/gazebo/results/control_surface_live_sign_scenario_E_result.json",
+   "pre_registered_expected_sign": "-",
+   "pre_registered_statement": "- (Mz<0 = nose right)",
+   "baseline": {
+    "delta_r_deg": -2.2123883629275542e-05,
+    "Cn": -4.601798780808342e-05,
+    "beta_deg": -0.10655324143229587
+   },
+   "ORIGINAL_judgement": {
+    "observable": "mean coefficient over the LAST 75% of the input window, minus baseline (closed-loop equilibrium)",
+    "AS_STORED_in_result_json": {
+     "check": {
+      "check": "Cn",
+      "measured": 0.002157772151456051,
+      "measured_sign": "+",
+      "expected_sign": "- (Mz<0 = nose right)",
+      "floor": 0.0001,
+      "pass": null,
+      "note": "Cn<0 <=> Mz<0 <=> nose right (FLU)"
+     },
+     "scenario_verdict": "PASS",
+     "n_checks_pass": 4,
+     "n_checks_total": 4,
+     "note": "the coefficient check was UNJUDGED (pass=None) at capture time and did not count toward this verdict"
+    },
+    "CURRENT_HARNESS_CODE_on_the_same_data": {
+     "check": {
+      "check": "Cn",
+      "measured": 0.002157772151456051,
+      "measured_sign": "+",
+      "expected_sign": "-",
+      "floor": 0.0001,
+      "pass": false,
+      "note": "Cn<0 <=> Mz<0 <=> nose right (FLU)"
+     },
+     "scenario_verdict": "SEE_CHECKS",
+     "n_checks_pass": 4,
+     "n_checks_total": 5
+    }
+   },
+   "O1_at_control_onset": {
+    "status": "JUDGED",
+    "sample_index_in_input_window": 5,
+    "t_since_input_start_s": 0.10171914100646973,
+    "delta_r_deg": 4.3823961630271695,
+    "delta_r_delta_vs_baseline_deg": 4.382418286910799,
+    "beta_deg": -0.09948357540635908,
+    "Cn_raw": -0.002105247682749042,
+    "delta_Cn_vs_baseline": -0.0020592296949409586,
+    "measured_sign": "-",
+    "expected_sign": "-",
+    "floor": 0.0001,
+    "pass": true,
+    "body_rates_at_this_sample_deg_s": {
+     "roll": 0.06478659210349896,
+     "pitch": 0.117214864038359,
+     "yaw_MAVLINK_FRD": 0.03853457993567645
+    }
+   },
+   "O1b_deflections_at_control_onset": {
+    "status": "JUDGED",
+    "sample_index_in_input_window": 5,
+    "joint_delta_deg": {
+     "left_aileron": -0.019501681753552106,
+     "right_aileron": -0.003322504886487712,
+     "left_elevator": 0.2639730252185939,
+     "right_elevator": 0.2594895667026593,
+     "rudder": 4.382418286910799
+    },
+    "aero_input_delta_deg": {
+     "delta_a": 0.00808958843353218,
+     "delta_e": -0.2617312959606246,
+     "delta_r": 4.382418286910799
+    },
+    "circularity_declaration": "onset was defined by |delta_r| exceeding 0.5 deg, so the MAGNITUDE of the delta_r check is satisfied by construction here; only its SIGN is under test."
+   },
+   "O2_signed_extremum_of_first_excursion": {
+    "status": "JUDGED",
+    "definition": "extremum of the coefficient delta over the FIRST excursion after control onset (up to its first zero crossing), i.e. the excursion the control produced - not max(|.|) over the whole window",
+    "t_since_input_start_s": 0.20369601249694824,
+    "n_samples_in_first_excursion": 27,
+    "extremum_delta_Cn": -0.007220678387981555,
+    "measured_sign": "-",
+    "expected_sign": "-",
+    "pass": true,
+    "harness_max_by_abs_over_whole_window": 0.009885690500083522
+   },
+   "O3_isolated_control_term_lookup": {
+    "status": "JUDGED",
+    "definition": "interp_linear(ctrlBreakpointsRad, ctrl<yaw>Cn table, delta_r) - the control term ONLY, no airframe feedback in it at all",
+    "lookup_sign_scalar_from_config": 1.0,
+    "value_at_control_onset": -0.0020676675171661936,
+    "mean_over_steady_75pct_of_input_window": -0.00993601520701599,
+    "max_abs_over_input_window": 0.010008868777564402,
+    "measured_sign_at_onset": "-",
+    "measured_sign_steady": "-",
+    "expected_sign": "-",
+    "pass_at_onset": true,
+    "pass_steady": true
+   },
+   "yaw_feedback_decomposition": {
+    "status": "COMPUTED",
+    "window": "the SAME steady 75% window the harness judged",
+    "Cnb_times_beta_mean": 0.011985155039851515,
+    "dCn_rudder_lookup_mean": -0.00993601520701599,
+    "Cn_total_published_mean": 0.0021117541636479675,
+    "Cnb_used": 0.03554,
+    "note": "Shows directly why the STEADY TOTAL Cn does not carry the rudder's sign: the weathercock term is the larger of the two."
+   },
+   "CORRECTED_scenario_verdict": "PASS",
+   "corrected_check_list": [
+    {
+     "check": "rudder_joint_delta_deg (RE-JUDGED at control onset)",
+     "old_pass": true,
+     "pass": true,
+     "value": 4.382418286910799,
+     "expected_sign": "+"
+    },
+    {
+     "check": "delta_r_aero_deg (RE-JUDGED at control onset)",
+     "old_pass": true,
+     "pass": true,
+     "value": 4.382418286910799,
+     "expected_sign": "+"
+    },
+    {
+     "check": "Cn (RE-JUDGED at control onset)",
+     "old_pass": false,
+     "pass": true,
+     "value": -0.0020592296949409586
+    },
+    {
+     "check": "peak_yaw_rate_MAVLINK_FRD_deg_s",
+     "old_pass": true,
+     "pass": true,
+     "value": 41.98157331837578
+    },
+    {
+     "check": "peak_yaw_rate_GZ_FLU_BODY_deg_s",
+     "old_pass": true,
+     "pass": true,
+     "value": -70.69229777420809
+    }
+   ],
+   "beta_guard_deg": 2.0,
+   "beta_guard_basis": "WINDOW SELECTION ONLY - not a pass/fail threshold. Bounds how much sideslip the airframe may have built before the pre-registered sign test is applied, so the sample being judged is one where the CONTROL term still dominates the weathercock term Cnb*beta. With Cnb=+0.03554 (CLAUDE.md reference point) a 2 deg sideslip contributes Cnb*beta = +0.00124, while the measured rudder contribution at onset is ~-0.0096; the control term is therefore still ~8x the feedback term at the guard limit. O2 and O3 below use no beta guard at all.",
+   "floors_used": {
+    "min_surface_deflection_deg": 0.5,
+    "min_rate_response_deg_s": 2.0,
+    "min_coefficient_magnitude": 0.0001,
+    "source": "IMPORTED from test_control_surface_live_sign_scenarios.TH - unchanged"
+   }
+  },
+  {
+   "scenario": "F",
+   "name": "yaw_left",
+   "axis": "yaw",
+   "status": "RE_JUDGED",
+   "re_flown": false,
+   "source_timeseries": "/home/emirhan/Desktop/FalconV2/tests/gazebo/results/control_surface_live_sign_scenario_F_timeseries.json",
+   "source_result": "/home/emirhan/Desktop/FalconV2/tests/gazebo/results/control_surface_live_sign_scenario_F_result.json",
+   "pre_registered_expected_sign": "+",
+   "pre_registered_statement": "+",
+   "baseline": {
+    "delta_r_deg": -1.8899012091666386e-05,
+    "Cn": -4.6151418538621884e-05,
+    "beta_deg": -0.10657814221171329
+   },
+   "ORIGINAL_judgement": {
+    "observable": "mean coefficient over the LAST 75% of the input window, minus baseline (closed-loop equilibrium)",
+    "AS_STORED_in_result_json": {
+     "check": {
+      "check": "Cn",
+      "measured": -0.002082066034038323,
+      "measured_sign": "-",
+      "expected_sign": "+",
+      "floor": 0.0001,
+      "pass": false,
+      "note": "Cn<0 <=> Mz<0 <=> nose right (FLU)"
+     },
+     "scenario_verdict": "SEE_CHECKS",
+     "n_checks_pass": 4,
+     "n_checks_total": 5,
+     "note": "the coefficient check was UNJUDGED (pass=None) at capture time and did not count toward this verdict"
+    },
+    "CURRENT_HARNESS_CODE_on_the_same_data": {
+     "check": {
+      "check": "Cn",
+      "measured": -0.002082066034038323,
+      "measured_sign": "-",
+      "expected_sign": "+",
+      "floor": 0.0001,
+      "pass": false,
+      "note": "Cn<0 <=> Mz<0 <=> nose right (FLU)"
+     },
+     "scenario_verdict": "SEE_CHECKS",
+     "n_checks_pass": 4,
+     "n_checks_total": 5
+    }
+   },
+   "O1_at_control_onset": {
+    "status": "JUDGED",
+    "sample_index_in_input_window": 4,
+    "t_since_input_start_s": 0.08119320869445801,
+    "delta_r_deg": -1.0909103326340501,
+    "delta_r_delta_vs_baseline_deg": -1.0908914336219584,
+    "beta_deg": -0.12100205927074809,
+    "Cn_raw": 0.000452311890307403,
+    "delta_Cn_vs_baseline": 0.0004984633088460249,
+    "measured_sign": "+",
+    "expected_sign": "+",
+    "floor": 0.0001,
+    "pass": true,
+    "body_rates_at_this_sample_deg_s": {
+     "roll": 0.06965044051459512,
+     "pitch": 0.10616323776520152,
+     "yaw_MAVLINK_FRD": 0.015669843005711063
+    }
+   },
+   "O1b_deflections_at_control_onset": {
+    "status": "JUDGED",
+    "sample_index_in_input_window": 4,
+    "joint_delta_deg": {
+     "left_aileron": -0.012489577083027864,
+     "right_aileron": -0.008718023481595885,
+     "left_elevator": 0.2920154523786338,
+     "right_elevator": 0.2929056187230943,
+     "rudder": -1.0908914336219584
+    },
+    "aero_input_delta_deg": {
+     "delta_a": 0.001885776800715996,
+     "delta_e": -0.2924605355508625,
+     "delta_r": -1.0908914336219584
+    },
+    "circularity_declaration": "onset was defined by |delta_r| exceeding 0.5 deg, so the MAGNITUDE of the delta_r check is satisfied by construction here; only its SIGN is under test."
+   },
+   "O2_signed_extremum_of_first_excursion": {
+    "status": "JUDGED",
+    "definition": "extremum of the coefficient delta over the FIRST excursion after control onset (up to its first zero crossing), i.e. the excursion the control produced - not max(|.|) over the whole window",
+    "t_since_input_start_s": 0.1829667091369629,
+    "n_samples_in_first_excursion": 27,
+    "extremum_delta_Cn": 0.007342816105459031,
+    "measured_sign": "+",
+    "expected_sign": "+",
+    "pass": true,
+    "harness_max_by_abs_over_whole_window": -0.00971544458431817
+   },
+   "O3_isolated_control_term_lookup": {
+    "status": "JUDGED",
+    "definition": "interp_linear(ctrlBreakpointsRad, ctrl<yaw>Cn table, delta_r) - the control term ONLY, no airframe feedback in it at all",
+    "lookup_sign_scalar_from_config": 1.0,
+    "value_at_control_onset": 0.0005227278563380035,
+    "mean_over_steady_75pct_of_input_window": 0.00995034461382129,
+    "max_abs_over_input_window": 0.010019744533934031,
+    "measured_sign_at_onset": "+",
+    "measured_sign_steady": "+",
+    "expected_sign": "+",
+    "pass_at_onset": true,
+    "pass_steady": true
+   },
+   "yaw_feedback_decomposition": {
+    "status": "COMPUTED",
+    "window": "the SAME steady 75% window the harness judged",
+    "Cnb_times_beta_mean": -0.012031912260872097,
+    "dCn_rudder_lookup_mean": 0.00995034461382129,
+    "Cn_total_published_mean": -0.002128217452576945,
+    "Cnb_used": 0.03554,
+    "note": "Shows directly why the STEADY TOTAL Cn does not carry the rudder's sign: the weathercock term is the larger of the two."
+   },
+   "CORRECTED_scenario_verdict": "PASS",
+   "corrected_check_list": [
+    {
+     "check": "rudder_joint_delta_deg (RE-JUDGED at control onset)",
+     "old_pass": true,
+     "pass": true,
+     "value": -1.0908914336219584,
+     "expected_sign": "-"
+    },
+    {
+     "check": "delta_r_aero_deg (RE-JUDGED at control onset)",
+     "old_pass": true,
+     "pass": true,
+     "value": -1.0908914336219584,
+     "expected_sign": "-"
+    },
+    {
+     "check": "Cn (RE-JUDGED at control onset)",
+     "old_pass": false,
+     "pass": true,
+     "value": 0.0004984633088460249
+    },
+    {
+     "check": "peak_yaw_rate_MAVLINK_FRD_deg_s",
+     "old_pass": true,
+     "pass": true,
+     "value": -41.66696797501583
+    },
+    {
+     "check": "peak_yaw_rate_GZ_FLU_BODY_deg_s",
+     "old_pass": true,
+     "pass": true,
+     "value": 68.40516371116038
+    }
+   ],
+   "beta_guard_deg": 2.0,
+   "beta_guard_basis": "WINDOW SELECTION ONLY - not a pass/fail threshold. Bounds how much sideslip the airframe may have built before the pre-registered sign test is applied, so the sample being judged is one where the CONTROL term still dominates the weathercock term Cnb*beta. With Cnb=+0.03554 (CLAUDE.md reference point) a 2 deg sideslip contributes Cnb*beta = +0.00124, while the measured rudder contribution at onset is ~-0.0096; the control term is therefore still ~8x the feedback term at the guard limit. O2 and O3 below use no beta guard at all.",
+   "floors_used": {
+    "min_surface_deflection_deg": 0.5,
+    "min_rate_response_deg_s": 2.0,
+    "min_coefficient_magnitude": 0.0001,
+    "source": "IMPORTED from test_control_surface_live_sign_scenarios.TH - unchanged"
+   }
+  }
+ ]
+}

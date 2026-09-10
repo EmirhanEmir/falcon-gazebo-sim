@@ -1,0 +1,97 @@
+{
+ "n_runs": 6,
+ "runs": [
+  "manual_takeoff_ground_roll_run1_FBWA_result.json",
+  "manual_takeoff_ground_roll_run1_MANUAL_result.json",
+  "manual_takeoff_ground_roll_run2_FBWA_result.json",
+  "manual_takeoff_ground_roll_run2_MANUAL_result.json",
+  "manual_takeoff_ground_roll_run3_FBWA_result.json",
+  "manual_takeoff_ground_roll_run3_MANUAL_result.json"
+ ],
+ "repeats_designed_for": 3,
+ "repeat_rationale": "Three runs is the minimum that lets a one-off contact-solver event be told apart from a repeatable behaviour.",
+ "liftoff_t_rel_s": {
+  "values": [],
+  "mean": NaN,
+  "min": null,
+  "max": null,
+  "spread": null
+ },
+ "liftoff_airspeed_ms": {
+  "values": [],
+  "mean": NaN,
+  "min": null,
+  "max": null,
+  "spread": null
+ },
+ "lift_weight_crossing_s": {
+  "values": [
+   13.920637130737305,
+   13.896405458450317,
+   13.936764001846313,
+   13.918784618377686,
+   13.9618239402771,
+   13.932565450668335
+  ],
+  "mean": 13.92783010005951,
+  "min": 13.896405458450317,
+  "max": 13.9618239402771,
+  "spread": 0.06541848182678223
+ },
+ "lift_weight_crossing_airspeed_ms": {
+  "values": [
+   20.96548843383789,
+   21.662260055541992,
+   21.505067825317383,
+   21.862518310546875,
+   21.177743911743164,
+   21.269975662231445
+  ],
+  "mean": 21.407175699869793,
+  "min": 20.96548843383789,
+  "max": 21.862518310546875,
+  "spread": 0.8970298767089844
+ },
+ "final_lateral_Y_m": {
+  "values": [
+   5.2756966751926635,
+   62.05659994404363,
+   5.477180532205557,
+   61.95472696963121,
+   5.197458952983049,
+   62.06526082955913
+  ],
+  "mean": 33.671153983935874,
+  "min": 5.197458952983049,
+  "max": 62.06526082955913,
+  "spread": 56.86780187657608
+ },
+ "pitch_change_before_liftoff_deg": {
+  "values": [
+   28.325844341701796,
+   89.7091017670835,
+   28.58337511097076,
+   89.7195233345057,
+   28.766007129171967,
+   89.70926924449446
+  ],
+  "mean": 59.13552015465469,
+  "min": 28.325844341701796,
+  "max": 89.7195233345057,
+  "spread": 61.3936789928039
+ },
+ "thrust_diff_N_max_abs": {
+  "values": [
+   0.06879023839065113,
+   0.10424516065481271,
+   0.06960737566575403,
+   0.10428292118223226,
+   0.06974375881767259,
+   0.10448668415255469
+  ],
+  "mean": 0.08685935647727956,
+  "min": 0.06879023839065113,
+  "max": 0.10448668415255469,
+  "spread": 0.03569644576190356
+ }
+}

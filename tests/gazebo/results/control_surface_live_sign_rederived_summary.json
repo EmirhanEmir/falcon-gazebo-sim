@@ -1,0 +1,581 @@
+{
+ "stage": "MANUAL_TAKEOFF_AND_LIVE_CONTROL_SURFACE_BEHAVIOR_VALIDATION",
+ "part": "2 - re-derived offline from captured timeseries",
+ "owner": "gazebo-testing",
+ "physics_parameters_changed": "NONE",
+ "note": "Verdicts recomputed with the corrected sign-character evaluation. No simulation was re-run to produce these numbers; the captured windows are unchanged.",
+ "scenarios": {
+  "A": {
+   "name": "roll_right",
+   "verdict": "SEE_CHECKS",
+   "n_checks_pass": 2,
+   "n_checks_total": 6,
+   "checks": [
+    {
+     "check": "left_aileron_joint_delta_deg",
+     "measured": -0.18891876712711128,
+     "measured_sign": "0",
+     "expected_sign": "-",
+     "floor": 0.5,
+     "pass": false,
+     "note": "TE down = negative joint angle"
+    },
+    {
+     "check": "right_aileron_joint_delta_deg",
+     "measured": 0.11652304823094761,
+     "measured_sign": "0",
+     "expected_sign": "+",
+     "floor": 0.5,
+     "pass": false,
+     "note": "TE up = positive joint angle"
+    },
+    {
+     "check": "ailerons_deflect_in_OPPOSITE_directions",
+     "measured": [
+      -0.18891876712711128,
+      0.11652304823094761
+     ],
+     "pass": true,
+     "requirement_source": "CONTROLS.md sec 10 / 2026-08-22 report (joints are NOT sign-mirrored, so differential roll needs opposite signs)"
+    },
+    {
+     "check": "delta_a_aero_deg",
+     "measured": 0.15272090767902943,
+     "measured_sign": "0",
+     "expected_sign": "+",
+     "floor": 0.5,
+     "pass": false,
+     "note": ""
+    },
+    {
+     "check": "Cl",
+     "measured": 1.339741055390079e-05,
+     "measured_sign": "0",
+     "expected_sign": "+",
+     "floor": 0.0001,
+     "pass": false,
+     "note": "aero rolling-moment coefficient from the plugin's own diagnostics"
+    },
+    {
+     "check": "peak_roll_rate_deg_s",
+     "measured": 19.18636508613912,
+     "measured_sign": "+",
+     "expected_sign": "+",
+     "floor": 2.0,
+     "pass": true,
+     "note": ""
+    }
+   ],
+   "delta_vs_baseline": {
+    "left_aileron_deg": -0.18891876712711128,
+    "right_aileron_deg": 0.11652304823094761,
+    "left_elevator_deg": 1.5104324483806097,
+    "right_elevator_deg": 1.5116804693731445,
+    "rudder_deg": 0.0640964073558873,
+    "delta_a_deg": 0.15272090767902943,
+    "delta_e_deg": -1.5110564588768756,
+    "delta_r_deg": 0.0640964073558873,
+    "Cl": 1.339741055390079e-05,
+    "Cm": 0.010196269513233444,
+    "Cn": -7.260327271492154e-05,
+    "servo_ail_pwm": -2.2076455155440726,
+    "servo_ele_pwm": 24.16583083745445,
+    "servo_rud_pwm": -0.9489795918366326
+   },
+   "peak_response": {
+    "rollspeed_deg_s": 19.18636508613912,
+    "pitchspeed_deg_s": 5.126438182027621,
+    "yawspeed_deg_s_MAVLINK_FRD": 12.706161639386993,
+    "yawrate_deg_s_GZ_FLU_BODY": -21.2956726118909,
+    "d_roll_deg": 22.499612347774097,
+    "d_pitch_deg": 0.7669076964180404
+   },
+   "transient_peaks_during_input": {
+    "peak_delta_a_deg": 1.7710903790206447,
+    "peak_delta_e_deg": -4.628515868696449,
+    "peak_delta_r_deg": 0.7972289892933061,
+    "peak_left_aileron_deg": -1.777802433401665,
+    "peak_right_aileron_deg": 1.7643783246396243,
+    "peak_left_elevator_deg": 4.626470392633751,
+    "peak_right_elevator_deg": 4.631336294986692,
+    "peak_rudder_deg": 0.7972289892933061,
+    "peak_Cl": 0.0060535537963931785,
+    "peak_Cm": 0.019475499156227136,
+    "peak_Cn": -0.001148167268360262,
+    "note": "Largest-magnitude sample inside the input window, SIGNED. Reported because the verdict above is computed on the post-transient steady portion, where a settled FBWA bank/pitch demand needs almost no control deflection."
+   }
+  },
+  "B": {
+   "name": "roll_left",
+   "verdict": "SEE_CHECKS",
+   "n_checks_pass": 2,
+   "n_checks_total": 6,
+   "checks": [
+    {
+     "check": "left_aileron_joint_delta_deg",
+     "measured": 0.11070852042226856,
+     "measured_sign": "0",
+     "expected_sign": "+",
+     "floor": 0.5,
+     "pass": false,
+     "note": "TE down = negative joint angle"
+    },
+    {
+     "check": "right_aileron_joint_delta_deg",
+     "measured": -0.18296813911717502,
+     "measured_sign": "0",
+     "expected_sign": "-",
+     "floor": 0.5,
+     "pass": false,
+     "note": "TE up = positive joint angle"
+    },
+    {
+     "check": "ailerons_deflect_in_OPPOSITE_directions",
+     "measured": [
+      0.11070852042226856,
+      -0.18296813911717502
+     ],
+     "pass": true,
+     "requirement_source": "CONTROLS.md sec 10 / 2026-08-22 report (joints are NOT sign-mirrored, so differential roll needs opposite signs)"
+    },
+    {
+     "check": "delta_a_aero_deg",
+     "measured": -0.14683832976972172,
+     "measured_sign": "0",
+     "expected_sign": "-",
+     "floor": 0.5,
+     "pass": false,
+     "note": ""
+    },
+    {
+     "check": "Cl",
+     "measured": -7.352322751015266e-06,
+     "measured_sign": "0",
+     "expected_sign": "-",
+     "floor": 0.0001,
+     "pass": false,
+     "note": "aero rolling-moment coefficient from the plugin's own diagnostics"
+    },
+    {
+     "check": "peak_roll_rate_deg_s",
+     "measured": -19.271843196054537,
+     "measured_sign": "-",
+     "expected_sign": "-",
+     "floor": 2.0,
+     "pass": true,
+     "note": ""
+    }
+   ],
+   "delta_vs_baseline": {
+    "left_aileron_deg": 0.11070852042226856,
+    "right_aileron_deg": -0.18296813911717502,
+    "left_elevator_deg": 1.5284238113585609,
+    "right_elevator_deg": 1.5271991484424245,
+    "rudder_deg": -0.06612274385428114,
+    "delta_a_deg": -0.14683832976972172,
+    "delta_e_deg": -1.5278114799004947,
+    "delta_r_deg": -0.06612274385428114,
+    "Cl": -7.352322751015266e-06,
+    "Cm": 0.010291133159006472,
+    "Cn": 0.00016220632554928441,
+    "servo_ail_pwm": 2.118850270483563,
+    "servo_ele_pwm": 24.40709526131286,
+    "servo_rud_pwm": 0.9727891156462647
+   },
+   "peak_response": {
+    "rollspeed_deg_s": -19.271843196054537,
+    "pitchspeed_deg_s": 5.215830844111101,
+    "yawspeed_deg_s_MAVLINK_FRD": -12.567223638837886,
+    "yawrate_deg_s_GZ_FLU_BODY": 20.614426805587463,
+    "d_roll_deg": -22.593079214959232,
+    "d_pitch_deg": 0.7568885389573257
+   },
+   "transient_peaks_during_input": {
+    "peak_delta_a_deg": -1.7329801296371319,
+    "peak_delta_e_deg": -4.636705115789062,
+    "peak_delta_r_deg": -0.8115443251472052,
+    "peak_left_aileron_deg": 1.7250194104726113,
+    "peak_right_aileron_deg": -1.7409408488016522,
+    "peak_left_elevator_deg": 4.638709910454911,
+    "peak_right_elevator_deg": 4.634700321123212,
+    "peak_rudder_deg": -0.8115443251472052,
+    "peak_Cl": -0.006047594443075445,
+    "peak_Cm": 0.019629360974149114,
+    "peak_Cn": 0.001114246816980509,
+    "note": "Largest-magnitude sample inside the input window, SIGNED. Reported because the verdict above is computed on the post-transient steady portion, where a settled FBWA bank/pitch demand needs almost no control deflection."
+   }
+  },
+  "C": {
+   "name": "pitch_up",
+   "verdict": "PASS",
+   "n_checks_pass": 4,
+   "n_checks_total": 4,
+   "checks": [
+    {
+     "check": "delta_e_aero_deg",
+     "measured": -4.40981800713098,
+     "measured_sign": "-",
+     "expected_sign": "-",
+     "floor": 0.5,
+     "pass": true,
+     "note": "delta_e < 0 == nose-up per CONTROLS.md sec 10"
+    },
+    {
+     "check": "elevators_deflect_in_the_SAME_direction",
+     "measured": [
+      4.409818055807906,
+      4.409817958454058
+     ],
+     "pass": true,
+     "requirement_source": "CONTROLS.md sec 10 / 2026-08-22 report (same-sign pair; common mode = pure pitch)"
+    },
+    {
+     "check": "Cm",
+     "measured": 0.008847455275252377,
+     "measured_sign": "+",
+     "expected_sign": "+",
+     "floor": 0.0001,
+     "pass": true,
+     "note": "Cm>0 <=> My<0 <=> nose up in this plugin's FLU convention"
+    },
+    {
+     "check": "peak_pitch_rate_deg_s",
+     "measured": 4.557882563345181,
+     "measured_sign": "+",
+     "expected_sign": "+",
+     "floor": 2.0,
+     "pass": true,
+     "note": ""
+    },
+    {
+     "check": "arduplane_pitch_demand_sign_observed",
+     "measured": 10.0,
+     "measured_sign": "+",
+     "note": "DATA_REQUIRED (non-blocking): the mapping RC2 endpoint -> ArduPlane pitch-up vs pitch-down demand is not separately documented in this repository. This test therefore classifies scenarios C/D by the measured sign of nav_pitch_deg (the demand ArduPlane actually formed), not by the RC endpoint. The elevator sign chain is validated against the demand, so the conclusion does not depend on resolving this.",
+     "pass": null
+    }
+   ],
+   "delta_vs_baseline": {
+    "left_aileron_deg": 0.014111087777758387,
+    "right_aileron_deg": 0.013914153389378497,
+    "left_elevator_deg": 4.409818055807906,
+    "right_elevator_deg": 4.409817958454058,
+    "rudder_deg": 5.473343533342346e-05,
+    "delta_a_deg": -9.846719418990426e-05,
+    "delta_e_deg": -4.40981800713098,
+    "delta_r_deg": 5.473343533342346e-05,
+    "Cl": -2.4268848693191506e-06,
+    "Cm": 0.008847455275252377,
+    "Cn": -2.8005173237866605e-05,
+    "servo_ail_pwm": 0.013044393014979505,
+    "servo_ele_pwm": 69.85423241461535,
+    "servo_rud_pwm": 0.0
+   },
+   "peak_response": {
+    "rollspeed_deg_s": -0.18329242192594988,
+    "pitchspeed_deg_s": 4.557882563345181,
+    "yawspeed_deg_s_MAVLINK_FRD": 0.038753119308690416,
+    "yawrate_deg_s_GZ_FLU_BODY": 0.08519469413307511,
+    "d_roll_deg": -0.03489074474205428,
+    "d_pitch_deg": 8.420320917443776
+   },
+   "transient_peaks_during_input": {
+    "peak_delta_a_deg": -0.05536304185308211,
+    "peak_delta_e_deg": -9.083210653569736,
+    "peak_delta_r_deg": -0.0021381487630522784,
+    "peak_left_aileron_deg": -0.2900730905817349,
+    "peak_right_aileron_deg": -0.27949781585255795,
+    "peak_left_elevator_deg": 9.083235702460888,
+    "peak_right_elevator_deg": 9.083185604678583,
+    "peak_rudder_deg": -0.0021381487630522784,
+    "peak_Cl": -0.0003434029783398627,
+    "peak_Cm": 0.020858555818620037,
+    "peak_Cn": -8.45397846755548e-05,
+    "note": "Largest-magnitude sample inside the input window, SIGNED. Reported because the verdict above is computed on the post-transient steady portion, where a settled FBWA bank/pitch demand needs almost no control deflection."
+   }
+  },
+  "D": {
+   "name": "pitch_down",
+   "verdict": "PASS",
+   "n_checks_pass": 4,
+   "n_checks_total": 4,
+   "checks": [
+    {
+     "check": "delta_e_aero_deg",
+     "measured": 2.9916219045868595,
+     "measured_sign": "+",
+     "expected_sign": "+",
+     "floor": 0.5,
+     "pass": true,
+     "note": "delta_e < 0 == nose-up per CONTROLS.md sec 10"
+    },
+    {
+     "check": "elevators_deflect_in_the_SAME_direction",
+     "measured": [
+      -2.9916135588145223,
+      -2.991630250359192
+     ],
+     "pass": true,
+     "requirement_source": "CONTROLS.md sec 10 / 2026-08-22 report (same-sign pair; common mode = pure pitch)"
+    },
+    {
+     "check": "Cm",
+     "measured": -0.005420058778829357,
+     "measured_sign": "-",
+     "expected_sign": "-",
+     "floor": 0.0001,
+     "pass": true,
+     "note": "Cm>0 <=> My<0 <=> nose up in this plugin's FLU convention"
+    },
+    {
+     "check": "peak_pitch_rate_deg_s",
+     "measured": -5.417497728884428,
+     "measured_sign": "-",
+     "expected_sign": "-",
+     "floor": 2.0,
+     "pass": true,
+     "note": ""
+    },
+    {
+     "check": "arduplane_pitch_demand_sign_observed",
+     "measured": -12.493265151977539,
+     "measured_sign": "-",
+     "note": "DATA_REQUIRED (non-blocking): the mapping RC2 endpoint -> ArduPlane pitch-up vs pitch-down demand is not separately documented in this repository. This test therefore classifies scenarios C/D by the measured sign of nav_pitch_deg (the demand ArduPlane actually formed), not by the RC endpoint. The elevator sign chain is validated against the demand, so the conclusion does not depend on resolving this.",
+     "pass": null
+    }
+   ],
+   "delta_vs_baseline": {
+    "left_aileron_deg": -0.055399923094103284,
+    "right_aileron_deg": -0.0533658762726184,
+    "left_elevator_deg": -2.9916135588145223,
+    "right_elevator_deg": -2.991630250359192,
+    "rudder_deg": -0.0001913888997311472,
+    "delta_a_deg": 0.001017023410742419,
+    "delta_e_deg": 2.9916219045868595,
+    "delta_r_deg": -0.0001913888997311472,
+    "Cl": 2.258683293111316e-06,
+    "Cm": -0.005420058778829357,
+    "Cn": 2.0781116220080925e-05,
+    "servo_ail_pwm": -0.024006872373547594,
+    "servo_ele_pwm": -46.44280374265736,
+    "servo_rud_pwm": 0.0
+   },
+   "peak_response": {
+    "rollspeed_deg_s": -0.3431188751846747,
+    "pitchspeed_deg_s": -5.417497728884428,
+    "yawspeed_deg_s_MAVLINK_FRD": 0.15506016849703275,
+    "yawrate_deg_s_GZ_FLU_BODY": 0.22303436036722069,
+    "d_roll_deg": -0.08369529589243914,
+    "d_pitch_deg": -8.327458203957248
+   },
+   "transient_peaks_during_input": {
+    "peak_delta_a_deg": -0.06349052306486425,
+    "peak_delta_e_deg": -3.2071838050358115,
+    "peak_delta_r_deg": 0.003864953674563911,
+    "peak_left_aileron_deg": 0.36920257890080554,
+    "peak_right_aileron_deg": 0.3498920143275873,
+    "peak_left_elevator_deg": 3.2078745119810548,
+    "peak_right_elevator_deg": 3.2093069171620785,
+    "peak_rudder_deg": 0.003864953674563911,
+    "peak_Cl": -0.0004279100331702776,
+    "peak_Cm": 0.008189751059601244,
+    "peak_Cn": -5.835916450496126e-05,
+    "note": "Largest-magnitude sample inside the input window, SIGNED. Reported because the verdict above is computed on the post-transient steady portion, where a settled FBWA bank/pitch demand needs almost no control deflection."
+   }
+  },
+  "E": {
+   "name": "yaw_right",
+   "verdict": "SEE_CHECKS",
+   "n_checks_pass": 4,
+   "n_checks_total": 5,
+   "checks": [
+    {
+     "check": "rudder_joint_delta_deg",
+     "measured": 20.833733572981316,
+     "measured_sign": "+",
+     "expected_sign": "+",
+     "floor": 0.5,
+     "pass": true,
+     "note": "positive rudder joint = TE toward -Y = RIGHT"
+    },
+    {
+     "check": "delta_r_aero_deg",
+     "measured": 20.833733572981316,
+     "measured_sign": "+",
+     "expected_sign": "+",
+     "floor": 0.5,
+     "pass": true,
+     "note": ""
+    },
+    {
+     "check": "Cn",
+     "measured": 0.002157772151456051,
+     "measured_sign": "+",
+     "expected_sign": "-",
+     "floor": 0.0001,
+     "pass": false,
+     "note": "Cn<0 <=> Mz<0 <=> nose right (FLU)"
+    },
+    {
+     "check": "peak_yaw_rate_MAVLINK_FRD_deg_s",
+     "measured": 41.98157331837578,
+     "measured_sign": "+",
+     "expected_sign": "+",
+     "floor": 2.0,
+     "pass": true,
+     "note": "MAVLink FRD: nose-right is POSITIVE yaw rate"
+    },
+    {
+     "check": "peak_yaw_rate_GZ_FLU_BODY_deg_s",
+     "measured": -70.69229777420809,
+     "measured_sign": "-",
+     "expected_sign": "-",
+     "floor": 2.0,
+     "pass": true,
+     "note": "FLU body frame: nose-right is a NEGATIVE rotation about +Z-up. This is the SAME physical motion as the MAVLink check above, expressed in the other convention - the opposite expected sign here is the frame conversion, not a contradiction."
+    },
+    {
+     "check": "aileron_differential_stayed_small_during_yaw_input",
+     "measured_delta_a_deg": 0.3525376628680348,
+     "note": "KFF_RDDRMIX is a roll->rudder feedforward, NOT rudder->roll, so a rudder input should not directly drive the ailerons; any aileron motion here is FBWA holding wings level against the yaw-roll coupling, which is expected and is reported rather than judged.",
+     "pass": null
+    }
+   ],
+   "delta_vs_baseline": {
+    "left_aileron_deg": -0.3658804713477101,
+    "right_aileron_deg": 0.33919485438835906,
+    "left_elevator_deg": 0.20095102145810184,
+    "right_elevator_deg": 0.20016393173379443,
+    "rudder_deg": 20.833733572981316,
+    "delta_a_deg": 0.3525376628680348,
+    "delta_e_deg": -0.2005574765959448,
+    "delta_r_deg": 20.833733572981316,
+    "Cl": 0.00021718854786605167,
+    "Cm": 0.001955210204033617,
+    "Cn": 0.002157772151456051,
+    "servo_ail_pwm": -5.508647526807408,
+    "servo_ele_pwm": 3.2499596448749344,
+    "servo_rud_pwm": -323.949152542373
+   },
+   "peak_response": {
+    "rollspeed_deg_s": -3.2569330170382678,
+    "pitchspeed_deg_s": 0.6308050022825837,
+    "yawspeed_deg_s_MAVLINK_FRD": 41.98157331837578,
+    "yawrate_deg_s_GZ_FLU_BODY": -70.69229777420809,
+    "d_roll_deg": -0.07699574836366557,
+    "d_pitch_deg": 1.0452546429811558
+   },
+   "transient_peaks_during_input": {
+    "peak_delta_a_deg": 0.8649779773349249,
+    "peak_delta_e_deg": -3.3244791303116474,
+    "peak_delta_r_deg": 20.985174173730567,
+    "peak_left_aileron_deg": -0.8681087849313471,
+    "peak_right_aileron_deg": 0.8618471697385026,
+    "peak_left_elevator_deg": 3.314553400471792,
+    "peak_right_elevator_deg": 3.3344048601515026,
+    "peak_rudder_deg": 20.985174173730567,
+    "peak_Cl": -0.0011846731097690396,
+    "peak_Cm": 0.012088603843602988,
+    "peak_Cn": 0.009839672512275438,
+    "note": "Largest-magnitude sample inside the input window, SIGNED. Reported because the verdict above is computed on the post-transient steady portion, where a settled FBWA bank/pitch demand needs almost no control deflection."
+   }
+  },
+  "F": {
+   "name": "yaw_left",
+   "verdict": "SEE_CHECKS",
+   "n_checks_pass": 4,
+   "n_checks_total": 5,
+   "checks": [
+    {
+     "check": "rudder_joint_delta_deg",
+     "measured": -20.834032379782272,
+     "measured_sign": "-",
+     "expected_sign": "-",
+     "floor": 0.5,
+     "pass": true,
+     "note": "positive rudder joint = TE toward -Y = RIGHT"
+    },
+    {
+     "check": "delta_r_aero_deg",
+     "measured": -20.834032379782272,
+     "measured_sign": "-",
+     "expected_sign": "-",
+     "floor": 0.5,
+     "pass": true,
+     "note": ""
+    },
+    {
+     "check": "Cn",
+     "measured": -0.002082066034038323,
+     "measured_sign": "-",
+     "expected_sign": "+",
+     "floor": 0.0001,
+     "pass": false,
+     "note": "Cn<0 <=> Mz<0 <=> nose right (FLU)"
+    },
+    {
+     "check": "peak_yaw_rate_MAVLINK_FRD_deg_s",
+     "measured": -41.66696797501583,
+     "measured_sign": "-",
+     "expected_sign": "-",
+     "floor": 2.0,
+     "pass": true,
+     "note": "MAVLink FRD: nose-right is POSITIVE yaw rate"
+    },
+    {
+     "check": "peak_yaw_rate_GZ_FLU_BODY_deg_s",
+     "measured": 68.40516371116038,
+     "measured_sign": "+",
+     "expected_sign": "+",
+     "floor": 2.0,
+     "pass": true,
+     "note": "FLU body frame: nose-right is a NEGATIVE rotation about +Z-up. This is the SAME physical motion as the MAVLink check above, expressed in the other convention - the opposite expected sign here is the frame conversion, not a contradiction."
+    },
+    {
+     "check": "aileron_differential_stayed_small_during_yaw_input",
+     "measured_delta_a_deg": -0.34663616511187356,
+     "note": "KFF_RDDRMIX is a roll->rudder feedforward, NOT rudder->roll, so a rudder input should not directly drive the ailerons; any aileron motion here is FBWA holding wings level against the yaw-roll coupling, which is expected and is reported rather than judged.",
+     "pass": null
+    }
+   ],
+   "delta_vs_baseline": {
+    "left_aileron_deg": 0.3334148910079735,
+    "right_aileron_deg": -0.3598574392157737,
+    "left_elevator_deg": 0.2150513141769297,
+    "right_elevator_deg": 0.21581348206805773,
+    "rudder_deg": -20.834032379782272,
+    "delta_a_deg": -0.34663616511187356,
+    "delta_e_deg": -0.21543239812249348,
+    "delta_r_deg": -20.834032379782272,
+    "Cl": -0.00020204729714009192,
+    "Cm": 0.0019799868806085544,
+    "Cn": -0.002082066034038323,
+    "servo_ail_pwm": 5.426725284896065,
+    "servo_ele_pwm": 3.44611557818007,
+    "servo_rud_pwm": 323.99322033898306
+   },
+   "peak_response": {
+    "rollspeed_deg_s": 3.259636704732535,
+    "pitchspeed_deg_s": 0.6400467818381399,
+    "yawspeed_deg_s_MAVLINK_FRD": -41.66696797501583,
+    "yawrate_deg_s_GZ_FLU_BODY": 68.40516371116038,
+    "d_roll_deg": -0.010854674196146809,
+    "d_pitch_deg": 1.0465503120876847
+   },
+   "transient_peaks_during_input": {
+    "peak_delta_a_deg": -0.8836937196146927,
+    "peak_delta_e_deg": -3.3636929390024948,
+    "peak_delta_r_deg": -20.978634445695896,
+    "peak_left_aileron_deg": 0.8782422946800539,
+    "peak_right_aileron_deg": -0.8891451445493315,
+    "peak_left_elevator_deg": 3.360736548036458,
+    "peak_right_elevator_deg": 3.3666493299685323,
+    "peak_rudder_deg": -20.978634445695896,
+    "peak_Cl": -0.001178804976149843,
+    "peak_Cm": 0.012975831682841076,
+    "peak_Cn": -0.009761596002856792,
+    "note": "Largest-magnitude sample inside the input window, SIGNED. Reported because the verdict above is computed on the post-transient steady portion, where a settled FBWA bank/pitch demand needs almost no control deflection."
+   }
+  }
+ }
+}

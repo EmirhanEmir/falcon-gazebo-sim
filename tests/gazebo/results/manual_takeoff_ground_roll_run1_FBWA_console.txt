@@ -1,0 +1,10 @@
+SIM wind: {'SIM_WIND_SPD': 0.0, 'SIM_WIND_DIR': 180.0, 'SIM_WIND_TURB': 0.0, 'SIM_WIND_T': 0.0, 'SIM_WIND_DELAY': None}
+stream rates measured: {'ATTITUDE': 39.33, 'VFR_HUD': 39.33, 'SERVO_OUTPUT_RAW': 39.33, 'GLOBAL_POSITION_INT': 24.67, 'HEARTBEAT': 1.0}
+phase 1: ground settle (no throttle)
+resting: z=-0.0000 m  pitch=-0.000 deg  roll=0.000 deg  yaw=0.000 deg  |v|=0.0000 m/s
+arm ack: {'mavpackettype': 'COMMAND_ACK', 'command': 400, 'result': 0, 'progress': 0, 'result_param2': 0, 'target_system': 255, 'target_component': 0}
+phase 3: throttle ramp (2.0s) then roll, mode=FBWA, sticks NEUTRAL on roll/pitch/yaw
+captured 6416 samples
+wrote /home/emirhan/Desktop/FalconV2/tests/gazebo/results/manual_takeoff_ground_roll_run1_FBWA_timeseries.json
+wrote /home/emirhan/Desktop/FalconV2/tests/gazebo/results/manual_takeoff_ground_roll_run1_FBWA_result.json
+OVERALL: NO_LIFTOFF_WITHIN_WINDOW

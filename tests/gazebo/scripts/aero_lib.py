@@ -102,7 +102,11 @@ def load_config():
     cfg.Cma = lon["Cma_per_rad"]
     cfg.CLq = lon["CLq"]
     cfg.Cmq = lon["Cmq"]
+    # Cmde/CLde: SUPERSEDED_BY_LOOKUP (2026-08-26) - loaded for
+    # documentation/cross-check parity with AerodynamicsSystem.cc, but NOT
+    # used by compute_aero() (replaced by control_surface_lookup.elevator).
     cfg.Cmde = lon["Cmde_per_rad"]
+    cfg.CLde = lon["CLde_per_rad"]
     cfg.CL0 = lon["CL0"]
     cfg.Cm0 = lon["Cm0"]
 
@@ -135,7 +139,40 @@ def load_config():
     cfg.elevatorSign = ctrl["elevator_sign"]
     cfg.aileronSign = ctrl["aileron_sign"]
     cfg.rudderSign = ctrl["rudder_sign"]
-    cfg.controlDeflectionClamp = math.radians(ctrl["control_deflection_clamp_deg"])
+    # control_deflection_clamp_deg was RETIRED from the config on 2026-08-26
+    # (HIGH_DEFLECTION_CONTROL_AERO_IMPLEMENTATION). AerodynamicsSystem.cc
+    # stopped reading it at the same time (see its LoadConfig() comment at
+    # the control_mapping block). This mirror therefore no longer reads it
+    # either; the lookup tables' own +/-45 deg domain bound (interp_linear())
+    # is the single "no silent extrapolation" boundary, exactly as in
+    # AeroModel.hh::InterpLinear().
+
+    # ---- Wide-deflection control-surface lookup tables ----
+    # Mirrors AerodynamicsSystem.cc LoadConfig()'s control_surface_lookup
+    # block EXACTLY, including which arrays are deliberately NOT loaded:
+    #   * rudder Cl_NOT_LOADED_disputed_sign_reference_only is NOT read
+    #     (1B UNRESOLVED_KEEP_CURRENT); ctrlRuddCl is DERIVED below from the
+    #     Cldr scalar, as AeroConfig::Prepare() does.
+    csl = root["control_surface_lookup"]
+    cfg.ctrlBreakpointsRad = [math.radians(x) for x in csl["breakpoints_deg"]]
+
+    elev = csl["elevator"]
+    cfg.ctrlElevDCL = list(elev["dCL"])
+    cfg.ctrlElevDCD = list(elev["dCD"])
+    cfg.ctrlElevDCm = list(elev["dCm"])
+
+    aile = csl["aileron"]
+    cfg.ctrlAileCl = list(aile["Cl"])
+    cfg.ctrlAileCn = list(aile["Cn"])
+    cfg.ctrlAileCY = list(aile["CY"])
+    cfg.ctrlAileCDFull = list(aile["CD_full"])
+    cfg.ctrlAileCLFull = list(aile["CL_full"])
+    cfg.ctrlAileCmFull = list(aile["Cm_full"])
+
+    rudd = csl["rudder"]
+    cfg.ctrlRuddCY = list(rudd["CY"])
+    cfg.ctrlRuddCn = list(rudd["Cn"])
+    cfg.ctrlRuddCDFull = list(rudd["CD_full"])
 
     # AeroConfig::Prepare() mirror
     clLinAtT = cfg.CL0 + cfg.CLa * cfg.alphaTransition
@@ -146,7 +183,40 @@ def load_config():
     cfg.satAneg = clLinAtNegT + cfg.CLmax
     cfg.satKNeg = (cfg.CLa / cfg.satAneg) if cfg.satAneg > 1e-9 else 0.0
 
+    # Derived lookup tables - AeroConfig::Prepare(), kCtrlZeroIndex = 7 is the
+    # delta=0 row of the fixed 15-point grid.
+    z = CTRL_ZERO_INDEX
+    cfg.ctrlAileDCD = [x - cfg.ctrlAileCDFull[z] for x in cfg.ctrlAileCDFull]
+    cfg.ctrlAileDCL = [x - cfg.ctrlAileCLFull[z] for x in cfg.ctrlAileCLFull]
+    cfg.ctrlAileDCm = [x - cfg.ctrlAileCmFull[z] for x in cfg.ctrlAileCmFull]
+    cfg.ctrlRuddDCD = [x - cfg.ctrlRuddCDFull[z] for x in cfg.ctrlRuddCDFull]
+    # ctrlRuddCl: bounded LINEAR EXTENSION of the Cldr scalar (NOT the
+    # disputed-sign YAML table) - AeroModel.hh Prepare():
+    #   ctrlRuddCl[i] = Cldr * ctrlBreakpointsRad[i]
+    cfg.ctrlRuddCl = [cfg.Cldr * x for x in cfg.ctrlBreakpointsRad]
+
     return cfg
+
+
+CTRL_ZERO_INDEX = 7  # AeroModel.hh kCtrlZeroIndex (delta = 0 breakpoint)
+
+
+def interp_linear(breakpoints, values, x):
+    """Mirror of AeroModel.hh::InterpLinear(). Piecewise-linear over a fixed,
+    strictly-increasing breakpoint grid, DOMAIN-BOUNDED: at or beyond the
+    first/last breakpoint the first/last VALUE is returned exactly (clamped),
+    never extrapolated. Valid range is exactly
+    [breakpoints[0], breakpoints[-1]] = +/-45 deg."""
+    lo, hi = breakpoints[0], breakpoints[-1]
+    if x <= lo:
+        return values[0]
+    if x >= hi:
+        return values[-1]
+    import bisect
+    i1 = bisect.bisect_right(breakpoints, x)
+    i0 = i1 - 1
+    t = (x - breakpoints[i0]) / (breakpoints[i1] - breakpoints[i0])
+    return values[i0] + t * (values[i1] - values[i0])
 
 
 def angle_of_attack(u, v, w):
@@ -181,16 +251,35 @@ def compute_aero(cfg, u, v, w, p, q, r, deltaA=0.0, deltaE=0.0, deltaR=0.0):
 
     UPDATED 2026-08-22 (post-Cma-fix re-test pass) to mirror the scoped
     Cm-to-My sign correction and the CLq*qHat addition applied to
-    AeroModel.hh this pass (see that file's "RESOLVED FINDING" comment):
+    AeroModel.hh that pass (see that file's "RESOLVED FINDING" comment):
       - out['Cm'] (diagnostics-comparable) stays in XFLR5's own UNFLIPPED
-        convention: Cm = cmStatic + cmRate, cmStatic = Cm0+Cma*alpha+Cmde*deltaE,
-        cmRate = Cmq*qHat - exactly as before, unchanged.
-      - out['My'] (the actual applied torque) now uses
+        convention: Cm = cmStatic + cmRate.
+      - out['My'] (the actual applied torque) uses
         qbar*S*c_ref*(-cmStatic + cmRate) - only the static/angle-derived
         group is negated for the FLU +Y axis mapping; the self-referential
         rate group is left alone.
-      - out['CL'] now includes the previously-missing CLq*qHat rate term,
-        added UNSATURATED on top of the saturated alpha-driven static term.
+      - out['CL'] includes the CLq*qHat rate term, added UNSATURATED on top
+        of the saturated alpha-driven static term.
+
+    RE-SYNCED 2026-09-10 to the post-2026-08-26 plugin
+    (HIGH_DEFLECTION_CONTROL_AERO_IMPLEMENTATION). The mirror had drifted and
+    was in fact unloadable (it still required the RETIRED
+    control_deflection_clamp_deg key). It now reproduces AeroModel.hh
+    ComputeAero() term-for-term:
+      - the +/-10 deg pre-clamp of deltaA/E/R is GONE (retired with the key);
+        interp_linear()'s own +/-45 deg domain bound is the only boundary.
+      - CY/Cl/Cn control terms come from the aileron/rudder wide-deflection
+        LOOKUPS (dCYa/dCla/dCna, dCYr/dClr/dCnr) and REPLACE - never add to -
+        the old CYda/Clda/Cnda/CYdr/Cldr/Cndr*delta linear terms.
+      - cmStatic uses the elevator dCm lookup + the aileron dCm secondary
+        correction in place of Cmde*deltaE.
+      - CL adds the elevator dCL lookup + aileron dCL secondary correction
+        (CLde*deltaE is never used).
+      - CD adds the three per-surface dCD corrections additively and is then
+        FLOORED at CD0 (AeroModel.hh's documented
+        V1_ADDITIVE_MULTI_SURFACE_DRAG_APPROXIMATION + CD0 floor).
+    No coefficient VALUE is defined here; every number comes from
+    aero_v1_config.yaml via load_config().
     """
     vSq = u * u + v * v + w * w
     V = math.sqrt(vSq)
@@ -204,23 +293,34 @@ def compute_aero(cfg, u, v, w, p, q, r, deltaA=0.0, deltaE=0.0, deltaR=0.0):
     qHat = q * cfg.c_ref / (2.0 * vSafe)
     rHat = r * cfg.b / (2.0 * vSafe)
 
-    def clamp(d):
-        return max(-cfg.controlDeflectionClamp, min(cfg.controlDeflectionClamp, d))
+    bp = cfg.ctrlBreakpointsRad
+    dCYa = interp_linear(bp, cfg.ctrlAileCY, deltaA)
+    dCla = interp_linear(bp, cfg.ctrlAileCl, deltaA)
+    dCna = interp_linear(bp, cfg.ctrlAileCn, deltaA)
+    dCLaCtrl = interp_linear(bp, cfg.ctrlAileDCL, deltaA)
+    dCmaCtrl = interp_linear(bp, cfg.ctrlAileDCm, deltaA)
+    dCDaCtrl = interp_linear(bp, cfg.ctrlAileDCD, deltaA)
 
-    deltaA = clamp(deltaA)
-    deltaE = clamp(deltaE)
-    deltaR = clamp(deltaR)
+    dCYr = interp_linear(bp, cfg.ctrlRuddCY, deltaR)
+    dClr = interp_linear(bp, cfg.ctrlRuddCl, deltaR)
+    dCnr = interp_linear(bp, cfg.ctrlRuddCn, deltaR)
+    dCDrCtrl = interp_linear(bp, cfg.ctrlRuddDCD, deltaR)
 
-    CY = cfg.CYb * beta + cfg.CYp * pHat + cfg.CYr * rHat + cfg.CYda * deltaA + cfg.CYdr * deltaR
-    Cl = cfg.Clb * beta + cfg.Clp * pHat + cfg.Clr * rHat + cfg.Clda * deltaA + cfg.Cldr * deltaR
-    Cn = cfg.Cnb * beta + cfg.Cnp * pHat + cfg.Cnr * rHat + cfg.Cnda * deltaA + cfg.Cndr * deltaR
+    dCLeCtrl = interp_linear(bp, cfg.ctrlElevDCL, deltaE)
+    dCmeCtrl = interp_linear(bp, cfg.ctrlElevDCm, deltaE)
+    dCDeCtrl = interp_linear(bp, cfg.ctrlElevDCD, deltaE)
 
-    cmStatic = cfg.Cm0 + cfg.Cma * alpha + cfg.Cmde * deltaE
+    CY = cfg.CYb * beta + cfg.CYp * pHat + cfg.CYr * rHat + dCYa + dCYr
+    Cl = cfg.Clb * beta + cfg.Clp * pHat + cfg.Clr * rHat + dCla + dClr
+    Cn = cfg.Cnb * beta + cfg.Cnp * pHat + cfg.Cnr * rHat + dCna + dCnr
+
+    cmStatic = cfg.Cm0 + cfg.Cma * alpha + dCmeCtrl + dCmaCtrl
     cmRate = cfg.Cmq * qHat
     Cm = cmStatic + cmRate  # XFLR5's own (unflipped) convention - diagnostics-comparable
 
-    CL = saturated_CL(cfg, alpha) + cfg.CLq * qHat
-    CD = cfg.CD0 + cfg.dragK * CL * CL
+    CL = saturated_CL(cfg, alpha) + cfg.CLq * qHat + dCLeCtrl + dCLaCtrl
+    cdRaw = cfg.CD0 + cfg.dragK * CL * CL + dCDeCtrl + dCDaCtrl + dCDrCtrl
+    CD = max(cdRaw, cfg.CD0)
 
     lift = qbar * cfg.S * CL
     drag = qbar * cfg.S * CD
@@ -235,6 +335,11 @@ def compute_aero(cfg, u, v, w, p, q, r, deltaA=0.0, deltaE=0.0, deltaR=0.0):
     return dict(V=V, alpha=alpha, beta=beta, qbar=qbar, CL=CL, CD=CD, CY=CY,
                 Cl=Cl, Cm=Cm, Cn=Cn, cmStatic=cmStatic, cmRate=cmRate,
                 pHat=pHat, qHat=qHat, rHat=rHat,
+                dCYa=dCYa, dCla=dCla, dCna=dCna,
+                dCYr=dCYr, dClr=dClr, dCnr=dCnr,
+                dCLeCtrl=dCLeCtrl, dCmeCtrl=dCmeCtrl, dCDeCtrl=dCDeCtrl,
+                dCLaCtrl=dCLaCtrl, dCmaCtrl=dCmaCtrl, dCDaCtrl=dCDaCtrl,
+                dCDrCtrl=dCDrCtrl,
                 Fx=fx, Fy=fy, Fz=fz, Mx=mx, My=my, Mz=mz)
 
 

@@ -1,0 +1,22 @@
+subscribing to gz transport ...
+static pose tree entities: 32
+connecting MAVLink ...
+heartbeat custom_mode: 0
+safety switch off ack: {'mavpackettype': 'COMMAND_ACK', 'command': 5300, 'result': 0, 'progress': 0, 'result_param2': 0, 'target_system': 255, 'target_component': 0}
+stream rates measured after request: {'ATTITUDE': 39.0, 'VFR_HUD': 39.0, 'SERVO_OUTPUT_RAW': 39.0, 'HEARTBEAT': 1.0}
+SET_MESSAGE_INTERVAL results (2 == MAV_RESULT_DENIED): {'30': 2, '36': 2, '74': 2, '33': 2, '62': 2}
+
+=== running RC step programme (11 steps) ===
+  step neutral        rc={'rc1': 1500, 'rc2': 1500, 'rc3': 1000, 'rc4': 1500, 'rc5': 1000} hold=2.0s
+  step rc1_max        rc={'rc1': 1900, 'rc2': 1500, 'rc3': 1000, 'rc4': 1500, 'rc5': 1000} hold=1.5s
+  step rc1_min        rc={'rc1': 1100, 'rc2': 1500, 'rc3': 1000, 'rc4': 1500, 'rc5': 1000} hold=1.5s
+  step rc1_max_again  rc={'rc1': 1900, 'rc2': 1500, 'rc3': 1000, 'rc4': 1500, 'rc5': 1000} hold=1.5s
+  step rc2_max        rc={'rc1': 1500, 'rc2': 1900, 'rc3': 1000, 'rc4': 1500, 'rc5': 1000} hold=1.5s
+  step rc2_min        rc={'rc1': 1500, 'rc2': 1100, 'rc3': 1000, 'rc4': 1500, 'rc5': 1000} hold=1.5s
+  step rc4_max        rc={'rc1': 1500, 'rc2': 1500, 'rc3': 1000, 'rc4': 1900, 'rc5': 1000} hold=1.5s
+  step rc4_min        rc={'rc1': 1500, 'rc2': 1500, 'rc3': 1000, 'rc4': 1100, 'rc5': 1000} hold=1.5s
+  step all_max        rc={'rc1': 1900, 'rc2': 1900, 'rc3': 1000, 'rc4': 1900, 'rc5': 1000} hold=1.5s
+  step all_min        rc={'rc1': 1100, 'rc2': 1100, 'rc3': 1000, 'rc4': 1100, 'rc5': 1000} hold=1.5s
+  step neutral_end    rc={'rc1': 1500, 'rc2': 1500, 'rc3': 1000, 'rc4': 1500, 'rc5': 1000} hold=2.0s
+captured 2085 samples
+wrote /home/emirhan/Desktop/FalconV2/tests/gazebo/results/control_surface_visual_joint_consistency_live_timeseries.json

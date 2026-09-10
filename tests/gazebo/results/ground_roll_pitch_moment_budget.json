@@ -1,0 +1,248 @@
+{
+ "analysis": "ground_roll_pitch_rotation_moment_budget",
+ "stage": "MANUAL_TAKEOFF_AND_LIVE_CONTROL_SURFACE_BEHAVIOR_VALIDATION",
+ "date": "2026-09-10",
+ "owner": "controls-integration",
+ "reason": "validation finding m3 - persist the section 3.2a budget; validation finding M3 - add the omitted D'Alembert term",
+ "physics_parameters_changed": false,
+ "simulation_rerun": false,
+ "frames": {
+  "body": "FLU (+X fwd, +Y left, +Z up), CLAUDE.md",
+  "moment_sign": "reported as NOSE-UP magnitude = -M_y; +M_y is NOSE DOWN in FLU (AeroModel.hh:316)"
+ },
+ "constants": {
+  "mass_kg": 6.0,
+  "g_mps2": 9.81,
+  "S_m2": 0.4514,
+  "c_ref_m": 0.224,
+  "Cmq": -10.22875,
+  "cg_link_m": [
+   0.168309,
+   0.0,
+   0.1
+  ],
+  "pivot_link_m": [
+   -0.52688,
+   0.0,
+   0.0
+  ],
+  "dx_m": 0.6951890000000001,
+  "dz_m": 0.1,
+  "hub_height_m": 0.1271,
+  "provenance": "see module docstring; every value is CAD/CLAUDE.md/aero_v1_config.yaml, none is new"
+ },
+ "a_x_method": {
+  "definition": "0.5 s central difference of VFR_HUD groundspeed",
+  "label": "ASSUMPTION - along-track acceleration used as body-X acceleration; exact while tracking straight, approximate during the yawed slide"
+ },
+ "interpretation": "The budget is CONSISTENT WITH the measured absence of rotation; it is not decisive on its own. With the D'Alembert term included the best-case margin is 1.5-2.8% of the ~47 N.m budget, which is inside the span of the single-parameter sensitivities reported per run. The primary evidence for 24MPS_LIFTOFF = GROUND_MODEL_ARTIFACT is the measured pitch trace, not this budget.",
+ "runs": [
+  {
+   "run_index": 1,
+   "source_timeseries": "tests/gazebo/results/manual_takeoff_ground_roll_run1_TAKEOFF_timeseries.json",
+   "n_in_contact_samples": 1308,
+   "in_contact_window": {
+    "throttle_onset_index": 1552,
+    "first_z_above_floor_index": 2860,
+    "t_thr_end_s": 13.444000000000003,
+    "contact_z_floor_m": 0.0001
+   },
+   "best_case_static_only": {
+    "index": 2519,
+    "t_thr_s": 9.945,
+    "V_ms": 24.827926737207452,
+    "Cm_published": 0.6882588841533841,
+    "cm_rate": -2.4732667165522954e-08,
+    "aero_moment_report_Nm": 26.275343513603293,
+    "aero_moment_AeroModel_correct_Nm": 26.275345402018658,
+    "aero_moment_correction_Nm": 1.8884153654141755e-06,
+    "lift_N": 26.338869882369583,
+    "drag_N": 10.694365517445537,
+    "thrust_total_N": 49.77311606210429,
+    "a_x_mps2": 0.08549341341344369,
+    "nose_up_available_static_Nm": 45.655272680002476,
+    "nose_down_required_Nm": 47.244987591493455,
+    "margin_static_only_Nm": -1.5897149114909794,
+    "dalembert_nose_up_Nm": 0.051296048048066215,
+    "margin_with_inertia_Nm": -1.5384188634429132
+   },
+   "best_case_with_dalembert": {
+    "index": 2446,
+    "t_thr_s": 9.195,
+    "V_ms": 24.742403169161935,
+    "Cm_published": 0.6696423332910781,
+    "cm_rate": 2.5196205913753974e-09,
+    "aero_moment_report_Nm": 25.38880884151873,
+    "aero_moment_AeroModel_correct_Nm": 25.38880865046102,
+    "aero_moment_correction_Nm": -1.9105771187355458e-07,
+    "lift_N": 27.496172073071303,
+    "drag_N": 10.313079193222775,
+    "thrust_total_N": 51.755216915973456,
+    "a_x_mps2": 1.4826960679961494,
+    "nose_up_available_static_Nm": 45.53515312814738,
+    "nose_down_required_Nm": 47.49691261002023,
+    "margin_static_only_Nm": -1.9617594818728534,
+    "dalembert_nose_up_Nm": 0.8896176407976896,
+    "margin_with_inertia_Nm": -1.072141841075164
+   },
+   "dalembert_early_sample": {
+    "t_thr_s": 1.0080000000000027,
+    "a_x_mps2": 3.661435758638318,
+    "dalembert_nose_up_Nm": 2.196861455182991
+   },
+   "dalembert_max_over_roll": {
+    "t_thr_s": 1.4699999999999989,
+    "a_x_mps2": 4.966897450811522,
+    "dalembert_nose_up_Nm": 2.980138470486913
+   },
+   "max_abs_aero_moment_correction_Nm": 0.0001506456935942424,
+   "max_abs_cm_rate": 0.45452347634646856,
+   "single_parameter_sensitivities_at_best_case": {
+    "pivot_moved_aft_1cm_Nm": -0.31363827926928695,
+    "hub_height_raised_1cm_Nm": -0.5175521691597346,
+    "Cm_plus_5pct_Nm": 1.2694404420759366,
+    "a_x_plus_10pct_Nm": 0.08896176407976897
+   },
+   "margin_negative_at_every_sample_static_only": true,
+   "margin_negative_at_every_sample_with_dalembert": true
+  },
+  {
+   "run_index": 2,
+   "source_timeseries": "tests/gazebo/results/manual_takeoff_ground_roll_run2_TAKEOFF_timeseries.json",
+   "n_in_contact_samples": 1300,
+   "in_contact_window": {
+    "throttle_onset_index": 1553,
+    "first_z_above_floor_index": 2853,
+    "t_thr_end_s": 13.388000000000005,
+    "contact_z_floor_m": 0.0001
+   },
+   "best_case_static_only": {
+    "index": 2515,
+    "t_thr_s": 9.916000000000004,
+    "V_ms": 24.941196208805508,
+    "Cm_published": 0.6784045865431749,
+    "cm_rate": -1.8868689906030945e-06,
+    "aero_moment_report_Nm": 26.135992651644187,
+    "aero_moment_AeroModel_correct_Nm": 26.13613803743624,
+    "aero_moment_correction_Nm": 0.00014538579205236601,
+    "lift_N": 27.29411242782031,
+    "drag_N": 10.644329947361323,
+    "thrust_total_N": 49.91720400451386,
+    "a_x_mps2": 0.11764557255424474,
+    "nose_up_available_static_Nm": 46.1749923709643,
+    "nose_down_required_Nm": 47.26330116897371,
+    "margin_static_only_Nm": -1.0883087980094146,
+    "dalembert_nose_up_Nm": 0.07058734353254685,
+    "margin_with_inertia_Nm": -1.0177214544768678
+   },
+   "best_case_with_dalembert": {
+    "index": 2438,
+    "t_thr_s": 9.122,
+    "V_ms": 24.791488089067677,
+    "Cm_published": 0.6602865970078097,
+    "cm_rate": 4.4651543699844136e-08,
+    "aero_moment_report_Nm": 25.133521309340473,
+    "aero_moment_AeroModel_correct_Nm": 25.133517910057403,
+    "aero_moment_correction_Nm": -3.399283070137926e-06,
+    "lift_N": 28.276764239687246,
+    "drag_N": 10.215269827072458,
+    "thrust_total_N": 51.5305694947539,
+    "a_x_mps2": 1.5657556201764937,
+    "nose_up_available_static_Nm": 45.81274374707165,
+    "nose_down_required_Nm": 47.46835992278322,
+    "margin_static_only_Nm": -1.6556161757115717,
+    "dalembert_nose_up_Nm": 0.9394533721058963,
+    "margin_with_inertia_Nm": -0.7161628036056754
+   },
+   "dalembert_early_sample": {
+    "t_thr_s": 1.0080000000000027,
+    "a_x_mps2": 3.639289977840154,
+    "dalembert_nose_up_Nm": 2.1835739867040926
+   },
+   "dalembert_max_over_roll": {
+    "t_thr_s": 1.4520000000000053,
+    "a_x_mps2": 4.959429011625453,
+    "dalembert_nose_up_Nm": 2.9756574069752717
+   },
+   "max_abs_aero_moment_correction_Nm": 0.00017541138512910948,
+   "max_abs_cm_rate": 0.4534950001592497,
+   "single_parameter_sensitivities_at_best_case": {
+    "pivot_moved_aft_1cm_Nm": -0.30583235760312755,
+    "hub_height_raised_1cm_Nm": -0.515305694947539,
+    "Cm_plus_5pct_Nm": 1.2566760654670237,
+    "a_x_plus_10pct_Nm": 0.09394533721058963
+   },
+   "margin_negative_at_every_sample_static_only": true,
+   "margin_negative_at_every_sample_with_dalembert": true
+  },
+  {
+   "run_index": 3,
+   "source_timeseries": "tests/gazebo/results/manual_takeoff_ground_roll_run3_TAKEOFF_timeseries.json",
+   "n_in_contact_samples": 1310,
+   "in_contact_window": {
+    "throttle_onset_index": 1555,
+    "first_z_above_floor_index": 2865,
+    "t_thr_end_s": 13.482,
+    "contact_z_floor_m": 0.0001
+   },
+   "best_case_static_only": {
+    "index": 2526,
+    "t_thr_s": 9.988999999999997,
+    "V_ms": 24.745483548746066,
+    "Cm_published": 0.6939587851836406,
+    "cm_rate": -5.86496950445724e-10,
+    "aero_moment_report_Nm": 26.317294091442477,
+    "aero_moment_AeroModel_correct_Nm": 26.317294135926424,
+    "aero_moment_correction_Nm": 4.448394719247517e-08,
+    "lift_N": 25.757478503279604,
+    "drag_N": 10.712989901930435,
+    "thrust_total_N": 49.83124254727858,
+    "a_x_mps2": 0.062101255587445454,
+    "nose_up_available_static_Nm": 45.294908804851964,
+    "nose_down_required_Nm": 47.25237546775911,
+    "margin_static_only_Nm": -1.9574666629071444,
+    "dalembert_nose_up_Nm": 0.03726075335246728,
+    "margin_with_inertia_Nm": -1.920205909554677
+   },
+   "best_case_with_dalembert": {
+    "index": 2453,
+    "t_thr_s": 9.238,
+    "V_ms": 24.659534478094876,
+    "Cm_published": 0.675407028637712,
+    "cm_rate": 3.2431590034519276e-08,
+    "aero_moment_report_Nm": 25.436127275532094,
+    "aero_moment_AeroModel_correct_Nm": 25.436124832756057,
+    "aero_moment_correction_Nm": -2.442776036559735e-06,
+    "lift_N": 26.90514194117902,
+    "drag_N": 10.327318823224429,
+    "thrust_total_N": 51.557785187096364,
+    "a_x_mps2": 1.6060455817479806,
+    "nose_up_available_static_Nm": 45.17301787880084,
+    "nose_down_required_Nm": 47.47181903727995,
+    "margin_static_only_Nm": -2.298801158479108,
+    "dalembert_nose_up_Nm": 0.9636273490487884,
+    "margin_with_inertia_Nm": -1.3351738094303198
+   },
+   "dalembert_early_sample": {
+    "t_thr_s": 1.0079999999999956,
+    "a_x_mps2": 3.6392899778401016,
+    "dalembert_nose_up_Nm": 2.183573986704061
+   },
+   "dalembert_max_over_roll": {
+    "t_thr_s": 1.4539999999999935,
+    "a_x_mps2": 4.929432945866787,
+    "dalembert_nose_up_Nm": 2.9576597675200724
+   },
+   "max_abs_aero_moment_correction_Nm": 0.0001289596853055741,
+   "max_abs_cm_rate": 0.45122271948604326,
+   "single_parameter_sensitivities_at_best_case": {
+    "pivot_moved_aft_1cm_Nm": -0.3195485805882098,
+    "hub_height_raised_1cm_Nm": -0.5155778518709636,
+    "Cm_plus_5pct_Nm": 1.2718063637766048,
+    "a_x_plus_10pct_Nm": 0.09636273490487884
+   },
+   "margin_negative_at_every_sample_static_only": true,
+   "margin_negative_at_every_sample_with_dalembert": true
+  }
+ ]
+}

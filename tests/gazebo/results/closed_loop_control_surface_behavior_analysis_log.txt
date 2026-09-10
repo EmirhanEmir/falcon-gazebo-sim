@@ -1,0 +1,12 @@
+wrote /home/emirhan/Desktop/FalconV2/tests/gazebo/results/closed_loop_control_surface_behavior_analysis.json
+  A/settle_fbwa          n=  229 19.0Hz ail_r=+0.111 ele_r=+0.112 rud_rms=0.001deg damp_ev=0
+  A/guided               n= 2093 19.0Hz ail_r=+0.925 ele_r=-0.514 rud_rms=0.222deg damp_ev=0
+  B/settle_fbwa          n=  229 19.0Hz ail_r=+0.068 ele_r=+0.099 rud_rms=0.001deg damp_ev=0
+  B/loiter               n= 2850 19.0Hz ail_r=+0.942 ele_r=-0.620 rud_rms=0.138deg damp_ev=0
+  C/settle_fbwa          n=  229 19.0Hz ail_r=+0.108 ele_r=+0.103 rud_rms=0.001deg damp_ev=0
+  C/outbound_guided      n=  268 19.0Hz ail_r=+0.235 ele_r=-0.596 rud_rms=0.001deg damp_ev=0
+  C/rtl                  n= 2471 19.0Hz ail_r=+0.913 ele_r=-0.464 rud_rms=0.201deg damp_ev=0
+  D/settle_fbwa          n=  229 19.1Hz ail_r=+0.071 ele_r=+0.068 rud_rms=0.001deg damp_ev=0
+  D/leg0                 n=  498 19.0Hz ail_r=+0.919 ele_r=-0.765 rud_rms=0.276deg damp_ev=0
+  D/leg1                 n=  490 19.0Hz ail_r=+0.971 ele_r=-0.699 rud_rms=0.255deg damp_ev=0
+  D/leg2                 n=  574 19.1Hz ail_r=+0.871 ele_r=-0.726 rud_rms=0.396deg damp_ev=0

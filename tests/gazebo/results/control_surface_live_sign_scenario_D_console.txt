@@ -1,0 +1,7 @@
+
+=== SCENARIO D: pitch_down (world=falcon_v2_ardupilot_basic_closed_loop_flight) ===
+bring-up: arm -> settle -> teleport -> hold-to-trim -> FULL release -> FBWA
+bring-up OK; free flight from: phase3_hold_to_trim release (clear_wrench). No force, torque, pose or velocity is applied to the model after this point.
+stream rates measured: {'ATTITUDE': 41.0, 'VFR_HUD': 41.0, 'NAV_CONTROLLER_OUTPUT': 11.33, 'SERVO_OUTPUT_RAW': 41.0, 'HEARTBEAT': 4.33}
+wrote /home/emirhan/Desktop/FalconV2/tests/gazebo/results/control_surface_live_sign_scenario_D_timeseries.json
+wrote /home/emirhan/Desktop/FalconV2/tests/gazebo/results/control_surface_live_sign_scenario_D_result.json verdict PASS

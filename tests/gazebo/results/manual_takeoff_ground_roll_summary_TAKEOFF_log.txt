@@ -1,0 +1,72 @@
+wrote /home/emirhan/Desktop/FalconV2/tests/gazebo/results/manual_takeoff_ground_roll_summary_TAKEOFF.json
+{
+ "liftoff_t_rel_s": {
+  "values": [],
+  "mean": NaN,
+  "min": null,
+  "max": null,
+  "spread": null
+ },
+ "liftoff_airspeed_ms": {
+  "values": [],
+  "mean": NaN,
+  "min": null,
+  "max": null,
+  "spread": null
+ },
+ "lift_weight_crossing_s": {
+  "values": [
+   31.75368070602417,
+   31.618535041809082,
+   31.814782857894897
+  ],
+  "mean": 31.728999535242718,
+  "min": 31.618535041809082,
+  "max": 31.814782857894897,
+  "spread": 0.19624781608581543
+ },
+ "lift_weight_crossing_airspeed_ms": {
+  "values": [
+   20.233503341674805,
+   21.099205017089844,
+   20.072126388549805
+  ],
+  "mean": 20.468278249104817,
+  "min": 20.072126388549805,
+  "max": 21.099205017089844,
+  "spread": 1.027078628540039
+ },
+ "final_lateral_Y_m": {
+  "values": [
+   -13.68885243321021,
+   -5.23220247867107,
+   -27.418180141863314
+  ],
+  "mean": -15.446411684581529,
+  "min": -27.418180141863314,
+  "max": -5.23220247867107,
+  "spread": 22.185977663192244
+ },
+ "pitch_change_before_liftoff_deg": {
+  "values": [
+   51.98686797321151,
+   56.099273906212304,
+   48.24655802904586
+  ],
+  "mean": 52.1108999694899,
+  "min": 48.24655802904586,
+  "max": 56.099273906212304,
+  "spread": 7.852715877166446
+ },
+ "thrust_diff_N_max_abs": {
+  "values": [
+   1.2033276897859437,
+   1.185059893765942,
+   1.2610942040505364
+  ],
+  "mean": 1.2164939292008075,
+  "min": 1.185059893765942,
+  "max": 1.2610942040505364,
+  "spread": 0.0760343102845944
+ }
+}
