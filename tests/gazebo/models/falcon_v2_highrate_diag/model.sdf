@@ -1,0 +1,2171 @@
+<?xml version="1.0" ?>
+<!--
+  ====================================================================
+  FALCON V2 - HIGH-RATE-DIAGNOSTICS TEST COPY of model/model.sdf.
+  Owner: gazebo-testing. Created 2026-09-11 for stage
+  AIRBORNE_ACTUATOR_LIMIT_CYCLE_ROOT_CAUSE (runtime verification pass).
+
+  CLASSIFICATION: TEMPORARY_TEST_SETUP / OBSERVABILITY-ONLY.
+
+  THIS FILE DIFFERS FROM model/model.sdf ON EXACTLY TWO LINES, and both
+  are PUBLISH RATES of a diagnostics topic:
+     line 1461  FalconV2Aerodynamics <diagnostics_rate_hz>  20.0 -> 1000.0
+     line 1595  FalconV2Actuators    <diagnostics_rate_hz>  20.0 -> 1000.0
+  (propulsion's rate on line 1529 is left at 20.0, untouched.)
+
+  NO physics parameter differs. No mass, CG, inertia, joint axis, joint
+  limit, actuator kp/kd/ki, max_rate_rad_s, max_effort_nm, aerodynamic
+  coefficient, propulsion value, sensor setting, control mapping,
+  ArduPilotPlugin block, mesh or collision element differs. The
+  diagnostics vector is COMPUTED EVERY PHYSICS STEP by
+  plugins/actuators/ActuatorSystem.cc::PreUpdate() regardless of this
+  value; the value only throttles how often the already-computed vector
+  is PUBLISHED. Raising it therefore changes what can be OBSERVED, not
+  what is SIMULATED.
+
+  WHY: docs/test_results/2026-09-10_airborne_actuator_limit_cycle_root_cause.md
+  sec 1.1 states every rate-pinned count it reports is a LOWER BOUND
+  because a 1 kHz physics-engine velocity limit was observed at 20 Hz,
+  and sec 7 item 6 assigns raising that observation rate to
+  `gazebo-testing`. 1000.0 Hz == one publish per 0.001 s
+  <max_step_size>, i.e. the true rate at which the limit is enforced.
+
+  model/model.sdf ITSELF IS NOT MODIFIED. The baseline runs of this
+  stage use model/model.sdf unchanged; this copy is used ONLY for the
+  supplementary high-rate observation, and the two are compared.
+  ====================================================================
+-->
+<sdf version="1.9">
+  <!--
+    ============================================================================
+    FALCON V2 - Gazebo Sim Harmonic model, STRUCTURAL V1
+    ============================================================================
+    Author (this pass): geometry-structure specialist agent, 2026-08-21.
+    Scope: physical/mechanical skeleton ONLY - links, joints, mass, CG,
+    inertia, visual mesh placement, collision primitives, hinge/prop joint
+    geometry. NO aerodynamic force/moment model, NO propulsion thrust/torque
+    model, NO ArduPilot/SITL/MAVLink integration, NO control-actuation logic,
+    and NO plugins of any kind are present in this file. Movable joints exist
+    but carry no actuator and produce no aerodynamic/propulsive force.
+
+    Coordinate frame: Gazebo/CAD FLU body frame throughout (+X forward,
+    +Y left, +Z up), per CLAUDE.md. All 12 STL meshes share one common
+    global/assembly coordinate system (docs/source_of_truth/geometry/
+    GEOMETRY.md section 13.2) - no mesh was re-origined or re-centered; raw
+    mesh coordinates are used with only the STL_SCALE_TO_SI = 0.001 scale
+    factor applied (GEOMETRY.md section 13.1, status
+    DERIVED_WITH_STRONG_EVIDENCE: strong convergent numeric evidence for
+    millimeters, not a CAD-metadata confirmation). No XFLR5-frame value is
+    used anywhere in this file.
+
+    Primary source-of-truth documents (all read in full before authoring
+    this file; see also the updates made alongside this file):
+      - CLAUDE.md
+      - docs/source_of_truth/master/FALCON_V2_MASTER_DATASET_BEFORE_GAZEBO.txt
+      - docs/source_of_truth/geometry/GEOMETRY.md
+      - docs/source_of_truth/mass_properties/MASS_PROPERTIES.md
+      - docs/source_of_truth/controls/CONTROLS.md
+      - docs/source_of_truth/propulsion/PROPULSION.md
+
+    ============================================================================
+    MASS DISTRIBUTION STRATEGY (chosen and documented here; see also
+    GEOMETRY.md "Mass Distribution Strategy" section and the final report)
+    ============================================================================
+    HYBRID of strategy (A) and (B), chosen deliberately over a pure (B):
+      - left_prop / right_prop: assigned their REAL, CONFIRMED component
+        mass (0.0301 kg each, master dataset section 44): real sourced data
+        exists for this component, so an arbitrary near-zero placeholder
+        would be *less* accurate for no benefit. NOT tagged
+        TEMPORARY_NUMERICAL_MASS (it is real data), but each prop's
+        ROTATIONAL INERTIA below IS tagged V1_PROVISIONAL_ROTATIONAL_INERTIA
+        (exact prop rotational inertia is not known; see per-link comment).
+      - left_aileron / right_aileron / left_elevator / right_elevator /
+        rudder: no component-level mass exists anywhere in the source of
+        truth for these specific parts (MASS_PROPERTIES.md section 6:
+        airframe structural mass is an undifferentiated approx 3.58 kg
+        DATA_REQUIRED remainder). Each is assigned a TEMPORARY_NUMERICAL_MASS
+        of 0.001 kg (1 g): a near-massless numerical minimum, NOT a physical
+        claim.
+      - base_link carries the remainder: 6.000 - (2*0.0301 + 5*0.001)
+        = 6.000 - 0.0652 = 5.9348 kg, so total mass across all 8 links
+        sums to EXACTLY 6.000 kg (verified in the closing report).
+      - No known component mass is double-counted: motor mass (0.286 kg
+        total) stays inside base_link (motors are fixed visuals, not
+        separate links, per task architecture) and is NOT separately
+        subtracted a second time; propeller mass (0.0602 kg total) is
+        subtracted from base_link exactly once, matching its assignment
+        to left_prop/right_prop.
+
+    KNOWN, DOCUMENTED LIMITATION (flagged for validation, not silently
+    resolved): base_link's <inertial><inertia> below uses the
+    V1_PROVISIONAL whole-aircraft tensor (master dataset section 9/70)
+    UNMODIFIED, i.e. exactly as documented, with no parallel-axis
+    correction for the small mass now moved onto the 7 movable child
+    links. base_link's <inertial><mass> is 5.9348 kg, not the 6.000 kg
+    the tensor's own documentation basis assumes. This is a deliberate
+    choice, not an oversight: the V1 tensor was already an externally
+    supplied XFLR5 input (master dataset section 9: "Use Plane Inertia =
+    OFF ... bu degerler Mean alanina dogrudan girildi"), not a CAD-derived
+    sum over real components, so attempting a rigorous parallel-axis
+    subtraction for 7 assumed point masses would fabricate a precision the
+    source data does not have (MASS_PROPERTIES.md explicitly forbids
+    "silently improving or re-deriving" the V1 tensor without a real
+    component mass distribution). The resulting inconsistency is judged
+    small (0.0652 kg / 6.000 kg is about 1.09% of total mass, located
+    close to the aircraft's central region for the 5 control surfaces and
+    at a modest approx 0.30 m lateral / approx 0.13 m longitudinal offset
+    for the props) and is left for validation to weigh, not silently
+    corrected here. Mass, CG, and inertia are otherwise UNCHANGED from
+    their documented source values: no unauthorized modification.
+
+    ============================================================================
+    COLLISION STRATEGY (see also GEOMETRY.md update alongside this file)
+    ============================================================================
+    No raw high-poly STL mesh is used as collision geometry anywhere in
+    this file (per task instruction). Primitives only:
+      - Fuselage: 3 boxes along X (nose+wing-root band, mid-fuselage,
+        tail band), sized from confirmed GEOMETRY.md section 13/25
+        bounding-box and slice data. The mid-fuselage box's Y half-width
+        has no direct slice measurement in the source of truth and is
+        conservatively set equal to the (confirmed) tail-band Y half-width
+        (0.280 m) rather than interpolated/guessed narrower: tagged
+        ASSUMPTION, deliberately oversized/conservative, never undersized.
+      - Left/right wing: 1 box each, using each wing's own full mesh
+        bounding box (GEOMETRY.md section 13/15). This is a coarse,
+        deliberately conservative (oversized at the tapered tip) V1
+        approximation, not a tapered/multi-segment fit: flagged as a
+        simplification, not final.
+      - Horizontal/vertical tail (fixed portions): NOT given a separate
+        collision primitive. Per GEOMETRY.md section 26.3, the fixed
+        horizontal-stabilizer and vertical-fin structure is part of
+        body.stl, and the fuselage "tail band" box above already fully
+        envelops that region (its Y = +/-0.280 m and Z = [0,0.330480] m
+        span exceed both the elevator's 240 mm half-span and the rudder's
+        299.75 mm max height). Adding a second primitive there would
+        duplicate collision volume.
+      - Motors (left/right): 1 small box each, using the motor mesh's own
+        bounding box. Not explicitly required by the task's collision list
+        (which named fuselage/wing/h-tail/v-tail) but added as a
+        reasonable, low-cost completeness extension: carries no mass (SDF
+        collision geometry is massless; mass is set only in <inertial>).
+      - Movable control surfaces (aileron/elevator/rudder): each gets its
+        own thin box collision matching its own mesh bounding box,
+        expressed in the link's own local frame (offset from the link's
+        hinge-point origin): full derivation in the per-link comments
+        below.
+      - Propellers: NO collision geometry (deliberate V1 decision). A
+        rotating thin disk at high RPM has no current physical use-case in
+        this structural-only pass (no ground-contact or self-collision
+        scenario involves the prop disk specifically), and adding one
+        risks spurious/self-collision artifacts once a propulsion plugin
+        exists. This may be revisited once propulsion/ArduPilot
+        integration exists.
+
+    self_collide is explicitly set false at the model level: several
+    movable-surface meshes intentionally abut/slightly overlap their
+    parent structure at the hinge line (e.g. aileron vs. wing cutout,
+    GEOMETRY.md section 16): enabling self-collision would produce
+    spurious contact forces there with no benefit for this
+    structural-only pass.
+
+    ============================================================================
+    HINGE-AXIS FITTING METHOD (aileron / elevator / rudder): summary; full
+    method, data, and residuals reported in the closing report and in
+    docs/source_of_truth/geometry/GEOMETRY.md (hinge-fit update)
+    ============================================================================
+    Method (CORRECTED, validation review pass - see GEOMETRY.md section
+    33.1 for the full before/after record; this replaces an earlier
+    version of this comment that used a fixed-radius-tolerance vertex
+    average, found by validation not to be reproducible for the secondary
+    (tilt) axis component): direct re-parse of the relevant STL file's own
+    vertex data (read-only; no mesh file modified), sliced into narrow
+    bands (+/-3 mm) centered on each master-dataset-documented %chord
+    station (elevator master dataset section 21; rudder section 29;
+    aileron section 33-34). Within each band, the forward-most (hinge-side)
+    point is found by a DETERMINISTIC, exactly-reproducible rule: take the
+    single greatest-X value in the band (xmax), then collect every vertex
+    within 0.001 mm of xmax (true float32-duplicate points, arising from
+    STL's per-triangle unshared vertex storage: the same physical point is
+    stored once per adjacent triangle), round to 3 decimal mm and take the
+    UNIQUE spatial points (not multiplicity-weighted - triangle-density
+    around a vertex varies with local mesh topology and must not bias the
+    average), then average those unique point(s). This eliminates the
+    band-width/tolerance sensitivity that caused the secondary-axis
+    non-reproducibility: a wider fixed-radius tolerance was pulling in
+    unrelated nearby vertices (a different part of the local surface, or,
+    for the rudder, an uneven mix of left/right skin-duplicate counts)
+    whose distance from xmax happened to fall inside the tolerance, biasing
+    the secondary-axis (Y or Z) mean in a way that was not stable under
+    reasonable tolerance choices - exactly what validation's independent
+    re-derivation surfaced. The station's own independent variable (Y for
+    aileron/elevator, Z for rudder) is taken from the SAME extremal
+    point(s)' actual coordinate, not the nominal master-dataset target
+    (e.g. the nominal y=70 mm station's true extremal vertex sits at
+    y=72.616 mm - a few mm off nominal, expected since we are locating a
+    real mesh feature within a band, not assuming it sits at the band
+    center). A 2D least-squares line was then fit through these per-station
+    points (X, and the secondary axis, each regressed linearly against the
+    station's own actual coordinate).
+    Boundary-station exclusion (elevator, rudder): the two stations sitting
+    exactly at the movable surface's own mesh Y/Z boundary (elevator
+    y=50.6/240 mm; rudder z=130.5/299.0 mm) were EXCLUDED: both
+    independently return X = -472.684 mm, exactly the mesh's own global
+    bounding-box max-X vertex, at BOTH the root AND tip band, ~2 mm off the
+    smooth trend defined by the interior stations - an end-cap/boundary-
+    face contamination artifact (the flat face closing off the mesh at its
+    own Y/Z extremity), not the true local hinge chord position. Confirmed
+    reproducible under the corrected deterministic method (not an artifact
+    of the old tolerance-average method).
+    Aileron tip-station exclusion (secondary/Z axis only, new finding this
+    pass): station y=784.875 mm's extremal vertex (Y=782.582, Z=128.564 mm)
+    is a local outlier ~12 mm above the smooth Z(Y) trend established by
+    Y=700-780 mm (which rises smoothly from Z~115.8 to Z~116.9 mm over that
+    range) - confirmed via a band-width sensitivity scan to be a single,
+    isolated tip-proximity artifact vertex (station y=784.875 sits only
+    4.865 mm from the aileron mesh's own tip boundary at y=789.740 mm,
+    likely a tip-cap/closing-face vertex). The PRIMARY (X) value at this
+    same station (X=33.396 mm) is NOT similarly affected - it stays
+    consistent with the smooth X(Y) trend - so the aileron's X-fit still
+    safely uses all 4 given stations, while its Z-fit (secondary/tilt
+    axis) uses only the 3 non-tip stations (313.950, 470.925, 627.900 mm).
+    Rudder's lateral (Y) hinge position: NOT forced by assumption - it now
+    has direct, rigorous per-station evidence. At every interior station,
+    the true extremal-X point is a MIRROR-SYMMETRIC PAIR of distinct
+    vertices (Y = +d and Y = -d, essentially identical X and Z) - the
+    hinge cut face's two skin surfaces (left/right of the thin rudder,
+    Y-thickness ~8-9 mm) meet at almost exactly the same X. Averaging the
+    two UNIQUE points of each pair gives Y = 0.0000 mm exactly, at every
+    single interior station (5 of 5) - not "noise consistent with Y=0" (an
+    earlier, weaker characterization this comment previously used) but a
+    direct, exact, per-station geometric confirmation. A prior version of
+    this analysis reported Y-values of a few tenths of a mm using the
+    tolerance-average method and separately, validation's own
+    re-derivation using a naive single-vertex tie-break reported -3.6 to
+    -4.4 mm - both are explained by the same underlying tie: any method
+    that does not correctly identify and evenly average the true mirror
+    pair will read out an arbitrary, method-dependent value between 0 and
+    the pair's own +/-d spread, which is exactly what both those imperfect
+    methods did.
+
+    Residuals (RMS / max, mm, PRIMARY axis = X for all three; interior/
+    non-outlier stations only, corrected deterministic method):
+      - Elevator (4 interior stations: y=70,130,190,220 mm): RMS 0.0096
+        mm, max 0.0153 mm.
+      - Rudder (5 interior stations: z=145,180,215,250,285 mm): RMS 0.0263
+        mm, max 0.0349 mm.
+      - Aileron (4 stations: y=313.95,470.93,627.90,784.88 mm): RMS
+        0.0123 mm, max 0.0204 mm.
+    Residuals (RMS / max, mm, SECONDARY/tilt axis - Z for elevator/aileron,
+    Y for rudder - reported separately per validation's request, not
+    previously published):
+      - Elevator Z(Y), 4 interior stations: RMS 0.0003 mm, max 0.0004 mm.
+        Fitted slope dZ/dY = -0.002072 (tilt approx -0.119 deg) - an ORDER
+        OF MAGNITUDE smaller than an earlier, incorrect version of this
+        file's dZ/dY=-0.022208 (tilt approx -1.27 deg), which was an
+        artifact of the old tolerance-average method, not a real feature.
+      - Rudder Y(Z), 5 interior stations: RMS 0.0000 mm, max 0.0000 mm
+        (exact, by the mirror-pair-averaging construction above). Y is
+        therefore set to exactly 0 with direct per-station evidence, not
+        assumption.
+      - Aileron Z(Y), 3 non-tip-outlier stations: RMS 0.0020 mm, max
+        0.0028 mm. Fitted slope dZ/dY = +0.014147 (tilt approx +0.81 deg) -
+        different from an earlier, incorrect version of this file's
+        dZ/dY=+0.019252 (tilt approx +1.10 deg, computed including the
+        tip-outlier station), and also different from validation's own
+        rough independent estimate (dZ/dY approx 0.025-0.036, which their
+        review noted was itself "depending on band-width/vertex-selection"
+        - consistent with that estimate also being affected by the same
+        tip-proximity artifact under a less deterministic method).
+    All three PRIMARY (X) fits remain sub-0.04 mm RMS, essentially a
+    straight line in each case, consistent with GEOMETRY.md's prior
+    qualitative "nearly straight, mildly swept" characterization (section
+    17/18/27). The SECONDARY (tilt) axis is now also reproducibly fit,
+    with residuals reported for the first time, rather than asserted from
+    an unstable, tolerance-dependent average.
+
+    Left/right mirror symmetry: aileron and elevator hinge lines are
+    derived for the right side by an exact Y-mirror of the left-side fit
+    (right Y = -left Y; right dX/dY = -left dX/dY; right dZ/dY = -left
+    dZ/dY): consistent with the already-CONFIRMED Y-mirror symmetry of the
+    underlying meshes (GEOMETRY.md section 22, deltas <=0.052 mm for every
+    L/R pair). No independent right-side STL re-fit was performed since
+    the source meshes are themselves confirmed exact mirrors; a full
+    independent right-side re-fit is left as an optional cross-check for
+    validation.
+
+    SIGN CONVENTION: SIGN_TEST_REQUIRED for all 5 control-surface joints.
+    The <axis><xyz> vectors below define the joint's ROTATION AXIS
+    direction only: they do NOT assert which physical rotation direction
+    (e.g. trailing-edge-up vs. -down) corresponds to a positive commanded
+    joint angle in Gazebo. Per CONTROLS.md section 4, this must be
+    resolved later by ELEVATOR_TEST / AILERON_TEST / RUDDER_TEST
+    (gazebo-testing owns execution; controls-integration owns the actuator
+    once tested).
+
+    ============================================================================
+    CONTROL-SURFACE JOINT LIMIT UPDATE (task ACTUATOR_SERVO_MODEL_V1,
+    controls-integration specialist agent, 2026-08-23) - cross-referenced
+    from each of the 5 <joint> blocks below, read this once here rather than
+    repeated five times.
+    ============================================================================
+    All 5 control-surface joints' <limit><lower>/<upper> below were widened
+    from +/-0.5236 rad (+/-30 deg, the prior MECHANICAL_INITIAL_LIMIT value)
+    to +/-0.7853981634 rad (+/-45 deg exactly, pi/4) and retagged
+    MECHANICAL_ACTUATOR_LIMIT_V1. This is geometry-structure's original
+    ownership of the joint <limit> element, updated here by
+    controls-integration per this task's explicit instruction (the same
+    joint-limit review precedent already covered by CONTROLS.md's existing
+    +/-30 deg discussion) - no other joint/link/mass/inertia/mesh/collision
+    element in this file was touched by this update.
+
+    TWO DISTINCT CONCEPTS - DO NOT CONFLATE (this exact warning already
+    existed for the prior +/-30 deg value, CONTROLS.md section 3, and
+    applies identically, unchanged, to the new +/-45 deg value):
+      (1) MECHANICAL travel capability = +/-45 deg = +/-0.7853981634 rad,
+          tag USER_CONFIRMED_MECHANICAL_CAPABILITY (stated directly by the
+          project owner for task ACTUATOR_SERVO_MODEL_V1, not re-derived
+          here) - this is what the <limit> element below now encodes, i.e.
+          what the SERVO/JOINT can physically be commanded to reach.
+      (2) AERODYNAMIC-DERIVATIVE VALIDATED LINEAR RANGE = only
+          approximately +/-10 deg (master dataset section 65/72; the actual
+          XFLR5 Type 7 sweep ranges run for elevator/rudder/aileron were all
+          -10 to +10 deg - CONTROLS.md section 3). Beyond +/-10 deg, the
+          linear extrapolation used by plugins/aerodynamics/AeroModel.hh is
+          NOT_YET_VALIDATED. Widening the MECHANICAL limit to +/-45 deg does
+          NOT change, extend, or imply anything about this separate
+          aerodynamic-validity range - plugins/aerodynamics/ and
+          docs/source_of_truth/aerodynamics/aero_v1_config.yaml are
+          UNCHANGED by this task (no aerodynamic coefficient/control
+          derivative/control-sign-mapping value was touched). A commanded
+          deflection between +/-10 deg and +/-45 deg will physically move
+          the real joint (the actuator has no aerodynamic-validity
+          awareness and must not be given one - that would incorrectly
+          conflate a mechanical/servo concern with a separate aerodynamic-
+          model concern, exactly what CONTROLS.md section 3 already warns
+          against), but the resulting aerodynamic force/moment beyond
+          +/-10 deg should not be trusted as validated until a future
+          HIGH_DEFLECTION_CONTROL_AERO_VALIDATION stage (XFLR5 wide-sweep
+          data, aerodynamics-owned, not this task) updates the high-
+          deflection derivatives.
+
+    Full actuator architecture (rate-limited/effort-bounded servo dynamics
+    now driving these 5 joints via genuine gz::sim::Joint::SetForce()
+    torque, replacing the previous test-script-only direct position
+    injection) is documented in plugins/actuators/README.md and
+    docs/source_of_truth/controls/actuator_v1_config.yaml (the
+    +/-45 deg/max_rate/max_effort dataset the new FalconV2Actuators plugin
+    below loads at Configure() time) - not repeated here.
+
+    ============================================================================
+    PROPELLER LINKS/JOINTS
+    ============================================================================
+    Hub positions (master dataset section 46, CONFIRMED, GEOMETRY.md
+    section 7):
+      left  hub = (0.2951, +0.3000, 0.1271) m
+      right hub = (0.2951, -0.3000, 0.1271) m
+    Axis: +X for both (master dataset section 48: measured prop-face
+    normal (+0.999996, +0.000018, -0.002668), essentially pure +X, approx
+    0.153 deg off).
+    Joint type: revolute with a very large <limit> (+/-1e16 rad) to
+    emulate continuous rotation: SDF has no dedicated "continuous" joint
+    type.
+    Rotation DIRECTION (left=CCW, right=CW, master dataset section 44) is
+    a physical fact recorded here in comments only: it is NOT encoded by
+    the joint definition itself (a single +X axis has no inherent "CCW vs
+    CW" until a plugin commands a signed velocity/torque; no propulsion
+    plugin exists in this pass, so nothing here could enforce it even if
+    it were encoded).
+    VIEWING-REFERENCE-FRAME CAVEAT (correction, validation review pass):
+    master dataset section 44 states only the bare fact "Left prop = CCW /
+    Right prop = CW" - it does NOT state a viewing reference frame (e.g.
+    "as viewed from behind/pilot's-eye" vs. "as viewed from the front"),
+    and no other repository document (PROPULSION.md, CONTROLS.md,
+    GEOMETRY.md) supplies one either. CCW/CW is not a physically meaningful
+    statement without a stated viewpoint (the same physical rotation looks
+    CCW from one end of the shaft and CW from the other), so this specific
+    viewing-frame detail is DATA_REQUIRED, not assumed here. A prior
+    version of this comment asserted "as viewed from behind" without a
+    supporting citation - that was an unsourced claim, not a documented
+    fact, and has been removed rather than re-labeled ASSUMPTION, since no
+    reasoned basis for picking one specific viewpoint over another exists
+    in the source of truth. This must not be lost by a future
+    propulsion-plugin author: left propeller commanded velocity must be
+    positive-CCW and right must be positive-CW, but WHICH viewing
+    convention "CCW"/"CW" was measured against must be confirmed from the
+    manufacturer manual or CAD source before any signed velocity command
+    is written - SIGN_TEST_REQUIRED and VIEWPOINT_CONFIRMATION_REQUIRED,
+    neither resolved here.
+
+    VISUAL-ONLY propeller scale correction: APPLIED, scoped to <visual>
+    only (never <collision>, none exists for props, and never consumed by
+    any physics in this structural-only pass, since no propulsion plugin
+    exists yet). STL mesh propeller diameter approx 0.2734 m is
+    VISUAL_MESH_ONLY (GEOMETRY.md section 20-21.2) and must NEVER be used
+    by any future physics code; the real physical propeller for ALL
+    propulsion/physics calculations is APC 13x6.5E, D = 0.3302 m
+    (PROPULSION.md section 0). Decision: apply an additional 1.208x
+    visual-only enlargement (0.001 * 1.208 = 0.001208) to the propeller
+    <visual><mesh><scale> ONLY, so the model displays at a realistic size.
+    Because a naive uniform scale multiplies ALL vertex coordinates (not
+    just apparent size) about the mesh's own distant local (0,0,0) origin,
+    applying 0.001208 directly would also shift the visually-rendered hub
+    approx 60 mm away from its true position. To keep the enlarged disk
+    centered on the real hub, the <visual><pose> translation was computed
+    as T = -1.208 * hub_position_m (derived and verified numerically to
+    reproduce the hub to less than 0.1 mm; see per-link comment). No
+    <collision> exists for props, so this scale never has an opportunity
+    to leak into any future collision or physics computation.
+  -->
+
+  <model name="falcon_v2">
+    <static>false</static>
+    <self_collide>false</self_collide>
+    <pose>0 0 0 0 0 0</pose>
+
+    <!-- ============================================================
+         BASE LINK: fixed structure - body, both wings, both motor
+         nacelles (visual only), full aircraft mass minus the 7 movable
+         child links, Gazebo/CAD CG, V1_PROVISIONAL whole-aircraft
+         inertia.
+         ============================================================ -->
+    <link name="base_link">
+      <pose>0 0 0 0 0 0</pose>
+
+      <inertial>
+        <!--
+          CG: Gazebo/CAD reference CG (0.168309, 0, 0.100000) m -
+          CONFIRMED, MASS_PROPERTIES.md section 3.1/3.4. This is the ONLY
+          CG used anywhere in this file; the XFLR5 reference CG (0.0637,
+          0, -0.0210) is NEVER used for SDF purposes (CLAUDE.md CG-duality
+          rule).
+          Mass: 5.9348 kg = 6.000 kg total - 0.0652 kg on the 7 movable
+          child links (see mass-distribution-strategy header comment).
+          Inertia: V1_PROVISIONAL whole-aircraft tensor, UNMODIFIED, about
+          the Gazebo/CAD CG, master dataset section 9/70,
+          MASS_PROPERTIES.md section 5.1.
+          Ixz sign convention vs. SDF's expected off-diagonal sign is
+          EXPLICITLY UNVERIFIED (MASS_PROPERTIES.md section 5.1): entered
+          here exactly as documented (+0.01485), flagged, not silently
+          resolved. validation must check this before this value is
+          treated as final.
+        -->
+        <pose>0.168309 0 0.100000 0 0 0</pose>
+        <mass>5.9348</mass>
+        <inertia>
+          <ixx>0.7284</ixx>
+          <iyy>0.2507</iyy>
+          <izz>0.9523</izz>
+          <ixy>0</ixy>
+          <ixz>0.01485</ixz>
+          <iyz>0</iyz>
+        </inertia>
+      </inertial>
+
+      <!-- Fixed visuals: mesh in raw global/assembly coordinates,
+           strategy (A): link origin = model origin = (0,0,0), only the
+           STL_SCALE_TO_SI=0.001 scale applied, no additional visual pose
+           offset, since the mesh already carries the correct absolute
+           position for every fixed part. -->
+      <visual name="body_visual">
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <uri>meshes/body.stl</uri>
+            <scale>0.001 0.001 0.001</scale>
+          </mesh>
+        </geometry>
+      </visual>
+
+      <visual name="left_wing_visual">
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <uri>meshes/left_wing.stl</uri>
+            <scale>0.001 0.001 0.001</scale>
+          </mesh>
+        </geometry>
+      </visual>
+
+      <visual name="right_wing_visual">
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <uri>meshes/right_wing.stl</uri>
+            <scale>0.001 0.001 0.001</scale>
+          </mesh>
+        </geometry>
+      </visual>
+
+      <!--
+        Motor visuals: mesh kept at its own raw global coordinates
+        (strategy A, no re-offset). Per task instruction, this uses the
+        master-dataset/GEOMETRY.md section 7 "motor center" reference -
+        (0.2623, +/-0.3000, 0.1269) m - for POSITIONING PURPOSES only
+        insofar as that is the value the mesh's own placement is
+        cross-checked against; the mesh itself is NOT re-translated to
+        that point (it is already authored in shared global coordinates
+        matching it to within the documented approx 7.3 mm
+        bounding-box-vs-named-center difference noted in GEOMETRY.md
+        section 7, which is explicitly NOT resolved by re-offsetting the
+        mesh - doing so would be an unauthorized mesh/visual placement
+        change beyond this task's scope). The raw mesh, at scale 0.001
+        and zero additional pose, is what is rendered.
+      -->
+      <visual name="left_motor_visual">
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <uri>meshes/left_motor.stl</uri>
+            <scale>0.001 0.001 0.001</scale>
+          </mesh>
+        </geometry>
+      </visual>
+
+      <visual name="right_motor_visual">
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <uri>meshes/right_motor.stl</uri>
+            <scale>0.001 0.001 0.001</scale>
+          </mesh>
+        </geometry>
+      </visual>
+
+      <!-- Fixed collision: primitives only, see collision-strategy
+           header comment for full reasoning and provenance of every
+           box. -->
+
+      <!-- Fuselage box 1: nose + wing-root band. X in
+           [-0.027512,0.526880] (nose tip 0.526880 m confirmed
+           GEOMETRY.md section 13/14; -0.027512 m = wing mesh's own
+           forward X bound). Y=+/-0.094649 m = CONFIRMED wing-root-station
+           body slice (GEOMETRY.md section 25). Z=[0,0.330480] m = full
+           confirmed body Z bound (no nose-specific Z slice exists; using
+           the full range is a deliberately conservative/oversized
+           choice, not a measured nose cross-section). -->
+      <collision name="fuselage_collision_fwd">
+        <pose>0.249684 0 0.165240 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.554392 0.189298 0.330480</size>
+          </box>
+        </geometry>
+      </collision>
+
+      <!-- Fuselage box 2: mid-fuselage, between the wing-root band and
+           the tail band. X in [-0.472684,-0.027512] m (spans between the
+           wing mesh's forward bound and the elevator/rudder mesh's
+           aft-most X bound). Y=+/-0.280000 m is ASSUMPTION: no confirmed
+           mid-fuselage slice exists in the source of truth; the
+           confirmed tail-band half-width (0.280 m, wider than the
+           confirmed wing-root half-width of 0.094649 m) is used here as
+           a deliberately conservative (oversized, never undersized)
+           stand-in. Z full body range as above. -->
+      <collision name="fuselage_collision_mid">
+        <pose>-0.250098 0 0.165240 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.445172 0.560000 0.330480</size>
+          </box>
+        </geometry>
+      </collision>
+
+      <!-- Fuselage box 3: tail band. X in [-0.526880,-0.472684] m (tail
+           tip to the elevator/rudder mesh's own forward X bound).
+           Y=+/-0.280000 m = CONFIRMED tail-station body slice
+           (GEOMETRY.md section 25): this same box also serves as the
+           horizontal/vertical-tail fixed-structure collision volume, per
+           the collision-strategy header comment (its Y and Z extents
+           exceed both the elevator half-span and the rudder height). Z
+           full body range, CONFIRMED (body's own global max Z occurs in
+           this X-band, GEOMETRY.md section 14.1). -->
+      <collision name="fuselage_collision_tail">
+        <pose>-0.499782 0 0.165240 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.054196 0.560000 0.330480</size>
+          </box>
+        </geometry>
+      </collision>
+
+      <!-- Left/right wing collision: single box per wing, each wing's
+           own full mesh bounding box (GEOMETRY.md section 13/15).
+           Deliberately coarse V1 approximation: a constant-chord box is
+           oversized outboard relative to the real tapered planform (root
+           chord 0.260 m vs. tip chord 0.051 m); this is a conservative
+           simplification, not a tapered/multi-segment fit. -->
+      <collision name="left_wing_collision">
+        <pose>0.105743 0.566014 0.127019 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.266510 0.972027 0.046956</size>
+          </box>
+        </geometry>
+      </collision>
+
+      <collision name="right_wing_collision">
+        <pose>0.105743 -0.566014 0.127019 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.266510 0.972027 0.046956</size>
+          </box>
+        </geometry>
+      </collision>
+
+      <!-- Motor collision: small box per motor nacelle, each motor's own
+           full mesh bounding box (GEOMETRY.md section 13/19). Not
+           explicitly required by the task's named collision list; added
+           as a low-cost completeness extension (carries no mass). -->
+      <collision name="left_motor_collision">
+        <pose>0.269577 0.299975 0.126974 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.066484 0.038225 0.038237</size>
+          </box>
+        </geometry>
+      </collision>
+
+      <collision name="right_motor_collision">
+        <pose>0.269577 -0.299975 0.126974 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.066484 0.038225 0.038237</size>
+          </box>
+        </geometry>
+      </collision>
+
+      <!-- ============================================================
+           SENSOR SUITE V1 (author: controls-integration, 2026-08-27, task
+           SENSOR_MODEL_AND_ARDUPLANE_SITL_PREPARATION). Native gz-sim
+           System-plugin-backed sensors (IMU/GPS/baro/magnetometer) - the
+           system plugins that process these <sensor> elements are loaded
+           at the WORLD level (see tests/gazebo/worlds/
+           falcon_v2_sensors_selftest_world.sdf), not here.
+
+           MOUNT LOCATION (all 4, plus the separate custom pitot plugin
+           below): co-located with the Gazebo/CAD CG,
+           (0.168309, 0, 0.100000) m - the SAME point already authoritative
+           for this link's <inertial><pose> above (CLAUDE.md). DOCUMENTED
+           CHOICE, not an arbitrary number: the real physical mounting
+           location of any sensor on the real Falcon V2 airframe is
+           DATA_REQUIRED (no CAD/manual placement data exists in this
+           repository for avionics), so this V1 model uses the one
+           documented, authoritative point already on this airframe rather
+           than inventing an unsourced offset - this also avoids
+           introducing an unvalidated lever-arm velocity effect
+           (V_point = V_cg + omega x r) that no real data could confirm.
+           Tag: SIMULATION_ASSUMPTION (mount point), applies to all 5
+           sensors (4 native below + the pitot plugin, model-level, near
+           the end of this file).
+
+           NOISE: OFF by default in every sensor below (zero-noise
+           deterministic mode, the default/validated mode per task
+           instruction) - no <noise> sub-element is present. A V1_PROVISIONAL
+           optional noise block is shown COMMENTED OUT under each sensor for
+           future use; see docs/source_of_truth/sensors/SENSORS.md sec 7 for
+           the full noise-status record (tag V1_PROVISIONAL_SENSOR_NOISE).
+
+           UPDATE RATES: none are Falcon-specific/Cube-Orange-specific
+           datasheet values (none ingested into this repository) - each is a
+           documented, order-of-magnitude-reasonable V1_PROVISIONAL choice,
+           see SENSORS.md sec 6 for the per-sensor rationale and citations
+           (including gz-sim's own upstream demo world defaults where used
+           as a reference point).
+           ============================================================ -->
+
+      <!-- IMU: orientation_reference_frame=CUSTOM, parent_frame="world",
+           custom_rpy="0 0 0" (NOT the "ENU" localization string, and NOT
+           the "boot-relative" CUSTOM-with-empty-parent_frame default). This
+           choice is deliberate for CLARITY, not because "ENU" was found
+           broken: the imu.sdf spec documents parent_frame="world",
+           custom_rpy="0 0 0" as an explicit, unambiguous alternative ("IMU
+           reports in Gazebo world frame") that avoids depending on
+           interpreting the ENU-string's own indirection through
+           SphericalCoordinates. This task EMPIRICALLY VERIFIED the choice
+           actually used here (paused server, single/double physics step
+           via /world/.../control multi_step, so the model has not yet had
+           time to accumulate any real rotation from free-fall/aero
+           dynamics) against
+           tests/gazebo/worlds/falcon_v2_sensors_selftest_world.sdf's
+           identity-attitude spawn pose: orientation = (w=0.999999,
+           x~0, y=0.0016, z~0) - correctly near-identity (the small
+           residual is a genuine, expected physical effect: a tiny
+           aero-torque-driven angular rate had already begun accumulating
+           over those 2 ms, confirmed consistent with the SAME run's own
+           angular_velocity.y=0.080 rad/s reading at that instant, not a
+           frame-convention artifact). An EARLIER same-task live sample
+           taken several real seconds into an unpaused, uncontrolled
+           free-fall run showed a very different, large-angle orientation
+           and angular_velocity.y ~ 8.9 rad/s - initially mistaken for a
+           possible localization quirk, but confirmed by this controlled
+           single-step re-test to instead be the aircraft GENUINELY
+           tumbling (an unpowered, unstabilized airframe free-falling
+           nose/wings-first from rest generates large, physically real aero
+           moments at extreme angles of attack far outside the validated
+           envelope - expected behavior for that test setup, not a sensor
+           defect). Reported orientation quaternion = rotation of body-FLU
+           relative to Gazebo world frame (CONFIRMED ENU, see Frames.hh
+           header) - the direct input to plugins/sensors/Frames.hh's
+           AttitudeFluEnuToFrdNed() for the future ArduPilot-bridge
+           conversion to FRD/NED. Angular velocity and linear acceleration
+           (specific force) are reported in the sensor's own frame = body
+           FLU (zero relative rotation to base_link) - see SENSORS.md sec
+           4.1 for the full frame derivation and REAL_CONFIG_REFERENCE
+           citation for enable_orientation default (true, unchanged). -->
+      <sensor name="imu_sensor" type="imu">
+        <always_on>1</always_on>
+        <update_rate>100</update_rate>
+        <topic>/model/falcon_v2/sensors/imu</topic>
+        <pose>0.168309 0 0.100000 0 0 0</pose>
+        <imu>
+          <orientation_reference_frame>
+            <localization>CUSTOM</localization>
+            <custom_rpy parent_frame="world">0 0 0</custom_rpy>
+          </orientation_reference_frame>
+        </imu>
+        <!-- V1_PROVISIONAL_SENSOR_NOISE example (OFF - not applied unless
+             uncommented and stddev values are sourced/updated):
+        <imu>
+          <angular_velocity>
+            <x><noise type="gaussian"><mean>0</mean><stddev>0.001</stddev></noise></x>
+            <y><noise type="gaussian"><mean>0</mean><stddev>0.001</stddev></noise></y>
+            <z><noise type="gaussian"><mean>0</mean><stddev>0.001</stddev></noise></z>
+          </angular_velocity>
+          <linear_acceleration>
+            <x><noise type="gaussian"><mean>0</mean><stddev>0.02</stddev></noise></x>
+            <y><noise type="gaussian"><mean>0</mean><stddev>0.02</stddev></noise></y>
+            <z><noise type="gaussian"><mean>0</mean><stddev>0.02</stddev></noise></z>
+          </linear_acceleration>
+        </imu>
+        -->
+      </sensor>
+
+      <!-- ============================================================
+           ARDUPILOT-BRIDGE IMU RELAY SENSOR (additive, NOT a modification
+           of imu_sensor above). Author: controls-integration, 2026-08-27,
+           task ARDUPLANE_SITL_TRANSPORT_AND_ACTUATOR_MAPPING_VALIDATION.
+
+           WHY A SECOND IMU SENSOR INSTANCE: the installed
+           ardupilot_gazebo ArduPilotPlugin (LoadImuSensors()/PreUpdate()
+           in ArduPilotPlugin.cc) does NOT read the sensor's own SDF
+           <topic> value - it independently computes its OWN subscribe
+           topic as gz::sim::scopedName(imuEntity, ecm) + "/imu" (the
+           gz-sim AUTO-GENERATED default sensor topic form, i.e.
+           "/world/<world>/model/falcon_v2/link/base_link/sensor/<sensor
+           name>/imu"), confirmed by direct read of the installed plugin
+           source (/home/emirhan/gazebo_sim/ardupilot_gazebo/src/
+           ArduPilotPlugin.cc lines ~1160-1169). imu_sensor above declares
+           a CUSTOM <topic> (/model/falcon_v2/sensors/imu, already
+           validated/consumed elsewhere in this project) - per gz-sensors'
+           own behavior (EMPIRICALLY CONFIRMED this task via `gz topic -l`
+           against both a custom-topic sensor and a no-topic sensor in a
+           throwaway probe world: a sensor with an explicit <topic>
+           publishes ONLY on that custom topic, never additionally on the
+           auto-generated default), ArduPilotPlugin's computed topic would
+           NEVER match imu_sensor's real topic - imuMsgValid would never
+           become true and CreateStateJSON() would silently never build a
+           packet, i.e. the bridge would structurally never send ANY FDM
+           data to ArduPlane, not merely report wrong numbers. Per this
+           task's explicit instruction, imu_sensor above (prior-stage
+           READY output) is NOT modified to work around this - instead
+           this second, ArduPilot-bridge-ONLY sensor instance is added,
+           deliberately WITHOUT a <topic> element, so gz-sim's own Sensors
+           system assigns it the exact auto-generated default topic that
+           ArduPilotPlugin's own scopedName()+"/imu" computation expects
+           (CONFIRMED equal by construction - both use the same
+           gz::sim::scopedName() free function against the same entity
+           tree - and empirically verified this task by adding an
+           identical no-topic probe IMU sensor to a scratch copy of this
+           model in a throwaway world and reading its real topic via
+           `gz topic -l`: it exactly matched the
+           "/world/<world>/model/<model>/link/<link>/sensor/<name>/imu"
+           pattern). Mount point, orientation_reference_frame, update
+           rate, and zero-noise mode are all IDENTICAL to imu_sensor above
+           (same physical IMU, same already-validated FLU/world-orientation
+           convention - SENSORS.md sec 4.1 - this is a transport-layer
+           duplicate for ArduPilot's exclusive use, not a second physical
+           sensor model or a second set of validated numbers), EXCEPT for
+           its <pose> ROTATION component - see the
+           FLU->FRD GYRO/ACCEL FIX comment immediately below. Full record:
+           docs/source_of_truth/autopilot/
+           SITL_TRANSPORT_AND_ACTUATOR_MAPPING.md. -->
+
+      <!-- ============================================================
+           FLU->FRD GYRO/ACCEL FIX (controls-integration, 2026-08-27,
+           bug-fix follow-up to the above, same task). CRITICAL defect
+           found live by gazebo-testing (docs/test_results/
+           2026-08-27_ardupilot_sitl_transport_actuator_mapping_
+           validation.md sec 5): ArduPilotPlugin::CreateStateJSON()
+           (source-read, ArduPilotPlugin.cc, ~lines 1739-1856) writes this
+           sensor's raw imuMsg.angular_velocity()/linear_acceleration()
+           straight into the JSON "gyro"/"accel_body" fields with ZERO
+           rotation applied - modelXYZToAirplaneXForwardZDown (the
+           FLU->FRD body-frame transform, GZ_PI about X, see gazeboXYZToNED
+           discussion above) is composed and used ONLY for
+           position/velocity/quaternion in this plugin version, never for
+           the IMU message. Confirmed live: with a zero-rotation <pose>,
+           roll-axis gyro read back correctly (FLU +X = FRD +X, no flip
+           needed) but pitch/yaw showed NO sign flip at all - raw FLU
+           reaching ArduPlane's FRD-assuming AHRS/EKF unconverted (root
+           cause of the persistent "AHRS: DCM Roll/Pitch inconsistent"
+           prearm failure that session).
+
+           FIX: since ArduPilotPlugin never rotates the IMU message itself,
+           the correction is baked into THIS sensor's own mounting
+           ROTATION (position offset unchanged) instead - a 180 deg
+           rotation about body X, numerically IDENTICAL to
+           modelXYZToAirplaneXForwardZDown's own compiled default
+           (Pose3d(0,0,0,GZ_PI,0,0)) and to plugins/sensors/Frames.hh's
+           already-tested FluFrdSwap()/kQFluToFrdRot (same 180 deg-about-X
+           quaternion, reused here, not re-derived).
+
+           VERIFIED CORRECT against gz-sim8/gz-sensors8 source before
+           applying (not assumed) - this is NOT a cosmetic mounting
+           label, it genuinely changes the sensor's raw output:
+           - gz-sim Physics.cc (systems/physics/Physics.cc, "body angular
+             velocity"/"body linear acceleration" blocks, ~line 3807/3854):
+             for a non-link entity (e.g. a sensor) with a <pose> offset
+             from its parent link, the reported components::AngularVelocity/
+             LinearAcceleration are computed as
+             entityWorldPose.Rot().RotateVectorReverse(entityWorldVec) -
+             i.e. the WORLD-frame vector is rotated into the entity's OWN
+             FULLY-COMPOSED world orientation (parent link rotation
+             CHAINED WITH this sensor's own local <pose> rotation), not
+             just the parent link's orientation. So a rotation on this
+             <pose> element genuinely rotates the raw gyro/accel this
+             sensor reports, exactly like a physically re-oriented chip
+             would.
+           - gz-sensors ImuSensor::Update() (ImuSensor.cc ~line 231-235)
+             rotates gravity into this same fully-composed local frame
+             for the accelerometer's specific-force contribution
+             (worldPose.Rot().Inverse().RotateVector(gravity)) - i.e.
+             accel_body gets the SAME rotation consistently, gravity
+             compensation included.
+           - Algebra check: RotateVectorReverse by a pure 180 deg-about-X
+             rotation R (self-inverse, R=diag(1,-1,-1)) applied on top of
+             the already-FLU link-frame vector gives (x,-y,-z) -
+             EXACTLY FluFrdSwap(). For a pure body +X (roll) rate this
+             leaves X unchanged (matches the already-correct, must-not-
+             break roll-axis result); for pure +Y (pitch) or +Z (yaw)
+             rates it flips sign - matches the required FLU->FRD
+             conversion on those two axes.
+           - This sensor's own "orientation" quaternion output (gz.msgs.
+             IMU.orientation) DOES change as a side effect (its
+             orientationReference is captured at the new, rotated initial
+             pose) but is IRRELEVANT here: CreateStateJSON() (confirmed by
+             source read) never reads this sensor's orientation field at
+             all - ArduPilot's quaternion/position/velocity come from a
+             separate, already-validated wldAToBdyA-transformed pose
+             pipeline, untouched by this change.
+
+           Scope: this fix touches ONLY imu_sensor_ardupilot's <pose>
+           rotation. imu_sensor above (the original, prior-stage-validated
+           sensor feeding plugins/sensors/ diagnostics) is NOT touched -
+           its own FLU->FRD conversion (where needed) is handled entirely
+           in software via Frames.hh::FluFrdSwap(), a different, already-
+           validated mechanism appropriate for that sensor's own
+           consumers. -->
+      <sensor name="imu_sensor_ardupilot" type="imu">
+        <always_on>1</always_on>
+        <update_rate>100</update_rate>
+        <pose degrees="true">0.168309 0 0.100000 180 0 0</pose>
+        <imu>
+          <orientation_reference_frame>
+            <localization>CUSTOM</localization>
+            <custom_rpy parent_frame="world">0 0 0</custom_rpy>
+          </orientation_reference_frame>
+        </imu>
+      </sensor>
+
+      <!-- GPS (navsat): reports lat/lon/alt (WGS84, per world
+           spherical_coordinates) and velocity_east/north/up explicitly
+           (gz.msgs.NavSat, CONFIRMED via navsat.proto) - i.e. ENU by
+           construction, no ambiguity. Position reference origin is the
+           world's <spherical_coordinates> block
+           (lat=0,lon=0,elevation=0 - PLACEHOLDER_ORIGIN, DATA_REQUIRED for
+           Falcon's real flight-test location, see SENSORS.md sec 5). -->
+      <sensor name="gps_sensor" type="navsat">
+        <always_on>1</always_on>
+        <update_rate>5</update_rate>
+        <topic>/model/falcon_v2/sensors/gps</topic>
+        <pose>0.168309 0 0.100000 0 0 0</pose>
+      </sensor>
+
+      <!-- Barometer (air_pressure): publishes gz.msgs.FluidPressure (Pa).
+           reference_altitude=0 matches the world spherical_coordinates
+           elevation=0 placeholder origin above - consistent, not a second,
+           independently-chosen number. ArduPilot's own barometer backend
+           converts pressure->altitude itself (out of scope here, next
+           stage). -->
+      <sensor name="baro_sensor" type="air_pressure">
+        <always_on>1</always_on>
+        <update_rate>50</update_rate>
+        <topic>/model/falcon_v2/sensors/baro</topic>
+        <pose>0.168309 0 0.100000 0 0 0</pose>
+        <air_pressure>
+          <reference_altitude>0</reference_altitude>
+        </air_pressure>
+      </sensor>
+
+      <!-- Magnetometer: REMOVED from here (2026-08-27 bug-fix follow-up,
+           controls-integration). The native gz-sim <sensor type=
+           "magnetometer"> + world-level gz-sim-magnetometer-system pairing
+           that used to live at this location was live-validated by
+           gazebo-testing (docs/test_results/
+           2026-08-27_sensor_model_sitl_preparation.md sec 5) to publish a
+           constant ~0.32-magnitude field_tesla output, completely
+           unresponsive to a 100x change in the declared world
+           <magnetic_field> value - a confirmed, reproducible TEST_FAILED,
+           not a sign/frame/config error in this repository's SDF (this
+           agent independently reproduced the same defect via live gdb
+           instrumentation of the installed
+           libgz-sensors8-magnetometer.so.8.2.2 - see
+           plugins/sensors/MagnetometerSystem.hh header comment for the
+           full evidence trail). Replaced by the custom
+           FalconV2Magnetometer plugin (model-level <plugin> block near
+           FalconV2Pitot below, same architectural pattern), which
+           publishes on the SAME topic (/model/falcon_v2/sensors/mag,
+           gz.msgs.Magnetometer, field_tesla, body FLU frame, zero relative
+           rotation to base_link - so no downstream consumer needs to
+           change) and genuinely consumes a documented Earth-field value -
+           see SENSORS.md sec 4.4. -->
+    </link>
+
+    <!-- ============================================================
+         LEFT AILERON: movable link, mesh-pose strategy (B): link origin
+         placed at the fitted hinge line's root point (y=313.950 mm end
+         of the XFLR5-active span, master dataset section 33), mesh
+         visual/collision offset by the negative of that same point so
+         the rendered mesh does not visually shift (link_origin +
+         mesh_offset reproduces the mesh's own authored global position,
+         verified numerically).
+
+         CORRECTED this pass (validation review; see header comment
+         "HINGE-AXIS FITTING METHOD" and GEOMETRY.md section 33.1 for full
+         method/evidence): the secondary (Z/tilt) axis component below was
+         re-derived with a deterministic method and a documented tip-
+         outlier exclusion; the primary (X) component and link origin's
+         X/Y are effectively unchanged (sub-0.001 m), Z changed by
+         approx 0.5 mm.
+
+         Link origin (m):      (0.032943, 0.313950, 0.110356)
+         Mesh visual offset:  (-0.032943, -0.313950, -0.110356)
+         Joint axis (unit vec, fitted hinge-line direction, dY=+1 sense):
+                                (0.000994, 0.999899, 0.014146)
+         Movable span reference (XFLR5-active): y = 0.313950 to 0.784875 m
+         Hinge fit residual, PRIMARY/X (mm): RMS 0.0123, max 0.0204 (4
+         stations). Hinge fit residual, SECONDARY/Z (mm): RMS 0.0020, max
+         0.0028 (3 stations; y=784.875 mm excluded from the Z-fit only, as
+         a tip-proximity artifact - see header comment; its X value is
+         unaffected and still used).
+         Hinge %chord evidence (master dataset section 33-34): approx
+         69.75% to 72.14% band
+         Mass: TEMPORARY_NUMERICAL_MASS = 0.001 kg (see header comment)
+         Inertia: thin-box approximation using this link's own mesh
+         bounding-box size (61.119 x 479.366 x 20.953 mm), about this
+         link's own local mass-center estimate (its mesh bounding-box
+         center): a geometric approximation for a near-massless
+         placeholder link, not a claim of physical accuracy.
+         ============================================================ -->
+    <link name="left_aileron">
+      <pose>0.032943 0.313950 0.110356 0 0 0</pose>
+
+      <inertial>
+        <pose>-0.025962 0.236107 0.007807 0 0 0</pose>
+        <mass>0.001</mass>
+        <inertia>
+          <ixx>1.9186e-05</ixx>
+          <iyy>3.4788e-07</iyy>
+          <izz>1.9461e-05</izz>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyz>0</iyz>
+        </inertia>
+      </inertial>
+
+      <visual name="left_aileron_visual">
+        <pose>-0.032943 -0.313950 -0.110356 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <uri>meshes/left_aileron.stl</uri>
+            <scale>0.001 0.001 0.001</scale>
+          </mesh>
+        </geometry>
+      </visual>
+
+      <collision name="left_aileron_collision">
+        <pose>-0.025962 0.236107 0.007807 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.061119 0.479366 0.020953</size>
+          </box>
+        </geometry>
+      </collision>
+    </link>
+
+    <!-- Mechanical limit +/-45 deg (0.7853981634 rad), tagged
+         MECHANICAL_ACTUATOR_LIMIT_V1 (widened from the prior +/-30 deg
+         MECHANICAL_INITIAL_LIMIT, task ACTUATOR_SERVO_MODEL_V1,
+         controls-integration, 2026-08-23 - see the file-header
+         "CONTROL-SURFACE JOINT LIMIT UPDATE" section above for the full
+         MECHANICAL-vs-AERODYNAMIC-validity distinction, not repeated per
+         joint). +/-45 deg is USER_CONFIRMED_MECHANICAL_CAPABILITY for this
+         task, NOT a claim that the aerodynamic model is linear that far;
+         the aero-validated linear range is still only approx +/-10 deg, a
+         separate fact, CONTROLS.md section 3, UNCHANGED by this task. Joint
+         rotation sign: SIGN_TEST_REQUIRED historically, now
+         VERIFIED_BY_GAZEBO_GEOMETRY_SIGN_TEST (CONTROLS.md section 10) -
+         unaffected by this limit change. -->
+    <joint name="left_aileron_joint" type="revolute">
+      <parent>base_link</parent>
+      <child>left_aileron</child>
+      <axis>
+        <xyz>0.000994 0.999899 0.014146</xyz>
+        <limit>
+          <lower>-0.7853981634</lower>
+          <upper>0.7853981634</upper>
+        </limit>
+      </axis>
+    </joint>
+
+    <!-- ============================================================
+         RIGHT AILERON: exact Y-mirror of left_aileron (link origin Y
+         and axis X/Z-slope components negated), per the mesh's own
+         confirmed Y-mirror symmetry (GEOMETRY.md section 22, deltas
+         <=0.052 mm).
+         ============================================================ -->
+    <link name="right_aileron">
+      <pose>0.032943 -0.313950 0.110356 0 0 0</pose>
+
+      <inertial>
+        <pose>-0.025962 -0.236107 0.007807 0 0 0</pose>
+        <mass>0.001</mass>
+        <inertia>
+          <ixx>1.9186e-05</ixx>
+          <iyy>3.4788e-07</iyy>
+          <izz>1.9461e-05</izz>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyz>0</iyz>
+        </inertia>
+      </inertial>
+
+      <visual name="right_aileron_visual">
+        <pose>-0.032943 0.313950 -0.110356 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <uri>meshes/right_aileron.stl</uri>
+            <scale>0.001 0.001 0.001</scale>
+          </mesh>
+        </geometry>
+      </visual>
+
+      <collision name="right_aileron_collision">
+        <pose>-0.025962 -0.236107 0.007807 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.061119 0.479366 0.020953</size>
+          </box>
+        </geometry>
+      </collision>
+    </link>
+
+    <!-- Mechanical limit +/-45 deg, MECHANICAL_ACTUATOR_LIMIT_V1, mirror of
+         left_aileron_joint - see that joint's comment above and the
+         file-header "CONTROL-SURFACE JOINT LIMIT UPDATE" section for the
+         full MECHANICAL-vs-AERODYNAMIC-validity distinction. -->
+    <joint name="right_aileron_joint" type="revolute">
+      <parent>base_link</parent>
+      <child>right_aileron</child>
+      <axis>
+        <xyz>-0.000994 0.999899 -0.014146</xyz>
+        <limit>
+          <lower>-0.7853981634</lower>
+          <upper>0.7853981634</upper>
+        </limit>
+      </axis>
+    </joint>
+
+    <!-- ============================================================
+         LEFT ELEVATOR: movable link, strategy (B). Link origin at the
+         fitted hinge line's root point (y=50.6 mm, movable-span root
+         per master dataset section 21).
+
+         CORRECTED this pass (validation review; see header comment
+         "HINGE-AXIS FITTING METHOD" and GEOMETRY.md section 33.1): the
+         secondary (Z/tilt) axis component was re-derived with a
+         deterministic method (previous version's dZ/dY=-0.022208, an
+         order of magnitude too large, was a tolerance-average artifact).
+         X/Y are effectively unchanged; Z changed by approx 1.1 mm.
+
+         Link origin (m):      (-0.474959, 0.050600, 0.087119)
+         Mesh visual offset:   (0.474959, -0.050600, -0.087119)
+         Joint axis (unit vec): (0.002983, 0.999993, -0.002072)
+         Movable span: y = 0.0506 to 0.240 m (master dataset section 21;
+         matches left_elevator.stl's own mesh Y-span essentially exactly,
+         per GEOMETRY.md section 26.3 point 3: confirms
+         movable-surface-only scope).
+         Hinge fit residual, PRIMARY/X (mm; 4 interior stations
+         70/130/190/220, boundary stations 50.6/240 excluded as
+         end-cap-contaminated, see header comment): RMS 0.0096, max
+         0.0153. Hinge fit residual, SECONDARY/Z (mm, same 4 stations):
+         RMS 0.0003, max 0.0004 - a very tight fit; tilt approx -0.12 deg.
+         Hinge %chord evidence (master dataset section 21): 74.71% (root)
+         to 62.54% (tip).
+         Component scope: RESOLVED movable-surface-only, body.stl carries
+         the fixed horizontal-stabilizer structure (GEOMETRY.md section
+         26.3; small stated residual ambiguity, not CAD-confirmed).
+         ============================================================ -->
+    <link name="left_elevator">
+      <pose>-0.474959 0.050600 0.087119 0 0 0</pose>
+
+      <inertial>
+        <pose>-0.020211 0.094700 -0.004031 0 0 0</pose>
+        <mass>0.001</mass>
+        <inertia>
+          <ixx>2.9962e-06</ixx>
+          <iyy>1.7540e-07</iyy>
+          <izz>3.1579e-06</izz>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyz>0</iyz>
+        </inertia>
+      </inertial>
+
+      <visual name="left_elevator_visual">
+        <pose>0.474959 -0.050600 -0.087119 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <uri>meshes/left_elevator.stl</uri>
+            <scale>0.001 0.001 0.001</scale>
+          </mesh>
+        </geometry>
+      </visual>
+
+      <collision name="left_elevator_collision">
+        <pose>-0.020211 0.094700 -0.004031 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.044973 0.189400 0.009066</size>
+          </box>
+        </geometry>
+      </collision>
+    </link>
+
+    <!-- Mechanical limit +/-45 deg (0.7853981634 rad), tagged
+         MECHANICAL_ACTUATOR_LIMIT_V1 (widened from the prior +/-30 deg
+         MECHANICAL_INITIAL_LIMIT, task ACTUATOR_SERVO_MODEL_V1,
+         controls-integration, 2026-08-23 - see the file-header
+         "CONTROL-SURFACE JOINT LIMIT UPDATE" section for the full
+         MECHANICAL-vs-AERODYNAMIC-validity distinction, not repeated per
+         joint; the aero-validated linear range is still only approx
+         +/-10 deg, UNCHANGED by this task). Joint rotation sign:
+         historically ELEVATOR_SIGN_TEST_REQUIRED, now
+         VERIFIED_BY_GAZEBO_GEOMETRY_SIGN_TEST (CONTROLS.md section 10) -
+         unaffected by this limit change. -->
+    <joint name="left_elevator_joint" type="revolute">
+      <parent>base_link</parent>
+      <child>left_elevator</child>
+      <axis>
+        <xyz>0.002983 0.999993 -0.002072</xyz>
+        <limit>
+          <lower>-0.7853981634</lower>
+          <upper>0.7853981634</upper>
+        </limit>
+      </axis>
+    </joint>
+
+    <!-- ============================================================
+         RIGHT ELEVATOR: exact Y-mirror of left_elevator.
+         ============================================================ -->
+    <link name="right_elevator">
+      <pose>-0.474959 -0.050600 0.087119 0 0 0</pose>
+
+      <inertial>
+        <pose>-0.020211 -0.094700 -0.004031 0 0 0</pose>
+        <mass>0.001</mass>
+        <inertia>
+          <ixx>2.9962e-06</ixx>
+          <iyy>1.7540e-07</iyy>
+          <izz>3.1579e-06</izz>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyz>0</iyz>
+        </inertia>
+      </inertial>
+
+      <visual name="right_elevator_visual">
+        <pose>0.474959 0.050600 -0.087119 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <uri>meshes/right_elevator.stl</uri>
+            <scale>0.001 0.001 0.001</scale>
+          </mesh>
+        </geometry>
+      </visual>
+
+      <collision name="right_elevator_collision">
+        <pose>-0.020211 -0.094700 -0.004031 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.044973 0.189400 0.009066</size>
+          </box>
+        </geometry>
+      </collision>
+    </link>
+
+    <!-- Mechanical limit +/-45 deg, MECHANICAL_ACTUATOR_LIMIT_V1, mirror of
+         left_elevator_joint - see that joint's comment above and the
+         file-header "CONTROL-SURFACE JOINT LIMIT UPDATE" section for the
+         full MECHANICAL-vs-AERODYNAMIC-validity distinction. -->
+    <joint name="right_elevator_joint" type="revolute">
+      <parent>base_link</parent>
+      <child>right_elevator</child>
+      <axis>
+        <xyz>-0.002983 0.999993 0.002072</xyz>
+        <limit>
+          <lower>-0.7853981634</lower>
+          <upper>0.7853981634</upper>
+        </limit>
+      </axis>
+    </joint>
+
+    <!-- ============================================================
+         RUDDER: movable link, strategy (B), single centerline part (no
+         mirror). Link origin at the fitted hinge line's bottom/root
+         point (z=130.5 mm, movable-height-band root per master dataset
+         section 29).
+
+         CORRECTED this pass (validation review; see header comment
+         "HINGE-AXIS FITTING METHOD" and GEOMETRY.md section 33.1): Y is
+         still exactly 0, but now backed by direct per-station
+         mirror-pair evidence (5 of 5 interior stations, exact) rather
+         than a "noise" characterization of a tolerance-average result
+         that (as validation found) was not actually reproducible. X
+         changed by approx 0.02 mm (well within the prior fit's own
+         residual band) - not a substantive change.
+
+         Link origin (m):      (-0.476094, 0.000000, 0.130500)
+         Mesh visual offset:   (0.476094, 0.000000, -0.130500)
+         Joint axis (unit vec): (0.010378, 0.000000, 0.999946)
+         Movable height band: z = 0.1305 to 0.299 m (master dataset
+         section 29).
+         Hinge fit residual, PRIMARY/X (mm; 5 interior stations 145/180/
+         215/250/285, boundary stations 130.5/299.0 excluded as
+         end-cap-contaminated, see header comment): RMS 0.0263, max
+         0.0349. Hinge fit residual, SECONDARY/Y (mm, same 5 stations):
+         RMS 0.0000, max 0.0000 (exact - see header comment for the
+         mirror-pair-averaging evidence this is based on).
+         Hinge %chord evidence (master dataset section 29): 74.81%
+         (bottom) to 54.79% (top).
+         Component scope: RESOLVED movable-surface-only, body.stl carries
+         the fixed vertical-fin structure (GEOMETRY.md section 26.3).
+         ============================================================ -->
+    <link name="rudder">
+      <pose>-0.476094 0.000000 0.130500 0 0 0</pose>
+
+      <inertial>
+        <pose>-0.019247 0.000000 0.084500 0 0 0</pose>
+        <mass>0.001</mass>
+        <inertia>
+          <ixx>2.4008e-06</ixx>
+          <iyy>2.5653e-06</iyy>
+          <izz>1.7775e-07</izz>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyz>0</iyz>
+        </inertia>
+      </inertial>
+
+      <visual name="rudder_visual">
+        <pose>0.476094 0.000000 -0.130500 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <uri>meshes/rudder.stl</uri>
+            <scale>0.001 0.001 0.001</scale>
+          </mesh>
+        </geometry>
+      </visual>
+
+      <collision name="rudder_collision">
+        <pose>-0.019247 0.000000 0.084500 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.045316 0.008911 0.169500</size>
+          </box>
+        </geometry>
+      </collision>
+    </link>
+
+    <!-- Mechanical limit +/-45 deg (0.7853981634 rad), tagged
+         MECHANICAL_ACTUATOR_LIMIT_V1 (widened from the prior +/-30 deg
+         MECHANICAL_INITIAL_LIMIT, task ACTUATOR_SERVO_MODEL_V1,
+         controls-integration, 2026-08-23 - see the file-header
+         "CONTROL-SURFACE JOINT LIMIT UPDATE" section for the full
+         MECHANICAL-vs-AERODYNAMIC-validity distinction, not repeated per
+         joint; the aero-validated linear range is still only approx
+         +/-10 deg, UNCHANGED by this task). Joint rotation sign:
+         historically RUDDER_SIGN_TEST_REQUIRED, now
+         VERIFIED_BY_GAZEBO_GEOMETRY_SIGN_TEST (CONTROLS.md section 10) -
+         unaffected by this limit change. -->
+    <joint name="rudder_joint" type="revolute">
+      <parent>base_link</parent>
+      <child>rudder</child>
+      <axis>
+        <xyz>0.010378 0.000000 0.999946</xyz>
+        <limit>
+          <lower>-0.7853981634</lower>
+          <upper>0.7853981634</upper>
+        </limit>
+      </axis>
+    </joint>
+
+    <!-- ============================================================
+         LEFT PROP: movable link, strategy (B). Link origin at the real
+         physical prop hub (CONFIRMED, master dataset section 46,
+         GEOMETRY.md section 7).
+
+         Link origin (m):        (0.2951, 0.3000, 0.1271)
+         VISUAL scale APPLIED: 0.001208 (= 0.001 * 1.208 visual-only
+         enlargement, see header comment and PROPULSION.md section
+         0/21.2).
+         Visual pose offset T = -1.208 * hub_position_m, so the enlarged
+         disk stays centered on the true hub:
+                                  (-0.356481, -0.362400, -0.153537)
+         Verified numerically: hub vertex (295.084,300.007,127.073 mm
+         raw) reproduces to (0.29508, 0.30001, 0.12707) m, within 0.1 mm
+         of the true hub (0.2951, 0.3000, 0.1271) m.
+         Mass: 0.0301 kg - REAL, CONFIRMED component mass (master dataset
+         section 44), NOT TEMPORARY_NUMERICAL_MASS. Subtracted from
+         base_link.
+         Rotational inertia: V1_PROVISIONAL_ROTATIONAL_INERTIA. Exact
+         prop rotational inertia is NOT known (PROPULSION.md section
+         1.1/4: "Exact rotational inertia henuz bilinmiyor"). This value
+         is a simple uniform-thin-rod approximation using the REAL mass
+         (0.0301 kg) and REAL diameter (D=0.3302 m, APC 13x6.5E, never
+         the STL mesh figure): I = (1/12)*m*D^2 = 2.7349e-4 kg*m^2,
+         applied identically to all three axes (Ixx=Iyy=Izz) as a
+         simplifying symmetric approximation that deliberately ignores
+         the arbitrary instantaneous blade-angle asymmetry of the
+         exported mesh pose. This is a placeholder for the
+         spin-up/spin-down dynamics a future propulsion plugin will need
+         (PROPULSION.md section 4), NOT a measured or CAD value.
+         Rotation direction: physical fact only, NOT enforced by this
+         joint, see header comment ("PROPELLER LINKS/JOINTS").
+         No collision geometry (see header comment).
+         ============================================================ -->
+    <link name="left_prop">
+      <pose>0.2951 0.3000 0.1271 0 0 0</pose>
+
+      <inertial>
+        <pose>0 0 0 0 0 0</pose>
+        <mass>0.0301</mass>
+        <inertia>
+          <ixx>2.7349e-04</ixx>
+          <iyy>2.7349e-04</iyy>
+          <izz>2.7349e-04</izz>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyz>0</iyz>
+        </inertia>
+      </inertial>
+
+      <visual name="left_prop_visual">
+        <pose>-0.356481 -0.362400 -0.153537 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <uri>meshes/left_pervane.stl</uri>
+            <!-- VISUAL_MESH_ONLY scale correction: 0.001 * 1.208. Never
+                 use this scale factor, or the resulting approx 0.2734 m
+                 mesh diameter, in any physics/propulsion calculation.
+                 Real physical diameter for physics is always D=0.3302 m
+                 (PROPULSION.md section 0). -->
+            <scale>0.001208 0.001208 0.001208</scale>
+          </mesh>
+        </geometry>
+      </visual>
+    </link>
+
+    <!-- Continuous-rotation joint: revolute with a very large limit (no
+         dedicated SDF "continuous" joint type exists). Axis = +X (master
+         dataset section 48, essentially pure +X, approx 0.153 deg
+         measured offset not applied here: V1 uses the idealized +X per
+         task instruction). Rotation direction (left=CCW) is a documented
+         physical fact, not enforced by this joint definition (no
+         propulsion plugin exists yet to command a signed velocity). -->
+    <joint name="left_prop_joint" type="revolute">
+      <parent>base_link</parent>
+      <child>left_prop</child>
+      <axis>
+        <xyz>1 0 0</xyz>
+        <limit>
+          <lower>-1e16</lower>
+          <upper>1e16</upper>
+        </limit>
+      </axis>
+    </joint>
+
+    <!-- ============================================================
+         RIGHT PROP: mirror hub position (Y negated); mesh itself is a
+         distinct, separately-modeled physical part (right-hand/CW-handed
+         propeller per master dataset section 44, NOT a simple Y-mirror
+         of the left propeller's blade geometry in reality, though the
+         STL mesh bounding-box placement is a Y-mirror to <0.015 mm,
+         GEOMETRY.md section 22). Visual scale correction and
+         rotational-inertia reasoning identical to left_prop.
+         ============================================================ -->
+    <link name="right_prop">
+      <pose>0.2951 -0.3000 0.1271 0 0 0</pose>
+
+      <inertial>
+        <pose>0 0 0 0 0 0</pose>
+        <mass>0.0301</mass>
+        <inertia>
+          <ixx>2.7349e-04</ixx>
+          <iyy>2.7349e-04</iyy>
+          <izz>2.7349e-04</izz>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyz>0</iyz>
+        </inertia>
+      </inertial>
+
+      <visual name="right_prop_visual">
+        <pose>-0.356481 0.362400 -0.153537 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <uri>meshes/right_pervane.stl</uri>
+            <scale>0.001208 0.001208 0.001208</scale>
+          </mesh>
+        </geometry>
+      </visual>
+    </link>
+
+    <joint name="right_prop_joint" type="revolute">
+      <parent>base_link</parent>
+      <child>right_prop</child>
+      <axis>
+        <xyz>1 0 0</xyz>
+        <limit>
+          <lower>-1e16</lower>
+          <upper>1e16</upper>
+        </limit>
+      </axis>
+    </joint>
+
+    <!-- ============================================================
+         AERODYNAMICS PLUGIN
+         Author (this addition): aerodynamics specialist agent, 2026-08-22,
+         task AERODYNAMICS_V1_IMPLEMENTATION. This is an ADDITIVE change
+         only: no link, joint, mass, CG, inertia, collision, visual, or
+         hinge-geometry element above was modified to add this block
+         (geometry-structure's structural content, lines 1-1042, is
+         unchanged). Scope: aerodynamic force/moment physics only - no
+         propulsion, no control-actuation (this plugin READS the 5
+         control-surface joint positions defined above, it does not
+         command/write them).
+
+         Build: plugins/aerodynamics/ (see plugins/aerodynamics/README.md).
+         Full architecture/provenance/derivation record:
+         docs/source_of_truth/aerodynamics/AERODYNAMICS.md (this pass) and
+         docs/source_of_truth/aerodynamics/aero_v1_config.yaml (the
+         structured coefficient dataset this plugin loads at Configure()
+         time - no coefficient is hardcoded in this SDF block or in the
+         plugin's C++ source).
+
+         config_path is an absolute path, matching this repository's
+         existing convention for single-machine-dev test infrastructure
+         (e.g. tests/gazebo/worlds/*.sdf's file:// includes and
+         tests/gazebo/scripts/*.py's WORLD_SDF constants) - not resolved
+         relative to the model directory by SDF itself; a documented,
+         known V1 portability limitation, not a silent one.
+         ============================================================ -->
+    <plugin filename="FalconV2Aerodynamics" name="falcon_v2_aero::AerodynamicsSystem">
+      <config_path>/home/emirhan/Desktop/FalconV2/docs/source_of_truth/aerodynamics/aero_v1_config.yaml</config_path>
+      <!-- Optional override of the YAML air_density value (kg/m^3). ISA
+           sea-level default 1.225, CONFIRMED provenance - see
+           aero_v1_config.yaml "environment" block. -->
+      <air_density>1.225</air_density>
+      <!-- gz.msgs.Vector3d topic, WORLD frame, m/s. V1: Vwind=0 (no
+           publisher exists yet) - this is the "architecture must support
+           future wind input" hook (CLAUDE.md), not an implemented wind
+           model. -->
+      <wind_topic>/model/falcon_v2/wind</wind_topic>
+      <!-- Throttled gz.msgs.Double_V diagnostics publish rate (Hz) on
+           /model/falcon_v2/aerodynamics/diagnostics. Field order:
+           V, alpha_rad, beta_rad, qbar, CL, CD, CY, Cl, Cm, Cn. -->
+      <diagnostics_rate_hz>1000.0</diagnostics_rate_hz>
+    </plugin>
+
+    <!-- ============================================================
+         PROPULSION PLUGIN
+         Author (this addition): propulsion specialist agent, 2026-08-23,
+         task PROPULSION_V1_IMPLEMENTATION. This is an ADDITIVE change only:
+         no link, joint, mass, CG, inertia, collision, visual, or
+         hinge-geometry element above was modified to add this block
+         (geometry-structure's structural content is unchanged, including
+         left_prop/right_prop's mass/placeholder inertia and
+         left_prop_joint/right_prop_joint's axis/limits - this plugin drives
+         those existing joints' angular VELOCITY each tick, it does not
+         redefine them). Scope: motor/ESC/propeller physics only - no
+         aerodynamic-coefficient physics (plugins/aerodynamics/ untouched),
+         no control-surface actuation, no ArduPilot/SITL.
+
+         Required chain implemented (never bypassed, never collapsed into
+         throttle*maximum_thrust - see CLAUDE.md/PROPULSION.md): throttle ->
+         ESC/motor electrical -> motor torque -> rotor angular dynamics
+         (explicit-Euler state, plugin-owned, integrated every tick) -> RPM
+         -> advance ratio J -> real APC Ct(J,RPM)/Cp(J,RPM) -> thrust +
+         propeller aerodynamic torque -> reaction torque -> force/moment
+         applied to base_link at the real hub (left_hub/right_hub, never at
+         CG). The same omega state also drives left_prop_joint/
+         right_prop_joint's angular velocity, so the visual spin can never
+         diverge from the physics RPM actually producing forces/torques.
+
+         Build: plugins/propulsion/ (see plugins/propulsion/README.md). Full
+         architecture/provenance record:
+         docs/source_of_truth/propulsion/PROPULSION.md and
+         docs/source_of_truth/propulsion/propulsion_v1_config.yaml (the
+         structured dataset this plugin loads at Configure() time - no
+         coefficient is hardcoded in this SDF block or in the plugin's C++
+         source). Real APC 13x6.5E Ct(J)/Cp(J) data:
+         docs/source_of_truth/propulsion/data/apc_13x65e_parsed.csv
+         (mechanically parsed from the official APC performance-data file
+         PER3_13x65E.dat - see data/PROVENANCE.md).
+
+         V1 throttle test interface (no ArduPilot/SITL exists yet): each
+         motor is commanded independently via a gz.msgs.Double topic,
+         clamped to [0,1], defaulting to 0 if never commanded.
+
+         config_path is an absolute path, matching this repository's
+         existing convention (see the aerodynamics plugin block above) - a
+         documented, known V1 portability limitation, not a silent one.
+         ============================================================ -->
+    <plugin filename="FalconV2Propulsion" name="falcon_v2_propulsion::PropulsionSystem">
+      <config_path>/home/emirhan/Desktop/FalconV2/docs/source_of_truth/propulsion/propulsion_v1_config.yaml</config_path>
+      <!-- Optional override of the YAML rho_kg_m3 value (kg/m^3). ISA
+           sea-level default 1.225, CONFIRMED provenance - see
+           propulsion_v1_config.yaml "physics" block. -->
+      <air_density>1.225</air_density>
+      <!-- gz.msgs.Vector3d topic, WORLD frame, m/s - same topic the
+           aerodynamics plugin subscribes to (read-only here), used for
+           relative-airflow V_axial at each motor's hub. Zero until a
+           publisher exists. -->
+      <wind_topic>/model/falcon_v2/wind</wind_topic>
+      <!-- Per-motor throttle command topics, gz.msgs.Double, value clamped
+           to [0,1] by the plugin, default 0 if never published. -->
+      <left_throttle_topic>/model/falcon_v2/propulsion/left/throttle_cmd</left_throttle_topic>
+      <right_throttle_topic>/model/falcon_v2/propulsion/right/throttle_cmd</right_throttle_topic>
+      <!-- Throttled gz.msgs.Double_V diagnostics publish rate (Hz) on
+           /model/falcon_v2/propulsion/diagnostics. Field order (14 fields
+           per motor, left then right): throttle, current_A, Q_motor_Nm,
+           omega_ownframe_rad_s, rpm, J, Ct, Cp, thrust_N, Q_prop_Nm,
+           interpClamped, rpmCapActive, negativeCurrentClamped,
+           currentLimited. -->
+      <diagnostics_rate_hz>20.0</diagnostics_rate_hz>
+    </plugin>
+
+    <!-- ============================================================
+         ACTUATOR/SERVO PLUGIN
+         Author (this addition): controls-integration specialist agent,
+         2026-08-23, task ACTUATOR_SERVO_MODEL_V1. This is an ADDITIVE
+         change only: no link, joint, mass, CG, inertia, collision, visual,
+         or hinge-geometry element was modified to add this block beyond
+         the 5 control-surface joints' own <limit> values (widened to
+         +/-45 deg above, see the file-header "CONTROL-SURFACE JOINT LIMIT
+         UPDATE" section) - this plugin drives those existing 5 joints'
+         real physical motion, it does not redefine their link/geometry.
+         Scope: the physical actuator/servo command chain only (actuator
+         command -> rate-limited/effort-bounded servo dynamics -> real
+         Gazebo joint motion via genuine gz::sim::Joint::SetForce() torque -
+         replaces the previous test-script-only direct position injection
+         as the actuation mechanism for these 5 joints). No aerodynamic-
+         coefficient physics (plugins/aerodynamics/ untouched, no control-
+         sign-mapping value changed), no motor/propulsion physics
+         (plugins/propulsion/ untouched), no ArduPlane/MAVLink/SITL/TECS -
+         this plugin ends at the physical actuator interface.
+         plugins/aerodynamics/AerodynamicsSystem.cc continues to read these
+         same 5 joints' ACTUAL positions from the ECM every tick exactly as
+         before (gz::sim::Joint(e).Position(_ecm)), regardless of what now
+         drives them - unmodified, confirmed by direct reading of that file
+         for this task.
+
+         Build: plugins/actuators/ (see plugins/actuators/README.md). Full
+         architecture/provenance record:
+         docs/source_of_truth/controls/actuator_v1_config.yaml (the
+         structured per-surface travel/rate/effort/control-law dataset this
+         plugin loads at Configure() time - no coefficient is hardcoded in
+         this SDF block or in the plugin's C++ source) and
+         docs/source_of_truth/controls/CONTROLS.md.
+
+         V1 command interface (no ArduPilot/SITL exists yet): each of the 5
+         surfaces is commanded independently via its own gz.msgs.Double
+         topic (physical-angle-radians, hold-last-valid-command failsafe,
+         defaulting to 0 rad/neutral if never commanded - no startup kick).
+
+         config_path is an absolute path, matching this repository's
+         existing convention (see the aerodynamics/propulsion plugin blocks
+         above) - a documented, known V1 portability limitation, not a
+         silent one.
+         ============================================================ -->
+    <plugin filename="FalconV2Actuators" name="falcon_v2_actuators::ActuatorSystem">
+      <config_path>/home/emirhan/Desktop/FalconV2/docs/source_of_truth/controls/actuator_v1_config.yaml</config_path>
+      <!-- Per-surface command topics, gz.msgs.Double, physical-angle-radians,
+           clamped to +/-45 deg by the plugin, rate-limited internally,
+           hold-last-valid-command failsafe, default 0 rad (neutral) if
+           never published. Values below match this plugin's own built-in
+           defaults - listed explicitly here for documentation/
+           discoverability/override, same convention as the propulsion
+           plugin block above's left_throttle_topic/right_throttle_topic. -->
+      <left_aileron_cmd_topic>/model/falcon_v2/actuators/left_aileron/cmd_rad</left_aileron_cmd_topic>
+      <right_aileron_cmd_topic>/model/falcon_v2/actuators/right_aileron/cmd_rad</right_aileron_cmd_topic>
+      <left_elevator_cmd_topic>/model/falcon_v2/actuators/left_elevator/cmd_rad</left_elevator_cmd_topic>
+      <right_elevator_cmd_topic>/model/falcon_v2/actuators/right_elevator/cmd_rad</right_elevator_cmd_topic>
+      <rudder_cmd_topic>/model/falcon_v2/actuators/rudder/cmd_rad</rudder_cmd_topic>
+      <!-- gz.msgs.Double_V diagnostics on
+           /model/falcon_v2/actuators/diagnostics. Field order (7 fields per
+           surface, left_aileron/right_aileron/left_elevator/
+           right_elevator/rudder): cmd_rad, target_clamped_rad, setpoint_rad,
+           actual_angle_rad, actual_rate_rad_s, target_clamp_active,
+           effort_clamp_active - 35 fields total. -->
+      <diagnostics_rate_hz>1000.0</diagnostics_rate_hz>
+    </plugin>
+
+    <!-- ============================================================
+         WIND/GUST GENERATOR PLUGIN
+         Author (this addition): aerodynamics specialist agent, 2026-08-27,
+         task WIND_GUST_DISTURBANCE_MODEL_AND_VALIDATION. This is an
+         ADDITIVE change only: no link, joint, mass, CG, inertia, collision,
+         visual, hinge-geometry, or other <plugin> element above was
+         modified to add this block. Scope: publishes a world-frame wind
+         VELOCITY vector only - it is the FIRST publisher for the
+         PRE-EXISTING /model/falcon_v2/wind topic that
+         plugins/aerodynamics/AerodynamicsSystem.cc and
+         plugins/propulsion/PropulsionSystem.cc already subscribe to and
+         already correctly consume as Vrel = Vbody - Vwind (CONFIRMED by
+         direct read of both files for this task; NEITHER FILE WAS MODIFIED
+         by this task). This plugin NEVER applies a direct force/wrench to
+         any link (no AddWorldForce/AddWorldWrench anywhere in
+         plugins/wind/) - its only physical output is the published
+         velocity vector; all aerodynamic/propulsive effect of wind flows
+         exclusively through the pre-existing relative-airflow consumption
+         in the two files named above.
+
+         Build: plugins/wind/ (see plugins/wind/README.md). Full
+         convention/formula/scope record:
+         docs/source_of_truth/environment/WIND.md.
+
+         Convention: published vectors are the WORLD-FRAME VELOCITY OF THE
+         AIR MASS (not meteorological "wind coming from" phrasing) - see
+         WIND.md sec 2.
+
+         V1 command interface: a live-updatable steady-wind vector
+         (steady_cmd_topic) plus a single schedulable deterministic
+         1-cosine gust (gust_cmd_topic, fixed 6-field order - see WIND.md
+         sec 4/6). V1 LIMITATION (stated, not silent): only ONE gust may be
+         scheduled/in-progress at a time - a new gust command replaces any
+         existing one (WIND.md sec 5).
+         ============================================================ -->
+    <plugin filename="FalconV2Wind" name="falcon_v2_wind::WindSystem">
+      <!-- Constant wind component at startup, world frame, m/s. Default
+           zero vector: with this left at "0 0 0" and no gust ever
+           commanded, the published wind is bit-identical to the prior
+           always-zero behavior (WIND.md sec 8) - purely additive, no
+           existing validated result can change unless this plugin is
+           actively commanded. Live-overwritable via steady_cmd_topic
+           below. -->
+      <steady_wind_mps>0 0 0</steady_wind_mps>
+      <!-- gz.msgs.Vector3d topic, WORLD frame, m/s - the SAME pre-existing
+           topic plugins/aerodynamics/AerodynamicsSystem.cc and
+           plugins/propulsion/PropulsionSystem.cc already subscribe to.
+           Published every PreUpdate() tick (unthrottled), never as a
+           direct force. -->
+      <wind_topic>/model/falcon_v2/wind</wind_topic>
+      <!-- Live steady-wind command, gz.msgs.Vector3d, world frame, m/s.
+           Hold-last-valid-command failsafe; non-finite components
+           rejected. -->
+      <steady_cmd_topic>/model/falcon_v2/wind/steady_cmd</steady_cmd_topic>
+      <!-- Single deterministic 1-cosine gust command, gz.msgs.Double_V,
+           FIXED field order:
+             [0] dir_x, [1] dir_y, [2] dir_z   - raw direction (need not be
+                 pre-normalized; normalized internally; degenerate/near-
+                 zero direction rejected)
+             [3] amplitude_mps                 - peak gust speed, m/s (may
+                 be negative, flips sense relative to dir_x/y/z)
+             [4] start_delay_s                 - seconds from THIS
+                 COMMAND'S RECEIPT (not absolute sim time) - see WIND.md
+                 sec 7 for the exact reference-time mechanism/rationale
+             [5] duration_s                    - seconds, must be > 0
+           V1 LIMITATION: only one gust may be scheduled/in-progress at a
+           time - a new valid command replaces any existing one outright
+           (WIND.md sec 5). -->
+      <gust_cmd_topic>/model/falcon_v2/wind/gust_cmd</gust_cmd_topic>
+    </plugin>
+
+    <!-- ============================================================
+         PITOT (SIMULATED AIRSPEED) SENSOR PLUGIN
+         Author (this addition): controls-integration specialist agent,
+         2026-08-27, task SENSOR_MODEL_AND_ARDUPLANE_SITL_PREPARATION.
+
+         OLD-vs-NEW status (per user-confirmed fact, see
+         docs/source_of_truth/sensors/SENSORS.md sec 1 and
+         docs/source_of_truth/autopilot/SITL_PARAM_MIGRATION.md): the REAL
+         Falcon V2 airframe had NO pitot/airspeed sensor installed when
+         docs/source_of_truth/autopilot/real_aircraft/yeni_pixhawk.param was
+         captured (ARSPD_TYPE=0 there = None). This plugin is a NEW,
+         SIMULATION-ONLY addition (status SIMULATION_ADDED_PITOT_SENSOR) -
+         it does not represent any physical sensor that has flown on the
+         real aircraft.
+
+         WHY A CUSTOM PLUGIN, NOT THE NATIVE gz-sim air_speed <sensor>: see
+         plugins/sensors/PitotModel.hh header comment and SENSORS.md sec 3
+         for the full decision record (short version: the installed
+         sdformat air_speed.sdf sensor spec has no wind-consuming field at
+         all, and the only native Gazebo wind mechanism found on this
+         system, gz-sim-wind-effects-system, is architecturally unrelated
+         to this project's own /model/falcon_v2/wind topic - using it would
+         silently fail the mandatory live headwind/tailwind gust test).
+
+         Subscribes to the EXISTING /model/falcon_v2/wind topic (read-only,
+         same convention as AerodynamicsSystem.cc/PropulsionSystem.cc) -
+         creates NO new command path into aero/propulsion/actuators.
+         air_density_rho_kg_m3 default below is CITED from
+         docs/source_of_truth/aerodynamics/aero_v1_config.yaml
+         environment.air_density_rho_kg_m3 (CONFIRMED, 1.225, ISA
+         sea-level) - not re-derived or independently chosen here.
+         ============================================================ -->
+    <plugin filename="FalconV2Pitot" name="falcon_v2_sensors::PitotSystem">
+      <!-- Mount point (m, FLU, relative to base_link origin) - co-located
+           with the Gazebo/CAD CG per the same documented choice as the 4
+           native sensors above (SIMULATION_ASSUMPTION, mount location
+           DATA_REQUIRED for the real airframe). -->
+      <mount_offset_body>0.168309 0 0.100000</mount_offset_body>
+      <air_density_rho_kg_m3>1.225</air_density_rho_kg_m3>
+      <!-- V1_PROVISIONAL update rate - see SENSORS.md sec 6. -->
+      <update_rate_hz>10.0</update_rate_hz>
+      <!-- V1_PROVISIONAL_SENSOR_NOISE - OFF by default (0.0 = deterministic
+           mode, the default/validated mode). -->
+      <noise_stddev_mps>0.0</noise_stddev_mps>
+      <wind_topic>/model/falcon_v2/wind</wind_topic>
+      <!-- gz.msgs.Double, m/s - scalar airspeed (frame-invariant
+           magnitude of Vrel = Vpoint_world - Vwind_world). -->
+      <airspeed_topic>/model/falcon_v2/sensors/pitot/airspeed_mps</airspeed_topic>
+      <!-- gz.msgs.Double, Pa - standard incompressible dynamic pressure
+           q = 0.5*rho*V^2 (see PitotModel.hh). -->
+      <pressure_topic>/model/falcon_v2/sensors/pitot/differential_pressure_pa</pressure_topic>
+    </plugin>
+
+    <!-- ============================================================
+         MAGNETOMETER SENSOR PLUGIN (custom - replaces the native
+         gz-sim-magnetometer-system)
+         Author (this addition): controls-integration specialist agent,
+         2026-08-27, SENSOR_MODEL_AND_ARDUPLANE_SITL_PREPARATION bug-fix
+         follow-up.
+
+         WHY A CUSTOM PLUGIN: the previously-used native gz-sim
+         <sensor type="magnetometer"> + world-level
+         gz-sim-magnetometer-system pairing (see the REMOVED-sensor comment
+         under base_link above) was live-validated by gazebo-testing to
+         publish a constant ~0.32-magnitude field_tesla output that does
+         NOT respond to the declared world <magnetic_field> value at all
+         (ratio 1.0000 under a 100x scale test) - a confirmed, reproducible
+         defect in the installed gz-sim8/gz-sensors8 binaries on this
+         machine (no source available to patch; see
+         plugins/sensors/MagnetometerSystem.hh header comment for the full
+         gdb-verified evidence trail: the world's declared field DOES reach
+         gz::sensors::v8::MagnetometerSensor::SetWorldMagneticField()
+         correctly - the defect is downstream of that, inside the
+         installed binary's own Update()/publish path, which this agent
+         could not further debug without source and which never actually
+         triggers the exported Update() symbol despite the sensor visibly
+         publishing - see header comment). This plugin follows the exact
+         same architectural precedent as FalconV2Pitot above (native path
+         confirmed unusable for this project's need).
+
+         Publishes on the SAME topic the native sensor used
+         (/model/falcon_v2/sensors/mag), same message type
+         (gz.msgs.Magnetometer, field_tesla, body FLU frame, zero relative
+         rotation to base_link) - no downstream consumer needs to change.
+         Field computation is orientation-only (reads base_link's own
+         world orientation from the ECM, rotates the fixed world-frame
+         field below into body frame via RotateVectorReverse - the same
+         convention already used for this project's IMU specific-force
+         reading); it has no lever-arm/velocity dependence, so unlike the
+         pitot's mount_offset_body, no mount-point parameter is needed
+         here. -->
+    <plugin filename="FalconV2Magnetometer" name="falcon_v2_sensors::MagnetometerSystem">
+      <!-- Fixed Earth magnetic field vector, WORLD (ENU) frame, Tesla.
+           SIMULATION_ASSUMPTION: identical numeric value to what this
+           project's world file already declared via <magnetic_field>
+           (sdformat's own documented world-element default,
+           /usr/share/sdformat14/1.11/world.sdf) - see SENSORS.md sec 4.4.
+           The real Falcon V2 flight-location-specific magnetic field
+           remains DATA_REQUIRED. -->
+      <world_magnetic_field_tesla>5.5645e-6 22.8758e-6 -42.3884e-6</world_magnetic_field_tesla>
+      <!-- V1_PROVISIONAL update rate - matches the value already
+           documented/used for the (now-replaced) native sensor, see
+           SENSORS.md sec 6. -->
+      <update_rate_hz>50.0</update_rate_hz>
+      <!-- gz.msgs.Magnetometer, field_tesla (T), body FLU frame. -->
+      <topic>/model/falcon_v2/sensors/mag</topic>
+    </plugin>
+
+    <!-- ============================================================
+         ARDUPILOT SITL TRANSPORT PLUGIN (official ardupilot_gazebo
+         ArduPilotPlugin - NOT this project's own code)
+         Author (this addition): controls-integration specialist agent,
+         2026-08-27, task
+         ARDUPLANE_SITL_TRANSPORT_AND_ACTUATOR_MAPPING_VALIDATION.
+
+         Purely additive: no link/joint/mass/CG/inertia/collision/visual
+         element, and no other <plugin> block above (aerodynamics/
+         propulsion/actuators/wind/pitot/magnetometer), is modified by this
+         block. Binary: /home/emirhan/gazebo_sim/ardupilot_gazebo/build/
+         libArduPilotPlugin.so (already built, already on
+         GZ_SIM_SYSTEM_PLUGIN_PATH - not built or modified by this task).
+
+         SCOPE (hard boundary, do not exceed - see task brief): transport +
+         command-mapping ONLY. Every one of the 7 <control> blocks below
+         uses type=COMMAND, which ArduPilotPlugin.cc's own
+         ApplyMotorForces() (confirmed by direct source read) handles by
+         publishing a gz.msgs.Double to <cmd_topic> and then
+         unconditionally `continue`-ing - it NEVER reaches the
+         JointForceCmd/JointVelocityCmd/PID-effort code path for a COMMAND
+         channel, i.e. ArduPlane NEVER drives any of these joints directly
+         via force/velocity/position PID. <useForce>0</useForce> is set
+         explicitly below on every block anyway (defense in depth): without
+         it, ArduPilotPlugin's own Reset() function (called on simulation
+         reset/seek, separate from ApplyMotorForces()) would still create a
+         zero-initialized JointForceCmd component on these joints, since
+         useForce defaults to true in the plugin's own source - harmless in
+         practice (COMMAND type never writes a nonzero value into it via
+         ApplyMotorForces()) but unnecessary, so it is disabled explicitly
+         to honor this project's "never useForce=1 on our control-surface/
+         motor joints" rule literally, not just in the common-case code
+         path. Full design record, sign-convention pre-registration, and
+         the GPS/baro/mag/airspeed architecture finding referenced below:
+         docs/source_of_truth/autopilot/
+         SITL_TRANSPORT_AND_ACTUATOR_MAPPING.md - not repeated in full
+         here.
+
+         TRANSPORT: UDP JSON, matching ArduPilotPlugin's own compiled
+         defaults exactly (restated explicitly here for documentation/
+         discoverability, not because the defaults were wrong).
+         connectionTimeoutMaxCount=10 = plugin's own compiled default
+         (ArduPilotPlugin.cc line ~509), not overridden - no project-
+         specific reason to change it this stage. lock_step=1 chosen
+         (matches ardupilot_gazebo's own zephyr_with_ardupilot reference
+         example, deterministic step-for-step sim<->SITL synchronization,
+         no free-running clock drift) - the appropriate choice for this
+         project's physically-defensible-simulation goal; lock_step=0 was
+         not chosen (would let ArduPlane's own wall-clock free-run ahead of
+         or behind Gazebo's physics steps, an unnecessary source of
+         nondeterminism this project has no reason to accept).
+
+         FRAME OVERRIDES - LIVE/EMPIRICAL FINDING (see design doc sec 4 for
+         the full derivation): modelXYZToAirplaneXForwardZDown is LEFT AT
+         ITS COMPILED DEFAULT (no override below) - CONFIRMED correct for
+         FALCON V2's own genuinely-FLU body frame (CLAUDE.md): the default
+         Pose3d(0,0,0,GZ_PI,0,0) (pure 180 deg roll about body X) maps
+         (X-fwd,Y-left,Z-up) -> (X-fwd,Y-right,Z-down) exactly, i.e. FLU ->
+         FRD, verified by direct computation with the exact gz.math7
+         Quaterniond/RotateVector API the plugin itself uses (not merely
+         asserted from the in-source comment, which this task's brief
+         correctly flagged as unreliable/copy-pasted).
+         gazeboXYZToNED IS EXPLICITLY OVERRIDDEN below, contrary to this
+         task's own initial "CONFIRMED FAVORABLE" hint - that hint did NOT
+         survive live verification: the compiled default
+         Pose3d(0,0,0,GZ_PI,0,0) is NOT a correct world-frame ENU->NED
+         conversion (it only flips Gazebo world Y/Z sign while leaving
+         Gazebo's own +X-world axis mapped into NED's NORTH slot, i.e. it
+         silently swaps "East" and "North" - confirmed numerically this
+         task via gz.math7's own Quaterniond.RotateVector, the exact API
+         the plugin calls: rotating a pure +X-world/"East" unit vector by
+         the default override yields (1,0,0), i.e. it reads out as pure
+         NED-North, not NED-East). The override used here,
+         "0 0 0 180 0 90" (matching ardupilot_gazebo's own
+         zephyr_with_ardupilot reference example's choice for this SAME
+         tag), was verified with the identical method to correctly map a
+         pure Gazebo-world +X/"East" vector to pure NED-East (0,1,0) and a
+         pure Gazebo-world +Y/"North" vector to pure NED-North (1,0,0).
+         This project's own world files all declare
+         <spherical_coordinates><world_frame_orientation>ENU</...>
+         (tests/gazebo/worlds/*.sdf, confirmed by grep for this task), so
+         this correction applies to every world this model is loaded into,
+         not a one-off. -->
+    <plugin name="ArduPilotPlugin" filename="ArduPilotPlugin">
+      <!-- Port settings - all restated explicitly even where they equal
+           the plugin's own compiled default, per this project's existing
+           documentation convention (see aerodynamics/propulsion plugin
+           blocks above). fdm_port_in=9002 matches ArduPilot's own JSON
+           backend compiled default control_port (SIM_JSON.h,
+           /home/emirhan/gazebo_sim/ardupilot/libraries/SITL/SIM_JSON.h
+           line 63) - confirmed by direct source read, not assumed: a bare
+           `-M json` / `-f json` SITL launch on localhost requires no
+           address/port arguments to connect to this plugin. -->
+      <fdm_addr>127.0.0.1</fdm_addr>
+      <fdm_port_in>9002</fdm_port_in>
+      <connectionTimeoutMaxCount>10</connectionTimeoutMaxCount>
+      <lock_step>1</lock_step>
+
+      <!-- Body-frame override: NONE (compiled default retained). See the
+           FRAME OVERRIDES header comment above for the live-verified
+           reasoning. -->
+
+      <!-- World-frame override: REQUIRED, live-verified - see the FRAME
+           OVERRIDES header comment above. -->
+      <gazeboXYZToNED degrees="true">0 0 0 180 0 90</gazeboXYZToNED>
+
+      <!-- Sensors: scoped name of the dedicated ArduPilot-bridge IMU relay
+           sensor added above under base_link - NOT imu_sensor (see that
+           new sensor block's own header comment for why a second instance
+           is required). "::"-delimited, LINK-RELATIVE-TO-MODEL form
+           (link::sensor, no leading model name) - LIVE-VERIFIED this task,
+           not copied blindly from zephyr_with_ardupilot's own
+           "zephyr::imu_link::imu_sensor" example: entitiesFromScopedName()
+           is called with _relativeTo=this model's own entity
+           (ArduPilotPlugin.cc ~line 1123), and per gz::sim::Util.hh's own
+           documented contract "The scoped name does not include the name
+           of [_relativeTo entity]" - zephyr's 3-segment name only works
+           because zephyr_with_ardupilot NESTS a separate sub-model named
+           "zephyr" via <include> (so "zephyr" there is an intermediate
+           model, not the relativeTo entity's own name); FALCON V2 is a
+           single flat (non-nested) <model name="falcon_v2">, so a leading
+           "falcon_v2::" prefix is NOT valid here - CONFIRMED empirically
+           this task: "falcon_v2::base_link::imu_sensor_ardupilot" and
+           "world::falcon_v2::base_link::imu_sensor_ardupilot" both FAILED
+           live ("imu_sensor [...] not found, abort ArduPilot plugin.");
+           "base_link::imu_sensor_ardupilot" (used below) and the bare
+           "imu_sensor_ardupilot" both resolved with no error. This is the
+           ONLY sensor genuinely in-the-loop through this bridge -
+           GPS/baro/magnetometer are NOT read from any of this
+           project's native/custom Gazebo sensors through this plugin; see
+           the design doc's GPS/baro/mag/airspeed architecture finding
+           (this is standard ArduPilot JSON/FDM-backend behavior, not a
+           defect introduced by this project).
+           AIRSPEED CORRECTION (2026-09-02, stage SITL_ATMOSPHERE_AND_
+           PITOT_INTEGRATION_VALIDATION): the sentence above USED to include
+           "airspeed". It no longer does - FalconV2Pitot IS now in the loop
+           through the <airspeed_topic> element added immediately below, so
+           the IMU is no longer the only in-the-loop sensor. -->
+      <imuName>base_link::imu_sensor_ardupilot</imuName>
+
+      <!-- ============================================================
+           AIRSPEED / WIND BRIDGE INTO ArduPlane SITL
+           Author (this addition): controls-integration specialist agent,
+           2026-09-02, stage SITL_ATMOSPHERE_AND_PITOT_INTEGRATION_
+           VALIDATION. Closes validation MAJOR-2
+           (docs/validation/2026-09-02_ardupilot_tecs_and_cruise_speed_
+           hold_validation.md sec 2): before this stage NOTHING consumed
+           FalconV2Pitot's output, so ArduPlane's airspeed was derived from
+           GROUND velocity and SITL/SIM_JSON.cpp:445 executed
+           `wind_ef.zero()` on EVERY frame.
+
+           These two elements are a FALCON V2 ADDITION to the upstream
+           ardupilot_gazebo ArduPilotPlugin (source change recorded in
+           docs/source_of_truth/autopilot/
+           ardupilot_gazebo_airspeed_wind_bridge.patch). They populate two
+           keys that are already part of the OFFICIAL ArduPilot SIM_JSON
+           FDM protocol - no protocol extension is invented:
+             "airspeed"      SIM_JSON.h:139 keytable / :167 DataKey::AIRSPEED
+             "velocity_wind" SIM_JSON.h:136 keytable / :165 DataKey::WIND_VEL
+
+           UNITS/SEMANTICS - airspeed_topic: ArduPilot consumes the
+           "airspeed" key as EQUIVALENT airspeed (EAS), NOT true airspeed:
+           SIM_JSON.cpp:439-440 assigns it to `airspeed`/`airspeed_pitot`,
+           which SIM_Aircraft.cpp:1411 otherwise fills as
+           `velocity_air_ef.length()/eas2tas`, and which reaches the sensor
+           model via SITL_State.cpp:112 ->
+           sitl_airspeed.cpp:30 `_update_airspeed(float eas)`.
+           FalconV2Pitot publishes |V_rel| computed against the SAME fixed
+           rho = 1.225 kg/m^3 (ISA sea level) that
+           docs/source_of_truth/aerodynamics/aero_v1_config.yaml
+           environment.air_density_rho_kg_m3 uses for every aerodynamic
+           force in this simulation. Under that project-wide constant-
+           density assumption EAS = TAS*sqrt(rho/rho_SSL) = TAS exactly, so
+           the pitot's scalar output IS the correct EAS to publish here.
+           This equality is a CONSEQUENCE of the documented constant-density
+           assumption, not an independent claim - see
+           docs/source_of_truth/autopilot/SITL_ATMOSPHERE_AND_AIRSPEED.md.
+
+           UNITS/SEMANTICS - wind_topic: gz.msgs.Vector3d, GAZEBO WORLD
+           frame, m/s, VELOCITY OF THE AIR MASS (WIND.md sec 2 convention -
+           the exact same topic and exact same convention that
+           AerodynamicsSystem.cc, PropulsionSystem.cc and PitotSystem.cc
+           already consume; NO new wind source and NO second wind-
+           consumption path is created). The plugin rotates it into
+           ArduPilot's NED world frame using the SAME <gazeboXYZToNED>
+           transform already applied to the vehicle velocity - no second
+           frame convention is introduced. ArduPilot's `wind_ef` uses the
+           identical airmass-velocity sign convention
+           (SIM_Aircraft.cpp:1068 velocity_air_ef = velocity_ef - wind_ef).
+
+           FAILSAFE: hold-last-valid; non-finite values are rejected; before
+           the first message on either topic the FDM packet is byte-
+           identical to upstream ardupilot_gazebo. ============ -->
+      <airspeed_topic>/model/falcon_v2/sensors/pitot/airspeed_mps</airspeed_topic>
+      <wind_topic>/model/falcon_v2/wind</wind_topic>
+
+      <!-- ============================================================
+           SERVO/MOTOR COMMAND MAPPING - 7 COMMAND-type channels (2
+           aileron + 2 elevator + 1 rudder + 2 throttle), fanning out
+           ArduPlane's 5 logical SERVOx outputs onto this project's 7
+           existing actuator/propulsion command topics. Formula (confirmed
+           exact from ArduPilotPlugin.cc's UpdateMotorCommands(), not
+           assumed):
+             raw_cmd = clamp((pwm - servo_min) / (servo_max - servo_min), 0, 1)
+             cmd     = multiplier * (raw_cmd + offset)
+           servo_min/servo_max below are copied EXACTLY from the real
+           SERVOx_MIN/MAX values in config/ardupilot/falcon_v2_sitl.parm
+           (REAL_PARAM_CONFIGURATION, not invented). offset=-0.5 on every
+           angular (non-throttle) channel centers PWM=SERVOx_TRIM (=1500,
+           exact raw_cmd midpoint for MIN=800/MAX=2200) at cmd=0 rad
+           (neutral, matching plugins/actuators/ActuatorSystem.cc's own
+           0=neutral convention). multiplier = +/-1.5707963268 rad (= +/-pi/2,
+           NOT +/-45deg-in-radians directly - see derivation below) maps
+           ArduPlane's full raw_cmd [0,1] swing onto a +/-45 deg physical
+           target range. UPDATED (ARDUPLANE_CONTROL_SURFACE_TRAVEL_SCALING_
+           VALIDATION, 2026-08-28) from the prior stage's +/-0.3490658504 rad
+           (+/-10 deg) PROVISIONAL_INTERFACE_LIMIT - see
+           docs/source_of_truth/autopilot/
+           SITL_TRANSPORT_AND_ACTUATOR_MAPPING.md sec 11 for the full
+           derivation/rationale/TXT-cross-check record. Because cmd is only
+           ever evaluated at raw_cmd in [0,1] and offset=-0.5, the realized
+           output range is cmd in [-0.5*multiplier, +0.5*multiplier], i.e.
+           HALF the multiplier's own value, not the multiplier itself -
+           +/-45 deg therefore requires multiplier = 2*45deg-in-radians =
+           +/-1.5707963268 rad (=pi/2), NOT +/-0.7853981634 rad (45deg
+           itself, which would only realize +/-22.5 deg - do not make this
+           substitution). This now matches
+           docs/source_of_truth/controls/actuator_v1_config.yaml's own
+           +/-0.7853981634 rad (+/-45deg) MECHANICAL_ACTUATOR_LIMIT_V1 joint
+           <limit> exactly - the bridge no longer artificially restricts
+           ArduPlane's commanded range below the joint's own mechanical
+           ceiling; both layers now agree at +/-45 deg. Sign per
+           channel (multiplier sign only, UNCHANGED by this update - see the
+           design doc for the full pre-registered physical-direction
+           reasoning per surface, task section 36/37/38 requirement): NOT
+           re-derived in this comment, see docs/source_of_truth/autopilot/
+           SITL_TRANSPORT_AND_ACTUATOR_MAPPING.md sec 3.
+           useForce=0 on every block - see this plugin's own header comment
+           above. jointName is a formally-required-but-functionally-inert
+           reference for COMMAND type (ArduPilotPlugin.cc ~line 604-621:
+           parsed and validated to exist, never actually driven for
+           COMMAND type) - the actually-relevant joint per channel is used
+           for clarity. ============================================== -->
+
+      <!-- Aileron (SERVO1: FUNCTION=4, MIN=800, MAX=2200, TRIM=1500,
+           REVERSED=1 - config/ardupilot/falcon_v2_sitl.parm) -> LEFT
+           aileron. Y-split fan-out (PROVISIONAL_WIRING_ASSUMPTION, one
+           logical ArduPlane Aileron output feeds both physical servos -
+           SITL_PARAM_MIGRATION.md sec 2/14). multiplier sign: see design
+           doc sec 3 (left/right must be OPPOSITE per the verified
+           delta_a_aero = +0.5*(theta_right-theta_left) mapping,
+           CONTROLS.md sec 10). -->
+      <control channel="0">
+        <jointName>left_aileron_joint</jointName>
+        <useForce>0</useForce>
+        <type>COMMAND</type>
+        <cmd_topic>/model/falcon_v2/actuators/left_aileron/cmd_rad</cmd_topic>
+        <multiplier>1.5707963268</multiplier>
+        <offset>-0.5</offset>
+        <servo_min>800</servo_min>
+        <servo_max>2200</servo_max>
+      </control>
+
+      <!-- Aileron (SERVO1) -> RIGHT aileron, same channel, OPPOSITE sign
+           (differential Y-split - see design doc sec 3). -->
+      <control channel="0">
+        <jointName>right_aileron_joint</jointName>
+        <useForce>0</useForce>
+        <type>COMMAND</type>
+        <cmd_topic>/model/falcon_v2/actuators/right_aileron/cmd_rad</cmd_topic>
+        <multiplier>-1.5707963268</multiplier>
+        <offset>-0.5</offset>
+        <servo_min>800</servo_min>
+        <servo_max>2200</servo_max>
+      </control>
+
+      <!-- Elevator (SERVO2: FUNCTION=19, MIN=800, MAX=2200, TRIM=1500,
+           REVERSED=0) -> LEFT elevator. Y-split fan-out (same
+           PROVISIONAL_WIRING_ASSUMPTION as aileron). multiplier sign: SAME
+           sign as the right-elevator block below (left/right elevator
+           must move in the SAME physical direction - verified
+           delta_e_aero = -0.5*(theta_left+theta_right) mapping,
+           CONTROLS.md sec 10). -->
+      <control channel="1">
+        <jointName>left_elevator_joint</jointName>
+        <useForce>0</useForce>
+        <type>COMMAND</type>
+        <cmd_topic>/model/falcon_v2/actuators/left_elevator/cmd_rad</cmd_topic>
+        <multiplier>1.5707963268</multiplier>
+        <offset>-0.5</offset>
+        <servo_min>800</servo_min>
+        <servo_max>2200</servo_max>
+      </control>
+
+      <!-- Elevator (SERVO2) -> RIGHT elevator, same channel, SAME sign as
+           left (common-mode pitch, not differential - see design doc). -->
+      <control channel="1">
+        <jointName>right_elevator_joint</jointName>
+        <useForce>0</useForce>
+        <type>COMMAND</type>
+        <cmd_topic>/model/falcon_v2/actuators/right_elevator/cmd_rad</cmd_topic>
+        <multiplier>1.5707963268</multiplier>
+        <offset>-0.5</offset>
+        <servo_min>800</servo_min>
+        <servo_max>2200</servo_max>
+      </control>
+
+      <!-- Rudder (SERVO4: FUNCTION=21, MIN=800, MAX=2200, TRIM=1500,
+           REVERSED=1) -> rudder (single centerline surface, no split). -->
+      <control channel="3">
+        <jointName>rudder_joint</jointName>
+        <useForce>0</useForce>
+        <type>COMMAND</type>
+        <cmd_topic>/model/falcon_v2/actuators/rudder/cmd_rad</cmd_topic>
+        <multiplier>-1.5707963268</multiplier>
+        <offset>-0.5</offset>
+        <servo_min>800</servo_min>
+        <servo_max>2200</servo_max>
+      </control>
+
+      <!-- ThrottleLeft (SERVO3: FUNCTION=73, MIN=1000, MAX=2000,
+           TRIM=1000 [==MIN, idle-low, standard for a throttle-type
+           function, not a bug], REVERSED=0) -> left motor. multiplier=1,
+           offset=0 gives cmd directly in [0,1], matching
+           plugins/propulsion/PropulsionSystem.cc's OnThrottleLeft()
+           std::clamp(msg.data(),0.0,1.0) domain exactly (confirmed by
+           direct source read) - 1:1, no sign flip, per this task's own
+           instruction. jointName points at left_prop_joint (inert
+           placeholder requirement only for COMMAND type - see header
+           comment). -->
+      <control channel="2">
+        <jointName>left_prop_joint</jointName>
+        <useForce>0</useForce>
+        <type>COMMAND</type>
+        <cmd_topic>/model/falcon_v2/propulsion/left/throttle_cmd</cmd_topic>
+        <multiplier>1.0</multiplier>
+        <offset>0.0</offset>
+        <servo_min>1000</servo_min>
+        <servo_max>2000</servo_max>
+      </control>
+
+      <!-- ThrottleRight (SERVO5: FUNCTION=74, MIN=1000, MAX=2000,
+           TRIM=1000, REVERSED=0) -> right motor, independent of
+           ThrottleLeft (twin-motor independence preserved end-to-end, no
+           mixing/averaging - SITL_PARAM_MIGRATION.md sec 14). -->
+      <control channel="4">
+        <jointName>right_prop_joint</jointName>
+        <useForce>0</useForce>
+        <type>COMMAND</type>
+        <cmd_topic>/model/falcon_v2/propulsion/right/throttle_cmd</cmd_topic>
+        <multiplier>1.0</multiplier>
+        <offset>0.0</offset>
+        <servo_min>1000</servo_min>
+        <servo_max>2000</servo_max>
+      </control>
+    </plugin>
+
+  </model>
+</sdf>

@@ -1,0 +1,639 @@
+{
+ "stage": "MANUAL_TAKEOFF_AND_LIVE_CONTROL_SURFACE_BEHAVIOR_VALIDATION",
+ "part": "4 - manual takeoff ground-roll reproduction",
+ "classification": "TEMPORARY_TEST_SETUP / MEASUREMENT-ONLY",
+ "owner": "controls-integration",
+ "physics_parameters_changed": "NONE - this harness measures only. It writes no aerodynamic or propulsion coefficient, no mass/CG/inertia, no actuator PID/rate/effort limit, no control-surface mapping, no PTCH_TRIM_DEG, no TECS_PTCH_DAMP, no roll/pitch PID, no sensor value, no landing gear, no friction or collision value.",
+ "world": "falcon_v2_manual_takeoff_runway",
+ "utc": "2026-09-10T21:21:48Z",
+ "sign_convention_sources": [
+  "docs/source_of_truth/controls/CONTROLS.md sec 10",
+  "docs/test_results/2026-08-22_control_surface_sign_mapping_test_report.md",
+  "docs/source_of_truth/autopilot/SITL_TRANSPORT_AND_ACTUATOR_MAPPING.md sec 3, 7.1-7.3",
+  "docs/test_results/2026-08-28_ardupilot_control_surface_travel_scaling_validation.md"
+ ],
+ "pre_registered_expectations": {
+  "roll_right": {
+   "rc_channel": 1,
+   "rc_direction": "above trim (stick right)",
+   "expected_aileron_pwm_vs_trim": "BELOW 1500 (SERVO1_REVERSED=1)",
+   "expected_left_aileron_joint": "negative -> LEFT aileron TE DOWN",
+   "expected_right_aileron_joint": "positive -> RIGHT aileron TE UP",
+   "expected_delta_a_aero_sign": "+",
+   "expected_Cl_sign": "+",
+   "expected_roll_rate_sign": "+ (roll right, right wing down)",
+   "source": "SITL_TRANSPORT_AND_ACTUATOR_MAPPING.md sec 7.1 + CONTROLS.md sec 10"
+  },
+  "roll_left": {
+   "rc_channel": 1,
+   "rc_direction": "below trim (stick left)",
+   "expected_aileron_pwm_vs_trim": "ABOVE 1500",
+   "expected_left_aileron_joint": "positive -> LEFT aileron TE UP",
+   "expected_right_aileron_joint": "negative -> RIGHT aileron TE DOWN",
+   "expected_delta_a_aero_sign": "-",
+   "expected_Cl_sign": "-",
+   "expected_roll_rate_sign": "- (roll left)",
+   "source": "mirror of roll_right, same sources"
+  },
+  "pitch_up": {
+   "rc_channel": 2,
+   "rc_direction": "ArduPlane pitch-up demand",
+   "expected_elevator_pwm_vs_trim": "ABOVE 1500 (SERVO2_REVERSED=0)",
+   "expected_left_elevator_joint": "positive -> TE UP",
+   "expected_right_elevator_joint": "positive -> TE UP (SAME sign as left)",
+   "expected_delta_e_aero_sign": "-",
+   "expected_Cm_sign": "+ (Cm>0 <=> My<0 <=> nose up in this plugin)",
+   "expected_pitch_rate_sign": "+ (nose up)",
+   "source": "SITL_TRANSPORT_AND_ACTUATOR_MAPPING.md sec 7.2 + CONTROLS.md sec 10 + 2026-08-22 report tests 5/6/10/11"
+  },
+  "pitch_down": {
+   "rc_channel": 2,
+   "rc_direction": "ArduPlane pitch-down demand",
+   "expected_elevator_pwm_vs_trim": "BELOW 1500",
+   "expected_left_elevator_joint": "negative -> TE DOWN",
+   "expected_right_elevator_joint": "negative -> TE DOWN (SAME sign)",
+   "expected_delta_e_aero_sign": "+",
+   "expected_Cm_sign": "-",
+   "expected_pitch_rate_sign": "- (nose down)",
+   "source": "mirror of pitch_up, same sources"
+  },
+  "yaw_right": {
+   "rc_channel": 4,
+   "rc_direction": "above trim (right rudder)",
+   "expected_rudder_pwm_vs_trim": "BELOW 1500 (SERVO4_REVERSED=1)",
+   "expected_rudder_joint": "positive -> rudder TE toward -Y (RIGHT)",
+   "expected_delta_r_aero_sign": "+",
+   "expected_Cn_sign": "- (Mz<0 = nose right)",
+   "expected_yaw_rate_sign": "- in FLU body frame (nose right is a NEGATIVE rotation about +Z-up); + in the MAVLink FRD yawspeed field",
+   "source": "SITL_TRANSPORT_AND_ACTUATOR_MAPPING.md sec 7.3 + CONTROLS.md sec 10 + 2026-08-22 report tests 7/9"
+  },
+  "yaw_left": {
+   "rc_channel": 4,
+   "rc_direction": "below trim (left rudder)",
+   "expected_rudder_pwm_vs_trim": "ABOVE 1500",
+   "expected_rudder_joint": "negative -> rudder TE toward +Y (LEFT)",
+   "expected_delta_r_aero_sign": "-",
+   "expected_Cn_sign": "+",
+   "expected_yaw_rate_sign": "+ in FLU body frame; - in MAVLink FRD",
+   "source": "mirror of yaw_right, same sources"
+  }
+ },
+ "known_data_required": [
+  {
+   "issue": "The aerodynamics plugin does NOT publish the delta_a/delta_e/delta_r it actually consumes.",
+   "evidence": "plugins/aerodynamics/AerodynamicsSystem.cc PreUpdate() computes state.deltaA/deltaE/deltaR locally and its diagnostics Double_V carries only V,alpha,beta,qbar,CL,CD,CY,Cl,Cm,Cn.",
+   "consequence": "The deflection the aero model consumed cannot be OBSERVED directly. It is RECONSTRUCTED here from the actuator plugin's actual_angle_rad using the CONTROLS.md sec 10 formulas, which is exact ONLY because both plugins read the SAME gz::sim::Joint(e).Position(_ecm) in the same PreUpdate tick (confirmed by source read of both). The reconstruction is INDEPENDENTLY CROSS-CHECKED against the published Cl/Cm/Cn via aero_lib.compute_aero(), so a mismatch is detectable rather than assumed away.",
+   "status": "DATA_REQUIRED",
+   "recommended_fix_owner": "aerodynamics",
+   "recommended_fix": "append deltaA, deltaE, deltaR to the aerodynamics diagnostics payload (additive, 3 extra Double_V fields, no coefficient change). NOT done by this stage - out of this agent's ownership and out of this stage's measurement-only scope."
+  }
+ ],
+ "mode": "MANUAL",
+ "run_index": 11,
+ "repeats_designed_for": 1,
+ "world_verification": {
+  "copy": "/home/emirhan/Desktop/FalconV2/tests/gazebo/worlds/falcon_v2_manual_takeoff_runway_world.sdf",
+  "source": "/home/emirhan/Desktop/FalconV2/codex/tests/gazebo/worlds/falcon_v2_manual_takeoff_runway_world.sdf",
+  "differences": [
+   {
+    "line": 146,
+    "copy": "      <uri>file:///home/emirhan/Desktop/FalconV2/model</uri>",
+    "source": "      <uri>file:///home/emirhan/Desktop/FalconV2/codex/model</uri>"
+   }
+  ],
+  "pass": true,
+  "status": "ONLY_MODEL_URI_DIFFERS"
+ },
+ "world_constants": {
+  "gravity_mps2": [
+   0.0,
+   0.0,
+   -9.81
+  ],
+  "g_magnitude": 9.81,
+  "spawn_pose": [
+   -150.0,
+   0.0,
+   0.5,
+   0.0,
+   0.0,
+   0.0
+  ],
+  "physics_engine": "dartsim",
+  "max_step_size_s": 0.001,
+  "model_include_uri": "file:///home/emirhan/Desktop/FalconV2/model",
+  "weight_N": 58.86,
+  "mass_kg": 6.0,
+  "wing_area_m2": 0.4514,
+  "provenance": {
+   "mass_kg": "CLAUDE.md 'Aircraft mass'",
+   "wing_area_m2": "CLAUDE.md 'Wing area' (manufacturer geometry)",
+   "gravity": "world SDF <gravity>, read at run time"
+  }
+ },
+ "thresholds": {
+  "settle_s": {
+   "value": 6.0,
+   "basis": "ASSUMPTION (procedure). Long enough for the aircraft to fall from the world's own 0.5 m spawn height onto its collision primitives and stop moving; the settle is VERIFIED by a velocity check, not assumed from the duration."
+  },
+  "settle_vmag_max_ms": {
+   "value": 0.05,
+   "basis": "Same value already used by test_ardupilot_basic_closed_loop_flight.wait_ground_settle(), reused for consistency across this repository."
+  },
+  "throttle_ramp_s": {
+   "value": 2.0,
+   "basis": "ASSUMPTION (procedure). A ramp rather than a step, so the throttle-onset time is unambiguous and any yaw transient can be attributed to a throttle rate rather than a discontinuity. Reported, not tuned."
+  },
+  "roll_max_s": {
+   "value": 60.0,
+   "basis": "ASSUMPTION (procedure). Upper bound on how long to keep recording if liftoff never happens, so a no-liftoff run still terminates and still produces the full evidence set."
+  },
+  "post_liftoff_s": {
+   "value": 6.0,
+   "basis": "ASSUMPTION (procedure). Enough post-liftoff record to see whether the departure is sustained or a bounce."
+  },
+  "liftoff_z_margin_m": {
+   "value": 0.1,
+   "basis": "ASSUMPTION (detection). 0.10 m is well above the contact-solver penetration/settling scale seen at rest and well below any real climb, so it separates a departure from solver noise. The raw z trace is written out so a reviewer can re-derive with any other margin."
+  },
+  "liftoff_vz_min_ms": {
+   "value": 0.5,
+   "basis": "ASSUMPTION (detection). Requires the aircraft to be genuinely going up, not just displaced."
+  },
+  "liftoff_hold_s": {
+   "value": 0.3,
+   "basis": "ASSUMPTION (detection). ~300 physics steps at the world's 0.001 s <max_step_size>. A single contact-solver impulse cannot hold a positive climb rate for 300 consecutive steps; a real departure trivially can."
+  },
+  "rotation_pitch_delta_deg": {
+   "value": 1.0,
+   "basis": "ASSUMPTION (classification). The pitch change that must be exceeded BEFORE the vertical excursion for the run to look like a rotation rather than a flat pop-off. 1 deg is ~20x the attitude noise seen in the settle windows of the existing navigation records."
+  },
+  "yaw_rate_onset_deg_s": {
+   "value": 1.0,
+   "basis": "ASSUMPTION (event detection). Onset threshold for 'the aircraft started yawing'. Used only to timestamp the drift onset so it can be compared against the surface-deflection timestamp."
+  },
+  "takeoff_arm_to_mode_dwell_s": {
+   "value": 9.7,
+   "basis": "MEASURED from the user's OWN dataflash log codex/runtime/manual_takeoff/logs/00000002.BIN (read-only): MODE record Mode=0 (MANUAL) at TimeUS 134.594384 s with MSG 'Throttle armed' at 134.58 s, then MODE record Mode=13 (TAKEOFF, Rsn=2 GCS command) at TimeUS 144.294754 s. The dwell between arming in MANUAL and commanding TAKEOFF is 144.294754 - 134.594384 = 9.70037 s, rounded to 9.70 s. This is a PROCEDURE timing only - it sets no physical, aerodynamic, propulsive or control parameter."
+  },
+  "takeoff_mode_confirm_s": {
+   "value": 8.0,
+   "basis": "ASSUMPTION (procedure). Upper bound on how long to wait for HEARTBEAT.custom_mode to report 13 after the DO_SET_MODE. If it never does, the run is recorded as ABORT_MODE_NOT_ENTERED rather than being silently flown in whatever mode the autopilot was actually in."
+  },
+  "arm_attempts": {
+   "value": 8,
+   "basis": "EXECUTION CONTROL ONLY. ArduPlane refuses to arm until its own GPS/EKF prearm checks pass; the user's own MAVProxy log (codex/runtime/manual_takeoff/mavproxy.log) shows repeated 'PreArm: GPS 1: Bad fix' before a successful arm. Retrying the arm command changes no parameter and no threshold."
+  },
+  "arm_retry_period_s": {
+   "value": 4.0,
+   "basis": "EXECUTION CONTROL ONLY. Spacing between arm attempts."
+  },
+  "surface_onset_deg": {
+   "value": 0.5,
+   "basis": "DERIVED. ~8 PWM quanta of this transport (1 PWM = 0.0643 deg, derived in manual_takeoff_live_lib from model.sdf's own multiplier and servo_min/servo_max), and well above the servo model's documented ~0.06 deg neutral droop."
+  }
+ },
+ "analysis": {
+  "mode": "MANUAL",
+  "mode_entry": {
+   "target_mode": "MANUAL",
+   "target_custom_mode": 0,
+   "entry_mode_before": 0,
+   "arm_attempts": [
+    {
+     "attempt": 1,
+     "result": 0
+    }
+   ],
+   "arm_result": 0
+  },
+  "arduplane_statustexts": [
+   {
+    "t_wall": 1789075320.349309,
+    "severity": 6,
+    "text": "EKF3 IMU0 initialised"
+   },
+   {
+    "t_wall": 1789075320.349331,
+    "severity": 6,
+    "text": "EKF3 IMU1 initialised"
+   },
+   {
+    "t_wall": 1789075322.2045202,
+    "severity": 6,
+    "text": "EKF3 IMU0 tilt alignment complete"
+   },
+   {
+    "t_wall": 1789075322.2045357,
+    "severity": 6,
+    "text": "EKF3 IMU1 tilt alignment complete"
+   },
+   {
+    "t_wall": 1789075322.286433,
+    "severity": 6,
+    "text": "EKF3 IMU0 MAG0 initial yaw alignment complete"
+   },
+   {
+    "t_wall": 1789075322.2864568,
+    "severity": 6,
+    "text": "EKF3 IMU1 MAG0 initial yaw alignment complete"
+   },
+   {
+    "t_wall": 1789075327.3242483,
+    "severity": 6,
+    "text": "Throttle armed"
+   },
+   {
+    "t_wall": 1789075330.1482131,
+    "severity": 6,
+    "text": "Autoland direction= 89"
+   },
+   {
+    "t_wall": 1789075330.5484145,
+    "severity": 6,
+    "text": "EKF3 IMU0 origin set"
+   },
+   {
+    "t_wall": 1789075330.5484366,
+    "severity": 6,
+    "text": "EKF3 IMU1 origin set"
+   },
+   {
+    "t_wall": 1789075330.5688713,
+    "severity": 6,
+    "text": "EKF3 IMU0 is using GPS"
+   },
+   {
+    "t_wall": 1789075330.5688918,
+    "severity": 6,
+    "text": "EKF3 IMU1 is using GPS"
+   }
+  ],
+  "world_constants": {
+   "gravity_mps2": [
+    0.0,
+    0.0,
+    -9.81
+   ],
+   "g_magnitude": 9.81,
+   "spawn_pose": [
+    -150.0,
+    0.0,
+    0.5,
+    0.0,
+    0.0,
+    0.0
+   ],
+   "physics_engine": "dartsim",
+   "max_step_size_s": 0.001,
+   "model_include_uri": "file:///home/emirhan/Desktop/FalconV2/model",
+   "weight_N": 58.86,
+   "mass_kg": 6.0,
+   "wing_area_m2": 0.4514,
+   "provenance": {
+    "mass_kg": "CLAUDE.md 'Aircraft mass'",
+    "wing_area_m2": "CLAUDE.md 'Wing area' (manufacturer geometry)",
+    "gravity": "world SDF <gravity>, read at run time"
+   }
+  },
+  "resting_state": {
+   "z_m": -1.1130265312494312e-07,
+   "pitch_deg": -1.1303305898738467e-05,
+   "roll_deg": 6.710248723314546e-11,
+   "yaw_deg": 5.6270881208641737e-05,
+   "settle_vmag_ms": 0.0,
+   "settled": true
+  },
+  "wind_measured": {
+   "SIM_WIND_SPD": 0.0,
+   "SIM_WIND_DIR": 180.0,
+   "SIM_WIND_TURB": 0.0,
+   "SIM_WIND_T": 0.0,
+   "SIM_WIND_DELAY": null,
+   "assertion": "Recorded live. NOT assumed zero. A non-zero value here is itself a candidate explanation for a lateral drift and must be carried into any conclusion.",
+   "is_zero_speed": true
+  },
+  "mavlink_stream_rates_measured": {
+   "requested": [
+    {
+     "stream": "EXTRA1",
+     "hz": 50,
+     "expected_messages": [
+      "ATTITUDE"
+     ]
+    },
+    {
+     "stream": "EXTRA2",
+     "hz": 50,
+     "expected_messages": [
+      "VFR_HUD"
+     ]
+    },
+    {
+     "stream": "RC_CHANNELS",
+     "hz": 50,
+     "expected_messages": [
+      "SERVO_OUTPUT_RAW",
+      "RC_CHANNELS"
+     ]
+    },
+    {
+     "stream": "POSITION",
+     "hz": 25,
+     "expected_messages": [
+      "GLOBAL_POSITION_INT"
+     ]
+    },
+    {
+     "stream": "EXTRA3",
+     "hz": 10,
+     "expected_messages": []
+    }
+   ],
+   "set_message_interval_results": {
+    "30": 2,
+    "36": 2,
+    "74": 2,
+    "33": 2,
+    "62": 2
+   },
+   "measured_hz": {
+    "STATUSTEXT": 1.33,
+    "PARAM_VALUE": 1.67,
+    "AHRS2": 39.67,
+    "ATTITUDE": 39.33,
+    "VFR_HUD": 39.33,
+    "SERVO_OUTPUT_RAW": 39.33,
+    "RC_CHANNELS": 39.33,
+    "SIMSTATE": 39.33,
+    "AOA_SSA": 39.33,
+    "GLOBAL_POSITION_INT": 24.67,
+    "LOCAL_POSITION_NED": 24.67,
+    "AHRS": 9.67,
+    "SYSTEM_TIME": 9.67,
+    "WIND": 9.67,
+    "TERRAIN_REPORT": 9.67,
+    "EKF_STATUS_REPORT": 9.67,
+    "VIBRATION": 9.67,
+    "HEARTBEAT": 1.0,
+    "SYS_STATUS": 1.0,
+    "POWER_STATUS": 1.0,
+    "MEMINFO": 1.0,
+    "MISSION_CURRENT": 1.0,
+    "RAW_IMU": 1.0,
+    "SCALED_IMU2": 1.0,
+    "SCALED_IMU3": 1.0,
+    "SCALED_PRESSURE": 1.0,
+    "SCALED_PRESSURE2": 1.0,
+    "GPS_RAW_INT": 1.0,
+    "UNKNOWN_295": 1.0,
+    "TERRAIN_REQUEST": 0.33
+   },
+   "measure_window_s": 3.0,
+   "mechanism_note": "SET_MESSAGE_INTERVAL is DENIED on this build; REQUEST_DATA_STREAM is the mechanism that works. Both are sent; the measured rates below are the ground truth."
+  },
+  "key_params_live": {
+   "KFF_RDDRMIX": 0.5,
+   "YAW2SRV_DAMP": 0.0,
+   "YAW2SRV_INT": 0.0,
+   "YAW2SRV_SLIP": 0.0,
+   "YAW2SRV_RLL": 1.0,
+   "RLL2SRV_TCONST": 0.5,
+   "PTCH2SRV_TCONST": 0.5,
+   "PTCH_TRIM_DEG": 2.490000009536743,
+   "TECS_PTCH_DAMP": 0.6000000238418579,
+   "TKOFF_THR_MAX": 0.0,
+   "GROUND_STEER_ALT": 0.0,
+   "SERVO1_REVERSED": 1.0,
+   "SERVO2_REVERSED": 0.0,
+   "SERVO4_REVERSED": 1.0,
+   "ARSPD_FBW_MIN": null,
+   "TRIM_ARSPD_CM": null,
+   "SIM_ENGINE_MUL": 0.0,
+   "SIM_ENGINE_FAIL": 0.0
+  },
+  "liftoff_criteria": {
+   "primary_z_and_vz": null,
+   "aero_lift_equals_weight": {
+    "t_rel_s": 13.90656566619873,
+    "t_sim": 33.801,
+    "raw_signal": "L = CL*qbar*S from the aerodynamics plugin's own diagnostics, crossing m*g = 58.86 N",
+    "airspeed_ms": 21.880962371826172,
+    "groundspeed_ms": 23.84954261779785,
+    "gz_z_m": 0.005834678531913863,
+    "gz_vz_ms": 0.024339486950008565,
+    "pitch_deg": 0.6345075636927802,
+    "roll_deg": -3.0743141303121564e-07,
+    "yaw_deg": 0.01253674031326355,
+    "lateral_Y_m": -0.00011509602396667411,
+    "lift_N": 59.26531923821193,
+    "thrust_total_N": 46.39548229644801,
+    "throttle_pct": 100
+   },
+   "inferred_support_force_reaches_zero": {
+    "t_rel_s": 13.587090015411377,
+    "t_sim": 33.482,
+    "raw_signal": "INFERRED support force (DATA_REQUIRED: no contact sensor)",
+    "airspeed_ms": 19.899415969848633,
+    "groundspeed_ms": 21.71507453918457,
+    "gz_z_m": 0.00013799229919472428,
+    "gz_vz_ms": 0.0,
+    "pitch_deg": 0.01500799349588703,
+    "roll_deg": -9.350441174787402e-06,
+    "yaw_deg": 0.0003620756337047123,
+    "lateral_Y_m": -3.145598693536167e-06,
+    "lift_N": 56.270262275387665,
+    "thrust_total_N": 48.97060141439834,
+    "throttle_pct": 100
+   },
+   "mavlink_relative_alt_leaves_ground": {
+    "t_rel_s": 14.53381872177124,
+    "t_sim": 34.428,
+    "raw_signal": "MAVLink GLOBAL_POSITION_INT.relative_alt",
+    "airspeed_ms": 26.292448043823242,
+    "groundspeed_ms": 27.675884246826172,
+    "gz_z_m": 0.12105566501792821,
+    "gz_vz_ms": 0.9992801229236273,
+    "pitch_deg": -0.44334456914456244,
+    "roll_deg": 0.010472266139774205,
+    "yaw_deg": 0.04473159394819669,
+    "lateral_Y_m": 0.00018686002041203026,
+    "lift_N": 73.55799349344049,
+    "thrust_total_N": 40.67571433740038,
+    "throttle_pct": 100
+   }
+  },
+  "rotation_vs_popoff_evidence": {
+   "pitch_change_before_vertical_excursion_deg": 89.72364768796888,
+   "threshold_deg": 1.0,
+   "pitch_at_liftoff_deg": null,
+   "resting_pitch_deg": -1.1303305898738467e-05,
+   "liftoff_minus_lift_equals_weight_s": null,
+   "signature_i_rotation_then_fly": true,
+   "signature_ii_pinned_flat_until_lift_exceeds_weight": false,
+   "note": "DESCRIPTIVE ONLY. Both signatures are computed from stated criteria over raw signals that are all present in the timeseries. This harness does not decide which behaviour is correct, and no parameter was changed to obtain either."
+  },
+  "lateral_drift": {
+   "yaw_rate_onset": {
+    "t_rel_s": 35.779441356658936,
+    "t_sim": 55.674,
+    "raw_signal": "MAVLink ATTITUDE.yawspeed",
+    "airspeed_ms": 22.59154510498047,
+    "groundspeed_ms": 13.502028465270996,
+    "gz_z_m": 148.20314851000714,
+    "gz_vz_ms": 29.130799364477863,
+    "pitch_deg": -54.551515052146954,
+    "roll_deg": 175.99983811799964,
+    "yaw_deg": -175.65614412079526,
+    "lateral_Y_m": 1.0356412679454023,
+    "lift_N": 29.755147168002924,
+    "thrust_total_N": 50.21845994106373,
+    "throttle_pct": 100
+   },
+   "surface_command_onset": null,
+   "surface_onset_PRECEDES_yaw_onset": false,
+   "final_lateral_displacement_m_world_Y": 62.02065058246568,
+   "max_abs_lateral_displacement_m_world_Y": 67.76209142786504,
+   "drift_direction": "LEFT (+Y)",
+   "note": "The runway centerline is world Y=0 and the nose points along world +X (world SDF header). In the FLU body frame +Y is LEFT, so a POSITIVE world-Y displacement with the nose along +X is a drift to the LEFT.",
+   "onset_separation_s": null,
+   "surface_never_deflected_note": "No aileron/rudder command ever exceeded the onset threshold, so the yaw drift CANNOT have been commanded by a control surface in this run. That is a positive, attributable finding."
+  },
+  "propulsion_asymmetry": {
+   "rpm_diff_max_abs": 10.284492441514885,
+   "rpm_diff_mean": 0.5418547578783915,
+   "thrust_diff_N_max_abs": 0.10417535137966638,
+   "thrust_diff_N_mean": -0.011037100178908226,
+   "thrust_diff_pct_of_total_max": 0.13579654141522796,
+   "Q_prop_sum_Nm_max_abs": 1.433578464634122,
+   "Q_prop_sum_Nm_mean": 0.8899445808054415,
+   "note": "Q_prop_sum is the NET propeller reaction torque about the body roll axis. The two propellers are documented as counter-rotating (CLAUDE.md / master dataset sec 44), so a non-zero SUM is a net roll/yaw disturbance candidate and is reported here for Part 5/6 rather than judged."
+  },
+  "support_force": {
+   "source": "MEASURED",
+   "data_required": null,
+   "n_points": 5838,
+   "value_at_start_N": 58.85999999988252,
+   "value_at_end_N": -22381.368605402215,
+   "weight_reference_N": 58.86,
+   "first_time_below_half_weight_s": 12.560079097747803,
+   "first_time_at_or_below_zero_s": 13.587090015411377,
+   "note": "DATA_REQUIRED for a DIRECT normal-force measurement: neither the runway world nor model/model.sdf carries a contact sensor, and adding one is outside this stage's permitted changes. The values here are INFERRED from measured vertical acceleration minus the plugins' own published aero and thrust forces, and every input is in the timeseries."
+  },
+  "lift_vs_weight": {
+   "weight_N": 58.86,
+   "weight_provenance": "mass 6.000 kg (CLAUDE.md) * g from the world SDF's own <gravity>",
+   "crossing_time_s": 13.90656566619873,
+   "airspeed_at_crossing_ms": 21.880962371826172,
+   "groundspeed_at_crossing_ms": 23.84954261779785,
+   "max_lift_N": 666.2255299762476
+  },
+  "surfaces": {
+   "left_aileron": {
+    "cmd_max_abs_deg": 0.0,
+    "actual_max_abs_deg": 18.992480344249692,
+    "cmd_mean_deg": 0.0,
+    "actual_mean_deg": -0.0013929135733898835,
+    "ever_exceeded_onset_threshold": false
+   },
+   "right_aileron": {
+    "cmd_max_abs_deg": 0.0,
+    "actual_max_abs_deg": 19.004125410093383,
+    "cmd_mean_deg": 0.0,
+    "actual_mean_deg": -0.0014026650662080954,
+    "ever_exceeded_onset_threshold": false
+   },
+   "left_elevator": {
+    "cmd_max_abs_deg": 0.0,
+    "actual_max_abs_deg": 19.89947576926452,
+    "cmd_mean_deg": 0.0,
+    "actual_mean_deg": 0.012554387600078036,
+    "ever_exceeded_onset_threshold": false
+   },
+   "right_elevator": {
+    "cmd_max_abs_deg": 0.0,
+    "actual_max_abs_deg": 19.899419213673855,
+    "cmd_mean_deg": 0.0,
+    "actual_mean_deg": 0.01255788567455452,
+    "ever_exceeded_onset_threshold": false
+   },
+   "rudder": {
+    "cmd_max_abs_deg": 0.0,
+    "actual_max_abs_deg": 0.027435156198269042,
+    "cmd_mean_deg": 0.0,
+    "actual_mean_deg": 0.0001778232394636991,
+    "ever_exceeded_onset_threshold": false
+   }
+  },
+  "capture": {
+   "n_samples": 6421,
+   "mean_sample_period_s": 0.01052373833374071,
+   "mean_rate_hz": 95.02326723516562,
+   "max_inter_source_skew_s": 0.06947112083435059,
+   "duration_s": 67.56240010261536
+  },
+  "thresholds": {
+   "settle_s": {
+    "value": 6.0,
+    "basis": "ASSUMPTION (procedure). Long enough for the aircraft to fall from the world's own 0.5 m spawn height onto its collision primitives and stop moving; the settle is VERIFIED by a velocity check, not assumed from the duration."
+   },
+   "settle_vmag_max_ms": {
+    "value": 0.05,
+    "basis": "Same value already used by test_ardupilot_basic_closed_loop_flight.wait_ground_settle(), reused for consistency across this repository."
+   },
+   "throttle_ramp_s": {
+    "value": 2.0,
+    "basis": "ASSUMPTION (procedure). A ramp rather than a step, so the throttle-onset time is unambiguous and any yaw transient can be attributed to a throttle rate rather than a discontinuity. Reported, not tuned."
+   },
+   "roll_max_s": {
+    "value": 60.0,
+    "basis": "ASSUMPTION (procedure). Upper bound on how long to keep recording if liftoff never happens, so a no-liftoff run still terminates and still produces the full evidence set."
+   },
+   "post_liftoff_s": {
+    "value": 6.0,
+    "basis": "ASSUMPTION (procedure). Enough post-liftoff record to see whether the departure is sustained or a bounce."
+   },
+   "liftoff_z_margin_m": {
+    "value": 0.1,
+    "basis": "ASSUMPTION (detection). 0.10 m is well above the contact-solver penetration/settling scale seen at rest and well below any real climb, so it separates a departure from solver noise. The raw z trace is written out so a reviewer can re-derive with any other margin."
+   },
+   "liftoff_vz_min_ms": {
+    "value": 0.5,
+    "basis": "ASSUMPTION (detection). Requires the aircraft to be genuinely going up, not just displaced."
+   },
+   "liftoff_hold_s": {
+    "value": 0.3,
+    "basis": "ASSUMPTION (detection). ~300 physics steps at the world's 0.001 s <max_step_size>. A single contact-solver impulse cannot hold a positive climb rate for 300 consecutive steps; a real departure trivially can."
+   },
+   "rotation_pitch_delta_deg": {
+    "value": 1.0,
+    "basis": "ASSUMPTION (classification). The pitch change that must be exceeded BEFORE the vertical excursion for the run to look like a rotation rather than a flat pop-off. 1 deg is ~20x the attitude noise seen in the settle windows of the existing navigation records."
+   },
+   "yaw_rate_onset_deg_s": {
+    "value": 1.0,
+    "basis": "ASSUMPTION (event detection). Onset threshold for 'the aircraft started yawing'. Used only to timestamp the drift onset so it can be compared against the surface-deflection timestamp."
+   },
+   "takeoff_arm_to_mode_dwell_s": {
+    "value": 9.7,
+    "basis": "MEASURED from the user's OWN dataflash log codex/runtime/manual_takeoff/logs/00000002.BIN (read-only): MODE record Mode=0 (MANUAL) at TimeUS 134.594384 s with MSG 'Throttle armed' at 134.58 s, then MODE record Mode=13 (TAKEOFF, Rsn=2 GCS command) at TimeUS 144.294754 s. The dwell between arming in MANUAL and commanding TAKEOFF is 144.294754 - 134.594384 = 9.70037 s, rounded to 9.70 s. This is a PROCEDURE timing only - it sets no physical, aerodynamic, propulsive or control parameter."
+   },
+   "takeoff_mode_confirm_s": {
+    "value": 8.0,
+    "basis": "ASSUMPTION (procedure). Upper bound on how long to wait for HEARTBEAT.custom_mode to report 13 after the DO_SET_MODE. If it never does, the run is recorded as ABORT_MODE_NOT_ENTERED rather than being silently flown in whatever mode the autopilot was actually in."
+   },
+   "arm_attempts": {
+    "value": 8,
+    "basis": "EXECUTION CONTROL ONLY. ArduPlane refuses to arm until its own GPS/EKF prearm checks pass; the user's own MAVProxy log (codex/runtime/manual_takeoff/mavproxy.log) shows repeated 'PreArm: GPS 1: Bad fix' before a successful arm. Retrying the arm command changes no parameter and no threshold."
+   },
+   "arm_retry_period_s": {
+    "value": 4.0,
+    "basis": "EXECUTION CONTROL ONLY. Spacing between arm attempts."
+   },
+   "surface_onset_deg": {
+    "value": 0.5,
+    "basis": "DERIVED. ~8 PWM quanta of this transport (1 PWM = 0.0643 deg, derived in manual_takeoff_live_lib from model.sdf's own multiplier and servo_min/servo_max), and well above the servo model's documented ~0.06 deg neutral droop."
+   }
+  }
+ },
+ "overall": "NO_LIFTOFF_WITHIN_WINDOW"
+}

@@ -1,0 +1,222 @@
+<?xml version="1.0"?>
+<!--
+  ====================================================================
+  FALCON V2 - HIGH-RATE-DIAGNOSTICS TEST WORLD.
+  Owner: gazebo-testing. Created 2026-09-11 for stage
+  AIRBORNE_ACTUATOR_LIMIT_CYCLE_ROOT_CAUSE (runtime verification pass).
+
+  CLASSIFICATION: TEMPORARY_TEST_SETUP / OBSERVABILITY-ONLY.
+
+  Byte-identical to tests/gazebo/worlds/falcon_v2_manual_takeoff_runway_world.sdf
+  EXCEPT this header and ONE element value: the <include><uri>, which
+  points at tests/gazebo/models/falcon_v2_highrate_diag/ instead of
+  model/. That model directory is in turn identical to model/ except for
+  two <diagnostics_rate_hz> PUBLISH RATES (20.0 -> 1000.0). See that
+  file's own header.
+
+  The world <name> is DELIBERATELY UNCHANGED
+  (falcon_v2_manual_takeoff_runway) so every topic namespace, the
+  existing harness's --world default, gravity, <max_step_size>0.001</max_step_size>,
+  the spawn pose and the runway geometry are all identical to the
+  baseline runs. Only the diagnostics publish rate differs.
+  ====================================================================
+-->
+<!--
+  ===========================================================================
+  COPIED FILE. DO NOT EDIT INDEPENDENTLY OF ITS SOURCE.
+  ===========================================================================
+  Classification: TEMPORARY_TEST_SETUP / MEASUREMENT-ONLY.
+  Stage: MANUAL_TAKEOFF_AND_LIVE_CONTROL_SURFACE_BEHAVIOR_VALIDATION.
+  Author: controls-integration, 2026-09-10.
+
+  SOURCE (read-only, git-ignored parallel workspace, NOT modified by this
+  stage in any way):
+      codex/tests/gazebo/worlds/falcon_v2_manual_takeoff_runway_world.sdf
+
+  DIFFERENCES FROM THE SOURCE, EXHAUSTIVE LIST:
+    1. This header comment block (and the XML declaration it follows) was
+       PREPENDED. It is a comment; it changes no element, attribute or value.
+    2. Exactly ONE element value changed, on the <include><uri> line:
+           file:///home/emirhan/Desktop/FalconV2/codex/model
+        becomes
+           file:///home/emirhan/Desktop/FalconV2/model
+       i.e. the model is taken from the TRACKED model/ directory instead of
+       the git-ignored codex/model/ copy.
+  There is NO other difference. Verified by an automated line-by-line diff at
+  creation time. The check is re-runnable and is asserted at run time by
+  tests/gazebo/scripts/test_manual_takeoff_ground_roll_reproduction.py via
+  its verify-world flag, which fails the run rather than proceeding if this
+  file has drifted from its source in any way other than the two items
+  listed above.
+
+  WHY THE URI IS REPOINTED: codex/ is a read-only pre-existing temporary
+  setup for this stage and must not be edited, but the tracked repository
+  tree should not depend on a git-ignored path. codex/model/model.sdf was
+  diffed against model/model.sdf for this stage: 84 lines ADDED, 0 removed,
+  0 changed, and every added line is inside a <visual> block and is one of
+  <material>, <ambient>, <diffuse>, <specular>, <cast_shadows>, or a
+  TEMPORARY_TEST_VISUALIZATION comment. ZERO physics, link, joint, inertial,
+  collision, sensor or plugin difference. So this repoint changes the
+  RENDERED COLOUR of the aircraft and nothing else.
+
+  NOT CHANGED BY THIS COPY (stated explicitly, because this stage is
+  forbidden to change them): ground friction (ODE mu and mu2, both 0.8),
+  ground plane collision, spawn pose (minus 150, 0, 0.5, 0, 0, 0), physics
+  engine (dartsim), max_step_size (0.001 s), gravity, magnetic field,
+  spherical coordinates, scene and lighting, the visual-only
+  (collision-free) runway markings, and the system-plugin chain. NO landing
+  gear and NO wheel is added. There is none, by design, and adding one is
+  out of scope and prohibited for this stage.
+  ===========================================================================
+-->
+<!--
+  FALCON V2 manual takeoff inspection world.
+
+  Classification: TEMPORARY_TEST_SETUP / MANUAL_INSPECTION.
+
+  Source world copied conceptually from the repository's existing
+  tests/gazebo/worlds/falcon_v2_ardupilot_sitl_grounded_test_world.sdf.
+  The repository contains no dedicated runway / airstrip world or runway
+  asset.  This copy therefore retains that world's exact ground plane,
+  gravity, DART timestep, spherical datum, magnetic field, and sensor-system
+  chain, and adds only collision-free visual runway markings.
+
+  ASSUMPTION (manual-inspection visualization only): runway centerline is
+  world Y=0 and runway direction is world +X.  The visible strip is 400 m x
+  20 m.  These dimensions are not aircraft physics and are not presented as
+  a real-site survey.
+
+  Spawn pose is (-150, 0, 0.5, 0, 0, 0): aircraft body +X (nose-forward in
+  the project's FLU convention) points along runway +X.  Z=0.5 m is inherited
+  from the grounded source world and starts every existing collision above
+  the z=0 ground plane.  With no landing gear, gravity then settles the
+  aircraft onto its existing belly / wing collision primitives.
+
+  No landing gear, wheel, propeller collision, aircraft collision, friction,
+  aero, propulsion, actuator, sensor, or ArduPilot parameter is added or
+  changed here.
+-->
+<sdf version="1.9">
+  <world name="falcon_v2_manual_takeoff_runway">
+    <physics name="1ms" type="dartsim">
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>1.0</real_time_factor>
+    </physics>
+    <gravity>0 0 -9.81</gravity>
+
+    <!-- TEMPORARY_TEST_VISUALIZATION: lower ambient illumination makes the
+         directional-light shadows and gray/orange aircraft contrast visible.
+         Rendering only; no physics or sensor parameter is changed. -->
+    <scene>
+      <ambient>0.25 0.25 0.25 1</ambient>
+      <background>0.62 0.70 0.80 1</background>
+      <shadows>true</shadows>
+    </scene>
+
+    <spherical_coordinates>
+      <surface_model>EARTH_WGS84</surface_model>
+      <world_frame_orientation>ENU</world_frame_orientation>
+      <latitude_deg>0.0</latitude_deg>
+      <longitude_deg>0.0</longitude_deg>
+      <elevation>0.0</elevation>
+      <heading_deg>0.0</heading_deg>
+    </spherical_coordinates>
+
+    <magnetic_field>5.5645e-6 22.8758e-6 -42.3884e-6</magnetic_field>
+
+    <plugin filename="gz-sim-physics-system" name="gz::sim::systems::Physics"/>
+    <plugin filename="gz-sim-scene-broadcaster-system" name="gz::sim::systems::SceneBroadcaster"/>
+    <plugin filename="gz-sim-user-commands-system" name="gz::sim::systems::UserCommands"/>
+    <plugin filename="gz-sim-imu-system" name="gz::sim::systems::Imu"/>
+    <plugin filename="gz-sim-navsat-system" name="gz::sim::systems::NavSat"/>
+    <plugin filename="gz-sim-air-pressure-system" name="gz::sim::systems::AirPressure"/>
+
+    <light type="directional" name="sun">
+      <cast_shadows>true</cast_shadows>
+      <pose>0 0 10 0 0 0</pose>
+      <diffuse>0.8 0.8 0.8 1</diffuse>
+      <specular>0.2 0.2 0.2 1</specular>
+      <direction>-0.5 0.1 -0.9</direction>
+    </light>
+
+    <!-- Unmodified contact model from the grounded source world. -->
+    <model name="ground_plane">
+      <static>true</static>
+      <link name="link">
+        <collision name="collision">
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>1000 1000</size>
+            </plane>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.8</mu>
+                <mu2>0.8</mu2>
+              </ode>
+            </friction>
+          </surface>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>1000 1000</size>
+            </plane>
+          </geometry>
+          <material>
+            <ambient>0.18 0.28 0.14 1</ambient>
+            <diffuse>0.18 0.28 0.14 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Visual-only runway.  There is deliberately no <collision>. -->
+    <model name="runway_visual_only">
+      <static>true</static>
+      <link name="runway">
+        <visual name="asphalt">
+          <pose>0 0 0.001 0 0 0</pose>
+          <geometry><box><size>400 20 0.002</size></box></geometry>
+          <material>
+            <ambient>0.12 0.12 0.12 1</ambient>
+            <diffuse>0.16 0.16 0.16 1</diffuse>
+          </material>
+        </visual>
+        <visual name="centerline">
+          <pose>0 0 0.003 0 0 0</pose>
+          <geometry><box><size>360 0.18 0.002</size></box></geometry>
+          <material>
+            <ambient>0.9 0.9 0.9 1</ambient>
+            <diffuse>0.9 0.9 0.9 1</diffuse>
+          </material>
+        </visual>
+        <visual name="left_edge">
+          <pose>0 9.7 0.003 0 0 0</pose>
+          <geometry><box><size>398 0.18 0.002</size></box></geometry>
+          <material>
+            <ambient>0.9 0.9 0.9 1</ambient>
+            <diffuse>0.9 0.9 0.9 1</diffuse>
+          </material>
+        </visual>
+        <visual name="right_edge">
+          <pose>0 -9.7 0.003 0 0 0</pose>
+          <geometry><box><size>398 0.18 0.002</size></box></geometry>
+          <material>
+            <ambient>0.9 0.9 0.9 1</ambient>
+            <diffuse>0.9 0.9 0.9 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <include>
+      <uri>file:///home/emirhan/Desktop/FalconV2/tests/gazebo/models/falcon_v2_highrate_diag</uri>
+      <name>falcon_v2</name>
+      <pose>-150 0 0.5 0 0 0</pose>
+    </include>
+  </world>
+</sdf>

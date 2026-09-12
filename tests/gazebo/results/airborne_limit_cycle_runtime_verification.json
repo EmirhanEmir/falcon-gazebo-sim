@@ -1,0 +1,1923 @@
+{
+ "stage": "AIRBORNE_ACTUATOR_LIMIT_CYCLE_ROOT_CAUSE - RUNTIME VERIFICATION",
+ "owner": "gazebo-testing",
+ "date": "2026-09-11",
+ "classification": "MEASUREMENT-ONLY. No physics parameter was read for modification or modified. No pre-existing captured record was altered.",
+ "cross_reference": "docs/test_results/2026-09-10_airborne_actuator_limit_cycle_root_cause.md",
+ "constants_read": {
+  "max_rate_rad_s": 5.236,
+  "max_rate_deg_s": 300.00070153049904,
+  "max_effort_nm": 0.2,
+  "max_angle_rad": 0.7853981634,
+  "kp_nm_per_rad": 0.0034788,
+  "source": "docs/source_of_truth/controls/actuator_v1_config.yaml"
+ },
+ "thresholds_imported_from_2026_09_10_analysis": {
+  "RATE_PIN_FRACTION": 0.999,
+  "CLAMP_FLAG_TRUE": 0.5,
+  "CALM_WINDOW_S": 1.0,
+  "CMD_CALM_P2P_DEG": 1.0,
+  "ACT_OSC_P2P_DEG": 3.0
+ },
+ "threshold_defined_by_this_stage": {
+  "AIRBORNE_Z_M": 1.0,
+  "tag": "ASSUMPTION",
+  "basis": "10x the existing harness's own liftoff_z_margin_m = 0.10 m, so it cannot be satisfied by belly contact. Sensitivity reported at 0.5 / 1.0 / 5.0 m."
+ },
+ "runs": [
+  {
+   "tag": "baseline_MANUAL",
+   "timeseries": "/home/emirhan/Desktop/FalconV2/tests/gazebo/results/airborne_limit_cycle_runtime_baseline_MANUAL_timeseries.json",
+   "highrate_raw": "/tmp/claude-1000/-home-emirhan-Desktop-FalconV2/76fa60fb-30e2-4feb-bf64-2f73f0e53cde/scratchpad/highrate_raw/airborne_limit_cycle_baseline_MANUAL_highrate.json",
+   "clock_map": {
+    "map_used": "monotone piecewise-linear interpolation of the /clock stream (published once per physics step)",
+    "n_clock_msgs": 260262,
+    "clock_msg_rate_hz_measured": 999.9999999999999,
+    "interp_residual_rms_s": 0.0,
+    "interp_residual_max_abs_s": 0.0,
+    "rejected_global_affine_fit": {
+     "slope_sim_per_wall": 0.9997903221235698,
+     "intercept_sim_s_at_wall_origin": 7.5864054050660625,
+     "wall_origin_unix_s": 1789075307.420111,
+     "residual_rms_s": 0.06477025657718201,
+     "residual_max_abs_s": 2.0456217971813544,
+     "why_rejected": "residual too large - the real-time factor varies over the run, so a single line cannot represent the wall<->sim relation."
+    }
+   },
+   "subscribe_ok": {
+    "actuator": true,
+    "aero": true,
+    "imu": true,
+    "clock": true
+   },
+   "measured_publish_rate_hz": {
+    "actuator_diagnostics": 20.000060240059813,
+    "aero_diagnostics": 20.00000004987357,
+    "imu_sensor": 100.0,
+    "clock": 999.9999999999999
+   },
+   "actuator_delivery": {
+    "n_messages": 5190,
+    "sim_span_s": 259.44921853817783,
+    "median_gap_s": 0.04999977117356025,
+    "p99_gap_s": 0.05005808014503828,
+    "max_gap_s": 0.05025169205748625,
+    "gaps_over_3x_median": 0,
+    "note": "A message DROP by gz-transport would show as a gap that is an integer multiple of the median. Reported, not assumed absent."
+   },
+   "airborne_window_sim_s_by_z_threshold": {
+    "0.5": [
+     34.767,
+     87.457
+    ],
+    "1.0": [
+     35.003,
+     87.457
+    ],
+    "5.0": [
+     35.771,
+     87.457
+    ]
+   },
+   "status": "AIRBORNE_SEGMENT_FOUND",
+   "airborne_window_sim_s": [
+    35.003,
+    87.457
+   ],
+   "airborne_duration_s": 52.45399999999999,
+   "max_altitude_m": 178.95215384862757,
+   "n_airborne_actuator_samples": 1049,
+   "per_surface_airborne": {
+    "left_aileron": {
+     "n_samples": 1049,
+     "cmd_p2p_deg": 0.0,
+     "cmd_min_deg": 0.0,
+     "cmd_max_deg": 0.0,
+     "cmd_unique_values": 1,
+     "actual_p2p_deg": 37.65355996068308,
+     "actual_min_deg": -18.992480344249692,
+     "actual_max_deg": 18.661079616433394,
+     "actual_rate_abs_max_deg_s": 300.00070165814446,
+     "rate_pinned_samples": 452,
+     "rate_pinned_duty_frac": 0.43088655862726405,
+     "effort_clamp_samples": 0,
+     "target_clamp_samples": 0,
+     "hits_mechanical_limit": false,
+     "freq_fft_hz": 3.965696824147797,
+     "freq_fft_peak_variance_fraction": 0.07670586268558031,
+     "nyquist_hz": 10.000038385891921,
+     "freq_zero_crossing_hz": 3.200795405252225,
+     "zero_crossing_period_sd_s": 0.59259863903106,
+     "n_zero_crossings": 168,
+     "f_pred_triangle_R_over_2P_hz": 3.9836963867925417,
+     "f_measured_over_f_pred": 0.9954816931570337,
+     "kp_restoring_torque_at_peak_nm": 0.001153157199065419,
+     "kp_restoring_torque_as_frac_of_max_effort": 0.005765785995327095
+    },
+    "right_aileron": {
+     "n_samples": 1049,
+     "cmd_p2p_deg": 0.0,
+     "cmd_min_deg": 0.0,
+     "cmd_max_deg": 0.0,
+     "cmd_unique_values": 1,
+     "actual_p2p_deg": 37.66420748058019,
+     "actual_min_deg": -19.004125410093383,
+     "actual_max_deg": 18.6600820704868,
+     "actual_rate_abs_max_deg_s": 300.0007016581331,
+     "rate_pinned_samples": 452,
+     "rate_pinned_duty_frac": 0.43088655862726405,
+     "effort_clamp_samples": 0,
+     "target_clamp_samples": 0,
+     "hits_mechanical_limit": false,
+     "freq_fft_hz": 3.965696824147797,
+     "freq_fft_peak_variance_fraction": 0.07670895622594884,
+     "nyquist_hz": 10.000038385891921,
+     "freq_zero_crossing_hz": 3.200840289378314,
+     "zero_crossing_period_sd_s": 0.5926200673843494,
+     "n_zero_crossings": 168,
+     "f_pred_triangle_R_over_2P_hz": 3.98257021185406,
+     "f_measured_over_f_pred": 0.9957631914043751,
+     "kp_restoring_torque_at_peak_nm": 0.0011538642468689627,
+     "kp_restoring_torque_as_frac_of_max_effort": 0.005769321234344813
+    },
+    "left_elevator": {
+     "n_samples": 1049,
+     "cmd_p2p_deg": 0.0,
+     "cmd_min_deg": 0.0,
+     "cmd_max_deg": 0.0,
+     "cmd_unique_values": 1,
+     "actual_p2p_deg": 37.83590068825399,
+     "actual_min_deg": -17.936424918989466,
+     "actual_max_deg": 19.89947576926452,
+     "actual_rate_abs_max_deg_s": 300.00070182606584,
+     "rate_pinned_samples": 558,
+     "rate_pinned_duty_frac": 0.5319351763584366,
+     "effort_clamp_samples": 0,
+     "target_clamp_samples": 0,
+     "hits_mechanical_limit": false,
+     "freq_fft_hz": 3.965696824147797,
+     "freq_fft_peak_variance_fraction": 0.08039756383918004,
+     "nyquist_hz": 10.000038385891921,
+     "freq_zero_crossing_hz": 3.391449413186878,
+     "zero_crossing_period_sd_s": 0.5178429597047411,
+     "n_zero_crossings": 178,
+     "f_pred_triangle_R_over_2P_hz": 3.964497951328447,
+     "f_measured_over_f_pred": 1.0003024021790574,
+     "kp_restoring_torque_at_peak_nm": 0.0012082267995029371,
+     "kp_restoring_torque_as_frac_of_max_effort": 0.006041133997514685
+    },
+    "right_elevator": {
+     "n_samples": 1049,
+     "cmd_p2p_deg": 0.0,
+     "cmd_min_deg": 0.0,
+     "cmd_max_deg": 0.0,
+     "cmd_unique_values": 1,
+     "actual_p2p_deg": 37.83854279484034,
+     "actual_min_deg": -17.93912358116649,
+     "actual_max_deg": 19.899419213673855,
+     "actual_rate_abs_max_deg_s": 300.00070182606174,
+     "rate_pinned_samples": 558,
+     "rate_pinned_duty_frac": 0.5319351763584366,
+     "effort_clamp_samples": 0,
+     "target_clamp_samples": 0,
+     "hits_mechanical_limit": false,
+     "freq_fft_hz": 3.965696824147797,
+     "freq_fft_peak_variance_fraction": 0.08040570002232576,
+     "nyquist_hz": 10.000038385891921,
+     "freq_zero_crossing_hz": 3.3914553272579897,
+     "zero_crossing_period_sd_s": 0.5178667938307085,
+     "n_zero_crossings": 178,
+     "f_pred_triangle_R_over_2P_hz": 3.9642211270806,
+     "f_measured_over_f_pred": 1.0003722539737039,
+     "kp_restoring_torque_at_peak_nm": 0.001208223365644624,
+     "kp_restoring_torque_as_frac_of_max_effort": 0.0060411168282231194
+    },
+    "rudder": {
+     "n_samples": 1049,
+     "cmd_p2p_deg": 0.0,
+     "cmd_min_deg": 0.0,
+     "cmd_max_deg": 0.0,
+     "cmd_unique_values": 1,
+     "actual_p2p_deg": 0.04738285951503808,
+     "actual_min_deg": -0.019947703316769035,
+     "actual_max_deg": 0.027435156198269042,
+     "actual_rate_abs_max_deg_s": 0.6749630669550375,
+     "rate_pinned_samples": 0,
+     "rate_pinned_duty_frac": 0.0,
+     "effort_clamp_samples": 0,
+     "target_clamp_samples": 0,
+     "hits_mechanical_limit": false,
+     "freq_fft_hz": 0.1715926510448566,
+     "freq_fft_peak_variance_fraction": 0.043157322749977474,
+     "nyquist_hz": 10.000038385891921,
+     "freq_zero_crossing_hz": 3.410457380613245,
+     "zero_crossing_period_sd_s": 0.5497568025768961,
+     "n_zero_crossings": 178,
+     "f_pred_triangle_R_over_2P_hz": 3165.709125631038,
+     "f_measured_over_f_pred": 5.420354310368047e-05,
+     "kp_restoring_torque_at_peak_nm": 1.6657670459086127e-06,
+     "kp_restoring_torque_as_frac_of_max_effort": 8.328835229543062e-06
+    }
+   },
+   "calm_command_oscillating_joint": {
+    "left_aileron": {
+     "windows": 52,
+     "qualifying": 41,
+     "worst_actual_p2p_deg": 33.58705885603041,
+     "worst_cmd_p2p_deg": 0.0
+    },
+    "right_aileron": {
+     "windows": 52,
+     "qualifying": 41,
+     "worst_actual_p2p_deg": 33.58708930112841,
+     "worst_cmd_p2p_deg": 0.0
+    },
+    "left_elevator": {
+     "windows": 52,
+     "qualifying": 42,
+     "worst_actual_p2p_deg": 36.07659438861956,
+     "worst_cmd_p2p_deg": 0.0
+    },
+    "right_elevator": {
+     "windows": 52,
+     "qualifying": 42,
+     "worst_actual_p2p_deg": 36.07621158554995,
+     "worst_cmd_p2p_deg": 0.0
+    },
+    "rudder": {
+     "windows": 52,
+     "qualifying": 0,
+     "worst_actual_p2p_deg": 0.0,
+     "worst_cmd_p2p_deg": null
+    }
+   },
+   "airframe_rates_airborne": {
+    "p_roll": {
+     "rms_deg_s": 0.5010081431067885,
+     "p2p_deg_s": 2.622518955492741,
+     "freq_fft_hz": 0.019065776930413707,
+     "peak_variance_fraction": 0.4115317178476958,
+     "nyquist_hz": 50.00000000000995
+    },
+    "q_pitch": {
+     "rms_deg_s": 126.23596990466379,
+     "p2p_deg_s": 505.86485608377006,
+     "freq_fft_hz": 4.690181124881772,
+     "peak_variance_fraction": 0.09226720837771679,
+     "nyquist_hz": 50.00000000000995
+    },
+    "r_yaw": {
+     "rms_deg_s": 2.2423234545562076,
+     "p2p_deg_s": 7.439277641528379,
+     "freq_fft_hz": 0.019065776930413707,
+     "peak_variance_fraction": 0.4807448013670242,
+     "nyquist_hz": 50.00000000000995
+    },
+    "pitch_angular_accel_rms_rad_s2": 58.61295480441163,
+    "imu_sample_rate_hz": 100.0000000000199
+   },
+   "aero_airborne": {
+    "Cl": {
+     "p2p": 0.0013690935989930327,
+     "rms": 7.0497826738374e-05,
+     "freq_fft_hz": 0.09532894754536338,
+     "peak_variance_fraction": 0.08963478117518481
+    },
+    "Cm": {
+     "p2p": 0.9484988906203771,
+     "rms": 0.22184936771474115,
+     "freq_fft_hz": 3.965684217887117,
+     "peak_variance_fraction": 0.07420206840445286
+    },
+    "Cn": {
+     "p2p": 0.0002856865920717963,
+     "rms": 4.117679210368737e-05,
+     "freq_fft_hz": 0.09532894754536338,
+     "peak_variance_fraction": 0.34881424203488787
+    },
+    "V_mean_ms": 32.271413795481244,
+    "qbar_mean_pa": 688.0372190512039
+   },
+   "correlation_with_airframe": {
+    "left_aileron": {
+     "angle_vs_alpha_y": -0.38011691853962176,
+     "rate_vs_alpha_y": -0.8175607057244815,
+     "angle_vs_q_pitch": -0.8037795845634228
+    },
+    "right_aileron": {
+     "angle_vs_alpha_y": -0.3801857930241868,
+     "rate_vs_alpha_y": -0.8174239835729419,
+     "angle_vs_q_pitch": -0.8035786375632068
+    },
+    "left_elevator": {
+     "angle_vs_alpha_y": -0.2912964283870501,
+     "rate_vs_alpha_y": -0.8443318420574368,
+     "angle_vs_q_pitch": -0.8579652578227018
+    },
+    "right_elevator": {
+     "angle_vs_alpha_y": -0.2913186037408623,
+     "rate_vs_alpha_y": -0.8443144390852443,
+     "angle_vs_q_pitch": -0.8579379821076478
+    },
+    "rudder": {
+     "angle_vs_alpha_y": -0.37781027888241536,
+     "rate_vs_alpha_y": -0.007306957614638507,
+     "angle_vs_q_pitch": -0.01366278226122078
+    }
+   },
+   "left_right_agreement": {
+    "aileron_max_abs_diff_deg": 0.17589927592902838,
+    "elevator_max_abs_diff_deg": 0.03284028077984133,
+    "delta_a_aero_p2p_deg": 0.1754123100267885,
+    "delta_e_aero_p2p_deg": 37.83722174154717,
+    "note": "delta_a = 0.5*(theta_R - theta_L), delta_e = -0.5*(theta_LE + theta_RE), per docs/source_of_truth/controls/CONTROLS.md sec 10."
+   },
+   "triangle_prediction_per_1s_window": {
+    "left_aileron": {
+     "n_windows_with_duty_ge_20pct": 32,
+     "f_over_f_pred_min": 0.7923399049533904,
+     "f_over_f_pred_median": 0.8687727883514607,
+     "f_over_f_pred_max": 1.0122121876165016,
+     "mean_duty": 0.6953125
+    },
+    "right_aileron": {
+     "n_windows_with_duty_ge_20pct": 32,
+     "f_over_f_pred_min": 0.7923415583124435,
+     "f_over_f_pred_median": 0.8700615700991665,
+     "f_over_f_pred_max": 1.0122763832341894,
+     "mean_duty": 0.6953125
+    },
+    "left_elevator": {
+     "n_windows_with_duty_ge_20pct": 36,
+     "f_over_f_pred_min": 0.748226532761573,
+     "f_over_f_pred_median": 0.9015575753308307,
+     "f_over_f_pred_max": 1.015543451645079,
+     "mean_duty": 0.7666666666666667
+    },
+    "right_elevator": {
+     "n_windows_with_duty_ge_20pct": 36,
+     "f_over_f_pred_min": 0.7482216800564605,
+     "f_over_f_pred_median": 0.9015580897825597,
+     "f_over_f_pred_max": 1.015548368612623,
+     "mean_duty": 0.7666666666666667
+    },
+    "rudder": {
+     "n_windows_with_duty_ge_20pct": 0,
+     "f_over_f_pred_min": null,
+     "f_over_f_pred_median": null,
+     "f_over_f_pred_max": null,
+     "mean_duty": null
+    }
+   },
+   "decimation_test": {
+    "source_rate_hz": 20.000060240059813,
+    "note": "Record is not high-rate; decimation test not applicable to it."
+   },
+   "pre_liftoff_ground_census": {
+    "n_samples_before_airborne": 535,
+    "window_sim_s": [
+     8.300815789473685,
+     35.00002710985384
+    ],
+    "left_aileron": {
+     "actual_p2p_deg": 4.92615133584412,
+     "rate_pinned_samples": 0,
+     "rate_pinned_duty_frac": 0.0,
+     "first_deflection_over_0p5deg_t_sim": 34.25004494382023,
+     "first_rate_pin_t_sim": null
+    },
+    "right_aileron": {
+     "actual_p2p_deg": 4.926444671840531,
+     "rate_pinned_samples": 0,
+     "rate_pinned_duty_frac": 0.0,
+     "first_deflection_over_0p5deg_t_sim": 34.25004494382023,
+     "first_rate_pin_t_sim": null
+    },
+    "left_elevator": {
+     "actual_p2p_deg": 8.042218821194838,
+     "rate_pinned_samples": 0,
+     "rate_pinned_duty_frac": 0.0,
+     "first_deflection_over_0p5deg_t_sim": 34.25004494382023,
+     "first_rate_pin_t_sim": null
+    },
+    "right_elevator": {
+     "actual_p2p_deg": 8.042276128198589,
+     "rate_pinned_samples": 0,
+     "rate_pinned_duty_frac": 0.0,
+     "first_deflection_over_0p5deg_t_sim": 34.25004494382023,
+     "first_rate_pin_t_sim": null
+    },
+    "rudder": {
+     "actual_p2p_deg": 0.002611298676359609,
+     "rate_pinned_samples": 0,
+     "rate_pinned_duty_frac": 0.0,
+     "first_deflection_over_0p5deg_t_sim": null,
+     "first_rate_pin_t_sim": null
+    },
+    "first_body_pitch_rate_over_1deg_s_t_sim": 33.48,
+    "airborne_window_start_t_sim": 35.003
+   },
+   "ardupilot_servo_pwm_airborne": {
+    "n": 5105,
+    "aileron_c1": {
+     "min": 1500.0,
+     "max": 1500.0,
+     "unique": 1
+    },
+    "elevator_c2": {
+     "min": 1500.0,
+     "max": 1500.0,
+     "unique": 1
+    },
+    "rudder_c4": {
+     "min": 1500.0,
+     "max": 1500.0,
+     "unique": 1
+    }
+   }
+  },
+  {
+   "tag": "baseline_FBWA",
+   "timeseries": "/home/emirhan/Desktop/FalconV2/tests/gazebo/results/airborne_limit_cycle_runtime_baseline_FBWA_timeseries.json",
+   "highrate_raw": "/tmp/claude-1000/-home-emirhan-Desktop-FalconV2/76fa60fb-30e2-4feb-bf64-2f73f0e53cde/scratchpad/highrate_raw/airborne_limit_cycle_baseline_FBWA_highrate.json",
+   "clock_map": {
+    "map_used": "monotone piecewise-linear interpolation of the /clock stream (published once per physics step)",
+    "n_clock_msgs": 260199,
+    "clock_msg_rate_hz_measured": 1000.0000000000001,
+    "interp_residual_rms_s": 0.0,
+    "interp_residual_max_abs_s": 0.0,
+    "rejected_global_affine_fit": {
+     "slope_sim_per_wall": 0.9998513567650976,
+     "intercept_sim_s_at_wall_origin": 7.5644364228529986,
+     "wall_origin_unix_s": 1789075627.9737866,
+     "residual_rms_s": 0.06866111267471356,
+     "residual_max_abs_s": 2.3303214929781575,
+     "why_rejected": "residual too large - the real-time factor varies over the run, so a single line cannot represent the wall<->sim relation."
+    }
+   },
+   "subscribe_ok": {
+    "actuator": true,
+    "aero": true,
+    "imu": true,
+    "clock": true
+   },
+   "measured_publish_rate_hz": {
+    "actuator_diagnostics": 20.00005772841968,
+    "aero_diagnostics": 20.000034249935716,
+    "imu_sensor": 100.00000000000001,
+    "clock": 1000.0000000000001
+   },
+   "actuator_delivery": {
+    "n_messages": 5191,
+    "sim_span_s": 259.49925097591665,
+    "median_gap_s": 0.04999972595719093,
+    "p99_gap_s": 0.05005804736546828,
+    "max_gap_s": 0.05015786415474466,
+    "gaps_over_3x_median": 0,
+    "note": "A message DROP by gz-transport would show as a gap that is an integer multiple of the median. Reported, not assumed absent."
+   },
+   "airborne_window_sim_s_by_z_threshold": {
+    "0.5": [
+     34.473,
+     87.451
+    ],
+    "1.0": [
+     34.658,
+     87.451
+    ],
+    "5.0": [
+     35.428,
+     87.451
+    ]
+   },
+   "status": "AIRBORNE_SEGMENT_FOUND",
+   "airborne_window_sim_s": [
+    34.658,
+    87.451
+   ],
+   "airborne_duration_s": 52.79299999999999,
+   "max_altitude_m": 231.14981913692975,
+   "n_airborne_actuator_samples": 1056,
+   "per_surface_airborne": {
+    "left_aileron": {
+     "n_samples": 1056,
+     "cmd_p2p_deg": 0.06428571428591892,
+     "cmd_min_deg": 0.0,
+     "cmd_max_deg": 0.06428571428591892,
+     "cmd_unique_values": 2,
+     "actual_p2p_deg": 34.47804465549609,
+     "actual_min_deg": -17.15390094640594,
+     "actual_max_deg": 17.324143709090155,
+     "actual_rate_abs_max_deg_s": 300.00070159284627,
+     "rate_pinned_samples": 781,
+     "rate_pinned_duty_frac": 0.7395833333333334,
+     "effort_clamp_samples": 0,
+     "target_clamp_samples": 0,
+     "hits_mechanical_limit": false,
+     "freq_fft_hz": 3.996233055355613,
+     "freq_fft_peak_variance_fraction": 0.5094850485172241,
+     "nyquist_hz": 10.000052384965704,
+     "freq_zero_crossing_hz": 3.9592838655740623,
+     "zero_crossing_period_sd_s": 0.004758053146224603,
+     "n_zero_crossings": 208,
+     "f_pred_triangle_R_over_2P_hz": 4.350604921597205,
+     "f_measured_over_f_pred": 0.9185465302807835,
+     "kp_restoring_torque_at_peak_nm": 0.0010518616143693803,
+     "kp_restoring_torque_as_frac_of_max_effort": 0.0052593080718469016
+    },
+    "right_aileron": {
+     "n_samples": 1056,
+     "cmd_p2p_deg": 0.06428571428591892,
+     "cmd_min_deg": -0.06428571428591892,
+     "cmd_max_deg": 0.0,
+     "cmd_unique_values": 2,
+     "actual_p2p_deg": 34.47659264275816,
+     "actual_min_deg": -17.153866128785985,
+     "actual_max_deg": 17.322726513972178,
+     "actual_rate_abs_max_deg_s": 300.00070159284803,
+     "rate_pinned_samples": 781,
+     "rate_pinned_duty_frac": 0.7395833333333334,
+     "effort_clamp_samples": 0,
+     "target_clamp_samples": 0,
+     "hits_mechanical_limit": false,
+     "freq_fft_hz": 3.996233055355613,
+     "freq_fft_peak_variance_fraction": 0.5094897423426605,
+     "nyquist_hz": 10.000052384965704,
+     "freq_zero_crossing_hz": 3.9592856043673224,
+     "zero_crossing_period_sd_s": 0.004758333485268112,
+     "n_zero_crossings": 208,
+     "f_pred_triangle_R_over_2P_hz": 4.350788151240265,
+     "f_measured_over_f_pred": 0.918507846495909,
+     "kp_restoring_torque_at_peak_nm": 0.0010517755672221328,
+     "kp_restoring_torque_as_frac_of_max_effort": 0.005258877836110664
+    },
+    "left_elevator": {
+     "n_samples": 1056,
+     "cmd_p2p_deg": 30.600000000099417,
+     "cmd_min_deg": -16.392857142910405,
+     "cmd_max_deg": 14.20714285718901,
+     "cmd_unique_values": 317,
+     "actual_p2p_deg": 42.16274606020601,
+     "actual_min_deg": -23.15921707599978,
+     "actual_max_deg": 19.003528984206227,
+     "actual_rate_abs_max_deg_s": 300.0007017443839,
+     "rate_pinned_samples": 865,
+     "rate_pinned_duty_frac": 0.8191287878787878,
+     "effort_clamp_samples": 0,
+     "target_clamp_samples": 0,
+     "hits_mechanical_limit": false,
+     "freq_fft_hz": 3.996233055355613,
+     "freq_fft_peak_variance_fraction": 0.5094164835200825,
+     "nyquist_hz": 10.000052384965704,
+     "freq_zero_crossing_hz": 3.95871414899814,
+     "zero_crossing_period_sd_s": 0.0048776821087744785,
+     "n_zero_crossings": 208,
+     "f_pred_triangle_R_over_2P_hz": 3.557651357695192,
+     "f_measured_over_f_pred": 1.1232784366887918,
+     "kp_restoring_torque_at_peak_nm": 0.001406146928249617,
+     "kp_restoring_torque_as_frac_of_max_effort": 0.0070307346412480844
+    },
+    "right_elevator": {
+     "n_samples": 1056,
+     "cmd_p2p_deg": 30.600000000099417,
+     "cmd_min_deg": -16.392857142910405,
+     "cmd_max_deg": 14.20714285718901,
+     "cmd_unique_values": 317,
+     "actual_p2p_deg": 42.16738884797486,
+     "actual_min_deg": -23.16439456730204,
+     "actual_max_deg": 19.002994280672823,
+     "actual_rate_abs_max_deg_s": 300.0007017443836,
+     "rate_pinned_samples": 865,
+     "rate_pinned_duty_frac": 0.8191287878787878,
+     "effort_clamp_samples": 0,
+     "target_clamp_samples": 0,
+     "hits_mechanical_limit": false,
+     "freq_fft_hz": 3.996233055355613,
+     "freq_fft_peak_variance_fraction": 0.5094165929831519,
+     "nyquist_hz": 10.000052384965704,
+     "freq_zero_crossing_hz": 3.9587143610621225,
+     "zero_crossing_period_sd_s": 0.0048776426627162054,
+     "n_zero_crossings": 208,
+     "f_pred_triangle_R_over_2P_hz": 3.5572596469286353,
+     "f_measured_over_f_pred": 1.1234021274792214,
+     "kp_restoring_torque_at_peak_nm": 0.0014064612874728506,
+     "kp_restoring_torque_as_frac_of_max_effort": 0.007032306437364253
+    },
+    "rudder": {
+     "n_samples": 1056,
+     "cmd_p2p_deg": 0.0,
+     "cmd_min_deg": 0.0,
+     "cmd_max_deg": 0.0,
+     "cmd_unique_values": 1,
+     "actual_p2p_deg": 0.04651453843089141,
+     "actual_min_deg": -0.030288104652413442,
+     "actual_max_deg": 0.016226433778477965,
+     "actual_rate_abs_max_deg_s": 0.724109898334215,
+     "rate_pinned_samples": 0,
+     "rate_pinned_duty_frac": 0.0,
+     "effort_clamp_samples": 0,
+     "target_clamp_samples": 0,
+     "hits_mechanical_limit": false,
+     "freq_fft_hz": 2.2727391784012965,
+     "freq_fft_peak_variance_fraction": 0.015993195924082142,
+     "nyquist_hz": 10.000052384965704,
+     "freq_zero_crossing_hz": 3.097159741552766,
+     "zero_crossing_period_sd_s": 0.2404324129465997,
+     "n_zero_crossings": 161,
+     "f_pred_triangle_R_over_2P_hz": 3224.805745156674,
+     "f_measured_over_f_pred": 0.0007047677776606285,
+     "kp_restoring_torque_at_peak_nm": 1.838988130718383e-06,
+     "kp_restoring_torque_as_frac_of_max_effort": 9.194940653591915e-06
+    }
+   },
+   "calm_command_oscillating_joint": {
+    "left_aileron": {
+     "windows": 52,
+     "qualifying": 52,
+     "worst_actual_p2p_deg": 33.80732237343041,
+     "worst_cmd_p2p_deg": 0.0
+    },
+    "right_aileron": {
+     "windows": 52,
+     "qualifying": 52,
+     "worst_actual_p2p_deg": 33.82399276225031,
+     "worst_cmd_p2p_deg": 0.06428571428591892
+    },
+    "left_elevator": {
+     "windows": 52,
+     "qualifying": 0,
+     "worst_actual_p2p_deg": 0.0,
+     "worst_cmd_p2p_deg": null
+    },
+    "right_elevator": {
+     "windows": 52,
+     "qualifying": 0,
+     "worst_actual_p2p_deg": 0.0,
+     "worst_cmd_p2p_deg": null
+    },
+    "rudder": {
+     "windows": 52,
+     "qualifying": 0,
+     "worst_actual_p2p_deg": 0.0,
+     "worst_cmd_p2p_deg": null
+    }
+   },
+   "airframe_rates_airborne": {
+    "p_roll": {
+     "rms_deg_s": 0.12950431263602438,
+     "p2p_deg_s": 1.6892166670197337,
+     "freq_fft_hz": 1.5909090909094075,
+     "peak_variance_fraction": 0.02996765314420651,
+     "nyquist_hz": 50.00000000000995
+    },
+    "q_pitch": {
+     "rms_deg_s": 148.4641242146542,
+     "p2p_deg_s": 442.24616060243176,
+     "freq_fft_hz": 3.9962121212129165,
+     "peak_variance_fraction": 0.5192017488623922,
+     "nyquist_hz": 50.00000000000995
+    },
+    "r_yaw": {
+     "rms_deg_s": 0.03844915706550354,
+     "p2p_deg_s": 0.3327471118306984,
+     "freq_fft_hz": 0.776515151515306,
+     "peak_variance_fraction": 0.08057037075106806,
+     "nyquist_hz": 50.00000000000995
+    },
+    "pitch_angular_accel_rms_rad_s2": 64.0734696259669,
+    "imu_sample_rate_hz": 100.0000000000199
+   },
+   "aero_airborne": {
+    "Cl": {
+     "p2p": 0.0008612868548202267,
+     "rms": 3.795046150886992e-05,
+     "freq_fft_hz": 2.1780282664890604,
+     "peak_variance_fraction": 0.02765179853737751
+    },
+    "Cm": {
+     "p2p": 0.9586470986858551,
+     "rms": 0.3013176205199698,
+     "freq_fft_hz": 3.996208384601667,
+     "peak_variance_fraction": 0.5140550235057169
+    },
+    "Cn": {
+     "p2p": 8.98654099820587e-05,
+     "rms": 1.0798706393300722e-05,
+     "freq_fft_hz": 0.018939376230339654,
+     "peak_variance_fraction": 0.0856969462357679
+    },
+    "V_mean_ms": 32.96041759853302,
+    "qbar_mean_pa": 666.4663760939718
+   },
+   "correlation_with_airframe": {
+    "left_aileron": {
+     "angle_vs_alpha_y": -0.5207938766022242,
+     "rate_vs_alpha_y": -0.8306307526294222,
+     "angle_vs_q_pitch": -0.838083048037546
+    },
+    "right_aileron": {
+     "angle_vs_alpha_y": -0.5207551555358219,
+     "rate_vs_alpha_y": -0.8306615610611084,
+     "angle_vs_q_pitch": -0.8381201250697236
+    },
+    "left_elevator": {
+     "angle_vs_alpha_y": -0.3972611607662826,
+     "rate_vs_alpha_y": -0.8893985639309685,
+     "angle_vs_q_pitch": -0.901654004006243
+    },
+    "right_elevator": {
+     "angle_vs_alpha_y": -0.39725721606538666,
+     "rate_vs_alpha_y": -0.8894007889048672,
+     "angle_vs_q_pitch": -0.9016562800494361
+    },
+    "rudder": {
+     "angle_vs_alpha_y": 0.04075175706624798,
+     "rate_vs_alpha_y": 0.06534718278154243,
+     "angle_vs_q_pitch": 0.06271644995347687
+    }
+   },
+   "left_right_agreement": {
+    "aileron_max_abs_diff_deg": 0.14673689679328833,
+    "elevator_max_abs_diff_deg": 0.011389653540232287,
+    "delta_a_aero_p2p_deg": 0.11284559525506366,
+    "delta_e_aero_p2p_deg": 42.16506745409043,
+    "note": "delta_a = 0.5*(theta_R - theta_L), delta_e = -0.5*(theta_LE + theta_RE), per docs/source_of_truth/controls/CONTROLS.md sec 10."
+   },
+   "triangle_prediction_per_1s_window": {
+    "left_aileron": {
+     "n_windows_with_duty_ge_20pct": 52,
+     "f_over_f_pred_min": 0.7494222877511,
+     "f_over_f_pred_median": 0.7928821348187962,
+     "f_over_f_pred_max": 0.9015231970916816,
+     "mean_duty": 0.7413461538461538
+    },
+    "right_aileron": {
+     "n_windows_with_duty_ge_20pct": 52,
+     "f_over_f_pred_min": 0.7495053517863264,
+     "f_over_f_pred_median": 0.7928822216361175,
+     "f_over_f_pred_max": 0.9019627327525741,
+     "mean_duty": 0.7413461538461538
+    },
+    "left_elevator": {
+     "n_windows_with_duty_ge_20pct": 52,
+     "f_over_f_pred_min": 0.771158031142175,
+     "f_over_f_pred_median": 0.795192390565759,
+     "f_over_f_pred_max": 0.982911001869263,
+     "mean_duty": 0.819230769230769
+    },
+    "right_elevator": {
+     "n_windows_with_duty_ge_20pct": 52,
+     "f_over_f_pred_min": 0.7711611517208184,
+     "f_over_f_pred_median": 0.7951876850046387,
+     "f_over_f_pred_max": 0.9829017936396358,
+     "mean_duty": 0.819230769230769
+    },
+    "rudder": {
+     "n_windows_with_duty_ge_20pct": 0,
+     "f_over_f_pred_min": null,
+     "f_over_f_pred_median": null,
+     "f_over_f_pred_max": null,
+     "mean_duty": null
+    }
+   },
+   "decimation_test": {
+    "source_rate_hz": 20.00005772841968,
+    "note": "Record is not high-rate; decimation test not applicable to it."
+   },
+   "pre_liftoff_ground_census": {
+    "n_samples_before_airborne": 529,
+    "window_sim_s": [
+     8.250810055865921,
+     34.650066978922716
+    ],
+    "left_aileron": {
+     "actual_p2p_deg": 17.200674877612084,
+     "rate_pinned_samples": 1,
+     "rate_pinned_duty_frac": 0.001890359168241966,
+     "first_deflection_over_0p5deg_t_sim": 34.00007092030361,
+     "first_rate_pin_t_sim": 34.650066978922716
+    },
+    "right_aileron": {
+     "actual_p2p_deg": 17.204533900777395,
+     "rate_pinned_samples": 1,
+     "rate_pinned_duty_frac": 0.001890359168241966,
+     "first_deflection_over_0p5deg_t_sim": 34.00007092030361,
+     "first_rate_pin_t_sim": 34.650066978922716
+    },
+    "left_elevator": {
+     "actual_p2p_deg": 29.45750977306048,
+     "rate_pinned_samples": 3,
+     "rate_pinned_duty_frac": 0.005671077504725898,
+     "first_deflection_over_0p5deg_t_sim": 26.800025136352858,
+     "first_rate_pin_t_sim": 34.450067737079785
+    },
+    "right_elevator": {
+     "actual_p2p_deg": 29.457705935691695,
+     "rate_pinned_samples": 3,
+     "rate_pinned_duty_frac": 0.005671077504725898,
+     "first_deflection_over_0p5deg_t_sim": 26.800025136352858,
+     "first_rate_pin_t_sim": 34.450067737079785
+    },
+    "rudder": {
+     "actual_p2p_deg": 0.004016372857188808,
+     "rate_pinned_samples": 0,
+     "rate_pinned_duty_frac": 0.0,
+     "first_deflection_over_0p5deg_t_sim": null,
+     "first_rate_pin_t_sim": null
+    },
+    "first_body_pitch_rate_over_1deg_s_t_sim": 33.82,
+    "airborne_window_start_t_sim": 34.658
+   },
+   "ardupilot_servo_pwm_airborne": {
+    "n": 5127,
+    "aileron_c1": {
+     "min": 1500.0,
+     "max": 1501.0,
+     "unique": 2
+    },
+    "elevator_c2": {
+     "min": 1245.0,
+     "max": 1721.0,
+     "unique": 366
+    },
+    "rudder_c4": {
+     "min": 1500.0,
+     "max": 1500.0,
+     "unique": 1
+    }
+   }
+  },
+  {
+   "tag": "highrate_MANUAL",
+   "timeseries": "/home/emirhan/Desktop/FalconV2/tests/gazebo/results/airborne_limit_cycle_runtime_highrate_MANUAL_timeseries.json",
+   "highrate_raw": "/tmp/claude-1000/-home-emirhan-Desktop-FalconV2/76fa60fb-30e2-4feb-bf64-2f73f0e53cde/scratchpad/highrate_raw/airborne_limit_cycle_highrate_MANUAL_highrate.json",
+   "clock_map": {
+    "map_used": "monotone piecewise-linear interpolation of the /clock stream (published once per physics step)",
+    "n_clock_msgs": 260400,
+    "clock_msg_rate_hz_measured": 1000.0,
+    "interp_residual_rms_s": 0.0,
+    "interp_residual_max_abs_s": 0.0,
+    "rejected_global_affine_fit": {
+     "slope_sim_per_wall": 0.9993034624261923,
+     "intercept_sim_s_at_wall_origin": 7.54713253184939,
+     "wall_origin_unix_s": 1789075916.5584722,
+     "residual_rms_s": 0.4498841929113518,
+     "residual_max_abs_s": 13.267735020174484,
+     "why_rejected": "residual too large - the real-time factor varies over the run, so a single line cannot represent the wall<->sim relation."
+    }
+   },
+   "subscribe_ok": {
+    "actuator": true,
+    "aero": true,
+    "imu": true,
+    "clock": true
+   },
+   "measured_publish_rate_hz": {
+    "actuator_diagnostics": 1000.0036097018772,
+    "aero_diagnostics": 1000.002565357517,
+    "imu_sensor": 100.00000000000001,
+    "clock": 1000.0
+   },
+   "actuator_delivery": {
+    "n_messages": 259447,
+    "sim_span_s": 259.44506348066733,
+    "median_gap_s": 0.0009998708100837916,
+    "p99_gap_s": 0.0010520596597814347,
+    "max_gap_s": 0.0019447514572483726,
+    "gaps_over_3x_median": 0,
+    "note": "A message DROP by gz-transport would show as a gap that is an integer multiple of the median. Reported, not assumed absent."
+   },
+   "airborne_window_sim_s_by_z_threshold": {
+    "0.5": [
+     34.817,
+     87.502
+    ],
+    "1.0": [
+     35.043,
+     87.502
+    ],
+    "5.0": [
+     35.805,
+     87.502
+    ]
+   },
+   "status": "AIRBORNE_SEGMENT_FOUND",
+   "airborne_window_sim_s": [
+    35.043,
+    87.502
+   ],
+   "airborne_duration_s": 52.458999999999996,
+   "max_altitude_m": 178.95503410422614,
+   "n_airborne_actuator_samples": 52459,
+   "per_surface_airborne": {
+    "left_aileron": {
+     "n_samples": 52459,
+     "cmd_p2p_deg": 0.0,
+     "cmd_min_deg": 0.0,
+     "cmd_max_deg": 0.0,
+     "cmd_unique_values": 1,
+     "actual_p2p_deg": 38.23455029862516,
+     "actual_min_deg": -19.487372519414983,
+     "actual_max_deg": 18.747177779210176,
+     "actual_rate_abs_max_deg_s": 300.0007016603827,
+     "rate_pinned_samples": 23196,
+     "rate_pinned_duty_frac": 0.44217388817934006,
+     "effort_clamp_samples": 0,
+     "target_clamp_samples": 0,
+     "hits_mechanical_limit": false,
+     "freq_fft_hz": 3.9655776998393075,
+     "freq_fft_peak_variance_fraction": 0.08043311675946634,
+     "nyquist_hz": 500.07269364391885,
+     "freq_zero_crossing_hz": 3.220108931974669,
+     "zero_crossing_period_sd_s": 0.5844866453675476,
+     "n_zero_crossings": 169,
+     "spectral_fraction_0_10hz": 0.9914599777905646,
+     "spectral_fraction_10_50hz": 0.008537679303544675,
+     "spectral_fraction_above_50hz": 2.3429058908216686e-06,
+     "f_pred_triangle_R_over_2P_hz": 3.9231624170728967,
+     "f_measured_over_f_pred": 1.0108115031337543,
+     "kp_restoring_torque_at_peak_nm": 0.0011832053267564282,
+     "kp_restoring_torque_as_frac_of_max_effort": 0.005916026633782141
+    },
+    "right_aileron": {
+     "n_samples": 52459,
+     "cmd_p2p_deg": 0.0,
+     "cmd_min_deg": 0.0,
+     "cmd_max_deg": 0.0,
+     "cmd_unique_values": 1,
+     "actual_p2p_deg": 38.26009783061845,
+     "actual_min_deg": -19.513564180161367,
+     "actual_max_deg": 18.74653365045708,
+     "actual_rate_abs_max_deg_s": 300.00070166035243,
+     "rate_pinned_samples": 23182,
+     "rate_pinned_duty_frac": 0.4419070130959416,
+     "effort_clamp_samples": 0,
+     "target_clamp_samples": 0,
+     "hits_mechanical_limit": false,
+     "freq_fft_hz": 3.9655776998393075,
+     "freq_fft_peak_variance_fraction": 0.08043431661945641,
+     "nyquist_hz": 500.07269364391885,
+     "freq_zero_crossing_hz": 3.220141432010226,
+     "zero_crossing_period_sd_s": 0.5845176123663959,
+     "n_zero_crossings": 169,
+     "spectral_fraction_0_10hz": 0.9914594701155479,
+     "spectral_fraction_10_50hz": 0.008538187738933055,
+     "spectral_fraction_above_50hz": 2.342145519086242e-06,
+     "f_pred_triangle_R_over_2P_hz": 3.920542791848498,
+     "f_measured_over_f_pred": 1.0114869063754246,
+     "kp_restoring_torque_at_peak_nm": 0.001184795593093301,
+     "kp_restoring_torque_as_frac_of_max_effort": 0.005923977965466505
+    },
+    "left_elevator": {
+     "n_samples": 52459,
+     "cmd_p2p_deg": 0.0,
+     "cmd_min_deg": 0.0,
+     "cmd_max_deg": 0.0,
+     "cmd_unique_values": 1,
+     "actual_p2p_deg": 38.003938816442314,
+     "actual_min_deg": -18.08317802534396,
+     "actual_max_deg": 19.920760791098356,
+     "actual_rate_abs_max_deg_s": 300.0007018299638,
+     "rate_pinned_samples": 27941,
+     "rate_pinned_duty_frac": 0.5326254789454622,
+     "effort_clamp_samples": 0,
+     "target_clamp_samples": 0,
+     "hits_mechanical_limit": false,
+     "freq_fft_hz": 3.9655776998393075,
+     "freq_fft_peak_variance_fraction": 0.08466512854467845,
+     "nyquist_hz": 500.07269364391885,
+     "freq_zero_crossing_hz": 3.4298550006700492,
+     "zero_crossing_period_sd_s": 0.5035852151141189,
+     "n_zero_crossings": 180,
+     "spectral_fraction_0_10hz": 0.9891201911415616,
+     "spectral_fraction_10_50hz": 0.010872107224107879,
+     "spectral_fraction_above_50hz": 7.70163433033023e-06,
+     "f_pred_triangle_R_over_2P_hz": 3.946968536333719,
+     "f_measured_over_f_pred": 1.004714799050026,
+     "kp_restoring_torque_at_peak_nm": 0.0012095191518294928,
+     "kp_restoring_torque_as_frac_of_max_effort": 0.006047595759147464
+    },
+    "right_elevator": {
+     "n_samples": 52459,
+     "cmd_p2p_deg": 0.0,
+     "cmd_min_deg": 0.0,
+     "cmd_max_deg": 0.0,
+     "cmd_unique_values": 1,
+     "actual_p2p_deg": 38.001855797390306,
+     "actual_min_deg": -18.08128462242345,
+     "actual_max_deg": 19.920571174966852,
+     "actual_rate_abs_max_deg_s": 300.00070182995296,
+     "rate_pinned_samples": 27940,
+     "rate_pinned_duty_frac": 0.5326064164395051,
+     "effort_clamp_samples": 0,
+     "target_clamp_samples": 0,
+     "hits_mechanical_limit": false,
+     "freq_fft_hz": 3.9655776998393075,
+     "freq_fft_peak_variance_fraction": 0.084673685428168,
+     "nyquist_hz": 500.07269364391885,
+     "freq_zero_crossing_hz": 3.429860895526736,
+     "zero_crossing_period_sd_s": 0.5036090109854497,
+     "n_zero_crossings": 180,
+     "spectral_fraction_0_10hz": 0.9891207879193128,
+     "spectral_fraction_10_50hz": 0.010871511188044842,
+     "spectral_fraction_above_50hz": 7.700892642164421e-06,
+     "f_pred_triangle_R_over_2P_hz": 3.947184883943233,
+     "f_measured_over_f_pred": 1.0046597300194615,
+     "kp_restoring_torque_at_peak_nm": 0.0012095076389989864,
+     "kp_restoring_torque_as_frac_of_max_effort": 0.0060475381949949315
+    },
+    "rudder": {
+     "n_samples": 52459,
+     "cmd_p2p_deg": 0.0,
+     "cmd_min_deg": 0.0,
+     "cmd_max_deg": 0.0,
+     "cmd_unique_values": 1,
+     "actual_p2p_deg": 0.048958051873427305,
+     "actual_min_deg": -0.02090184745364033,
+     "actual_max_deg": 0.028056204419786974,
+     "actual_rate_abs_max_deg_s": 0.7473919912857965,
+     "rate_pinned_samples": 0,
+     "rate_pinned_duty_frac": 0.0,
+     "effort_clamp_samples": 0,
+     "target_clamp_samples": 0,
+     "hits_mechanical_limit": false,
+     "freq_fft_hz": 0.17158749662766234,
+     "freq_fft_peak_variance_fraction": 0.04305953047835566,
+     "nyquist_hz": 500.07269364391885,
+     "freq_zero_crossing_hz": 3.8138378427150323,
+     "zero_crossing_period_sd_s": 0.5184135260023311,
+     "n_zero_crossings": 199,
+     "spectral_fraction_0_10hz": 0.9971530982428004,
+     "spectral_fraction_10_50hz": 0.0028468017763251907,
+     "spectral_fraction_above_50hz": 9.998087436668651e-08,
+     "f_pred_triangle_R_over_2P_hz": 3063.8545658035955,
+     "f_measured_over_f_pred": 5.600379944361293e-05,
+     "kp_restoring_torque_at_peak_nm": 1.7034749289564954e-06,
+     "kp_restoring_torque_as_frac_of_max_effort": 8.517374644782477e-06
+    }
+   },
+   "calm_command_oscillating_joint": {
+    "left_aileron": {
+     "windows": 52,
+     "qualifying": 41,
+     "worst_actual_p2p_deg": 34.66068784355698,
+     "worst_cmd_p2p_deg": 0.0
+    },
+    "right_aileron": {
+     "windows": 52,
+     "qualifying": 41,
+     "worst_actual_p2p_deg": 34.6614148243552,
+     "worst_cmd_p2p_deg": 0.0
+    },
+    "left_elevator": {
+     "windows": 52,
+     "qualifying": 42,
+     "worst_actual_p2p_deg": 36.32659060830657,
+     "worst_cmd_p2p_deg": 0.0
+    },
+    "right_elevator": {
+     "windows": 52,
+     "qualifying": 42,
+     "worst_actual_p2p_deg": 36.3266433302896,
+     "worst_cmd_p2p_deg": 0.0
+    },
+    "rudder": {
+     "windows": 52,
+     "qualifying": 0,
+     "worst_actual_p2p_deg": 0.0,
+     "worst_cmd_p2p_deg": null
+    }
+   },
+   "airframe_rates_airborne": {
+    "p_roll": {
+     "rms_deg_s": 0.5012011486816982,
+     "p2p_deg_s": 2.626943383332102,
+     "freq_fft_hz": 0.019062142584830327,
+     "peak_variance_fraction": 0.4116981814565591,
+     "nyquist_hz": 50.00000000000995
+    },
+    "q_pitch": {
+     "rms_deg_s": 126.22497639765174,
+     "p2p_deg_s": 505.74269321775483,
+     "freq_fft_hz": 4.68928707586826,
+     "peak_variance_fraction": 0.09497917678848053,
+     "nyquist_hz": 50.00000000000995
+    },
+    "r_yaw": {
+     "rms_deg_s": 2.243008528230218,
+     "p2p_deg_s": 7.438460256631642,
+     "freq_fft_hz": 0.019062142584830327,
+     "peak_variance_fraction": 0.4808173119588026,
+     "nyquist_hz": 50.00000000000995
+    },
+    "pitch_angular_accel_rms_rad_s2": 58.60980389851867,
+    "imu_sample_rate_hz": 100.0000000000199
+   },
+   "aero_airborne": {
+    "Cl": {
+     "p2p": 0.0015147649604496764,
+     "rms": 6.918628822831993e-05,
+     "freq_fft_hz": 0.09532473434209668,
+     "peak_variance_fraction": 0.08888532460407608
+    },
+    "Cm": {
+     "p2p": 0.9586462975536127,
+     "rms": 0.22140928276132482,
+     "freq_fft_hz": 3.965508948631222,
+     "peak_variance_fraction": 0.07755906061375534
+    },
+    "Cn": {
+     "p2p": 0.0002889595013877163,
+     "rms": 4.1032609024971706e-05,
+     "freq_fft_hz": 0.09532473434209668,
+     "peak_variance_fraction": 0.349274403895157
+    },
+    "V_mean_ms": 32.27265407461797,
+    "qbar_mean_pa": 688.0697061007852
+   },
+   "correlation_with_airframe": {
+    "left_aileron": {
+     "angle_vs_alpha_y": -0.38705305277004226,
+     "rate_vs_alpha_y": -0.825075533419563,
+     "angle_vs_q_pitch": -0.8163735531474099
+    },
+    "right_aileron": {
+     "angle_vs_alpha_y": -0.3871159161927773,
+     "rate_vs_alpha_y": -0.8249385588082205,
+     "angle_vs_q_pitch": -0.8161802200301895
+    },
+    "left_elevator": {
+     "angle_vs_alpha_y": -0.2981694512735539,
+     "rate_vs_alpha_y": -0.8542602109885358,
+     "angle_vs_q_pitch": -0.8685136915544768
+    },
+    "right_elevator": {
+     "angle_vs_alpha_y": -0.2981911861364145,
+     "rate_vs_alpha_y": -0.854245201870583,
+     "angle_vs_q_pitch": -0.8684862898957565
+    },
+    "rudder": {
+     "angle_vs_alpha_y": -0.38598375181431555,
+     "rate_vs_alpha_y": -0.005062507927835073,
+     "angle_vs_q_pitch": -0.012118971154896853
+    }
+   },
+   "left_right_agreement": {
+    "aileron_max_abs_diff_deg": 0.17731070356523035,
+    "elevator_max_abs_diff_deg": 0.0327521881432509,
+    "delta_a_aero_p2p_deg": 0.17676553925574223,
+    "delta_e_aero_p2p_deg": 38.00289730691631,
+    "note": "delta_a = 0.5*(theta_R - theta_L), delta_e = -0.5*(theta_LE + theta_RE), per docs/source_of_truth/controls/CONTROLS.md sec 10."
+   },
+   "triangle_prediction_per_1s_window": {
+    "left_aileron": {
+     "n_windows_with_duty_ge_20pct": 32,
+     "f_over_f_pred_min": 0.8226970723339245,
+     "f_over_f_pred_median": 0.912914016546384,
+     "f_over_f_pred_max": 1.049388899798637,
+     "mean_duty": 0.71415625
+    },
+    "right_aileron": {
+     "n_windows_with_duty_ge_20pct": 32,
+     "f_over_f_pred_min": 0.822696329892876,
+     "f_over_f_pred_median": 0.9132682821768274,
+     "f_over_f_pred_max": 1.049384798927937,
+     "mean_duty": 0.7140312500000001
+    },
+    "left_elevator": {
+     "n_windows_with_duty_ge_20pct": 36,
+     "f_over_f_pred_min": 0.8219791642084484,
+     "f_over_f_pred_median": 0.9646150960278834,
+     "f_over_f_pred_max": 1.08430404548699,
+     "mean_duty": 0.7671944444444444
+    },
+    "right_elevator": {
+     "n_windows_with_duty_ge_20pct": 36,
+     "f_over_f_pred_min": 0.8219755145506059,
+     "f_over_f_pred_median": 0.9646141895059903,
+     "f_over_f_pred_max": 1.0843034097927748,
+     "mean_duty": 0.7671666666666667
+    },
+    "rudder": {
+     "n_windows_with_duty_ge_20pct": 0,
+     "f_over_f_pred_min": null,
+     "f_over_f_pred_median": null,
+     "f_over_f_pred_max": null,
+     "mean_duty": null
+    }
+   },
+   "decimation_test": {
+    "source_rate_hz": 1000.0036097018772,
+    "decimated_to_20hz": {
+     "effective_rate_hz": 20.000072194037543,
+     "n_samples": 1050,
+     "rate_pinned_duty_frac": {
+      "left_aileron": 0.43047619047619046,
+      "right_aileron": 0.43047619047619046,
+      "left_elevator": 0.5314285714285715,
+      "right_elevator": 0.5314285714285715,
+      "rudder": 0.0
+     },
+     "effort_clamp_samples": {
+      "left_aileron": 0,
+      "right_aileron": 0,
+      "left_elevator": 0,
+      "right_elevator": 0,
+      "rudder": 0
+     },
+     "actual_p2p_deg": {
+      "left_aileron": 37.64949951404183,
+      "right_aileron": 37.66007375979308,
+      "left_elevator": 37.838342495059536,
+      "right_elevator": 37.84096341323783,
+      "rudder": 0.04713318497193143
+     }
+    },
+    "decimated_to_50hz": {
+     "effective_rate_hz": 50.00018048509386,
+     "n_samples": 2623,
+     "rate_pinned_duty_frac": {
+      "left_aileron": 0.4414792222645825,
+      "right_aileron": 0.44109797941288603,
+      "left_elevator": 0.5364086923370187,
+      "right_elevator": 0.5364086923370187,
+      "rudder": 0.0
+     },
+     "effort_clamp_samples": {
+      "left_aileron": 0,
+      "right_aileron": 0,
+      "left_elevator": 0,
+      "right_elevator": 0,
+      "rudder": 0
+     },
+     "actual_p2p_deg": {
+      "left_aileron": 37.66234511052383,
+      "right_aileron": 37.68329730950628,
+      "left_elevator": 37.87861280035448,
+      "right_elevator": 37.87843206480817,
+      "rudder": 0.048092146201248284
+     }
+    },
+    "decimated_to_100hz": {
+     "effective_rate_hz": 100.00036097018771,
+     "n_samples": 5246,
+     "rate_pinned_duty_frac": {
+      "left_aileron": 0.4412886008387343,
+      "right_aileron": 0.44109797941288603,
+      "left_elevator": 0.5346930995043843,
+      "right_elevator": 0.5346930995043843,
+      "rudder": 0.0
+     },
+     "effort_clamp_samples": {
+      "left_aileron": 0,
+      "right_aileron": 0,
+      "left_elevator": 0,
+      "right_elevator": 0,
+      "rudder": 0
+     },
+     "actual_p2p_deg": {
+      "left_aileron": 38.114301681849064,
+      "right_aileron": 38.15318936066189,
+      "left_elevator": 37.965032742802386,
+      "right_elevator": 37.964655713123705,
+      "rudder": 0.04856586512463893
+     }
+    },
+    "decimated_to_200hz": {
+     "effective_rate_hz": 200.00072194037543,
+     "n_samples": 10492,
+     "rate_pinned_duty_frac": {
+      "left_aileron": 0.44224170796797563,
+      "right_aileron": 0.4420510865421273,
+      "left_elevator": 0.5328821959588258,
+      "right_elevator": 0.5327868852459017,
+      "rudder": 0.0
+     },
+     "effort_clamp_samples": {
+      "left_aileron": 0,
+      "right_aileron": 0,
+      "left_elevator": 0,
+      "right_elevator": 0,
+      "rudder": 0
+     },
+     "actual_p2p_deg": {
+      "left_aileron": 38.145908930667254,
+      "right_aileron": 38.162107389435555,
+      "left_elevator": 37.965032742802386,
+      "right_elevator": 37.964655713123705,
+      "rudder": 0.04887292643785613
+     }
+    },
+    "full_rate": {
+     "effective_rate_hz": 1000.0036097018772,
+     "n_samples": 52459,
+     "rate_pinned_duty_frac": {
+      "left_aileron": 0.44217388817934006,
+      "right_aileron": 0.4419070130959416,
+      "left_elevator": 0.5326254789454622,
+      "right_elevator": 0.5326064164395051,
+      "rudder": 0.0
+     }
+    }
+   },
+   "pre_liftoff_ground_census": {
+    "n_samples_before_airborne": 26802,
+    "window_sim_s": [
+     8.24195283018868,
+     35.04207304306448
+    ],
+    "left_aileron": {
+     "actual_p2p_deg": 4.928793118929854,
+     "rate_pinned_samples": 0,
+     "rate_pinned_duty_frac": 0.0,
+     "first_deflection_over_0p5deg_t_sim": 34.27703690476191,
+     "first_rate_pin_t_sim": null
+    },
+    "right_aileron": {
+     "actual_p2p_deg": 4.929033137108891,
+     "rate_pinned_samples": 0,
+     "rate_pinned_duty_frac": 0.0,
+     "first_deflection_over_0p5deg_t_sim": 34.27703690476191,
+     "first_rate_pin_t_sim": null
+    },
+    "left_elevator": {
+     "actual_p2p_deg": 8.066860749038858,
+     "rate_pinned_samples": 0,
+     "rate_pinned_duty_frac": 0.0,
+     "first_deflection_over_0p5deg_t_sim": 34.27703690476191,
+     "first_rate_pin_t_sim": null
+    },
+    "right_elevator": {
+     "actual_p2p_deg": 8.066905841082074,
+     "rate_pinned_samples": 0,
+     "rate_pinned_duty_frac": 0.0,
+     "first_deflection_over_0p5deg_t_sim": 34.27703690476191,
+     "first_rate_pin_t_sim": null
+    },
+    "rudder": {
+     "actual_p2p_deg": 0.0027000796918978174,
+     "rate_pinned_samples": 0,
+     "rate_pinned_duty_frac": 0.0,
+     "first_deflection_over_0p5deg_t_sim": null,
+     "first_rate_pin_t_sim": null
+    },
+    "first_body_pitch_rate_over_1deg_s_t_sim": 33.52,
+    "airborne_window_start_t_sim": 35.043
+   },
+   "ardupilot_servo_pwm_airborne": {
+    "n": 5091,
+    "aileron_c1": {
+     "min": 1500.0,
+     "max": 1500.0,
+     "unique": 1
+    },
+    "elevator_c2": {
+     "min": 1500.0,
+     "max": 1500.0,
+     "unique": 1
+    },
+    "rudder_c4": {
+     "min": 1500.0,
+     "max": 1500.0,
+     "unique": 1
+    }
+   }
+  },
+  {
+   "tag": "highrate_FBWA",
+   "timeseries": "/home/emirhan/Desktop/FalconV2/tests/gazebo/results/airborne_limit_cycle_runtime_highrate_FBWA_timeseries.json",
+   "highrate_raw": "/tmp/claude-1000/-home-emirhan-Desktop-FalconV2/76fa60fb-30e2-4feb-bf64-2f73f0e53cde/scratchpad/highrate_raw/airborne_limit_cycle_highrate_FBWA_highrate.json",
+   "clock_map": {
+    "map_used": "monotone piecewise-linear interpolation of the /clock stream (published once per physics step)",
+    "n_clock_msgs": 260382,
+    "clock_msg_rate_hz_measured": 999.9999999999999,
+    "interp_residual_rms_s": 0.0,
+    "interp_residual_max_abs_s": 0.0,
+    "rejected_global_affine_fit": {
+     "slope_sim_per_wall": 0.9994353597698095,
+     "intercept_sim_s_at_wall_origin": 7.579605826786848,
+     "wall_origin_unix_s": 1789076218.542524,
+     "residual_rms_s": 0.3842227651554585,
+     "residual_max_abs_s": 12.024683073903361,
+     "why_rejected": "residual too large - the real-time factor varies over the run, so a single line cannot represent the wall<->sim relation."
+    }
+   },
+   "subscribe_ok": {
+    "actuator": true,
+    "aero": true,
+    "imu": true,
+    "clock": true
+   },
+   "measured_publish_rate_hz": {
+    "actuator_diagnostics": 1000.0035928584796,
+    "aero_diagnostics": 1000.002226321957,
+    "imu_sensor": 100.00000000000001,
+    "clock": 999.9999999999999
+   },
+   "actuator_delivery": {
+    "n_messages": 259561,
+    "sim_span_s": 259.5590674410036,
+    "median_gap_s": 0.0009997936341363811,
+    "p99_gap_s": 0.0010486197387121622,
+    "max_gap_s": 0.0019337064993347752,
+    "gaps_over_3x_median": 0,
+    "note": "A message DROP by gz-transport would show as a gap that is an integer multiple of the median. Reported, not assumed absent."
+   },
+   "airborne_window_sim_s_by_z_threshold": {
+    "0.5": [
+     34.446,
+     87.426
+    ],
+    "1.0": [
+     34.631,
+     87.426
+    ],
+    "5.0": [
+     35.413,
+     87.426
+    ]
+   },
+   "status": "AIRBORNE_SEGMENT_FOUND",
+   "airborne_window_sim_s": [
+    34.631,
+    87.426
+   ],
+   "airborne_duration_s": 52.795,
+   "max_altitude_m": 230.5629653735265,
+   "n_airborne_actuator_samples": 52795,
+   "per_surface_airborne": {
+    "left_aileron": {
+     "n_samples": 52795,
+     "cmd_p2p_deg": 0.06428571428591892,
+     "cmd_min_deg": 0.0,
+     "cmd_max_deg": 0.06428571428591892,
+     "cmd_unique_values": 2,
+     "actual_p2p_deg": 35.10329597125455,
+     "actual_min_deg": -17.645573297604876,
+     "actual_max_deg": 17.45772267364967,
+     "actual_rate_abs_max_deg_s": 300.00070159570487,
+     "rate_pinned_samples": 38660,
+     "rate_pinned_duty_frac": 0.7322663130978312,
+     "effort_clamp_samples": 0,
+     "target_clamp_samples": 0,
+     "hits_mechanical_limit": false,
+     "freq_fft_hz": 3.997230769508338,
+     "freq_fft_peak_variance_fraction": 0.5296356487718524,
+     "nyquist_hz": 500.0800911758121,
+     "freq_zero_crossing_hz": 3.9613520643860185,
+     "zero_crossing_period_sd_s": 0.004639078825638324,
+     "n_zero_crossings": 209,
+     "spectral_fraction_0_10hz": 0.990824144436009,
+     "spectral_fraction_10_50hz": 0.009174361799844264,
+     "spectral_fraction_above_50hz": 1.4937641464797529e-06,
+     "f_pred_triangle_R_over_2P_hz": 4.273113011612415,
+     "f_measured_over_f_pred": 0.9354376443229204,
+     "kp_restoring_torque_at_peak_nm": 0.001071377698486356,
+     "kp_restoring_torque_as_frac_of_max_effort": 0.00535688849243178
+    },
+    "right_aileron": {
+     "n_samples": 52795,
+     "cmd_p2p_deg": 0.06428571428591892,
+     "cmd_min_deg": -0.06428571428591892,
+     "cmd_max_deg": 0.0,
+     "cmd_unique_values": 2,
+     "actual_p2p_deg": 35.103891538587035,
+     "actual_min_deg": -17.64292891994674,
+     "actual_max_deg": 17.46096261864029,
+     "actual_rate_abs_max_deg_s": 300.00070159562983,
+     "rate_pinned_samples": 38659,
+     "rate_pinned_duty_frac": 0.7322473719102188,
+     "effort_clamp_samples": 0,
+     "target_clamp_samples": 0,
+     "hits_mechanical_limit": false,
+     "freq_fft_hz": 3.997230769508338,
+     "freq_fft_peak_variance_fraction": 0.5296602870847231,
+     "nyquist_hz": 500.0800911758121,
+     "freq_zero_crossing_hz": 3.961353711069433,
+     "zero_crossing_period_sd_s": 0.004638738242361302,
+     "n_zero_crossings": 209,
+     "spectral_fraction_0_10hz": 0.9908242517224596,
+     "spectral_fraction_10_50hz": 0.009174254669932486,
+     "spectral_fraction_above_50hz": 1.4936076079897277e-06,
+     "f_pred_triangle_R_over_2P_hz": 4.273040514621165,
+     "f_measured_over_f_pred": 0.9354535150862524,
+     "kp_restoring_torque_at_peak_nm": 0.0010712171410932059,
+     "kp_restoring_torque_as_frac_of_max_effort": 0.005356085705466029
+    },
+    "left_elevator": {
+     "n_samples": 52795,
+     "cmd_p2p_deg": 31.62857142867418,
+     "cmd_min_deg": -16.97142857148371,
+     "cmd_max_deg": 14.657142857190472,
+     "cmd_unique_values": 376,
+     "actual_p2p_deg": 42.7115062562851,
+     "actual_min_deg": -23.32019269795436,
+     "actual_max_deg": 19.391313558330737,
+     "actual_rate_abs_max_deg_s": 300.0007017495489,
+     "rate_pinned_samples": 44897,
+     "rate_pinned_duty_frac": 0.8504025002367649,
+     "effort_clamp_samples": 0,
+     "target_clamp_samples": 0,
+     "hits_mechanical_limit": false,
+     "freq_fft_hz": 3.997230769508338,
+     "freq_fft_peak_variance_fraction": 0.5291365348784551,
+     "nyquist_hz": 500.0800911758121,
+     "freq_zero_crossing_hz": 3.9607631954548164,
+     "zero_crossing_period_sd_s": 0.00475329490642691,
+     "n_zero_crossings": 209,
+     "spectral_fraction_0_10hz": 0.987731439428801,
+     "spectral_fraction_10_50hz": 0.012265275255217166,
+     "spectral_fraction_above_50hz": 3.2853159816866485e-06,
+     "f_pred_triangle_R_over_2P_hz": 3.511942422849501,
+     "f_measured_over_f_pred": 1.1381823185657713,
+     "kp_restoring_torque_at_peak_nm": 0.0014159208068566396,
+     "kp_restoring_torque_as_frac_of_max_effort": 0.007079604034283198
+    },
+    "right_elevator": {
+     "n_samples": 52795,
+     "cmd_p2p_deg": 31.62857142867418,
+     "cmd_min_deg": -16.97142857148371,
+     "cmd_max_deg": 14.657142857190472,
+     "cmd_unique_values": 376,
+     "actual_p2p_deg": 42.70444382088751,
+     "actual_min_deg": -23.313107971969544,
+     "actual_max_deg": 19.391335848917976,
+     "actual_rate_abs_max_deg_s": 300.00070174954874,
+     "rate_pinned_samples": 44897,
+     "rate_pinned_duty_frac": 0.8504025002367649,
+     "effort_clamp_samples": 0,
+     "target_clamp_samples": 0,
+     "hits_mechanical_limit": false,
+     "freq_fft_hz": 3.997230769508338,
+     "freq_fft_peak_variance_fraction": 0.5291381956839137,
+     "nyquist_hz": 500.0800911758121,
+     "freq_zero_crossing_hz": 3.960763403755526,
+     "zero_crossing_period_sd_s": 0.00475322045120192,
+     "n_zero_crossings": 209,
+     "spectral_fraction_0_10hz": 0.9877314518689104,
+     "spectral_fraction_10_50hz": 0.012265262862731895,
+     "spectral_fraction_above_50hz": 3.2852683576568546e-06,
+     "f_pred_triangle_R_over_2P_hz": 3.512523225788545,
+     "f_measured_over_f_pred": 1.137994117778674,
+     "kp_restoring_torque_at_peak_nm": 0.0014154906469920658,
+     "kp_restoring_torque_as_frac_of_max_effort": 0.007077453234960328
+    },
+    "rudder": {
+     "n_samples": 52795,
+     "cmd_p2p_deg": 0.0,
+     "cmd_min_deg": 0.0,
+     "cmd_max_deg": 0.0,
+     "cmd_unique_values": 1,
+     "actual_p2p_deg": 0.04672564855211615,
+     "actual_min_deg": -0.030542215894722457,
+     "actual_max_deg": 0.016183432657393696,
+     "actual_rate_abs_max_deg_s": 0.7277382144613497,
+     "rate_pinned_samples": 0,
+     "rate_pinned_duty_frac": 0.0,
+     "effort_clamp_samples": 0,
+     "target_clamp_samples": 0,
+     "hits_mechanical_limit": false,
+     "freq_fft_hz": 2.292250820428952,
+     "freq_fft_peak_variance_fraction": 0.013721538725416225,
+     "nyquist_hz": 500.0800911758121,
+     "freq_zero_crossing_hz": 3.041154704894624,
+     "zero_crossing_period_sd_s": 0.2484320657020108,
+     "n_zero_crossings": 158,
+     "spectral_fraction_0_10hz": 0.9928989456921641,
+     "spectral_fraction_10_50hz": 0.00710092011046496,
+     "spectral_fraction_above_50hz": 1.3419737125149355e-07,
+     "f_pred_triangle_R_over_2P_hz": 3210.2358215091303,
+     "f_measured_over_f_pred": 0.0007140443717780727,
+     "kp_restoring_torque_at_peak_nm": 1.8544168795242659e-06,
+     "kp_restoring_torque_as_frac_of_max_effort": 9.272084397621328e-06
+    }
+   },
+   "calm_command_oscillating_joint": {
+    "left_aileron": {
+     "windows": 52,
+     "qualifying": 52,
+     "worst_actual_p2p_deg": 34.69640246531244,
+     "worst_cmd_p2p_deg": 0.0
+    },
+    "right_aileron": {
+     "windows": 52,
+     "qualifying": 52,
+     "worst_actual_p2p_deg": 34.69481415670992,
+     "worst_cmd_p2p_deg": 0.0
+    },
+    "left_elevator": {
+     "windows": 52,
+     "qualifying": 0,
+     "worst_actual_p2p_deg": 0.0,
+     "worst_cmd_p2p_deg": null
+    },
+    "right_elevator": {
+     "windows": 52,
+     "qualifying": 0,
+     "worst_actual_p2p_deg": 0.0,
+     "worst_cmd_p2p_deg": null
+    },
+    "rudder": {
+     "windows": 52,
+     "qualifying": 0,
+     "worst_actual_p2p_deg": 0.0,
+     "worst_cmd_p2p_deg": null
+    }
+   },
+   "airframe_rates_airborne": {
+    "p_roll": {
+     "rms_deg_s": 0.13189207003520667,
+     "p2p_deg_s": 1.6532273323073046,
+     "freq_fft_hz": 1.8374692176552243,
+     "peak_variance_fraction": 0.034630394529940954,
+     "nyquist_hz": 50.00000000000995
+    },
+    "q_pitch": {
+     "rms_deg_s": 148.3787136428307,
+     "p2p_deg_s": 442.2149982847215,
+     "freq_fft_hz": 3.996969122940746,
+     "peak_variance_fraction": 0.5377076072234087,
+     "nyquist_hz": 50.00000000000995
+    },
+    "r_yaw": {
+     "rms_deg_s": 0.0401734522015135,
+     "p2p_deg_s": 0.3464794992060878,
+     "freq_fft_hz": 0.7577192650124637,
+     "peak_variance_fraction": 0.058898192633033225,
+     "nyquist_hz": 50.00000000000995
+    },
+    "pitch_angular_accel_rms_rad_s2": 64.09752912642888,
+    "imu_sample_rate_hz": 100.0000000000199
+   },
+   "aero_airborne": {
+    "Cl": {
+     "p2p": 0.0009862937831542407,
+     "rms": 3.943831619905782e-05,
+     "freq_fft_hz": 1.8375069442248344,
+     "peak_variance_fraction": 0.030393627091662885
+    },
+    "Cm": {
+     "p2p": 0.9583992594679844,
+     "rms": 0.300481340432842,
+     "freq_fft_hz": 3.9970511879529904,
+     "peak_variance_fraction": 0.5340639436090928
+    },
+    "Cn": {
+     "p2p": 8.923116609501093e-05,
+     "rms": 1.0797298218294155e-05,
+     "freq_fft_hz": 0.018943370559018912,
+     "peak_variance_fraction": 0.06866193871084296
+    },
+    "V_mean_ms": 32.96666662046256,
+    "qbar_mean_pa": 666.7122033423373
+   },
+   "correlation_with_airframe": {
+    "left_aileron": {
+     "angle_vs_alpha_y": -0.5265918214817742,
+     "rate_vs_alpha_y": -0.8106134579850195,
+     "angle_vs_q_pitch": -0.840104754345159
+    },
+    "right_aileron": {
+     "angle_vs_alpha_y": -0.5265357983458994,
+     "rate_vs_alpha_y": -0.8106489110622799,
+     "angle_vs_q_pitch": -0.8401463067569244
+    },
+    "left_elevator": {
+     "angle_vs_alpha_y": -0.40461883450287545,
+     "rate_vs_alpha_y": -0.8634147794840529,
+     "angle_vs_q_pitch": -0.9053943685411743
+    },
+    "right_elevator": {
+     "angle_vs_alpha_y": -0.40461429611691074,
+     "rate_vs_alpha_y": -0.8634165645501303,
+     "angle_vs_q_pitch": -0.905396691865174
+    },
+    "rudder": {
+     "angle_vs_alpha_y": 0.02987840227956636,
+     "rate_vs_alpha_y": 0.062261830211860485,
+     "angle_vs_q_pitch": 0.06394375429134642
+    }
+   },
+   "left_right_agreement": {
+    "aileron_max_abs_diff_deg": 0.14144166679553696,
+    "elevator_max_abs_diff_deg": 0.011272666822891141,
+    "delta_a_aero_p2p_deg": 0.1102779466898776,
+    "delta_e_aero_p2p_deg": 42.70797503858631,
+    "note": "delta_a = 0.5*(theta_R - theta_L), delta_e = -0.5*(theta_LE + theta_RE), per docs/source_of_truth/controls/CONTROLS.md sec 10."
+   },
+   "triangle_prediction_per_1s_window": {
+    "left_aileron": {
+     "n_windows_with_duty_ge_20pct": 52,
+     "f_over_f_pred_min": 0.8899576086645135,
+     "f_over_f_pred_median": 0.8912546377735749,
+     "f_over_f_pred_max": 0.9252709804994977,
+     "mean_duty": 0.7318653846153844
+    },
+    "right_aileron": {
+     "n_windows_with_duty_ge_20pct": 52,
+     "f_over_f_pred_min": 0.8900182893151217,
+     "f_over_f_pred_median": 0.8912548074002268,
+     "f_over_f_pred_max": 0.9252286240661627,
+     "mean_duty": 0.7318461538461538
+    },
+    "left_elevator": {
+     "n_windows_with_duty_ge_20pct": 52,
+     "f_over_f_pred_min": 0.9375481182983865,
+     "f_over_f_pred_median": 0.9389586126739505,
+     "f_over_f_pred_max": 1.0260035423294385,
+     "mean_duty": 0.8502307692307691
+    },
+    "right_elevator": {
+     "n_windows_with_duty_ge_20pct": 52,
+     "f_over_f_pred_min": 0.9375165593538755,
+     "f_over_f_pred_median": 0.9389519356182732,
+     "f_over_f_pred_max": 1.026001890479943,
+     "mean_duty": 0.8502307692307691
+    },
+    "rudder": {
+     "n_windows_with_duty_ge_20pct": 0,
+     "f_over_f_pred_min": null,
+     "f_over_f_pred_median": null,
+     "f_over_f_pred_max": null,
+     "mean_duty": null
+    }
+   },
+   "decimation_test": {
+    "source_rate_hz": 1000.0035928584796,
+    "decimated_to_20hz": {
+     "effective_rate_hz": 20.00007185716959,
+     "n_samples": 1056,
+     "rate_pinned_duty_frac": {
+      "left_aileron": 0.7708333333333334,
+      "right_aileron": 0.7708333333333334,
+      "left_elevator": 0.8352272727272727,
+      "right_elevator": 0.8352272727272727,
+      "rudder": 0.0
+     },
+     "effort_clamp_samples": {
+      "left_aileron": 0,
+      "right_aileron": 0,
+      "left_elevator": 0,
+      "right_elevator": 0,
+      "rudder": 0
+     },
+     "actual_p2p_deg": {
+      "left_aileron": 34.54690918433785,
+      "right_aileron": 34.542217054028875,
+      "left_elevator": 40.51148707128535,
+      "right_elevator": 40.51830081675711,
+      "rudder": 0.0430512841641825
+     }
+    },
+    "decimated_to_50hz": {
+     "effective_rate_hz": 50.00017964292398,
+     "n_samples": 2640,
+     "rate_pinned_duty_frac": {
+      "left_aileron": 0.7359848484848485,
+      "right_aileron": 0.7359848484848485,
+      "left_elevator": 0.8473484848484848,
+      "right_elevator": 0.8473484848484848,
+      "rudder": 0.0
+     },
+     "effort_clamp_samples": {
+      "left_aileron": 0,
+      "right_aileron": 0,
+      "left_elevator": 0,
+      "right_elevator": 0,
+      "rudder": 0
+     },
+     "actual_p2p_deg": {
+      "left_aileron": 35.058589676412446,
+      "right_aileron": 35.059384270861344,
+      "left_elevator": 42.63005399859528,
+      "right_elevator": 42.622856300453414,
+      "rudder": 0.04520973857736189
+     }
+    },
+    "decimated_to_100hz": {
+     "effective_rate_hz": 100.00035928584796,
+     "n_samples": 5280,
+     "rate_pinned_duty_frac": {
+      "left_aileron": 0.7363636363636363,
+      "right_aileron": 0.7363636363636363,
+      "left_elevator": 0.8503787878787878,
+      "right_elevator": 0.8503787878787878,
+      "rudder": 0.0
+     },
+     "effort_clamp_samples": {
+      "left_aileron": 0,
+      "right_aileron": 0,
+      "left_elevator": 0,
+      "right_elevator": 0,
+      "rudder": 0
+     },
+     "actual_p2p_deg": {
+      "left_aileron": 35.058589676412446,
+      "right_aileron": 35.059384270861344,
+      "left_elevator": 42.70765910091821,
+      "right_elevator": 42.700546566541846,
+      "rudder": 0.04655028108272925
+     }
+    },
+    "decimated_to_200hz": {
+     "effective_rate_hz": 200.00071857169593,
+     "n_samples": 10559,
+     "rate_pinned_duty_frac": {
+      "left_aileron": 0.7361492565583863,
+      "right_aileron": 0.7361492565583863,
+      "left_elevator": 0.8496069703570414,
+      "right_elevator": 0.8496069703570414,
+      "rudder": 0.0
+     },
+     "effort_clamp_samples": {
+      "left_aileron": 0,
+      "right_aileron": 0,
+      "left_elevator": 0,
+      "right_elevator": 0,
+      "rudder": 0
+     },
+     "actual_p2p_deg": {
+      "left_aileron": 35.058589676412446,
+      "right_aileron": 35.059384270861344,
+      "left_elevator": 42.70765910091821,
+      "right_elevator": 42.700546566541846,
+      "rudder": 0.046610025647239886
+     }
+    },
+    "full_rate": {
+     "effective_rate_hz": 1000.0035928584796,
+     "n_samples": 52795,
+     "rate_pinned_duty_frac": {
+      "left_aileron": 0.7322663130978312,
+      "right_aileron": 0.7322473719102188,
+      "left_elevator": 0.8504025002367649,
+      "right_elevator": 0.8504025002367649,
+      "rudder": 0.0
+     }
+    }
+   },
+   "pre_liftoff_ground_census": {
+    "n_samples_before_airborne": 26445,
+    "window_sim_s": [
+     8.186946107784431,
+     34.630066476054324
+    ],
+    "left_aileron": {
+     "actual_p2p_deg": 17.014315404409235,
+     "rate_pinned_samples": 29,
+     "rate_pinned_duty_frac": 0.001096615617318964,
+     "first_deflection_over_0p5deg_t_sim": 33.92906697071532,
+     "first_rate_pin_t_sim": 34.602103464755075
+    },
+    "right_aileron": {
+     "actual_p2p_deg": 17.01743158476733,
+     "rate_pinned_samples": 29,
+     "rate_pinned_duty_frac": 0.001096615617318964,
+     "first_deflection_over_0p5deg_t_sim": 33.92906697071532,
+     "first_rate_pin_t_sim": 34.602103464755075
+    },
+    "left_elevator": {
+     "actual_p2p_deg": 30.705966399965234,
+     "rate_pinned_samples": 174,
+     "rate_pinned_duty_frac": 0.006579693703913783,
+     "first_deflection_over_0p5deg_t_sim": 26.76705838509317,
+     "first_rate_pin_t_sim": 34.388060246679316
+    },
+    "right_elevator": {
+     "actual_p2p_deg": 30.706276687703483,
+     "rate_pinned_samples": 174,
+     "rate_pinned_duty_frac": 0.006579693703913783,
+     "first_deflection_over_0p5deg_t_sim": 26.76705838509317,
+     "first_rate_pin_t_sim": 34.388060246679316
+    },
+    "rudder": {
+     "actual_p2p_deg": 0.004059455039512269,
+     "rate_pinned_samples": 0,
+     "rate_pinned_duty_frac": 0.0,
+     "first_deflection_over_0p5deg_t_sim": null,
+     "first_rate_pin_t_sim": null
+    },
+    "first_body_pitch_rate_over_1deg_s_t_sim": 33.79,
+    "airborne_window_start_t_sim": 34.631
+   },
+   "ardupilot_servo_pwm_airborne": {
+    "n": 5128,
+    "aileron_c1": {
+     "min": 1500.0,
+     "max": 1501.0,
+     "unique": 2
+    },
+    "elevator_c2": {
+     "min": 1242.0,
+     "max": 1718.0,
+     "unique": 369
+    },
+    "rudder_c4": {
+     "min": 1500.0,
+     "max": 1500.0,
+     "unique": 1
+    }
+   }
+  }
+ ]
+}

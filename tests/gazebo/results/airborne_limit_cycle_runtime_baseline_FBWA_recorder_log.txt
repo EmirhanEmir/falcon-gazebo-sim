@@ -1,0 +1,3 @@
+[highrate] subscribed act=True aero=True imu=True clock=True
+[highrate] wrote /tmp/claude-1000/-home-emirhan-Desktop-FalconV2/76fa60fb-30e2-4feb-bf64-2f73f0e53cde/scratchpad/highrate_raw/airborne_limit_cycle_baseline_FBWA_highrate.json: act=5191 aero=5192 imu=25961 clock=260199
+terminate called without an active exception
