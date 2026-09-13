@@ -184,6 +184,11 @@ bool ActuatorSystem::LoadConfig(const std::string &_path)
 
   try
   {
+    // control_law's kp/kd/ki are the documented FALLBACK values as of
+    // 2026-09-12 (F1) - the live gains are the per-surface ones read in the
+    // surfaces loop below. Kept mandatory here (not optional) so a config
+    // missing the control_law block still fails loudly rather than
+    // silently running with zero gains.
     auto lawNode = root["control_law"];
     const double kp = lawNode["kp_nm_per_rad"].as<double>();
     const double kd = lawNode["kd_nm_per_rad_s"].as<double>();
@@ -212,9 +217,25 @@ bool ActuatorSystem::LoadConfig(const std::string &_path)
       cfg.maxAngleRad = s["max_angle_rad"].as<double>();
       cfg.maxRateRadS = s["max_rate_rad_s"].as<double>();
       cfg.maxEffortNm = s["max_effort_nm"].as<double>();
-      cfg.kp = kp;
-      cfg.kd = kd;
-      cfg.ki = ki;
+      // PER-SURFACE gains, added 2026-09-12 (ACTUATOR_CONTROL_LIMIT_CYCLE_
+      // FIX, change F1). The gains are derived from each surface's own
+      // inertia ABOUT ITS OWN HINGE AXIS (I_hinge = I_com,nn + m*d_perp^2),
+      // and those three inertias genuinely differ (aileron 1.054098e-06,
+      // elevator 6.100859e-07, rudder 5.826813e-07 kg*m^2), so one shared
+      // number cannot be right for all five - see
+      // actuator_v1_config.yaml's hinge_inertia_derivation_note. Read with
+      // a fallback to the shared control_law values (kp/kd/ki above), the
+      // SAME graceful-degradation pattern already used for
+      // ki_nm_per_rad_s and sp_weight_b: a config that omits a per-surface
+      // gain degrades to a documented, deliberately-gentle shared value
+      // rather than to zero or to uninitialized memory.
+      cfg.kp = s["kp_nm_per_rad"] ? s["kp_nm_per_rad"].as<double>() : kp;
+      cfg.kd = s["kd_nm_per_rad_s"] ? s["kd_nm_per_rad_s"].as<double>() : kd;
+      cfg.ki = s["ki_nm_per_rad_s"] ? s["ki_nm_per_rad_s"].as<double>() : ki;
+      // sp_weight_b is deliberately NOT per-surface: it is a dimensionless
+      // structural choice, not an inertia-derived gain (see the YAML's
+      // sp_weight_derivation_note). Shared, and UNCHANGED by the
+      // 2026-09-12 fix.
       cfg.spWeightB = spWeightB;
       this->config[i] = cfg;
     }

@@ -106,9 +106,20 @@ ActuatorConfig MakeV1Config()
   c.maxAngleRad = 0.7853981634;   // +45 deg, USER_CONFIRMED_MECHANICAL_CAPABILITY
   c.maxRateRadS = 5.2360;         // V1_PROVISIONAL, ~300 deg/s
   c.maxEffortNm = 0.20;           // V1_PROVISIONAL
-  c.kp = 0.0034788;               // V1_PROVISIONAL, DERIVED against the placeholder joint inertia - see actuator_v1_config.yaml control_law block
-  c.kd = 6.9576e-05;              // V1_PROVISIONAL, DERIVED (same basis)
-  c.ki = 6.9576e-03;              // V1_PROVISIONAL, DERIVED - added 2026-08-24 gravity-droop fix, see actuator_v1_config.yaml integral_derivation_note (Ti=0.5s)
+  // UPDATED 2026-09-12 (ACTUATOR_CONTROL_LIMIT_CYCLE_FIX, F1+F2). The YAML
+  // is now PER-SURFACE; this single-config self-test mirrors the
+  // LEFT_AILERON entry (surfaces.left_aileron), which is the stiffest of
+  // the three distinct gain sets. Chosen because the closed-loop INFO/bonus
+  // checks below already use the aileron's inertia as their reference, so
+  // gains and reference inertia stay a matched pair. Previous values were
+  // kp=0.0034788, kd=6.9576e-05, ki=6.9576e-03, shared across all 5
+  // surfaces and derived against the link's CENTRE-OF-MASS inertia
+  // (3.4788e-07) instead of its inertia about the HINGE axis
+  // (1.054098e-06 = 3.4788e-07 + 0.001*d_perp^2, d_perp = 26.5748 mm) -
+  // see actuator_v1_config.yaml's hinge_inertia_derivation_note.
+  c.kp = 4.216391e-02;            // V1_PROVISIONAL, DERIVED = omega_n^2*I_hinge = 200^2*1.054098e-06 (left_aileron) - see actuator_v1_config.yaml surfaces.left_aileron + hinge_inertia_derivation_note + bandwidth_requirement_note
+  c.kd = 4.216391e-04;            // V1_PROVISIONAL, DERIVED = 2*zeta*omega_n*I_hinge, zeta=1.0 (same basis)
+  c.ki = 8.432782e-02;            // V1_PROVISIONAL, DERIVED = kp/Ti, Ti=0.5s UNCHANGED - see actuator_v1_config.yaml integral_derivation_note
   c.spWeightB = 0.7;              // V1_PROVISIONAL, DERIVED - added 2026-08-24 round-2 (OVERSHOOT_AFTER_STEP) fix, see actuator_v1_config.yaml sp_weight_derivation_note
   return c;
 }
@@ -430,11 +441,16 @@ int main()
     }
     bool okB = torqueBounded && frozenEveryStepB && integralB == 0.0;
 
-    // Case (c): a smaller, realistic-scale (10 rad, still deliberately
-    // beyond +/-45 deg/pi so the closed loop never actually closes the
-    // error - actual angle is held fixed at 0.0 throughout, unlike a real
-    // closed loop) sustained error where kp*errorP ALONE (errorP =
-    // cfg.spWeightB*10 since actual=0.0 throughout; kp*0.7*10=0.02435 N*m
+    // Case (c): a smaller, realistic-scale (2 rad - REDUCED from 10 rad on
+    // 2026-09-12 because the F1+F2 gain correction raised kp 12.1x, and at
+    // the old 10 rad the P-term ALONE would now saturate on tick 1
+    // (kp*0.7*10 = 0.295 N*m > max_effort_nm = 0.20), collapsing case (c)
+    // into a duplicate of case (b); 2 rad restores this case's intended
+    // "accumulate first, freeze later" regime. Still deliberately beyond
+    // +/-45 deg/pi so the closed loop never actually closes the error -
+    // actual angle is held fixed at 0.0 throughout, unlike a real closed
+    // loop) sustained error where kp*errorP ALONE (errorP =
+    // cfg.spWeightB*2 since actual=0.0 throughout; kp*0.7*2 = 0.05903 N*m
     // at this V1 cfg.spWeightB=0.7 - see the round-2 setpoint-weighting
     // note in ActuatorModel.hh/actuator_v1_config.yaml) does NOT yet
     // saturate - the integral is free to accumulate at first,
@@ -448,24 +464,27 @@ int main()
     for (int i = 0; i < 5000; ++i)
     {
       const EffortResult r = PidEffort(
-          /*setpoint=*/10.0, /*actual=*/0.0, /*rate=*/0.0,
+          /*setpoint=*/2.0, /*actual=*/0.0, /*rate=*/0.0,
           integralC, dt, /*targetClampActive=*/false, cfg);
       integralC = r.integralRadS;
       if (std::abs(r.torqueNm) > cfg.maxEffortNm + 1e-12) torqueBoundedC = false;
     }
     // Analytical fixed point: freeze engages once kp*errorP + ki*integral >=
-    // max_effort_nm (errorP = cfg.spWeightB*10, actual held at 0.0), i.e.
-    // integral >= (max_effort_nm - kp*cfg.spWeightB*10)/ki =
-    // (0.20 - 0.0034788*0.7*10)/6.9576e-3 ~= 25.245 rad*s (was ~23.746
-    // rad*s pre-round-2, when the P-term used the unweighted error - this
-    // bound moves because the anti-windup freeze condition is evaluated
-    // against the SAME weighted P-term PidEffort() actually commands, by
-    // design - see PidEffort()'s doc comment). Confirm the integral settles
-    // near that computed bound (not the ~50 rad*s = 5000*dt*10 it would
-    // reach if NEVER frozen, and not grossly overshooting the bound either -
-    // the freeze is not lagged).
+    // max_effort_nm (errorP = cfg.spWeightB*2, actual held at 0.0), i.e.
+    // integral >= (max_effort_nm - kp*cfg.spWeightB*2)/ki =
+    // (0.20 - 4.216391e-02*0.7*2)/8.432782e-02 ~= 1.6718 rad*s. (Pre-
+    // 2026-09-12 this read (0.20 - 0.0034788*0.7*10)/6.9576e-3 ~= 25.245
+    // rad*s at the 10 rad setpoint and the old gains; the FORM of the bound
+    // is unchanged, only kp/ki and the setpoint moved.) The bound is
+    // evaluated against the SAME weighted P-term PidEffort() actually
+    // commands, by design - see PidEffort()'s doc comment. Confirm the
+    // integral settles near that computed bound (not the ~10 rad*s =
+    // 5000*dt*2 it would reach if NEVER frozen, and not grossly
+    // overshooting the bound either - the freeze is not lagged).
+    // Note the F3 rate-saturation clause added 2026-09-12 is INERT in all
+    // three cases here: every call passes rate = 0.0.
     const double expectedFixedPoint =
-        (cfg.maxEffortNm - cfg.kp * cfg.spWeightB * 10.0) / cfg.ki;
+        (cfg.maxEffortNm - cfg.kp * cfg.spWeightB * 2.0) / cfg.ki;
     bool okC = torqueBoundedC &&
         std::abs(integralC - expectedFixedPoint) < 0.05 * expectedFixedPoint;
 
@@ -475,7 +494,7 @@ int main()
         "targetClamp-frozen final_integral=%.6e (expected exactly 0), "
         "effortClamp-frozen(immediate) final_integral=%.6e rad*s (expected "
         "exactly 0), effortClamp-frozen(gradual) final_integral=%.6e rad*s "
-        "(expected ~%.4f rad*s fixed point, not the ~50 rad*s unfrozen "
+        "(expected ~%.4f rad*s fixed point, not the ~10 rad*s unfrozen "
         "reference), max_|torque|_seen=%.4f N*m (<=max_effort_nm=%.4f)",
         integral, integralB, integralC, expectedFixedPoint, maxAbsTorque,
         cfg.maxEffortNm);
@@ -494,7 +513,7 @@ int main()
   // substitute for gazebo-testing's own live re-measurement.
   // -----------------------------------------------------------------------
   {
-    const double refInertia = 3.4788e-07;
+    const double refInertia = 1.054098e-06;  // UPDATED 2026-09-12 (F1): the left_aileron's inertia ABOUT ITS HINGE AXIS, I_com,nn(iyy)=3.4788e-07 + m*d_perp^2=0.001*7.062178e-04. Was 3.4788e-07, which is about the link's CENTRE OF MASS and is NOT what a hinge-mounted surface presents to its actuator - see actuator_v1_config.yaml hinge_inertia_derivation_note.
     // Disturbance magnitude is order-of-magnitude matched to the live
     // finding: observed droop (2.6-4.2 deg) * kp implies T_gravity
     // ~1.6-2.5e-4 N*m; 2.0e-4 N*m is a representative mid-range value, NOT
@@ -544,22 +563,40 @@ int main()
     const double residualPdOnlyDeg = RunClosedLoop(/*kiUsed=*/0.0, /*simSeconds=*/8.0);
     const double residualPidDeg = RunClosedLoop(/*kiUsed=*/cfg.ki, /*simSeconds=*/8.0);
 
-    // Reproduces the bug (pure P(D), ki=0): residual should be a clearly
-    // nonzero, degree-scale droop (matching the live 2.6-4.2 deg finding's
-    // order of magnitude, not an exact reproduction - different reference
-    // inertia/disturbance value).
-    bool reproducesBug = std::abs(residualPdOnlyDeg) > 1.0;
+    // Reproduces the bug (pure P(D), ki=0). UPDATED 2026-09-12 (F1+F2): the
+    // previous bar was a hardcoded "> 1.0 deg". That bar was only ever a
+    // proxy for the real law, and it stops being meaningful once kp changes
+    // - with the corrected gains the SAME physical disturbance produces a
+    // genuinely smaller droop (that is the point of the fix; predicted
+    // 2.0e-4/4.216391e-02 = 0.2718 deg), so "> 1.0 deg" would fail for the
+    // right reason and hide the mechanism. Replaced with the analytic law
+    // this whole stage rests on, which is a STRICTLY STRONGER check:
+    //   residual = setpoint - angle = -T_disturbance / kp
+    // (pure P(D), constant disturbance: at equilibrium kp*(sp-angle) + T = 0,
+    // so a POSITIVE disturbance pushes the surface PAST the target and the
+    // residual is NEGATIVE - the sign is checked here, unlike the old
+    // abs()-only bar which could not have caught a sign error).
+    // Require the measured ki=0 residual to match that signed prediction
+    // within 10 %, and to still be clearly nonzero (the bug must be real,
+    // not numerical noise).
+    const double predictedDroopDeg =
+        (-disturbanceNm / cfg.kp) * 180.0 / M_PI;
+    bool reproducesBug = std::abs(residualPdOnlyDeg) > 0.1 &&
+        std::abs(residualPdOnlyDeg - predictedDroopDeg) <
+            0.10 * std::abs(predictedDroopDeg);
     // Confirms the fix (PID, ki=cfg.ki): residual should have collapsed to
     // a small fraction of a degree over the same 8 s window.
     bool fixesBug = std::abs(residualPidDeg) < 0.05;
 
     bool ok = reproducesBug && fixesBug;
-    char buf[256];
+    char buf[320];
     std::snprintf(buf, sizeof(buf),
         "constant disturbance=%.2e N*m, target=10deg, t=8s: ki=0 (pre-fix) "
-        "residual=%.4f deg (bug reproduced), ki=%.4e (post-fix) "
-        "residual=%.4f deg (bug fixed)",
-        disturbanceNm, residualPdOnlyDeg, cfg.ki, residualPidDeg);
+        "residual=%.4f deg vs analytic T/kp=%.4f deg (bug reproduced AND "
+        "matches the droop law), ki=%.4e (post-fix) residual=%.4f deg "
+        "(bug fixed)",
+        disturbanceNm, residualPdOnlyDeg, predictedDroopDeg, cfg.ki,
+        residualPidDeg);
     Check("ACTUATOR_INTEGRAL_DISTURBANCE_REJECTION_INFO (bonus, not one of the 8 required)", ok, buf);
   }
 
@@ -583,7 +620,7 @@ int main()
   // for gazebo-testing's own live re-measurement.
   // -----------------------------------------------------------------------
   {
-    const double refInertia = 3.4788e-07;
+    const double refInertia = 1.054098e-06;  // UPDATED 2026-09-12 (F1): the left_aileron's inertia ABOUT ITS HINGE AXIS, I_com,nn(iyy)=3.4788e-07 + m*d_perp^2=0.001*7.062178e-04. Was 3.4788e-07, which is about the link's CENTRE OF MASS and is NOT what a hinge-mounted surface presents to its actuator - see actuator_v1_config.yaml hinge_inertia_derivation_note.
     // SAME disturbance magnitude/basis as ACTUATOR_INTEGRAL_DISTURBANCE_
     // REJECTION_INFO above (2.0e-4 N*m, order-of-magnitude matched to the
     // live droop finding, not a re-derivation of the real gravity torque).
@@ -709,9 +746,12 @@ int main()
   // 5 control-surface links carry a TEMPORARY_NUMERICAL_MASS = 0.001 kg
   // placeholder (near-massless, NOT physical - geometry-structure's own
   // documented choice), giving a tiny reference inertia here
-  // (~3.48e-7 kg*m^2) and therefore a very high natural frequency
-  // (omega_n = sqrt(kp/I) ~ 2566 rad/s here) for this V1_PROVISIONAL PD
-  // controller. A NAIVE explicit-Euler integrator (IntegrateJointStep(),
+  // (~1.05e-6 kg*m^2 about the hinge axis, updated 2026-09-12 - see the
+  // refInertia comment below) and therefore a very high natural frequency
+  // for a PD controller sized the way an early V1 draft sized it
+  // (kp ~ 2.29 N*m/rad from max_effort/reference-error gave
+  // omega_n = sqrt(kp/I) ~ 1474 rad/s against this corrected inertia, and
+  // ~2566 rad/s against the centre-of-mass inertia originally used here). A NAIVE explicit-Euler integrator (IntegrateJointStep(),
   // self-test-only) run at the SAME 1 kHz outer tick used for the
   // rate-limited setpoint is numerically UNSTABLE at that combination
   // (dt*kd/I >> 2, well outside explicit Euler's own stability region for a
@@ -735,15 +775,20 @@ int main()
   // itself only a placeholder.
   // -----------------------------------------------------------------------
   {
-    // Reference inertia: order of magnitude of the aileron's own SDF
-    // placeholder Iyy (about its hinge-ish axis), model/model.sdf
-    // left_aileron <inertial><inertia><iyy> = 3.4788e-07 kg*m^2 - cited only
-    // as a representative small value for this INFORMATIONAL closed-loop
-    // check, explicitly NOT a claim this equals what gz-sim will actually
-    // integrate against (gz-sim uses the full SDF-defined rigid-body
-    // inertia via its own physics engine, not this simplified single-DOF
-    // integrator).
-    const double refInertia = 3.4788e-07;
+    // Reference inertia: the aileron's inertia ABOUT ITS HINGE AXIS, from
+    // model/model.sdf left_aileron - <inertial><inertia><iyy> = 3.4788e-07
+    // (which is about the link's CENTRE OF MASS) PLUS the parallel-axis
+    // term m*d_perp^2 = 0.001 * (26.5748e-3)^2 = 7.062178e-07, giving
+    // 1.054098e-06 kg*m^2. UPDATED 2026-09-12 (F1): this check previously
+    // used the bare <iyy>, which understates what a hinge-mounted surface
+    // actually presents to its actuator by 3.03x - the same error that
+    // produced the gain defect this fix corrects. Still cited only as a
+    // representative value for this INFORMATIONAL closed-loop check, and
+    // still explicitly NOT a claim this equals what gz-sim integrates
+    // against (gz-sim uses the full SDF-defined rigid-body inertia via its
+    // own physics engine, with the base-link coupling this single-DOF
+    // integrator does not model).
+    const double refInertia = 1.054098e-06;  // UPDATED 2026-09-12 (F1): the left_aileron's inertia ABOUT ITS HINGE AXIS, I_com,nn(iyy)=3.4788e-07 + m*d_perp^2=0.001*7.062178e-04. Was 3.4788e-07, which is about the link's CENTRE OF MASS and is NOT what a hinge-mounted surface presents to its actuator - see actuator_v1_config.yaml hinge_inertia_derivation_note.
     // Torque is recomputed once per OUTER 1 kHz tick (matching one real
     // PreUpdate()/SetForce() call), but the reference single-DOF inertia is
     // integrated in many finer SUBSTEPS within that same tick (mirroring

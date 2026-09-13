@@ -16,6 +16,31 @@
 // UNCHANGED by this round; the I-term still uses the true (unweighted)
 // error, so the round-1 steady-state droop fix is untouched by this round.
 //
+// Updated 2026-09-12, task ACTUATOR_CONTROL_LIMIT_CYCLE_FIX (steps 1-3 of
+// ACTUATOR_CONTROL_LIMIT_CYCLE_FIX_AND_VALIDATION). Three changes, none of
+// which alters Stage 1 or Stage 2:
+//   F1 - the kp/kd/ki VALUES in actuator_v1_config.yaml are now derived
+//        against each surface's inertia ABOUT ITS OWN HINGE AXIS
+//        (parallel-axis corrected, per-surface) instead of the link's
+//        centre-of-mass inertia. No code in this header changed for F1 -
+//        it only ever consumed cfg.kp/kd/ki - but every comment here that
+//        described the old derivation is corrected below.
+//   F2 - closed-loop bandwidth omega_n 100 -> 200 rad/s (zeta = 1.0 and
+//        Ti = 0.5 s unchanged), derived from an explicit aeroservo-inertial
+//        gain-margin REQUIREMENT and bounded by the dt ceiling. Labelled
+//        ASSUMPTION; see actuator_v1_config.yaml bandwidth_requirement_note.
+//        Also config-only, no code change here.
+//   F3 - PidEffort()'s anti-windup gained a RATE-SATURATION clause (this IS
+//        a code change here; see PidEffort()'s own doc comment and
+//        kRateSaturationDetectFraction below). The function SIGNATURE is
+//        unchanged - the new condition is derived from arguments the
+//        function already received (actualRateRadS, cfg.maxRateRadS) - so no
+//        call site needed to change, and the new branch is provably inert
+//        when the joint is not at its velocity limit.
+// Root cause and the full derivation of F1/F2/F3:
+// docs/test_results/2026-09-12_actuator_limit_cycle_root_cause_and_fix_
+// proposal.md and .../2026-09-12_actuator_limit_cycle_fix_implementation.md.
+//
 // This header contains ONLY pure math: no gz-sim (ECM/Entity/System)
 // dependency AND no gz-math dependency either (every quantity here is a
 // scalar - single-DOF revolute joints - so there is no need for
@@ -122,6 +147,21 @@ namespace falcon_v2_actuators
 {
 
 // ===========================================================================
+// Detection threshold (NOT a physical coefficient, NOT a gain) - see
+// actuator_v1_config.yaml's rate_saturation_antiwindup_note for provenance.
+// A joint is treated as "at its velocity limit" when
+// |actual_rate| >= kRateSaturationDetectFraction * cfg.maxRateRadS. The
+// 0.999 value is deliberately the SAME definition of "rate-pinned" already
+// used by tests/gazebo/scripts/analyze_airborne_limit_cycle_runtime.py and
+// by both 2026-09-10/2026-09-11 limit-cycle test reports, so the plugin's
+// internal notion of rate saturation and the harness's published duty
+// statistics refer to the same event. It is a strict inequality margin
+// against exact floating-point equality with the physics engine's own
+// constraint value, nothing more.
+// ===========================================================================
+inline constexpr double kRateSaturationDetectFraction = 0.999;
+
+// ===========================================================================
 // Config - populated by the caller (ActuatorSystem.cc's Configure(), or a
 // standalone self-test) from actuator_v1_config.yaml. No default value below
 // is meant to be trusted for a real run - defaults exist only so a missing
@@ -147,16 +187,23 @@ struct ActuatorConfig
   double maxEffortNm = 0.0;
 
   // PID control-law gains used ONLY to drive the real Gazebo joint toward
-  // the rate-limited setpoint (PidEffort() below) - V1_PROVISIONAL, see
-  // actuator_v1_config.yaml "control_law" block for the documented
-  // derivation (a dt=0.001s-compatible closed-loop bandwidth
-  // (omega_n=100 rad/s, zeta=1.0) evaluated against the current SDF
-  // placeholder joint inertia - NOT simply sized from maxEffortNm/a
+  // the rate-limited setpoint (PidEffort() below) - V1_PROVISIONAL,
+  // PER-SURFACE as of 2026-09-12 (F1), see actuator_v1_config.yaml's
+  // "surfaces" map for the values and its "control_law" block for the
+  // documented derivation: a dt=0.001s-compatible closed-loop bandwidth
+  // (omega_n = 200 rad/s as of 2026-09-12 F2, was 100; zeta = 1.0)
+  // evaluated against each surface's inertia ABOUT ITS HINGE AXIS,
+  // I_hinge = I_com,nn + m*d_perp^2 (parallel-axis corrected as of
+  // 2026-09-12 F1 - the pre-2026-09-12 derivation used the SDF
+  // <inertial><inertia> value directly, which is about the link's CENTRE
+  // OF MASS, not about the hinge, understating the real plant inertia by
+  // 3.03-3.48x and leaving the loop under-damped at zeta = 0.57-0.77
+  // instead of the intended 1.0). NOT simply sized from maxEffortNm/a
   // reference tracking-error angle in isolation; an earlier draft that did
   // exactly that was found, by this project's own self-test, to be
-  // numerically unstable at a 1 kHz per-tick torque-update rate given how
-  // small the current placeholder joint inertia is - see the YAML
-  // "derivation_note" for the full finding).
+  // numerically unstable at a 1 kHz per-tick torque-update rate - see the
+  // YAML "hinge_inertia_derivation_note" and "derivation_note" for the
+  // full finding and its correction.
   double kp = 0.0;  // N*m / rad
   double kd = 0.0;  // N*m / (rad/s)
 
@@ -276,12 +323,26 @@ struct EffortResult
   // StepSetpoint() calls. Added 2026-08-24 (gravity-droop fix).
   double integralRadS = 0.0;
 
-  // True if anti-windup froze integral accumulation THIS call (either the
-  // Stage-1 target was clamped, or integrating would have kept the effort
-  // saturated in the same direction it already was) - informational, not
-  // currently published to the diagnostics topic (unchanged 35-field
-  // format, gazebo-testing's harness depends on that exact layout).
+  // True if anti-windup froze integral accumulation THIS call (the Stage-1
+  // target was clamped, OR integrating would have kept the effort saturated
+  // in the same direction it already was, OR - as of 2026-09-12, F3 - the
+  // joint is at its physics-engine VELOCITY limit and integrating would only
+  // deepen an already-unreachable demand) - informational, not currently
+  // published to the diagnostics topic (unchanged 35-field format,
+  // gazebo-testing's harness depends on that exact layout).
   bool integralFrozen = false;
+
+  // True if the freeze above was caused SPECIFICALLY by the 2026-09-12 (F3)
+  // rate-saturation clause, as opposed to the two pre-existing clauses.
+  // Exists so F3's effect is separately identifiable in review/self-test
+  // output without having to re-derive it. Like integralFrozen, this is NOT
+  // published to the 35-field diagnostics topic.
+  bool rateSatFreezeActive = false;
+
+  // True if the joint was observed at its velocity limit this call,
+  // regardless of whether that caused a freeze (the freeze is
+  // direction-conditional). Informational; not published.
+  bool rateSaturated = false;
 };
 
 /// \brief PID control law tracking the rate-limited setpoint, "derivative on
@@ -328,6 +389,20 @@ struct EffortResult
 ///   rate-limited setpoint can never reach a clamped-away raw command, so
 ///   integrating against it would wind up for no reachable purpose.
 ///
+/// RATE-SATURATION ANTI-WINDUP (added 2026-09-12, ACTUATOR_CONTROL_LIMIT_
+/// CYCLE_FIX change F3): the freeze condition below gained a third clause,
+/// covering the physics-engine VELOCITY limit. Motivation, measured rather
+/// than assumed (see actuator_v1_config.yaml's
+/// rate_saturation_antiwindup_note): across both 1 kHz airborne records,
+/// all 5 surfaces, both flight modes, the effort-clamp duty and therefore
+/// the integral-freeze duty were BOTH 0.0 % - the pre-existing anti-windup
+/// never engaged even once - while the joint sat at its SetVelocityLimits()
+/// bound 44-85 % of the time with the integrator accumulating against that
+/// unreachable demand. The new clause is direction-conditional in exactly
+/// the same way as the effort clause, and is provably inert whenever
+/// |actualRateRadS| < kRateSaturationDetectFraction * cfg.maxRateRadS, so
+/// nominal unsaturated tracking is bit-for-bit unchanged.
+///
 /// Anti-windup ("conditional integration"): before deciding whether to
 /// accumulate THIS tick's error into the integral, the would-be output is
 /// evaluated using the PREVIOUS integral state (and the WEIGHTED P-term, so
@@ -357,8 +432,31 @@ inline EffortResult PidEffort(
   const bool sameSignAsError =
       (rawBeforeIntegration >= 0.0 && error >= 0.0) ||
       (rawBeforeIntegration <= 0.0 && error <= 0.0);
+
+  // ---- 2026-09-12 (F3): rate-saturation conditional integration ----
+  // Same "conditional integration" idea as the effort branch above, applied
+  // to the saturation that actually occurs in flight. The joint's velocity
+  // is hard-bounded by gz::sim::Joint::SetVelocityLimits() (applied once in
+  // ActuatorSystem.cc::Configure() using this same cfg.maxRateRadS), a
+  // constraint OUTSIDE this control law that this law had no visibility of.
+  // While the joint is pinned there it physically cannot reduce the error
+  // any faster, so continuing to integrate only accumulates demand that
+  // cannot be met. Direction-conditional exactly like the effort branch:
+  // frozen only when the joint is already moving in the direction the error
+  // asks for (sign(actualRate) == sign(error)), so the integrator is never
+  // prevented from UNWINDING. Provably inert when the joint is not at its
+  // velocity limit, so unsaturated tracking is bit-for-bit identical to the
+  // pre-F3 computation.
+  const bool rateSaturated = cfg.maxRateRadS > 0.0 &&
+      std::abs(actualRateRadS) >=
+          kRateSaturationDetectFraction * cfg.maxRateRadS;
+  const bool rateSameSignAsError =
+      (actualRateRadS >= 0.0 && error >= 0.0) ||
+      (actualRateRadS <= 0.0 && error <= 0.0);
+  const bool rateSatFreeze = rateSaturated && rateSameSignAsError;
+
   const bool freeze =
-      targetClampActive || (wouldSaturate && sameSignAsError);
+      targetClampActive || (wouldSaturate && sameSignAsError) || rateSatFreeze;
 
   double integral = prevIntegralRadS;
   if (!freeze && dt > 0.0)
@@ -377,6 +475,8 @@ inline EffortResult PidEffort(
   out.effortClamped = (clamped != raw);
   out.integralRadS = integral;
   out.integralFrozen = freeze;
+  out.rateSatFreezeActive = rateSatFreeze;
+  out.rateSaturated = rateSaturated;
   return out;
 }
 
