@@ -60,7 +60,7 @@ temp/
 # Aircraft meshes
 # =============================================================================
 # The 12 STL meshes referenced by model/model.sdf total ~143 MB and are not
-# distributed in this repository. See the README "Aircraft model" section.
+# distributed in this repository. See the README "Uçak Modeli" section.
 model/meshes/*.stl
 
 # =============================================================================

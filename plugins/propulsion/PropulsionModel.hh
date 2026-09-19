@@ -52,7 +52,6 @@
 
 #include <algorithm>
 #include <cmath>
-#include <cstdio>
 #include <fstream>
 #include <sstream>
 #include <string>

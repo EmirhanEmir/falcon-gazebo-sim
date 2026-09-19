@@ -11,7 +11,6 @@
 
 #include <algorithm>
 #include <cmath>
-#include <fstream>
 
 #include <gz/plugin/Register.hh>
 
@@ -20,7 +19,6 @@
 #include <gz/sim/Joint.hh>
 #include <gz/sim/Model.hh>
 #include <gz/sim/Util.hh>
-#include <gz/sim/components/Name.hh>
 
 #include <gz/msgs/double_v.pb.h>
 
