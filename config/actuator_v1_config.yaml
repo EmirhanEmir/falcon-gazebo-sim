@@ -236,7 +236,7 @@ control_law:
     same omega_n changes the compliance by EXACTLY ZERO. The mass was NOT
     touched by this fix, and re-deriving against a real mass later must NOT
     be expected to improve this behaviour by itself. The only levers are
-    geometry (d_perp, k_g - geometry-structure-owned, and found to be
+    geometry (d_perp, k_g - geometry-owned, and found to be
     internally self-consistent, see geometry_consistency_note), bandwidth
     omega_n (this note, F2), and real hinge damping (DATA_REQUIRED).
   bandwidth_requirement_note: >
@@ -368,8 +368,8 @@ control_law:
     provably unaffected - confirmed by the standalone model check, whose
     anti-windup cases all pass rate = 0.0 and are unchanged by F3.
   geometry_consistency_note: >
-    2026-09-12. Recorded because validation's 2026-09-11 review routed an
-    item to geometry-structure suggesting the placeholder radius of
+    2026-09-12. Recorded because a review raised the concern that the
+    placeholder radius of
     gyration k_g = 18.7 mm "sits inconsistently" against the placeholder
     CoM offset d_perp = 27.1 mm, since "no plausible surface geometry has
     k_g < d for a hinge-rotated body". the controls layer checked this
@@ -569,7 +569,7 @@ control_law:
     this project's own reduced-order confirmation, not a live result.
 
     Once real per-surface component mass/inertia data replaces the
-    TEMPORARY_NUMERICAL_MASS placeholder (geometry-structure-owned),
+    TEMPORARY_NUMERICAL_MASS placeholder (set in model.sdf),
     spWeightB here should be re-examined alongside kp/kd/ki per
     placeholder_inertia_note below - a different real inertia changes the
     disturbance-free settling-time tradeoff this value was chosen against,
@@ -670,7 +670,7 @@ control_law:
     behavior.
 
     Once real per-surface component mass/inertia data replaces the
-    TEMPORARY_NUMERICAL_MASS placeholder (geometry-structure-owned), ki here
+    TEMPORARY_NUMERICAL_MASS placeholder (set in model.sdf), ki here
     MUST be re-derived alongside kp/kd against that real inertia, for the
     same reason stated in placeholder_inertia_note below - reusing this
     specific ki unmodified once real inertia data lands would be an error.
@@ -788,7 +788,7 @@ control_law:
     as defense in depth - not relying on PD-gain tuning alone to bound the
     REAL joint's velocity, consistent with this project's established
     style. Once real per-surface component mass/inertia data exists
-    (geometry-structure-owned), kp/kd/ki here MUST be re-derived against that
+    (set in model.sdf), kp/kd/ki here MUST be re-derived against that
     real inertia (a heavier real surface will generally tolerate, and likely
     need, a stiffer/faster gain set for adequate tracking authority, and a
     real (non-placeholder) surface mass will also change the ACTUAL gravity

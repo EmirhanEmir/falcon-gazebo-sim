@@ -119,9 +119,8 @@ physics:
   i_rotor_motor_rotor_contribution_status: DATA_REQUIRED   #/4/8.2 item 2 - only a V1-estimate/bench-spin-up-calibration PATH is authorized, no number is given anywhere in the source of truth
 
 geometry:
-  # Coordinates/thrust-axis owned by geometry-structure, cited here per
-  # - propulsion consumes these as given, does not set
-  # them. Both hubs use the SAME body-frame thrust axis; only the Y
+  # Coordinates and thrust axis are defined in model.sdf and cited here;
+  # the propulsion model consumes them as given and does not set them. Both hubs use the SAME body-frame thrust axis; only the Y
   # coordinate differs (mirror placement).
   left_hub_m: [0.2951, 0.3000, 0.1271]          # CONFIRMED / - expressed relative to base_link's own origin (base_link <pose>=0 0 0 0 0 0), i.e. directly usable as a gz-sim Link "offset in the link-fixed frame"
   right_hub_m: [0.2951, -0.3000, 0.1271]        # CONFIRMED /

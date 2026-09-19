@@ -75,7 +75,7 @@ environment:
   v_safe_floor_m_s: 0.0010              # TEMPORARY, engineering numerical-safety choice
 
 # CG used by this plugin for reference only (force is applied at the link's
-# own <inertial><pose>, i.e. wherever geometry-structure has placed the CG in
+# own <inertial><pose>, i.e. wherever the CG is placed in
 # model.sdf - this plugin does NOT hardcode a duplicate CG value for force
 # application; this entry is retained purely for documentation/traceability).
 cg_reference:

@@ -22,8 +22,8 @@ index 8309c37..e007535 100755
    }
  
 +  // ---------------------------------------------------------------------
-+  // FALCON V2 ADDITION (controls-integration, 2026-09-02, stage
-+  // SITL_ATMOSPHERE_AND_PITOT_INTEGRATION_VALIDATION).
++  // FALCON V2 ADDITION.
++  //
 +  //
 +  // Optional airspeed / wind bridge. Both are OFF unless the corresponding
 +  // SDF element is present, in which case the emitted JSON is bit-identical
