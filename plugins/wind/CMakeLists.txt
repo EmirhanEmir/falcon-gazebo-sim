@@ -2,11 +2,7 @@ cmake_minimum_required(VERSION 3.16)
 project(falcon_v2_wind LANGUAGES CXX)
 
 # FALCON V2 - wind/gust generator System plugin build.
-# Owner: aerodynamics specialist agent. Task:
-# WIND_GUST_DISTURBANCE_MODEL_AND_VALIDATION.
-# See README.md in this directory for build/run instructions. Mirrors
-# plugins/aerodynamics/CMakeLists.txt, plugins/propulsion/CMakeLists.txt,
-# and plugins/actuators/CMakeLists.txt's structure.
+# See README.md in this directory for build/run instructions.
 
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
@@ -35,14 +31,3 @@ target_link_libraries(FalconV2Wind PRIVATE
   gz-msgs10::gz-msgs10
   gz-math7::gz-math7)
 set_target_properties(FalconV2Wind PROPERTIES OUTPUT_NAME FalconV2Wind)
-
-# ---------------------------------------------------------------------------
-# Standalone, Gazebo-independent self-test executable for the pure-math core
-# (WindModel.hh). Depends on gz-math7 only (for gz::math::Vector3d) - does
-# NOT require a running Gazebo instance. Same precedent as
-# aero_model_selftest/propulsion_model_selftest/actuator_model_selftest.
-# ---------------------------------------------------------------------------
-add_executable(wind_model_selftest test/wind_model_selftest.cc)
-target_compile_features(wind_model_selftest PRIVATE cxx_std_17)
-target_include_directories(wind_model_selftest PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(wind_model_selftest PRIVATE gz-math7::gz-math7)

@@ -1,33 +1,19 @@
 // =============================================================================
 // FALCON V2 - Wind/gust generator V1 core math model
 // =============================================================================
-// Owner: aerodynamics specialist agent. Task:
-// WIND_GUST_DISTURBANCE_MODEL_AND_VALIDATION (2026-08-27).
+// Pure math only: no gz-sim (ECM/Entity/System) dependency. The only external
+// dependency is gz-math7 (Vector3d).
 //
-// This header contains ONLY pure math: no gz-sim (ECM/Entity/System)
-// dependency, so it can be (a) linked into the real Gazebo System plugin
-// (WindSystem.cc) and (b) linked into a small standalone, Gazebo-independent
-// self-test executable (test/wind_model_selftest.cc) that can be compiled
-// and run without launching a full Gazebo Sim instance. The only external
-// dependency is gz-math7 (Vector3d), the same precedent already used by
-// plugins/aerodynamics/AeroModel.hh and plugins/propulsion/PropulsionModel.hh
-// (both already gz-sim-free pure-math headers).
-//
-// SCOPE (explicitly limited, see docs/source_of_truth/environment/WIND.md
-// for the full writeup of what is and is NOT modeled):
+// SCOPE (deliberately limited):
 //   - A single, deterministic 1-cosine gust superposed on a constant
 //     ("steady") wind component.
-//   - World-frame wind VELOCITY (m/s) - this is the velocity of the AIR MASS
-//     in world coordinates, i.e. exactly the "Vwind" already consumed by
-//     plugins/aerodynamics/AerodynamicsSystem.cc and
-//     plugins/propulsion/PropulsionSystem.cc as
-//     Vrel = Vbody - Vwind (CONFIRMED by direct read of both files this
-//     task, both already implement this exact relative-airflow convention -
-//     it was NOT authored or modified by this task, only a publisher for
-//     the topic they already subscribe to was added).
-// NOT modeled here (or anywhere in this plugin): spatial wind gradients
-// (shear/gust fronts that vary with aircraft position), terrain effects,
-// rotor-wake/building-wake effects, Dryden/Von Karman stochastic turbulence,
+//   - World-frame wind VELOCITY (m/s) - the velocity of the AIR MASS in
+//     world coordinates, i.e. exactly the "Vwind" consumed by
+//     AerodynamicsSystem.cc and PropulsionSystem.cc as Vrel = Vbody - Vwind.
+//
+// NOT modelled here or anywhere in this plugin: spatial wind gradients
+// (shear or gust fronts that vary with aircraft position), terrain effects,
+// rotor/building wake effects, Dryden or Von Karman stochastic turbulence,
 // or any weather-scale atmospheric model. This is a minimal, deterministic
 // V1 disturbance generator only.
 // =============================================================================
@@ -108,9 +94,8 @@ inline gz::math::Vector3d NormalizeDirection(
 ///   envelope(t) = 0.5 * (1 - cos(2*pi*t/duration))   for t in [0, duration]
 ///   envelope(t) = 0                                   otherwise
 ///
-/// C1-CONTINUITY (value AND derivative exactly zero at both boundaries,
-/// confirmed analytically and by the self-test below - "no jerk
-/// discontinuity" requirement):
+/// C1-CONTINUITY (value and derivative exactly zero at both boundaries, so
+/// there is no jerk discontinuity):
 ///   envelope(0)        = 0.5*(1-cos(0))      = 0.5*(1-1) = 0
 ///   envelope(duration) = 0.5*(1-cos(2*pi))   = 0.5*(1-1) = 0
 ///   d(envelope)/dt     = (pi/duration)*sin(2*pi*t/duration)
@@ -120,8 +105,8 @@ inline gz::math::Vector3d NormalizeDirection(
 /// as well, splicing this profile onto a constant background produces a
 /// globally C1 (value- and slope-continuous) time series - no instantaneous
 /// jump in either wind value or its time-derivative at either edge.
-/// Domain-bounded ("no silent extrapolation", CLAUDE.md): any `_t` outside
-/// [0, _duration], or a non-positive `_duration`, returns exactly 0.0.
+/// Domain-bounded (no silent extrapolation): any `_t` outside [0, _duration],
+/// or a non-positive `_duration`, returns exactly 0.0.
 inline double GustEnvelope(double _t, double _duration)
 {
   if (_duration <= 0.0 || _t < 0.0 || _t > _duration)
@@ -145,13 +130,11 @@ inline gz::math::Vector3d EvaluateGust(
   return _gust.directionUnit * (_gust.amplitudeMps * envelope);
 }
 
-/// \brief Total published wind = steady + gust, a plain vector sum with NO
-/// cross-term (documented explicitly per this task's "steady+gust
-/// composition is a simple sum with no cross-contamination" self-test
-/// requirement): the steady component is completely unaffected by whether
-/// or where a gust is active, and the gust component is computed
-/// independently of the steady value - this function only ever adds the
-/// two already-independently-computed vectors.
+/// \brief Total published wind = steady + gust, a plain vector sum with no
+/// cross-term: the steady component is unaffected by whether or where a gust
+/// is active, and the gust component is computed independently of the steady
+/// value. This function only ever adds the two already-independently-computed
+/// vectors.
 inline gz::math::Vector3d ComposeWind(
     const gz::math::Vector3d &_steadyWorld, const gz::math::Vector3d &_gustWorld)
 {

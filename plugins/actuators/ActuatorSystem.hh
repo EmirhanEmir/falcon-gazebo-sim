@@ -1,36 +1,25 @@
 // =============================================================================
 // FALCON V2 - Gazebo Sim Harmonic actuator/servo System plugin
 // =============================================================================
-// Owner: controls-integration specialist agent. Task: ACTUATOR_SERVO_MODEL_V1
-// (2026-08-23).
-//
-// Scope: STRICTLY the physical actuator/servo command chain (actuator
-// command -> rate-limited/clamped setpoint -> effort-bounded torque -> real
-// Gazebo joint motion) for the 5 control-surface joints (left_aileron_joint,
+// Scope: strictly the physical actuator/servo command chain (actuator command
+// -> rate-limited/clamped setpoint -> effort-bounded torque -> real Gazebo
+// joint motion) for the five control-surface joints: left_aileron_joint,
 // right_aileron_joint, left_elevator_joint, right_elevator_joint,
-// rudder_joint). This REPLACES the previous test-script-only direct
-// position injection (e.g. tests/gazebo/scripts/aero_lib.py's manual
-// ResetPosition() pokes) as the actual actuation mechanism; it does not
-// change how plugins/aerodynamics/AerodynamicsSystem.cc reads those same 5
-// joint positions (unmodified, still gz::sim::Joint(e).Position(_ecm) each
-// tick) and does not implement ArduPlane/MAVLink/SITL/TECS - this plugin
-// ends at the physical actuator interface.
+// rudder_joint. It does not change how AerodynamicsSystem.cc reads those same
+// joint positions, and it implements no ArduPlane/MAVLink/SITL/TECS logic -
+// this plugin ends at the physical actuator interface.
 //
-// This class is intentionally thin: all math lives in ActuatorModel.hh (a
-// pure, Gazebo-independent header also used by the standalone self-test).
-// This class's only job is: read 5 per-surface command topics -> maintain 5
-// persistent rate-limited setpoint states -> read each joint's actual
-// position/velocity from the ECM -> compute a bounded PD torque via
-// ActuatorModel.hh -> apply it via gz::sim::Joint::SetForce() (genuine
-// joint-space torque, integrated by gz-sim's own physics engine - never an
-// instantaneous ResetPosition() teleport for these 5 real control-surface
-// joints) -> also apply gz::sim::Joint::SetVelocityLimits()/
-// SetEffortLimits() once at Configure() (physics-engine-level hard
-// constraints, see ActuatorModel.hh header comment for why this is
-// necessary given the current TEMPORARY_NUMERICAL_MASS placeholder link
-// inertia) -> publish diagnostics. Mirrors
-// plugins/aerodynamics/AerodynamicsSystem.hh / plugins/propulsion/
-// PropulsionSystem.hh's Configure()/PreUpdate() structure.
+// The class is intentionally thin: all math lives in ActuatorModel.hh, a
+// pure, Gazebo-independent header. This class's only job is to read the five
+// per-surface command topics, maintain five persistent rate-limited setpoint
+// states, read each joint's actual position/velocity from the ECM, compute a
+// bounded PID torque via ActuatorModel.hh, and apply it with
+// gz::sim::Joint::SetForce() - a genuine joint-space torque integrated by the
+// physics engine, never an instantaneous ResetPosition() teleport. It also
+// applies gz::sim::Joint::SetVelocityLimits()/SetEffortLimits() once at
+// Configure() as physics-engine-level hard constraints (see the
+// ActuatorModel.hh header comment for why this is necessary given the
+// placeholder control-surface link inertia), and publishes diagnostics.
 // =============================================================================
 #ifndef FALCON_V2_ACTUATOR_SYSTEM_HH_
 #define FALCON_V2_ACTUATOR_SYSTEM_HH_
@@ -80,14 +69,14 @@ class ActuatorSystem :
               gz::sim::EntityComponentManager &_ecm) override;
 
   /// \brief Per-surface command topic callback. Physical-angle-radians
-  /// interface (see docs/source_of_truth/controls/actuator_v1_config.yaml
+  /// interface (see config/actuator_v1_config.yaml
   /// "command_interface" block). Failsafe policy: HOLD-LAST-VALID-COMMAND -
   /// this callback simply overwrites the persistent commandRad[idx] state;
   /// with no new message, the state is left unchanged (no timeout/return-
   /// to-neutral logic), which is the documented V1 policy.
   private: void OnCommand(std::size_t idx, const gz::msgs::Double &_msg);
 
-  /// \brief Load docs/source_of_truth/controls/actuator_v1_config.yaml
+  /// \brief Load config/actuator_v1_config.yaml
   /// (path given by the <config_path> SDF parameter) into this->config[].
   /// \return true on success.
   private: bool LoadConfig(const std::string &_path);

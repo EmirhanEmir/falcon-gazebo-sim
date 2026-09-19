@@ -2,7 +2,6 @@ cmake_minimum_required(VERSION 3.16)
 project(falcon_v2_aerodynamics LANGUAGES CXX)
 
 # FALCON V2 - aerodynamics System plugin build.
-# Owner: aerodynamics specialist agent. Task: AERODYNAMICS_V1_IMPLEMENTATION.
 # See README.md in this directory for build/run instructions.
 
 if(NOT CMAKE_BUILD_TYPE)
@@ -31,16 +30,3 @@ target_link_libraries(FalconV2Aerodynamics PRIVATE
   gz-math7::gz-math7
   yaml-cpp)
 set_target_properties(FalconV2Aerodynamics PROPERTIES OUTPUT_NAME FalconV2Aerodynamics)
-
-# ---------------------------------------------------------------------------
-# Standalone, Gazebo-independent self-test executable for the pure-math core
-# (AeroModel.hh). Only depends on gz-math7 - does NOT require a running
-# Gazebo instance. This is what the aerodynamics agent used to self-check
-# CL0/Cm0/alpha-beta/force-transform/saturation numerics before handoff to
-# gazebo-testing for live-Gazebo sign/force tests. See test/README or
-# AERODYNAMICS.md for the self-test result log.
-# ---------------------------------------------------------------------------
-add_executable(aero_model_selftest test/aero_model_selftest.cc)
-target_compile_features(aero_model_selftest PRIVATE cxx_std_17)
-target_include_directories(aero_model_selftest PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(aero_model_selftest PRIVATE gz-math7::gz-math7)

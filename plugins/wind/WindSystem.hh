@@ -1,39 +1,27 @@
 // =============================================================================
 // FALCON V2 - Gazebo Sim Harmonic wind/gust generator System plugin
 // =============================================================================
-// Owner: aerodynamics specialist agent. Task:
-// WIND_GUST_DISTURBANCE_MODEL_AND_VALIDATION (2026-08-27).
+// Scope: strictly a wind-VELOCITY publisher. This plugin generates
+// V_wind_world = V_steady + V_gust(t) (world frame, m/s - the velocity of the
+// AIR MASS, not the meteorological "wind coming from" phrasing) and publishes
+// it every PreUpdate() tick on the /model/falcon_v2/wind topic
+// (gz.msgs.Vector3d), which AerodynamicsSystem.cc and PropulsionSystem.cc
+// subscribe to and consume as Vrel = Vbody - Vwind. This is the only wind
+// source in the project; no second wind-consumption path exists.
 //
-// Scope: STRICTLY a wind-VELOCITY publisher. This plugin generates
-// V_wind_world = V_steady + V_gust(t) (world frame, m/s - velocity of the
-// AIR MASS, not meteorological "wind coming from" phrasing) and publishes
-// it every PreUpdate() tick on the EXISTING /model/falcon_v2/wind topic
-// (gz.msgs.Vector3d) - the SAME topic
-// plugins/aerodynamics/AerodynamicsSystem.cc and
-// plugins/propulsion/PropulsionSystem.cc ALREADY subscribe to and ALREADY
-// correctly consume as Vrel = Vbody - Vwind (CONFIRMED by direct read of
-// both files for this task - neither file is modified by this task; this
-// plugin is purely additive). This is the ONLY wind source in the project -
-// no second wind-consumption path is created.
-//
-// HARD REQUIREMENT (task section 20, validation-checked): this plugin NEVER
-// applies a direct force/wrench to any link - no AddWorldForce()/
-// AddWorldWrench() call exists anywhere in this class. Its only physical
-// output is the published wind velocity vector; all aerodynamic/propulsive
-// EFFECT of that wind flows exclusively through the existing relative-
-// airflow consumption already implemented in AerodynamicsSystem.cc/
+// HARD REQUIREMENT: this plugin NEVER applies a direct force or wrench to any
+// link - no AddWorldForce()/AddWorldWrench() call exists anywhere in this
+// class. Its only physical output is the published wind velocity vector; all
+// aerodynamic and propulsive effect of that wind flows exclusively through
+// the relative-airflow consumption in AerodynamicsSystem.cc and
 // PropulsionSystem.cc.
 //
-// V1 LIMITATION (stated explicitly, not silently - see WindModel.hh's
-// GustState comment and OnGustCmd() below): only ONE gust may be
-// scheduled/in-progress at a time. A new gust command REPLACES any
-// in-progress or still-scheduled gust outright - no queueing, no
-// superposition of multiple simultaneous gusts.
+// V1 LIMITATION: only one gust may be scheduled or in progress at a time. A
+// new gust command replaces any in-progress or still-scheduled gust outright
+// - there is no queueing and no superposition of simultaneous gusts.
 //
-// This class is intentionally thin: all math lives in WindModel.hh (a pure,
-// Gazebo-independent header also used by the standalone self-test) -
-// mirrors plugins/aerodynamics/AerodynamicsSystem.hh /
-// plugins/propulsion/PropulsionSystem.hh's architecture split.
+// This class is intentionally thin: all math lives in WindModel.hh, a pure,
+// Gazebo-independent header.
 // =============================================================================
 #ifndef FALCON_V2_WIND_SYSTEM_HH_
 #define FALCON_V2_WIND_SYSTEM_HH_
@@ -94,10 +82,9 @@ class WindSystem :
   ///       direction rather than negating the direction vector itself).
   ///   [4] start_delay_s                - seconds from THIS COMMAND'S
   ///       RECEIPT (NOT absolute sim time) - see the .cc file's OnGustCmd()
-  ///       implementation comment for the exact reference-time mechanism
-  ///       and docs/source_of_truth/environment/WIND.md for the rationale
-  ///       (lets a caller schedule "N seconds from now" without needing to
-  ///       first query the current absolute sim time out-of-band).
+  ///       implementation comment for the exact reference-time mechanism.
+  ///       This lets a caller schedule "N seconds from now" without first
+  ///       querying the current absolute sim time out-of-band.
   ///   [5] duration_s                   - seconds; MUST be > 0. A
   ///       non-positive value is REJECTED (logged; any previously
   ///       scheduled/in-progress gust is left untouched).

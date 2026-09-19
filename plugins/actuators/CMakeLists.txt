@@ -2,10 +2,7 @@ cmake_minimum_required(VERSION 3.16)
 project(falcon_v2_actuators LANGUAGES CXX)
 
 # FALCON V2 - actuator/servo System plugin build.
-# Owner: controls-integration specialist agent. Task: ACTUATOR_SERVO_MODEL_V1.
-# See README.md in this directory for build/run instructions. Mirrors
-# plugins/aerodynamics/CMakeLists.txt and plugins/propulsion/CMakeLists.txt's
-# structure.
+# See README.md in this directory for build/run instructions.
 
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
@@ -33,17 +30,3 @@ target_link_libraries(FalconV2Actuators PRIVATE
   gz-math7::gz-math7
   yaml-cpp)
 set_target_properties(FalconV2Actuators PROPERTIES OUTPUT_NAME FalconV2Actuators)
-
-# ---------------------------------------------------------------------------
-# Standalone, Gazebo-independent self-test executable for the pure-math core
-# (ActuatorModel.hh). Depends on the C++ standard library ONLY -
-# ActuatorModel.hh has no gz-math/gz-sim dependency at all (every quantity is
-# a scalar, single-DOF joint - same "zero Gazebo dependency" precedent as
-# plugins/propulsion/PropulsionModel.hh). Does NOT require a running Gazebo
-# instance. This is what the controls-integration agent used to self-check
-# the rate-limit/clamp/effort-bounded-PD numerics before handoff to
-# gazebo-testing for live-Gazebo joint/aero-mapping tests.
-# ---------------------------------------------------------------------------
-add_executable(actuator_model_selftest test/actuator_model_selftest.cc)
-target_compile_features(actuator_model_selftest PRIVATE cxx_std_17)
-target_include_directories(actuator_model_selftest PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})

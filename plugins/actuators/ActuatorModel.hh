@@ -1,141 +1,55 @@
 // =============================================================================
 // FALCON V2 - Actuator/Servo V1 core math model
 // =============================================================================
-// Owner: controls-integration specialist agent. Task: ACTUATOR_SERVO_MODEL_V1
-// (2026-08-23). Updated 2026-08-24, task ACTUATOR_SERVO_MODEL_V1_GRAVITY_DROOP_FIX:
-// see the "STEADY-STATE DISTURBANCE FIX" note below Stage 3 for what changed
-// and why - this is a scoped control-law fix, not a redesign; Stages 1/2 and
-// every clamp/limit value are UNCHANGED. Updated again 2026-08-24, SAME-DAY
-// round 2 (validation found a new MAJOR: 1.96-3.46 deg transient OVERSHOOT,
-// directional - only on setpoint steps in the same direction the integral
-// was pre-charged to fight gravity in, e.g. after the neutral-hold warm-up
-// used by the live gravity-loaded test): PidEffort() gained setpoint
-// weighting (cfg.spWeightB) on the P-term only - see PidEffort()'s own doc
-// comment and actuator_v1_config.yaml's sp_weight_derivation_note for the
-// full rationale. kp/kd/ki, the anti-windup logic, and Stages 1/2 are
-// UNCHANGED by this round; the I-term still uses the true (unweighted)
-// error, so the round-1 steady-state droop fix is untouched by this round.
-//
-// Updated 2026-09-12, task ACTUATOR_CONTROL_LIMIT_CYCLE_FIX (steps 1-3 of
-// ACTUATOR_CONTROL_LIMIT_CYCLE_FIX_AND_VALIDATION). Three changes, none of
-// which alters Stage 1 or Stage 2:
-//   F1 - the kp/kd/ki VALUES in actuator_v1_config.yaml are now derived
-//        against each surface's inertia ABOUT ITS OWN HINGE AXIS
-//        (parallel-axis corrected, per-surface) instead of the link's
-//        centre-of-mass inertia. No code in this header changed for F1 -
-//        it only ever consumed cfg.kp/kd/ki - but every comment here that
-//        described the old derivation is corrected below.
-//   F2 - closed-loop bandwidth omega_n 100 -> 200 rad/s (zeta = 1.0 and
-//        Ti = 0.5 s unchanged), derived from an explicit aeroservo-inertial
-//        gain-margin REQUIREMENT and bounded by the dt ceiling. Labelled
-//        ASSUMPTION; see actuator_v1_config.yaml bandwidth_requirement_note.
-//        Also config-only, no code change here.
-//   F3 - PidEffort()'s anti-windup gained a RATE-SATURATION clause (this IS
-//        a code change here; see PidEffort()'s own doc comment and
-//        kRateSaturationDetectFraction below). The function SIGNATURE is
-//        unchanged - the new condition is derived from arguments the
-//        function already received (actualRateRadS, cfg.maxRateRadS) - so no
-//        call site needed to change, and the new branch is provably inert
-//        when the joint is not at its velocity limit.
-// Root cause and the full derivation of F1/F2/F3:
-// docs/test_results/2026-09-12_actuator_limit_cycle_root_cause_and_fix_
-// proposal.md and .../2026-09-12_actuator_limit_cycle_fix_implementation.md.
-//
-// This header contains ONLY pure math: no gz-sim (ECM/Entity/System)
-// dependency AND no gz-math dependency either (every quantity here is a
-// scalar - single-DOF revolute joints - so there is no need for
-// gz::math::Vector3d the way plugins/aerodynamics/AeroModel.hh needs it).
-// This goes one step further than AeroModel.hh and matches
-// plugins/propulsion/PropulsionModel.hh's precedent of a fully
-// Gazebo-independent header, linkable into both the real Gazebo System
-// plugin (ActuatorSystem.cc) and a standalone self-test executable
-// (test/actuator_model_selftest.cc) that runs with no Gazebo instance at
-// all.
+// Pure math only: no gz-sim and no gz-math dependency. Every quantity here is
+// a scalar, because all five control surfaces are single-DOF revolute joints.
 //
 // ARCHITECTURE (see plugins/actuators/README.md and
-// docs/source_of_truth/controls/actuator_v1_config.yaml for the full
-// rationale/provenance - summarized here only as code-adjacent context):
+// config/actuator_v1_config.yaml for the full rationale and provenance):
 //
 //   raw command (rad) --ClampCommand()--> travel-clamped target
 //                     --RateLimitSetpoint()--> rate-limited internal setpoint
 //                     --PidEffort()--> bounded joint torque (N*m)
 //
-// The first two stages (StepSetpoint(), which composes ClampCommand() +
-// RateLimitSetpoint()) are the actuator's PURE KINEMATIC "commanded
-// trajectory" stage: a deterministic, provably rate- and travel-bounded
-// function of time, independent of any physics-engine/inertia uncertainty.
-// This is what plugins/actuators/test/actuator_model_selftest.cc's 8
-// required pure-math tests exercise directly (ACTUATOR_NEUTRAL_START_TEST
-// through ACTUATOR_NO_TELEPORT_TEST) - the "no instantaneous jump" guarantee
-// for this stage is a direct, provable consequence of RateLimitSetpoint()'s
-// own clamp, not an emergent property that depends on tuning.
+// Stages 1 and 2 (composed by StepSetpoint()) form the actuator's pure
+// kinematic "commanded trajectory": a deterministic, provably rate- and
+// travel-bounded function of time, independent of physics-engine or inertia
+// uncertainty. The "no instantaneous jump" guarantee is a direct consequence
+// of RateLimitSetpoint()'s own clamp, not an emergent property of tuning.
 //
-// The third stage (PidEffort()) is what ActuatorSystem.cc uses to physically
-// DRIVE the real Gazebo joint toward that rate-limited setpoint via
-// gz::sim::Joint::SetForce() (a genuine joint-space generalized-force/torque
-// command, integrated by gz-sim's own physics engine through the joint's
-// real - currently TEMPORARY_NUMERICAL_MASS-placeholder, see model.sdf -
-// inertia; never an instantaneous position write). Because the current
-// control-surface link masses are an intentionally near-massless
-// placeholder (geometry-structure's TEMPORARY_NUMERICAL_MASS = 0.001 kg,
-// NOT a physical claim), ANY plausible real-servo torque value would be
-// wildly overpowered relative to that placeholder inertia; therefore
-// ActuatorSystem.cc does NOT rely on PidEffort()'s own torque clamp alone to
-// keep the REAL joint's velocity bounded - it ALSO applies
-// gz::sim::Joint::SetVelocityLimits()/SetEffortLimits() (genuine
-// physics-engine-level hard constraints) using the SAME max_rate/max_effort
-// values, so the real joint's motion is bounded by max_rate independently
-// of the placeholder-inertia/torque mismatch. See ActuatorSystem.cc for
-// that wiring - this header only supplies the underlying scalar formulas.
+// Stage 3 (PidEffort()) is what ActuatorSystem.cc uses to drive the real
+// Gazebo joint toward the rate-limited setpoint, via
+// gz::sim::Joint::SetForce() - a genuine joint-space generalized torque
+// integrated by the physics engine, never an instantaneous position write.
 //
-// STEADY-STATE DISTURBANCE FIX (2026-08-24, ACTUATOR_SERVO_MODEL_V1_GRAVITY_
-// DROOP_FIX): gazebo-testing found, at the powered trim condition (gravity
-// ON), that commanded elevator/aileron deflections settled 2.6-4.2 deg SHORT
-// of target in a stable, non-oscillating, non-effort-saturated equilibrium
-// (rudder unaffected, <=0.012 deg residual at all tested angles). Root
-// cause, confirmed by a 3-way zero-g/base-free/base-held diagnostic plus a
-// first-principles prediction (droop = T_gravity/kp, matching observed droop
-// to within ~5-9% for all three surfaces, predicting exactly 0 deg for
-// rudder since its Z-dominant hinge axis sees zero moment from a vertical
-// gravity force by construction while the Y-dominant elevator/aileron axes
-// do not): the ORIGINAL Stage-3 law (renamed PdEffort() -> PidEffort() by
-// this fix) was pure P(D). A pure-P(D) law cannot drive steady-state error
-// to zero under ANY nonzero constant disturbance torque (here: gravity
-// acting on the control surface's own TEMPORARY_NUMERICAL_MASS about its
-// hinge), regardless of kp - a larger kp only shrinks the droop
-// proportionally, it never eliminates it, and kp cannot simply be cranked
-// higher given the placeholder-inertia dt-compatibility bandwidth
-// constraint already documented above (control_law derivation_note in
-// actuator_v1_config.yaml). Fix chosen: integral action (PID), NOT gravity
-// feedforward - see actuator_v1_config.yaml's control_law block for why
-// integral was chosen over feedforward and the full ki derivation/stability
-// analysis. Integral action rejects ANY constant disturbance (not gravity
-// specifically) without needing to model the disturbance, and does not
-// require this Gazebo-independent header (or ActuatorSystem.cc) to start
-// reading link mass/CoM/orientation data it never needed before - a smaller
-// blast radius for a scoped fix. Anti-windup: integral accumulation is
-// frozen whenever Stage 1 has already clamped the target (targetClampActive
-// argument to PidEffort(), below) OR whenever integrating this tick's error
-// would keep the effort output saturated in the SAME direction it is
-// already saturated in ("conditional integration" - a same-tick,
-// non-lagged form of "freeze whenever effort_clamp_active is true").
+// The control-surface link masses in model.sdf are an intentional near-
+// massless numerical placeholder (TEMPORARY_NUMERICAL_MASS = 0.001 kg), not
+// a physical claim, so any plausible real-servo torque is wildly overpowered
+// relative to that placeholder inertia. ActuatorSystem.cc therefore does NOT
+// rely on PidEffort()'s torque clamp alone to bound joint velocity: it also
+// applies gz::sim::Joint::SetVelocityLimits()/SetEffortLimits() (hard
+// physics-engine constraints) using the same max_rate/max_effort values, so
+// real joint motion stays bounded regardless of the inertia mismatch.
 //
-// IntegrateJointStep() at the bottom of this file is a SELF-TEST-ONLY
-// reference single-DOF rotational-inertia integrator (explicit Euler,
-// mirrors PropulsionModel.hh's IntegrateRotorStep() pattern). It is NEVER
-// called by ActuatorSystem.cc - the real joint's physical motion is
-// integrated by gz-sim's own physics engine, not by this function. It
-// exists solely so the standalone self-test can exercise PidEffort() in a
-// closed loop against SOME finite, documented reference inertia and confirm
-// the control law is stable/bounded - this is explicitly NOT a claim about
-// the real Gazebo joint's dynamics (see the self-test's own comments).
+// WHY PID AND NOT PURE PD: a pure P(D) law cannot drive steady-state error
+// to zero under a constant disturbance torque - here, gravity acting on each
+// surface's own mass about its hinge axis. A larger kp only shrinks the
+// resulting droop proportionally, and kp is bounded above by the dt-
+// compatibility bandwidth constraint. Integral action rejects any constant
+// disturbance without modelling it. Anti-windup: integral accumulation is
+// frozen whenever Stage 1 has already clamped the target, whenever
+// integrating this tick's error would keep the effort output saturated in
+// the direction it is already saturated in (conditional integration), and
+// whenever the joint is at its velocity limit (rate saturation).
+//
+// The PID gains are derived against each surface's inertia ABOUT ITS OWN
+// HINGE AXIS (parallel-axis corrected, per surface), not the link's
+// centre-of-mass inertia.
 //
 // Every numeric constant a caller supplies here (min/max angle, max_rate,
-// max_effort, kp, kd, ki) is loaded from
-// docs/source_of_truth/controls/actuator_v1_config.yaml by
-// ActuatorSystem.cc's Configure() step (mirrors AeroConfig/MotorConfig's
-// pattern) - no coefficient is hardcoded in this header or in
-// ActuatorSystem.cc.
+// max_effort, kp, kd, ki) is loaded from config/actuator_v1_config.yaml by
+// ActuatorSystem.cc's Configure() step; no coefficient is hardcoded in this
+// header or in ActuatorSystem.cc.
 // =============================================================================
 #ifndef FALCON_V2_ACTUATOR_MODEL_HH_
 #define FALCON_V2_ACTUATOR_MODEL_HH_
@@ -151,19 +65,17 @@ namespace falcon_v2_actuators
 // actuator_v1_config.yaml's rate_saturation_antiwindup_note for provenance.
 // A joint is treated as "at its velocity limit" when
 // |actual_rate| >= kRateSaturationDetectFraction * cfg.maxRateRadS. The
-// 0.999 value is deliberately the SAME definition of "rate-pinned" already
-// used by tests/gazebo/scripts/analyze_airborne_limit_cycle_runtime.py and
-// by both 2026-09-10/2026-09-11 limit-cycle test reports, so the plugin's
-// internal notion of rate saturation and the harness's published duty
-// statistics refer to the same event. It is a strict inequality margin
+// 0.999 value is the project's standard definition of "rate-pinned", so
+// every consumer of that notion refers to the same event. It is a strict
+// inequality margin
 // against exact floating-point equality with the physics engine's own
 // constraint value, nothing more.
 // ===========================================================================
 inline constexpr double kRateSaturationDetectFraction = 0.999;
 
 // ===========================================================================
-// Config - populated by the caller (ActuatorSystem.cc's Configure(), or a
-// standalone self-test) from actuator_v1_config.yaml. No default value below
+// Config - populated by the caller (ActuatorSystem.cc's Configure()) from
+// config/actuator_v1_config.yaml. No default value below
 // is meant to be trusted for a real run - defaults exist only so a missing
 // config key fails loudly/inert (e.g. maxRateRadS=0 freezes the setpoint,
 // an obviously-wrong but finite, non-crashing behavior) rather than reading
@@ -178,7 +90,7 @@ struct ActuatorConfig
   double maxAngleRad = 0.0;
 
   // Servo slew-rate limit, rad/s. V1_PROVISIONAL - no manufacturer datasheet
-  // ingested for the named Emax ES08MAII servo (CONTROLS.md sec 5); see
+  // ingested for the named Emax ES08MAII servo; see
   // actuator_v1_config.yaml for the documented order-of-magnitude reasoning.
   double maxRateRadS = 0.0;
 
@@ -200,8 +112,8 @@ struct ActuatorConfig
   // 3.03-3.48x and leaving the loop under-damped at zeta = 0.57-0.77
   // instead of the intended 1.0). NOT simply sized from maxEffortNm/a
   // reference tracking-error angle in isolation; an earlier draft that did
-  // exactly that was found, by this project's own self-test, to be
-  // numerically unstable at a 1 kHz per-tick torque-update rate - see the
+  // exactly that was found to be numerically unstable at a 1 kHz per-tick
+  // torque-update rate - see the
   // YAML "hinge_inertia_derivation_note" and "derivation_note" for the
   // full finding and its correction.
   double kp = 0.0;  // N*m / rad
@@ -282,9 +194,9 @@ inline double RateLimitSetpoint(
 }
 
 /// \brief Result of one full kinematic command-chain step (Stage 1 + Stage
-/// 2 combined). ActuatorSystem.cc and the standalone self-test both call
-/// StepSetpoint() (not the two stages separately) so the two can never
-/// diverge in how they combine clamp + rate-limit.
+/// 2 combined). Callers use StepSetpoint() rather than the two stages
+/// separately, so they can never diverge in how clamp and rate-limit
+/// combine.
 struct SetpointStepResult
 {
   double targetClampedRad = 0.0;  // rawCmd after Stage 1 (mechanical clamp)
@@ -317,7 +229,7 @@ struct EffortResult
   bool effortClamped = false;
 
   // Updated integral-accumulator state (integral of error over time, rad*s)
-  // - the caller (ActuatorSystem.cc, or the self-test) must persist this
+  // - the caller (ActuatorSystem.cc) must persist this
   // and pass it back in as prevIntegralRadS on the NEXT call for the same
   // surface, exactly like setpointRad is already persisted across
   // StepSetpoint() calls. Added 2026-08-24 (gravity-droop fix).
@@ -325,17 +237,15 @@ struct EffortResult
 
   // True if anti-windup froze integral accumulation THIS call (the Stage-1
   // target was clamped, OR integrating would have kept the effort saturated
-  // in the same direction it already was, OR - as of 2026-09-12, F3 - the
-  // joint is at its physics-engine VELOCITY limit and integrating would only
-  // deepen an already-unreachable demand) - informational, not currently
-  // published to the diagnostics topic (unchanged 35-field format,
-  // gazebo-testing's harness depends on that exact layout).
+  // in the same direction it already was, or the joint is at its
+  // physics-engine VELOCITY limit and integrating would only deepen an
+  // already-unreachable demand). Informational only: not published to the
+  // diagnostics topic, whose 35-field layout is fixed.
   bool integralFrozen = false;
 
-  // True if the freeze above was caused SPECIFICALLY by the 2026-09-12 (F3)
-  // rate-saturation clause, as opposed to the two pre-existing clauses.
-  // Exists so F3's effect is separately identifiable in review/self-test
-  // output without having to re-derive it. Like integralFrozen, this is NOT
+  // True if the freeze above was caused specifically by the rate-saturation
+  // clause, as opposed to the other two clauses, so its effect is separately
+  // identifiable without re-deriving it. Like integralFrozen, this is NOT
   // published to the 35-field diagnostics topic.
   bool rateSatFreezeActive = false;
 
@@ -477,39 +387,6 @@ inline EffortResult PidEffort(
   out.integralFrozen = freeze;
   out.rateSatFreezeActive = rateSatFreeze;
   out.rateSaturated = rateSaturated;
-  return out;
-}
-
-// ===========================================================================
-// Self-test-ONLY reference single-DOF rotational-inertia integrator. NEVER
-// called by ActuatorSystem.cc. See file header comment.
-// ===========================================================================
-
-struct JointStepResult
-{
-  double angleRad = 0.0;
-  double rateRadS = 0.0;
-};
-
-/// \brief One explicit-Euler integration step of
-///   I * domega/dt = torqueNm
-/// for a SELF-TEST-ONLY reference single-DOF joint. inertiaKgM2 here is an
-/// arbitrary, explicitly-documented self-test reference value (see
-/// actuator_model_selftest.cc), NOT the real SDF joint inertia - the real
-/// joint's motion is always integrated by gz-sim's own physics engine in
-/// the live plugin, never by this function.
-inline JointStepResult IntegrateJointStep(
-    double angleRad, double rateRadS, double torqueNm, double inertiaKgM2,
-    double dt)
-{
-  JointStepResult out;
-  double newRate = rateRadS;
-  if (inertiaKgM2 > 0.0)
-  {
-    newRate = rateRadS + dt * torqueNm / inertiaKgM2;
-  }
-  out.rateRadS = newRate;
-  out.angleRad = angleRad + newRate * dt;
   return out;
 }
 

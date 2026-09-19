@@ -1,62 +1,51 @@
 // =============================================================================
 // FALCON V2 - Propulsion V1 core math model
 // =============================================================================
-// Owner: propulsion specialist agent. Task: PROPULSION_V1_IMPLEMENTATION
-// (2026-08-23).
+// Pure math only, plus trivial CSV table loading via <fstream>. No gz-sim
+// (ECM/Entity/System) dependency anywhere in this file.
 //
-// This header contains ONLY pure math (plus trivial CSV table loading via
-// <fstream>, which is standard-library-only and carries no gz-sim/ECM/Entity
-// dependency - the same "linkable into both the real plugin and a standalone
-// self-test" design used by plugins/aerodynamics/AeroModel.hh, mirrored here
-// intentionally). No gz-sim dependency anywhere in this file.
-//
-// Required chain implemented here (never bypassed, never collapsed into
-// throttle*maximum_thrust - see CLAUDE.md / PROPULSION.md):
+// Chain implemented here, never bypassed and never collapsed into
+// throttle * maximum_thrust:
 //   throttle -> ESC/motor electrical -> motor torque -> rotor angular
 //   dynamics (explicit-Euler state, integrated by the CALLER every tick,
 //   never instantaneous) -> RPM -> advance ratio J -> APC Ct(J,RPM)/Cp(J,RPM)
 //   -> thrust + propeller aerodynamic torque -> reaction torque
 //
-// Every constant this header's CALLER must supply (Kv, R, I0, D, rho,
-// I_rotor, RPM cap, ...) is loaded from
-// docs/source_of_truth/propulsion/propulsion_v1_config.yaml by
-// PropulsionSystem.cc's Configure() step (mirrors AeroModel.hh's AeroConfig
-// pattern) - no coefficient is hardcoded in this header or in
-// PropulsionSystem.cc.
+// Every constant this header's caller must supply (Kv, R, I0, D, rho,
+// I_rotor, RPM cap, ...) is loaded from config/propulsion_v1_config.yaml by
+// PropulsionSystem.cc's Configure() step. No coefficient is hardcoded in this
+// header or in PropulsionSystem.cc.
 //
 // APC 13x6.5E Ct(J)/Cp(J) DATA: loaded at runtime from
-// docs/source_of_truth/propulsion/data/apc_13x65e_parsed.csv, itself
-// mechanically generated (never hand-edited) from the official APC
-// performance-data file docs/source_of_truth/propulsion/data/
-// PER3_13x65E.dat by docs/source_of_truth/propulsion/data/parse_apc_dat.py.
-// See that script's header comment and
-// docs/source_of_truth/propulsion/data/PROVENANCE.md for the full raw ->
-// parsed data lineage. No Ct/Cp value in this project is invented - every
-// value returned by LookupCtCp() below is either a real tabulated APC value
-// or a linear interpolation between two real tabulated APC values, exactly
-// as specified by PROPULSION.md.
+// config/propulsion_data/apc_13x65e_parsed.csv, itself mechanically generated
+// (never hand-edited) from the official APC performance-data file
+// config/propulsion_data/PER3_13x65E.dat by
+// config/propulsion_data/parse_apc_dat.py. See that script's header comment
+// and config/propulsion_data/PROVENANCE.md for the full raw -> parsed data
+// lineage. No Ct/Cp value is invented: every value returned by LookupCtCp()
+// below is either a real tabulated APC value or a linear interpolation
+// between two real tabulated APC values.
 //
-// PROPELLER DIAMETER: D = 0.3302 m ALWAYS (APC 13x6.5E manufacturer nominal),
-// never the ~0.2734 m STL mesh figure - PROPULSION.md sec 0. This header
-// never reads mesh geometry; D is a config value supplied by the caller.
+// PROPELLER DIAMETER: D = 0.3302 m always (APC 13x6.5E manufacturer nominal),
+// never the ~0.2734 m STL mesh figure. This header never reads mesh geometry;
+// D is a config value supplied by the caller.
 //
-// ROTATION-SIGN CONVENTION used throughout this header (see
-// propulsion_v1_config.yaml "rotation" block for the full provenance):
+// ROTATION-SIGN CONVENTION used throughout this header (see the "rotation"
+// block in config/propulsion_v1_config.yaml for the full provenance):
 // omega (rad/s) passed into every function below is expressed in EACH
-// MOTOR'S OWN "positive = normal spin-up direction" frame - i.e. omega>0
-// always means "this motor spinning up under positive throttle", for BOTH
-// the left and right motor, regardless of which physical world/body +X
-// sense that corresponds to. This deliberately keeps the electrical/ODE/
-// aero-loading math IDENTICAL in form for both motors (Kt/Ke/Ct/Cp do not
-// change sign based on mounting side - only the mechanical coupling to the
-// shared body +X axis does). The mapping from this per-motor "own frame" to
-// the single shared body +X axis (for driving the SDF joint's angular
-// velocity and for the sign of the reaction torque applied to base_link) is
-// an explicit, separate, config-driven sign (rotation.left_sign /
-// rotation.right_sign) applied ONLY in PropulsionSystem.cc - never inside
-// this header. See propulsion_v1_config.yaml for why this mapping is
-// ASSUMPTION-tagged (the master dataset's "Left=CCW,Right=CW" statement
-// does not specify a viewing frame).
+// MOTOR'S OWN "positive = normal spin-up direction" frame - omega > 0 always
+// means "this motor spinning up under positive throttle", for both the left
+// and right motor, regardless of which physical world/body +X sense that
+// corresponds to. This keeps the electrical/ODE/aero-loading math identical
+// in form for both motors: Kt/Ke/Ct/Cp do not change sign based on mounting
+// side, only the mechanical coupling to the shared body +X axis does. The
+// mapping from this per-motor frame to the shared body +X axis (for driving
+// the SDF joint's angular velocity and for the sign of the reaction torque
+// applied to base_link) is an explicit, separate, config-driven sign
+// (rotation.left_sign / rotation.right_sign) applied ONLY in
+// PropulsionSystem.cc, never inside this header. That mapping is
+// ASSUMPTION-tagged in the config: the source data's "Left=CCW, Right=CW"
+// statement does not specify a viewing frame.
 // =============================================================================
 #ifndef FALCON_V2_PROPULSION_MODEL_HH_
 #define FALCON_V2_PROPULSION_MODEL_HH_
@@ -74,14 +63,14 @@ namespace falcon_v2_propulsion
 
 // ===========================================================================
 // Config structs - populated by the caller (PropulsionSystem.cc's
-// Configure(), or a standalone self-test) from
-// propulsion_v1_config.yaml / the parsed APC CSV. No default value below is
+// Configure()) from config/propulsion_v1_config.yaml and the parsed APC CSV.
+// No default value below is
 // meant to be trusted for a real run, mirroring AeroConfig's own comment -
 // defaults exist only so a missing config key fails loudly/zero rather than
 // reading uninitialized memory.
 // ===========================================================================
 
-/// \brief Motor + ESC electrical parameters (PROPULSION.md sec 1.1/1.2).
+/// \brief Motor + ESC electrical parameters.
 struct MotorConfig
 {
   double kvRpmPerVolt = 0.0;     // CONFIRMED, manufacturer nameplate
@@ -92,13 +81,13 @@ struct MotorConfig
   double powerLimitW = 0.0;      // CONFIRMED rating (~960W) - diagnostic only in V1, not a hard clamp
 };
 
-/// \brief Battery (PROPULSION.md sec 1.3). V1 fixed-voltage model - no sag.
+/// \brief Battery. V1 fixed-voltage model - no sag.
 struct BatteryConfig
 {
   double vNominal = 0.0;  // CONFIRMED, V1 operating voltage (fixed, no SOC/sag model)
 };
 
-/// \brief Propeller physical parameters (PROPULSION.md sec 0/1.4).
+/// \brief Propeller physical parameters.
 struct PropellerConfig
 {
   double diameterM = 0.0;  // CONFIRMED, D=0.3302 m always - NEVER the STL mesh figure
@@ -141,7 +130,7 @@ struct ApcTable
 /// (with a message in errorOut, if given) on any I/O or parse failure, or if
 /// a slice's J array is found not to be strictly increasing (a load-time
 /// sanity check protecting the interpolation logic below, which assumes
-/// monotonic J per slice - PROPULSION.md's own specified interpolation
+/// monotonic J per slice -'s own specified interpolation
 /// method).
 inline bool LoadApcTableCsv(const std::string &path, ApcTable &table,
                              std::string *errorOut = nullptr)
@@ -202,8 +191,8 @@ inline bool LoadApcTableCsv(const std::string &path, ApcTable &table,
     const double rpm = vals[0];
     // vals[1]=V_mph (unused here), vals[2]=J, vals[3]=Ct, vals[4]=Cp,
     // vals[5..7]=power_W/torque_Nm/thrust_N (unused for the interpolation
-    // table itself - retained in the CSV for cross-check/self-test use, not
-    // re-parsed into ApcTable, which only needs Ct(J)/Cp(J) per PROPULSION.md).
+    // table itself - retained in the CSV for cross-check use, not re-parsed
+    // into ApcTable, which only needs Ct(J)/Cp(J)).
     RawSlice &rs = findOrAdd(rpm);
     rs.J.push_back(vals[2]);
     rs.Ct.push_back(vals[3]);
@@ -245,12 +234,12 @@ inline bool LoadApcTableCsv(const std::string &path, ApcTable &table,
 }
 
 // ===========================================================================
-// 1. ESC/motor electrical (PROPULSION.md sec 2, sec 52 equation block)
+// 1. ESC/motor electrical (sec 52 equation block)
 // ===========================================================================
 
 /// \brief Motor torque constant Kt = 60/(2*pi*KV), KV in rpm/V, Kt in N*m/A.
 /// Ke (back-EMF constant, V/(rad/s)) is numerically identical to Kt in SI
-/// units (PROPULSION.md sec 2) - callers use this same value for both.
+/// units - callers use this same value for both.
 inline double MotorKt(double kvRpmPerVolt)
 {
   if (kvRpmPerVolt <= 0.0) return 0.0;  // defensive only - a valid KV is always > 0
@@ -267,29 +256,29 @@ struct MotorElectricalResult
   bool currentLimited = false;          // true if I_used was clamped at MotorConfig::currentLimitA
 };
 
-/// \brief ESC + motor electrical model, PROPULSION.md sec 2/52:
+/// \brief ESC + motor electrical model sec 2/52:
 ///   V_ESC = throttle * V_battery
 ///   I     = (V_ESC - Ke*omega) / R
 ///   Q_motor = Kt * (I - I0_effective)
 ///
 /// Two explicit, documented V1 policies (propulsion_v1_config.yaml
-/// "electrical_policy" block, PROPULSION.md sec 1.2/8.2 item 4 - both
+/// "electrical_policy" block item 4 - both
 /// explicitly deferred/undocumented beyond this V1 simplification):
 ///  (a) NEGATIVE-CURRENT CLAMP: if the raw back-EMF-driven current would be
 ///      negative (back-EMF Ke*omega exceeds V_ESC - e.g. a windmilling prop
 ///      under an engine-out condition, or throttle=0 with omega>0), it is
 ///      clamped to 0 rather than modeled as regenerative/reverse current
 ///      flowing back into the battery. ASSUMPTION: simple non-regenerative
-///      ESC (no battery-regen model exists anywhere in the source of truth -
-///      fabricating one would violate CLAUDE.md's no-invented-physics rule).
+///      ESC. No battery-regen model exists in the source data, and none is
+///      fabricated here.
 ///  (b) I0_EFFECTIVE: I0 is only characterized at ONE reference voltage
-///      (10 V, PROPULSION.md sec 1.1). No voltage-scaling law for I0 exists
+///      (10 V). No voltage-scaling law for I0 exists
 ///      in the source of truth, so V1 uses I0_effective = I0 (constant),
 ///      ASSUMPTION-tagged. A true voltage-dependent I0 curve is
 ///      DATA_REQUIRED.
 /// Current-limit clamp: I_used is additionally clamped at
 /// MotorConfig::currentLimitA (the ~65A/30s manufacturer rating,
-/// PROPULSION.md sec 1.1) - ASSUMPTION: this V1 model applies the rating
+///) - ASSUMPTION: this V1 model applies the rating
 /// directly as an instantaneous hard clamp, not a true duration-limited
 /// (I^2*t) thermal model, since no such model exists in the source of truth.
 /// throttle01 is clamped to [0,1] here (defensive - the transport layer
@@ -300,7 +289,7 @@ inline MotorElectricalResult MotorElectrical(
   MotorElectricalResult out;
   const double throttle = std::clamp(throttle01, 0.0, 1.0);
   const double kt = MotorKt(cfg.kvRpmPerVolt);
-  const double ke = kt;  // SI numeric equivalence, PROPULSION.md sec 2
+  const double ke = kt;  // SI numeric equivalence
 
   const double vEsc = throttle * vBattery;
   double iRaw = 0.0;
@@ -327,7 +316,7 @@ inline MotorElectricalResult MotorElectrical(
 }
 
 // ===========================================================================
-// 2. RPM safety cap (PROPULSION.md sec 1.7)
+// 2. RPM safety cap
 // ===========================================================================
 
 struct RpmCapResult
@@ -338,7 +327,7 @@ struct RpmCapResult
 
 /// \brief Saturates omega (rad/s, signed - see header rotation-sign note) so
 /// that |RPM| never exceeds rpmCap. This is the V1 hard numerical cap
-/// (PROPULSION.md sec 1.7: distinct from, and independent of, both the
+/// (distinct from, and independent of, both the
 /// theoretical no-load-RPM figure and the APC table's own [1000,18000]
 /// lookup-clamp range below).
 inline RpmCapResult ApplyRpmCap(double omega, double rpmCap)
@@ -361,7 +350,7 @@ inline RpmCapResult ApplyRpmCap(double omega, double rpmCap)
 }
 
 // ===========================================================================
-// 3. Rotor angular dynamics ODE step (PROPULSION.md sec 2/4/53)
+// 3. Rotor angular dynamics ODE step
 // ===========================================================================
 
 struct RotorStepResult
@@ -396,7 +385,7 @@ inline RotorStepResult IntegrateRotorStep(
 }
 
 // ===========================================================================
-// 4. Advance ratio (PROPULSION.md sec 2/6)
+// 4. Advance ratio
 // ===========================================================================
 
 /// \brief J = V_axial / (n*D), n in rev/s (ALWAYS >= 0 by construction - see
@@ -404,7 +393,7 @@ inline RotorStepResult IntegrateRotorStep(
 /// an exact division by zero at n=0 (ZERO_RPM_NUMERICAL_TEST) - purely a
 /// numerical-safety measure: T/P_prop naturally -> 0 as n->0 regardless of
 /// the resulting (large-but-finite) J, since both formulas carry n^2/n^3
-/// factors (PROPULSION.md sec 6, this task's item 6).
+/// factors (this task's item 6).
 inline double AdvanceRatio(double vAxial, double n, double diameterM, double nSafeFloor)
 {
   const double nSafe = std::max(n, nSafeFloor);
@@ -413,7 +402,7 @@ inline double AdvanceRatio(double vAxial, double n, double diameterM, double nSa
 }
 
 // ===========================================================================
-// 5. 2D Ct/Cp interpolation over the parsed APC table (PROPULSION.md sec 5,
+// 5. 2D Ct/Cp interpolation over the parsed APC table (
 //    this task's item 6 - the exact 2-stage method specified there)
 // ===========================================================================
 
@@ -485,14 +474,14 @@ inline void InterpWithinSlice(const ApcRpmSlice &slice, double J,
 }  // namespace detail
 
 /// \brief Full 2-stage 2D interpolation exactly as specified by
-/// PROPULSION.md / this task: (1) find the two bracketing RPM slices,
+/// / this task: (1) find the two bracketing RPM slices,
 /// interpolate Ct/Cp within EACH using that slice's own J array/range; (2)
 /// linearly blend the two per-slice results by RPM position. RPM is clamped
 /// to the table's own [minRpm,maxRpm] range for lookup purposes if outside
 /// (interpClamped exposed as a diagnostic) - a defensive edge case (e.g.
 /// omega transiently overshooting during integration before the RPM cap
 /// logic engages), distinct from and NOT required to coincide with the
-/// operational RPM cap (PROPULSION.md sec 1.7).
+/// operational RPM cap.
 inline CtCpResult LookupCtCp(const ApcTable &table, double rpmQuery, double J)
 {
   CtCpResult out;
@@ -534,12 +523,12 @@ inline CtCpResult LookupCtCp(const ApcTable &table, double rpmQuery, double J)
 }
 
 // ===========================================================================
-// 6. Thrust / power / torque formulas (PROPULSION.md sec 2/6, sec 54-56)
+// 6. Thrust / power / torque formulas (sec 54-56)
 // ===========================================================================
 
 /// \brief T = Ct * rho * n^2 * D^4. n in rev/s, ALWAYS >= 0 by construction
 /// (magnitude - see PropAeroLoad). Thrust acts along the fixed thrust axis
-/// (+X, geometry-structure's CONFIRMED value) regardless of rotation sign.
+/// (+X, the CONFIRMED value) regardless of rotation sign.
 inline double PropThrust(double ct, double rho, double n, double diameterM)
 {
   const double d2 = diameterM * diameterM;

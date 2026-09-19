@@ -61,7 +61,7 @@ void MagnetometerSystem::Configure(
 
   gzmsg << "[FalconV2Magnetometer] Configured. world_magnetic_field_tesla="
         << this->worldMagneticFieldTesla << " (T, world ENU frame,"
-        << " SIMULATION_ASSUMPTION - see SENSORS.md sec 4.4)"
+        << " SIMULATION_ASSUMPTION)"
         << " update_rate_hz=" << this->updateRateHz
         << " topic=" << magTopic << " (gz.msgs.Magnetometer, field_tesla,"
         << " body FLU frame). Replaces the native gz-sim-magnetometer-"
@@ -91,7 +91,7 @@ void MagnetometerSystem::PreUpdate(
     return;  // no stale publish
 
   // Sensor mount pose has zero relative rotation to base_link (see
-  // model.sdf/SENSORS.md sec 4.4) - base_link's own orientation IS the
+  // model.sdf/) - base_link's own orientation IS the
   // sensor's body-frame orientation. World vector -> body-frame vector via
   // the inverse rotation (SAME convention already used for this project's
   // IMU specific-force reading): for v_world fixed, v_body =

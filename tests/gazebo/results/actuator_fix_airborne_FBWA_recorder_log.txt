@@ -1,3 +1,0 @@
-[highrate] subscribed act=True aero=True imu=True clock=True
-[highrate] wrote /tmp/claude-1000/-home-emirhan-Desktop-FalconV2/d791f088-f001-45d8-802a-39118ca168e8/scratchpad/actuator_fix_highrate_raw/actuator_fix_airborne_FBWA_highrate.json: act=159451 aero=159792 imu=15994 clock=160066
-terminate called without an active exception

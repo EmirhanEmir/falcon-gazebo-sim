@@ -2,11 +2,10 @@
 // FALCON V2 - Gazebo Sim Harmonic aerodynamics System plugin (implementation)
 // =============================================================================
 // See AerodynamicsSystem.hh for the architecture summary. Every numeric
-// constant used here comes from docs/source_of_truth/aerodynamics/
-// aero_v1_config.yaml (loaded at Configure() time) - no coefficient is
-// hardcoded in this file. Joint/link NAMES below are structural identifiers
-// (not physics magic numbers) matching model/model.sdf exactly, as verified
-// by direct grep of that file for this task.
+// constant used here comes from config/aero_v1_config.yaml, loaded at
+// Configure() time - no coefficient is hardcoded in this file. Joint and link
+// names below are structural identifiers matching model/model.sdf, not
+// physics constants.
 // =============================================================================
 #include "AerodynamicsSystem.hh"
 
@@ -65,8 +64,7 @@ void AerodynamicsSystem::Configure(
   if (configPath.empty())
   {
     gzerr << "[FalconV2Aerodynamics] No <config_path> SDF parameter given - "
-          << "cannot load docs/source_of_truth/aerodynamics/"
-          << "aero_v1_config.yaml. Aerodynamic forces will NOT be applied.\n";
+          << "cannot load config/aero_v1_config.yaml. Aerodynamic forces will NOT be applied.\n";
     return;
   }
   this->validConfig = this->LoadConfig(configPath);
@@ -128,8 +126,7 @@ void AerodynamicsSystem::Configure(
     }
   }
 
-  // ---- Wind topic subscription (V1: architecture hook only, Vwind=0 until
-  // a publisher exists - CLAUDE.md relative-airflow requirement) ----
+  // ---- Wind topic subscription (Vwind = 0 until a publisher exists) ----
   if (!this->node.Subscribe(windTopic, &AerodynamicsSystem::OnWind, this))
   {
     gzerr << "[FalconV2Aerodynamics] Failed to subscribe to wind topic '"
@@ -180,21 +177,20 @@ bool AerodynamicsSystem::LoadConfig(const std::string &_path)
     this->config.Cma = lon["Cma_per_rad"].as<double>();
     this->config.CLq = lon["CLq"].as<double>();
     this->config.Cmq = lon["Cmq"].as<double>();
-    // Cmde/CLde: SUPERSEDED_BY_LOOKUP (2026-08-26) - loaded for
-    // documentation/self-test cross-check only, NOT read by ComputeAero()
-    // itself (replaced by control_surface_lookup.elevator, loaded below).
+    // Cmde/CLde: SUPERSEDED_BY_LOOKUP - loaded for cross-check only, NOT
+    // read by ComputeAero() itself (replaced by
+    // control_surface_lookup.elevator, loaded below).
     this->config.Cmde = lon["Cmde_per_rad"].as<double>();
     this->config.CLde = lon["CLde_per_rad"].as<double>();
     this->config.CL0 = lon["CL0"].as<double>();
     this->config.Cm0 = lon["Cm0"].as<double>();
 
-    // CYda/CYdr/Clda/Cnda/Cndr: SUPERSEDED_BY_LOOKUP (2026-08-26) - loaded
-    // for documentation/self-test cross-check only, NOT read by
-    // ComputeAero() itself (replaced by control_surface_lookup.aileron/
-    // rudder, loaded below). Cldr is the ONE exception that IS still
-    // functionally used (see AeroConfig::Prepare(), 1B UNRESOLVED_KEEP_
-    // CURRENT resolution: the rudder-roll lookup is derived from this exact
-    // scalar, not loaded from the new wide-deflection table).
+    // CYda/CYdr/Clda/Cnda/Cndr: SUPERSEDED_BY_LOOKUP - loaded for
+    // cross-check only, NOT read by ComputeAero() itself (replaced by
+    // control_surface_lookup.aileron/rudder, loaded below). Cldr is the one
+    // exception that is still functionally used: the rudder-roll lookup is
+    // derived from this exact scalar rather than from the wide-deflection
+    // table (see AeroConfig::Prepare()).
     auto lat = root["lateral_directional"];
     this->config.CYb = lat["CYb"].as<double>();
     this->config.CYp = lat["CYp"].as<double>();
@@ -307,7 +303,7 @@ void AerodynamicsSystem::PreUpdate(
   const gz::math::Quaterniond &worldRot = worldPoseOpt->Rot();
 
   // Body-frame relative wind: Vrel = Vbody - Vwind, both expressed in body
-  // axes (CLAUDE.md relative-airflow requirement; wind hook via OnWind()).
+  // axes. Vwind arrives via OnWind().
   const gz::math::Vector3d velWorld = *worldLinVelOpt - this->windWorld;
   const gz::math::Vector3d velBody = worldRot.RotateVectorReverse(velWorld);
   const gz::math::Vector3d angVelBody =
@@ -316,7 +312,7 @@ void AerodynamicsSystem::PreUpdate(
   // ---- Control-surface joint positions -> deflection mapping ----
   // See aero_v1_config.yaml control_mapping block for the full documented
   // rationale (VERIFIED_BY_GAZEBO_GEOMETRY_SIGN_TEST, task
-  // CONTROL_SURFACE_SIGN_MAPPING, 2026-08-22 - see AERODYNAMICS.md 19.13).
+  // CONTROL_SURFACE_SIGN_MAPPING, 2026-08-22 19.13).
   auto jointPos = [&_ecm](gz::sim::Entity e) -> double
   {
     if (e == gz::sim::kNullEntity)
@@ -352,12 +348,12 @@ void AerodynamicsSystem::PreUpdate(
   const gz::math::Vector3d momentWorld = worldRot.RotateVector(out.momentBody);
 
   // Force applied AT the link's center of mass (base_link's <inertial><pose>
-  // is exactly the documented Gazebo/CAD CG, MASS_PROPERTIES.md sec 3.1) -
+  // is exactly the documented Gazebo/CAD CG) -
   // AddWorldForce(ecm, force) [2-arg overload] applies at CoM by construction
   // per the gz-sim8 Link.hh API, so this contributes ZERO extra moment.
   // Moments are the fully-formed Cl/Cm/Cn-derived Mx/My/Mz, applied as a
   // PURE torque (zero force in the AddWorldWrench call) so there is no
-  // second, unaccounted r x F contribution - see AERODYNAMICS.md "force
+  // second, unaccounted r x F contribution "force
   // application point" section for the full double-counting analysis.
   baseLink.AddWorldForce(_ecm, forceWorld);
   baseLink.AddWorldWrench(_ecm, gz::math::Vector3d::Zero, momentWorld);

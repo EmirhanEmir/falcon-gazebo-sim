@@ -1,36 +1,22 @@
 // =============================================================================
 // FALCON V2 - Sensor-suite reference-frame transform library (pure math)
 // =============================================================================
-// Owner: controls-integration. Task:
-// SENSOR_MODEL_AND_ARDUPLANE_SITL_PREPARATION (2026-08-27).
+// Pure math only: gz-math7 dependency only, no gz-sim/ECM dependency.
 //
-// Pure math only (gz-math7 dependency ONLY, no gz-sim/ECM dependency) - same
-// architectural precedent as plugins/wind/WindModel.hh,
-// plugins/actuators/ActuatorModel.hh, plugins/aerodynamics/AeroModel.hh: this
-// header is linked into both the real sensor plugin(s) (PitotSystem.cc) and
-// a standalone, Gazebo-independent self-test (test/sensors_model_selftest.cc).
-//
-// SCOPE: every frame/sign conversion this project's sensor suite needs,
-// derived and unit-tested here ONCE so no other file re-derives (and
-// potentially mis-derives) the same transform. Nothing in this header reads
-// live Gazebo state - callers (PitotSystem.cc now; a future ArduPilotPlugin
-// JSON bridge later) supply already-fetched vectors/quaternions.
+// SCOPE: every frame/sign conversion the sensor suite needs, derived once
+// here so no other file re-derives (and potentially mis-derives) the same
+// transform. Nothing in this header reads live Gazebo state; callers supply
+// already-fetched vectors and quaternions.
 //
 // ----------------------------------------------------------------------------
-// GOVERNING FRAME FACTS (all CONFIRMED this task by direct inspection of the
-// installed ardupilot_gazebo plugin source and gz-sim/sdformat's own
-// installed spec files - see docs/source_of_truth/sensors/SENSORS.md sec 2
-// for the full citation trail; restated tersely here only as inline
-// derivation context):
-//   - This project's Gazebo body frame is FLU (+X forward, +Y left, +Z up)
-//     per CLAUDE.md - CONFIRMED to be exactly the body frame the official
-//     ardupilot_gazebo ArduPilotPlugin assumes by default (its own source,
-//     src/ArduPilotPlugin.cc, default gazeboXYZToNED transform comment).
+// GOVERNING FRAME FACTS
+//   - This project's Gazebo body frame is FLU (+X forward, +Y left, +Z up),
+//     which is exactly the body frame the official ardupilot_gazebo
+//     ArduPilotPlugin assumes by default (its gazeboXYZToNED transform).
 //   - ArduPilot's own body frame is FRD (+X forward, +Y right, +Z down).
 //   - Gazebo's world frame in this project is ENU (+X east, +Y north,
-//     +Z up) - CONFIRMED both by the same ArduPilotPlugin source's own
-//     doc comment AND by sdformat's spherical_coordinates.sdf spec default
-//     (world_frame_orientation default = "ENU").
+//     +Z up), matching sdformat's spherical_coordinates.sdf default
+//     (world_frame_orientation = "ENU").
 //   - ArduPilot's world frame is NED (+X north, +Y east, +Z down).
 // ----------------------------------------------------------------------------
 #ifndef FALCON_V2_SENSORS_FRAMES_HH_
@@ -59,9 +45,7 @@ namespace falcon_v2_sensors
 // vector (x,y,z): R*(x,y,z)^T = (x,-y,-z) - i.e. X (forward) is UNCHANGED,
 // Y and Z both negate. This matches FLU->FRD directly: forward stays
 // forward; left(+Y_flu) becomes -Y_frd i.e. right is now +Y_frd; up(+Z_flu)
-// becomes -Z_frd i.e. down is now +Z_frd. Confirmed algebraically correct
-// (not just restated) by FLU_FRD_ROTATION_PROPERTIES_TEST in
-// sensors_model_selftest.cc: R is orthogonal (R^T R = I), proper
+// becomes -Z_frd i.e. down is now +Z_frd. R is orthogonal (R^T R = I), proper
 // (det(R) = +1, a genuine rotation not a reflection), and idempotent under
 // two applications (R^2 = I, i.e. a 180 deg rotation is its own inverse -
 // FLU->FRD and FRD->FLU are THE SAME formula).
@@ -108,20 +92,16 @@ inline gz::math::Vector3d EnuNedSwap(const gz::math::Vector3d &_v)
 // horizontal North-East bisector) that happen to share the "both are a 180
 // deg involution" property. Applying FluFrdSwap() to a WORLD-frame vector,
 // or EnuNedSwap() to a BODY-frame vector, is a frame-category error and
-// will silently produce a wrong-but-finite result (this is exactly the
-// class of bug CLAUDE.md's coordinate-system rule and this agent's sign-
-// convention-discipline rule exist to prevent) - every call site in this
-// project must be able to name which category (body vs. world) the vector
-// it is converting belongs to.
+// will silently produce a wrong-but-finite result - every call site must be
+// able to name which category (body vs. world) the vector it is converting
+// belongs to.
 // =============================================================================
 
 // =============================================================================
-// Altitude (world "up", meters, positive above the documented zero
-// reference - this project's world origin per
-// docs/source_of_truth/sensors/SENSORS.md sec 5) <-> NED "Down" coordinate.
-// Trivial by definition (Down = -Up) but stated/tested explicitly per this
-// task's required "baro altitude-sign" self-test - not to be conflated with
-// EnuNedSwap() above, which acts on a 3-vector, not a scalar altitude.
+// Altitude (world "up", meters, positive above this project's world origin)
+// <-> NED "Down" coordinate. Trivial by definition (Down = -Up), but stated
+// explicitly so it is not conflated with EnuNedSwap() above, which acts on a
+// 3-vector rather than a scalar altitude.
 // =============================================================================
 inline double AltitudeToNedDown(double _altitudeM) { return -_altitudeM; }
 inline double NedDownToAltitude(double _downM) { return -_downM; }

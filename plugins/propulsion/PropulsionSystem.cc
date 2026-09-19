@@ -2,10 +2,10 @@
 // FALCON V2 - Gazebo Sim Harmonic propulsion System plugin (implementation)
 // =============================================================================
 // See PropulsionSystem.hh for the architecture summary. Every numeric
-// constant used here comes from docs/source_of_truth/propulsion/
-// propulsion_v1_config.yaml (loaded at Configure() time) - no coefficient is
-// hardcoded in this file. Joint/link NAMES below are structural identifiers
-// (not physics magic numbers) matching model/model.sdf exactly.
+// constant used here comes from config/propulsion_v1_config.yaml, loaded at
+// Configure() time - no coefficient is hardcoded in this file. Joint and link
+// names below are structural identifiers matching model/model.sdf, not
+// physics constants.
 // =============================================================================
 #include "PropulsionSystem.hh"
 
@@ -206,19 +206,17 @@ bool PropulsionSystem::LoadConfig(const std::string &_path)
     gzerr << "[FalconV2Propulsion] propeller.apc_parsed_csv_path is empty.\n";
     return false;
   }
-  // apc_parsed_csv_path in the YAML is a repository-relative path (matching
-  // the YAML's own documented convention); resolve it against the
-  // repository root inferred from config_path (.../docs/source_of_truth/
-  // propulsion/propulsion_v1_config.yaml) if it is not already absolute.
+  // apc_parsed_csv_path in the YAML is relative to the YAML file's own
+  // directory; make it absolute before loading. An already-absolute path is
+  // used as-is.
   std::string resolvedCsvPath = apcCsvPath;
-  if (!apcCsvPath.empty() && apcCsvPath[0] != '/')
+  if (apcCsvPath[0] != '/')
   {
-    const std::string marker = "docs/source_of_truth/propulsion/propulsion_v1_config.yaml";
     const std::string cfgPath = _path;
-    const auto pos = cfgPath.find(marker);
-    if (pos != std::string::npos)
+    const auto slash = cfgPath.find_last_of('/');
+    if (slash != std::string::npos)
     {
-      resolvedCsvPath = cfgPath.substr(0, pos) + apcCsvPath;
+      resolvedCsvPath = cfgPath.substr(0, slash + 1) + apcCsvPath;
     }
   }
 
@@ -310,7 +308,7 @@ void PropulsionSystem::StepMotor(
   // Thrust acts along the fixed +X thrust axis (rotation-sign-independent -
   // both motors intake/accelerate air along the same physical +X sense
   // regardless of which way they spin). Reaction torque
-  // (Q_reaction = -Q_prop, PROPULSION.md sec 7) is mapped from this motor's
+  // (Q_reaction = -Q_prop) is mapped from this motor's
   // own-frame sign onto the shared body +X axis via the SAME rotation_sign
   // multiplier used for the joint-velocity drive below - see
   // propulsion_v1_config.yaml "rotation" block.
@@ -324,7 +322,7 @@ void PropulsionSystem::StepMotor(
 
   // Single combined call: the force's own r x F moment (from the hub
   // offset) plus the explicit pure reaction-torque couple - no separate,
-  // hand-coded r x F shortcut anywhere in this file (PROPULSION.md sec 7.1).
+  // hand-coded r x F shortcut anywhere in this file.
   baseLink.AddWorldWrench(_ecm, thrustForceWorld, reactionTorqueWorld, _hubOffsetBody);
 
   // ---- Drive the visual prop joint from the SAME omega state (KINEMATIC
@@ -350,10 +348,9 @@ void PropulsionSystem::StepMotor(
   // gz/sim/Joint.hh documents as directly modifying the joint's internal
   // state (contrasted explicitly against SetVelocity's "does not modify the
   // internal state" / physics-engine-torque behavior) - a kinematic write,
-  // not something the constraint solver applies force to achieve. Same
-  // primitive (reset_position()/reset_velocity()) already used by
-  // tests/gazebo/scripts/aero_lib.py's pin_child_joints() for exactly this
-  // "drive a joint without letting it participate in real dynamics" need.
+  // not something the constraint solver applies force to achieve - exactly
+  // what driving a joint without letting it participate in real dynamics
+  // requires.
   // theta itself feeds NOTHING physical - it is wrapped into (-pi, pi] each
   // tick purely to avoid unbounded double growth over a long sim; only
   // omega (unchanged above) drives thrust/torque/RPM.

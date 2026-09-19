@@ -6,13 +6,12 @@
 #
 # Full provenance / classification for every value (and every value
 # deliberately EXCLUDED) below:
-#   docs/source_of_truth/autopilot/SITL_PARAM_MIGRATION.md
 #
 # Format: ArduPilot's own Tools/autotest/default_params/*.parm convention -
 # whitespace-separated NAME VALUE, "#" comment lines - the format
 # pymavlink/mavparm.py's load() (used by sim_vehicle.py --add-param-file)
 # actually parses. Deliberately NOT the real aircraft's comma-CSV GCS-export
-# format (docs/source_of_truth/autopilot/real_aircraft/yeni_pixhawk.param) -
+# format -
 # that file is a different, GCS-side export convention and is NEVER modified
 # or copied wholesale.
 #
@@ -29,11 +28,9 @@
 # 2026-09-05 by stage ARDUPLANE_TECS_PTCH_DAMP_ADOPTION_INTEGRATION and set
 # below under the heading FALCON_V2_SIM_VALIDATED_TECS_PITCH_DAMPING.
 # Every OTHER TECS_* value is still left at ArduPlane's own compiled
-# firmware default and is NOT imported from the real aircraft's .param.
+# firmware default and is NOT imported from the real aircraft's.param.
 # Source-of-truth records:
-#   docs/source_of_truth/controls/ardupilot_tecs_pitch_damping_loop.yaml
-#   docs/source_of_truth/controls/ardupilot_fbwb_tecs_baseline.yaml
-#   docs/source_of_truth/autopilot/SITL_PARAM_MIGRATION.md sec 3 + sec 18
+#
 # Adopting that single value does NOT retune any PID and does NOT execute
 # autotune - both of those statements above remain true and unchanged.
 # =============================================================================
@@ -41,7 +38,7 @@
 # -----------------------------------------------------------------------------
 # Roll/Pitch rate controller - FALCON_V2_MANUFACTURER_INITIAL_PID
 # (Titan Dynamics Falcon V2 Build & User Manual Rev 1.0-sourced values, given
-# directly by the project owner for this task - see migration doc sec 1).
+# directly by the project owner for this work - see migration doc sec 1).
 # NEVER labeled FINAL_TUNED_PID or FLIGHT_VALIDATED_FINAL_PID. Autotune is
 # NOT executed by this file - AUTOTUNE_LEVEL is recorded as the
 # manufacturer-recommended starting point only.
@@ -119,12 +116,9 @@ SERVO5_REVERSED   0
 # is set (GCS_MAVLink_Plane.cpp:139-141) - reporting only, physics unchanged.
 # NAV_CONTROLLER_OUTPUT.nav_pitch stays raw nav_pitch_cd*0.01 (= 0 at neutral).
 # VALUE = +2.49 deg: the MEASURED straight-and-level nose-up pitch attitude of
-# this airframe+aero+propulsion model, C.2 pitch* = +2.487 deg from
-# docs/test_results/2026-08-28_ardupilot_longitudinal_equilibrium_and_sink_
-# root_cause_validation.md (V* 18.162 m/s, throttle* 0.4957, elevator* +4.092
-# deg, alpha* 2.472 deg, world_vz +0.005 m/s, 14/14 acceptance). NOT +3.43
-# (the C.1 stale-reference settled pitch - wrong). Full provenance:
-# docs/source_of_truth/autopilot/SITL_PARAM_MIGRATION.md sec 17.
+# this airframe+aero+propulsion model: measured pitch* = +2.487 deg at the
+# longitudinal equilibrium (V* 18.162 m/s, throttle* 0.4957,
+# elevator* +4.092 deg, alpha* 2.472 deg, world_vz +0.005 m/s).
 # -----------------------------------------------------------------------------
 PTCH_TRIM_DEG    2.49
 
@@ -142,7 +136,7 @@ ARSPD_TYPE      100
 ARSPD_USE       1
 
 # AIRSPEED_MIN/CRUISE/MAX - GAZEBO_VALIDATION, SIMULATION_DERIVED_FROM_
-# GAZEBO_ENVELOPE (docs/test_results/2026-08-27_flight_envelope_validation.md).
+# GAZEBO_ENVELOPE.
 # 12.5 m/s (moment-infeasible trim) is NEVER used as MIN. 30 m/s is NOT used
 # as MAX just because it numerically worked once - 28 m/s (a
 # PROVISIONAL_EDGE_ENVELOPE point with margin) is used instead.
@@ -151,7 +145,7 @@ AIRSPEED_CRUISE   18
 AIRSPEED_MAX      28
 # DATA_REQUIRED - no validated stall speed exists in this repository's
 # Gazebo test results. Left at ArduPlane's own default (0 = unused),
-# matching the real .param's own value (also 0) - not a regression, not a
+# matching the real.param's own value (also 0) - not a regression, not a
 # fabricated number.
 AIRSPEED_STALL    0
 
@@ -162,16 +156,15 @@ AIRSPEED_STALL    0
 # THE ONLY TECS_* VALUE THIS FILE SETS. Every other TECS_* parameter stays at
 # ArduPlane's compiled firmware default (arduplane is launched with -w, wiped
 # EEPROM), and the TECS group as a whole remains REVIEW_AND_ADAPT / excluded -
-# see the file header and SITL_PARAM_MIGRATION.md sec 3 + sec 18.
+# see the file header and + sec 18.
 #
 # SUPERSEDES the ArduPlane compiled firmware default 0.3
 # (libraries/AP_TECS/AP_TECS.cpp:107, @Range 0.1 1.0, ArduPlane V4.8.0-dev,
 # ArduPilot commit 409226a637). 0.3 is NOT deleted from the record: it is kept
 # visible as the superseded firmware default in
-# docs/source_of_truth/controls/ardupilot_fbwb_tecs_baseline.yaml.
 #
 # DERIVATION (DERIVED_CALCULATION from AP_TECS source; full algebra in
-# docs/source_of_truth/controls/ardupilot_tecs_pitch_damping_loop.yaml sec 1-2):
+#-2):
 # TECS_PTCH_DAMP is the ONLY derivative term in the TECS pitch/energy-balance
 # loop, and 0.3 -> 0.6 moves the PD corner (1+Kd)/(Tc*Kd) from 1.867 to 1.033
 # rad/s, i.e. from ABOVE to BELOW the closed-loop energy mode at ~1.1-1.3
@@ -185,7 +178,7 @@ AIRSPEED_STALL    0
 #     VALIDATION): tau 22.07 -> 8.65 s, zeta 0.0407 -> 0.0872, airspeed std
 #     0.186 -> 0.066 m/s, altitude-hold p2p 2.148 -> 0.635 m, max elevator
 #     6.29 deg
-#   external Codex adoption campaign, separate working copy, THIS REPOSITORY
+#   an independent adoption campaign, separate working copy, THIS REPOSITORY
 #     NOT TOUCHED: tau 26.0 -> 9.3 s, zeta 0.0347 -> 0.083, airspeed std
 #     0.40 -> 0.11 m/s, altitude-hold p2p 2.1 -> 0.59 m, max elevator 8.25 deg;
 #     repeat runs at both settings (0.6 repeatable), sanity runs at 17.0 m/s,
@@ -198,7 +191,7 @@ AIRSPEED_STALL    0
 # Provenance class: DERIVED_CALCULATION + GAZEBO_VALIDATION.
 #
 # SIM-SPECIFIC - EXPLICITLY NOT THE REAL-AIRCRAFT VALUE. The real Falcon V2's
-# GCS export docs/source_of_truth/autopilot/real_aircraft/yeni_pixhawk.param
+# GCS export
 # line 1035 carries TECS_PTCH_DAMP,0.3 (the untuned ArduPlane default); that
 # file is NEVER modified and was not modified. 0.6 is validated ONLY against
 # the Gazebo Falcon V2 model. Transferring it to the real aircraft is NOT
@@ -209,13 +202,8 @@ TECS_PTCH_DAMP    0.6
 # =============================================================================
 # SIMULATION ENVIRONMENT - SITL ORIGIN / ALTITUDE DATUM
 # =============================================================================
-# Owner: controls-integration. Stage:
-# SITL_ATMOSPHERE_AND_PITOT_INTEGRATION_VALIDATION (2026-09-02).
-# Closes validation MAJOR-1
-# (docs/validation/2026-09-02_ardupilot_tecs_and_cruise_speed_hold_validation.md
-# sec 2). Full derivation + live before/after evidence:
-# docs/source_of_truth/autopilot/SITL_ATMOSPHERE_AND_AIRSPEED.md
-#
+# Before these were set, ArduPlane's airspeed was derived from ground
+# velocity and the simulator zeroed the wind vector on every frame.
 # These are SITL-simulator parameters (SIM_*), NOT aircraft parameters. They
 # exist only inside the simulator and have no counterpart on the real vehicle.
 # The four SIM_OPOS_* values in THIS section set NO PID, NO TECS value, NO
@@ -247,7 +235,7 @@ TECS_PTCH_DAMP    0.6
 #   4. AP_Baro_atmosphere.cpp:299-304 _get_EAS2TAS() ->
 #      get_air_density_for_alt_amsl(673) = 1.148 kg/m^3 -> EAS2TAS = 1.033
 #   while the Gazebo aerodynamics plugin uses a FIXED rho = 1.225 kg/m^3
-#   (docs/source_of_truth/aerodynamics/aero_v1_config.yaml, ISA sea level)
+#   (config/aero_v1_config.yaml, ISA sea level)
 #   and the test worlds declare <elevation>0.0</elevation>.
 #
 # FIX: do NOT pass -O at all. With no -O, home_is_set stays false and
@@ -259,10 +247,10 @@ TECS_PTCH_DAMP    0.6
 #
 #   SIM_OPOS_ALT = 0  -- THE VALUE THIS STAGE ACTUALLY CHANGES.
 #     Taken verbatim from the test worlds' own <spherical_coordinates>
-#     <elevation>0.0</elevation> (e.g. tests/gazebo/worlds/
+#     <elevation>0.0</elevation> (e.g. worlds/
 #     falcon_v2_ardupilot_basic_closed_loop_flight_world.sdf:64), and
 #     consistent with the fixed rho = 1.225 kg/m^3 (ISA SEA LEVEL) that
-#     docs/source_of_truth/aerodynamics/aero_v1_config.yaml uses for every
+#     config/aero_v1_config.yaml uses for every
 #     aerodynamic force. This establishes the datum relationship, which is now
 #     explicit and checkable:
 #         ArduPlane altitude AMSL (m)  ==  Gazebo world z (m, ENU, +up)
@@ -280,7 +268,7 @@ TECS_PTCH_DAMP    0.6
 #     aerodynamics, propulsion, actuator and pitot plugins are all local-frame,
 #     and no Gazebo GPS/NavSat output is in the ArduPilot loop (the JSON FDM
 #     backend synthesises GPS from home + local position - see
-#     docs/source_of_truth/autopilot/SITL_TRANSPORT_AND_ACTUATOR_MAPPING.md).
+#.
 #     WHY NOT 0,0 (which is what the world declares): ArduPilot cannot
 #     represent a vehicle at exactly lat=0/lng=0/alt=0 -
 #     AP_Common/Location.h:198 `initialised()` returns

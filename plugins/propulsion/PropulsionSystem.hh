@@ -1,23 +1,19 @@
 // =============================================================================
 // FALCON V2 - Gazebo Sim Harmonic propulsion System plugin
 // =============================================================================
-// Owner: propulsion specialist agent. Task: PROPULSION_V1_IMPLEMENTATION
-// (2026-08-23).
-//
-// Scope: STRICTLY the motor/ESC/propeller physics chain (throttle ->
+// Scope: strictly the motor/ESC/propeller physics chain (throttle ->
 // electrical -> motor torque -> rotor angular dynamics -> RPM -> advance
 // ratio -> APC Ct/Cp -> thrust/torque -> reaction torque -> force/moment at
-// the real hub). No aerodynamic-coefficient physics (plugins/aerodynamics/
-// is untouched), no control-surface actuation, no ArduPilot/SITL.
+// the real hub). No aerodynamic-coefficient physics, no control-surface
+// actuation, no ArduPilot/SITL.
 //
-// This class is intentionally thin: all math lives in PropulsionModel.hh (a
-// pure, Gazebo-independent header also used by the standalone self-test).
-// This class's only job is: read Gazebo state (link velocity/pose, wind
-// topic, throttle topics) -> maintain the two explicit omega_left/
-// omega_right ODE states -> call PropulsionModel.hh -> apply the resulting
-// force/wrench to base_link at the real hub -> drive the visual prop
-// joints' angular velocity from the SAME state -> publish diagnostics.
-// Mirrors plugins/aerodynamics/AerodynamicsSystem.hh's structure.
+// The class is intentionally thin: all math lives in PropulsionModel.hh, a
+// pure, Gazebo-independent header. This class's only job is to read Gazebo
+// state (link velocity/pose, wind topic, throttle topics), maintain the two
+// explicit omega_left/omega_right ODE states, call PropulsionModel.hh, apply
+// the resulting force/wrench to base_link at the real hub, drive the visual
+// propeller joints' angular velocity from the same state, and publish
+// diagnostics.
 // =============================================================================
 #ifndef FALCON_V2_PROPULSION_SYSTEM_HH_
 #define FALCON_V2_PROPULSION_SYSTEM_HH_
@@ -62,7 +58,7 @@ class PropulsionSystem :
   /// publisher exists.
   private: void OnWind(const gz::msgs::Vector3d &_msg);
 
-  /// \brief Load docs/source_of_truth/propulsion/propulsion_v1_config.yaml
+  /// \brief Load config/propulsion_v1_config.yaml
   /// (path given by the <config_path> SDF parameter) and the parsed APC
   /// table CSV it points to.
   /// \return true on success.
@@ -126,10 +122,9 @@ class PropulsionSystem :
   /// reaction-torque call below during any transient (dOmega/dt != 0).
   /// ResetPosition()/ResetVelocity() are documented as direct internal
   /// joint-state writes ("does not modify... instead the physics engine
-  /// computes...") - no constraint-solver force is applied to achieve them.
-  /// Same technique already used by tests/gazebo/scripts/aero_lib.py's
-  /// pin_child_joints() (reset_position()/reset_velocity()) for exactly
-  /// this "drive a joint kinematically, not dynamically" need.
+  /// computes...") - no constraint-solver force is applied to achieve them,
+  /// which is exactly what driving a joint kinematically rather than
+  /// dynamically requires.
   private: double thetaLeft{0.0};
   private: double thetaRight{0.0};
 

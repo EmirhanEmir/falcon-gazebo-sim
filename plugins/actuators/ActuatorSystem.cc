@@ -2,11 +2,9 @@
 // FALCON V2 - Gazebo Sim Harmonic actuator/servo System plugin (implementation)
 // =============================================================================
 // See ActuatorSystem.hh for the architecture summary. Every numeric constant
-// used here comes from docs/source_of_truth/controls/actuator_v1_config.yaml
-// (loaded at Configure() time) - no coefficient is hardcoded in this file.
-// Joint NAMES below are structural identifiers (not physics magic numbers)
-// matching model/model.sdf exactly, as verified by direct grep of that file
-// for this task.
+// used here comes from config/actuator_v1_config.yaml, loaded at Configure()
+// time - no coefficient is hardcoded in this file. Joint names below are
+// structural identifiers matching model/model.sdf, not physics constants.
 // =============================================================================
 #include "ActuatorSystem.hh"
 
@@ -81,8 +79,7 @@ void ActuatorSystem::Configure(
   if (configPath.empty())
   {
     gzerr << "[FalconV2Actuators] No <config_path> SDF parameter given - "
-          << "cannot load docs/source_of_truth/controls/"
-          << "actuator_v1_config.yaml. Control surfaces will NOT move.\n";
+          << "cannot load config/actuator_v1_config.yaml. Control surfaces will NOT move.\n";
     return;
   }
   this->validConfig = this->LoadConfig(configPath);

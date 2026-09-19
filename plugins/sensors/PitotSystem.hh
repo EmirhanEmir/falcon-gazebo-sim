@@ -1,18 +1,13 @@
 // =============================================================================
 // FALCON V2 - Simulated pitot (airspeed) sensor Gazebo Sim Harmonic plugin
 // =============================================================================
-// Owner: controls-integration. Task:
-// SENSOR_MODEL_AND_ARDUPLANE_SITL_PREPARATION (2026-08-27).
-//
-// Scope: a custom sensor-layer System plugin (NOT the native gz-sim
-// air_speed sensor - see PitotModel.hh header comment / SENSORS.md sec 3
-// for why). Reads base_link's own world-frame velocity from the ECM (ground
-// truth, read-only) and this project's existing
-// /model/falcon_v2/wind topic, computes airspeed/differential pressure via
-// PitotModel.hh, and publishes the result. This plugin creates NO new
-// command path into aerodynamics/propulsion/actuators - it is purely a
-// read-only measurement layer, mirroring this project's existing
-// sensor/diagnostics-only plugin outputs.
+// Scope: a custom sensor-layer System plugin, not the native gz-sim air_speed
+// sensor - see the PitotModel.hh header comment for why. It reads base_link's
+// world-frame velocity from the ECM (ground truth, read-only) and the
+// project's /model/falcon_v2/wind topic, computes airspeed and differential
+// pressure via PitotModel.hh, and publishes the result. This plugin creates
+// no new command path into aerodynamics, propulsion or actuators: it is
+// purely a read-only measurement layer.
 // =============================================================================
 #ifndef FALCON_V2_SENSORS_PITOT_SYSTEM_HH_
 #define FALCON_V2_SENSORS_PITOT_SYSTEM_HH_
@@ -56,9 +51,8 @@ class PitotSystem :
   private: gz::sim::Entity baseLinkEntity{gz::sim::kNullEntity};
 
   /// \brief Sensor mount point, expressed as an offset from base_link's own
-  /// origin, in the body-fixed (FLU) frame - see model.sdf/SENSORS.md for
-  /// the documented choice (co-located with the Gazebo/CAD CG,
-  /// CLAUDE.md-authoritative point (0.168309, 0, 0.100000) m).
+  /// origin, in the body-fixed (FLU) frame. Co-located with the Gazebo/CAD
+  /// CG at (0.168309, 0, 0.100000) m; see model.sdf.
   private: gz::math::Vector3d mountOffsetBody{gz::math::Vector3d::Zero};
 
   private: gz::transport::Node node;
@@ -68,13 +62,13 @@ class PitotSystem :
   private: gz::math::Vector3d windWorld{gz::math::Vector3d::Zero};
 
   /// \brief Air density (kg/m^3), CITED (not invented) from
-  /// docs/source_of_truth/aerodynamics/aero_v1_config.yaml
+  /// config/aero_v1_config.yaml
   /// environment.air_density_rho_kg_m3 via the <air_density_rho_kg_m3> SDF
   /// override (default matches that file's CONFIRMED 1.225 value - see
   /// model.sdf plugin block comment).
   private: double rhoKgM3{1.225};
 
-  /// \brief Update rate (Hz). V1_PROVISIONAL - see SENSORS.md sec 6.
+  /// \brief Update rate (Hz). V1_PROVISIONAL.
   private: double updateRateHz{10.0};
   private: double timeSinceLastPublishSec{0.0};
 
