@@ -48,6 +48,7 @@ gazebo_logs/
 results/
 *.BIN
 eeprom.bin
+terrain/
 
 # =============================================================================
 # Temporary files
@@ -75,5 +76,9 @@ AGENTS.md
 # =============================================================================
 # Not part of the public V1 branch
 # =============================================================================
-docs/
 tests/
+docs/test_results/
+docs/source_of_truth/
+
+# Yerel takip notu, yayımlanmaz
+ACIK_SORUNLAR.md

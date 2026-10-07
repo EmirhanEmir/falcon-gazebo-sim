@@ -1,31 +1,47 @@
+<div align="center">
+
 # FALCON V2
 
-FALCON V2 sabit kanatlı İHA'sının Gazebo Sim Harmonic üzerinde çalışan 6-DOF
-uçuş simülasyonu ve ArduPlane SITL entegrasyonu.
+**Sabit kanatlı bir İHA'nın Gazebo Sim Harmonic üzerinde çalışan 6-DOF uçuş simülasyonu ve ArduPlane SITL entegrasyonu.**
 
-## Genel Bakış
+![Gazebo](https://img.shields.io/badge/Gazebo-Sim%20Harmonic-F58113?style=flat-square)
+![C++17](https://img.shields.io/badge/C%2B%2B-17-00599C?style=flat-square&logo=cplusplus&logoColor=white)
+![ArduPlane](https://img.shields.io/badge/ArduPlane-SITL%20%2F%20JSON%20FDM-4CAF50?style=flat-square)
+![CMake](https://img.shields.io/badge/CMake-%E2%89%A5%203.16-064F8C?style=flat-square&logo=cmake&logoColor=white)
+![License](https://img.shields.io/badge/license-MIT-2196F3?style=flat-square)
 
-Uçak; gerçek CAD geometrisi, üretici propeller verisi ve XFOIL/XFLR5 kaynaklı
-aerodinamik katsayılarla modellenmiştir. Amaç uçak "uçana kadar" katsayı
-ayarlamak değil, eldeki mühendislik verisinin tanımladığı uçağı olabildiğince
-doğru yeniden üretmektir.
+<img src="docs/images/hero.png" alt="FALCON V2 Gazebo Sim Harmonic içinde piste yerleşmiş hâlde" width="100%">
 
-Temel kural: **fizik kodda değil, veride yaşar.** Hiçbir aerodinamik katsayı,
-motor sabiti veya servo kazancı C++ içine gömülü değildir; plugin'ler `config/`
-altındaki dosyaları çalışma anında okur. Bilinmeyen değerler uydurulmaz,
-`DATA_REQUIRED` olarak işaretlenir; geçici seçimler `V1_PROVISIONAL` veya
-`ASSUMPTION` etiketiyle yerinde belirtilir.
+</div>
 
-## Özellikler
+---
 
-- Gazebo Sim Harmonic üzerinde tam 6-DOF motorlu uçuş
-- ArduPlane SITL entegrasyonu (JSON FDM), airspeed ve wind bridge dahil
-- Tam longitudinal + lateral-directional stability derivative seti, high-alpha
-  limiter, XFLR5 wide-deflection lookup tabloları
-- Gerçek APC performans verisi üzerinden thrust/torque — asla `throttle × max_thrust`
-- Gerçek joint torque ile sürülen, travel/rate/effort limitli kontrol yüzeyleri
-- Simüle sensör seti: IMU, GPS, barometre, pitot, magnetometre
-- Deterministik steady wind ve 1-cosine gust üreteci
+Bu depo, gerçek bir uçağın simülasyonunu yazılım problemi olarak ele alır: aerodinamik,
+itki, aktüatör ve sensör davranışı beş ayrı Gazebo **system plugin**'i hâlinde C++
+ile yazılmıştır; her birinin kendi sınırı, kendi veri dosyası ve kendi runtime
+arayüzü vardır.
+
+Amaç uçak "uçana kadar" katsayı ayarlamak değildi. Elde XFOIL/XFLR5 analizleri,
+üretici pervane performans verisi ve gerçek CAD geometrisi vardı — hedef, o verinin
+tanımladığı uçağı olabildiğince sadık biçimde yeniden üretmekti. Bu, mimariyi
+doğrudan şekillendiren bir kısıt oldu.
+
+## Öne Çıkanlar
+
+- **Beş bağımsız C++ plugin** — aerodinamik, itki, aktüatör, rüzgâr, sensörler.
+  Her biri ayrı bir CMake projesi, ayrı bir `.so`.
+- **Fizik kodda değil veride.** Hiçbir aerodinamik katsayı, motor sabiti veya servo
+  kazancı C++ içine gömülü değil; plugin'ler `config/` altındaki dosyaları
+  `Configure()` anında okur.
+- **Saf matematik çekirdeği Gazebo'dan ayrık.** `AeroModel.hh`, `PropulsionModel.hh`,
+  `ActuatorModel.hh` — Gazebo bağımlılığı olmayan, tek başına test edilebilir header'lar.
+  Plugin sınıfları yalnızca durum okur, çekirdeği çağırır, sonucu uygular.
+- **ArduPlane SITL entegrasyonu** — JSON FDM üzerinden kapalı çevrim uçuş,
+  `lock_step` ile deterministik adım eşlemesi, airspeed ve wind bridge dahil.
+- **Her sayının kaynağı belli.** Kaynağı olmayan değer uydurulmaz; `ASSUMPTION`,
+  `TEMPORARY` veya `DATA_REQUIRED` olarak işaretlenir.
+- **Ölçülmüş doğrulama kaydı** — [`docs/validation/`](docs/validation/) altında,
+  çalışan simülasyondan alınmış gerçek veriye dayanan raporlar.
 
 ## Sistem Mimarisi
 
@@ -62,81 +78,130 @@ flowchart TB
     APP -->|"FDM state paketi"| AP
 ```
 
-Kontrol yüzeyi hareketini yalnızca actuator plugin'i yazar; aerodinamik plugin o
-joint pozisyonlarını sadece okur. Wind plugin'i tek rüzgâr kaynağıdır ve kendisi
-hiçbir zaman kuvvet uygulamaz — rüzgârın etkisi uçağa yalnızca aerodinamik, itki
-ve pitot modellerindeki `Vrel = Vbody − Vwind` üzerinden ulaşır.
+Mimarinin taşıdığı iki kural, hata ayıklamayı mümkün kılan şey oldu:
 
-## Repository Yapısı
+**Tek yazar kuralı.** Kontrol yüzeyi hareketini yalnızca actuator plugin'i yazar;
+aerodinamik plugin o joint pozisyonlarını sadece okur. Böylece bir yüzeyin neden
+o açıda olduğunun tek bir cevabı olur.
 
-```text
-falcon-v2/
-├── config/               Plugin'lerin runtime'da okuduğu veri setleri
-│   ├── ardupilot/        ArduPlane SITL parametre dosyası
-│   └── propulsion_data/  Ham ve parse edilmiş APC propeller verisi
-├── model/                SDF uçak modeli ve mesh'ler
-├── patches/              ardupilot_gazebo için gerekli patch
-├── plugins/              Beş Gazebo system plugin'i (C++)
-├── scripts/              Build ve launch yardımcıları
-└── worlds/               Gazebo world dosyaları
+**Rüzgâr kuvvet uygulamaz.** Wind plugin'i tek rüzgâr kaynağıdır ve hiçbir zaman
+`AddWorldForce` çağırmaz — yalnızca bir hız vektörü yayınlar. Rüzgârın etkisi uçağa
+yalnızca aerodinamik, itki ve pitot modellerindeki `Vrel = Vbody − Vwind` üzerinden
+ulaşır. Aynı etkiyi iki yerden uygulayıp sessizce ikiye katlamak bu yüzden mümkün değil.
+
+<img src="docs/images/gazebo_gui.png" alt="Gazebo Harmonic GUI; entity tree'de falcon_v2 modelinin 8 link ve 7 joint'i açık" width="100%">
+
+<sub>Gazebo Sim Harmonic, ArduPlane SITL bağlıyken. Sağ panelde modelin 8 link'i ve 7 joint'i, altta DART fizik motoru.</sub>
+
+## Plugin'ler
+
+| Plugin | Kütüphane | Sorumluluk | Saf çekirdek |
+| ------ | --------- | ---------- | ------------ |
+| [`aerodynamics`](plugins/aerodynamics/) | `libFalconV2Aerodynamics.so` | Gövdeye uygulanan aerodinamik kuvvet ve moment | `AeroModel.hh` |
+| [`propulsion`](plugins/propulsion/) | `libFalconV2Propulsion.so` | Çift motor/ESC/pervane zinciri, thrust ve torque | `PropulsionModel.hh` |
+| [`actuators`](plugins/actuators/) | `libFalconV2Actuators.so` | Beş kontrol yüzeyinin servo dinamiği | `ActuatorModel.hh` |
+| [`wind`](plugins/wind/) | `libFalconV2Wind.so` | Steady rüzgâr ve 1-cosine gust üreteci | `WindModel.hh` |
+| [`sensors`](plugins/sensors/) | `libFalconV2Pitot.so`, `libFalconV2Magnetometer.so` | Pitot airspeed, özel magnetometre | `PitotModel.hh`, `Frames.hh` |
+
+Her plugin kendi `README.md`'si ile birlikte gelir. Ortak kalıp aynı: Gazebo'ya
+bağımlı ince bir `System` sınıfı, ve onun çağırdığı Gazebo'dan bağımsız saf bir
+matematik header'ı. Katsayı bu header'ların içinde değil, YAML'de yaşar.
+
+## Veriden Sürülen Tasarım
+
+Projeyi şekillendiren tek kural şu: **bir sayı koda gömülüyse kaynağı kaybolur.**
+
+```
+config/aero_v1_config.yaml          →  FalconV2Aerodynamics
+config/propulsion_v1_config.yaml    →  FalconV2Propulsion
+config/actuator_v1_config.yaml      →  FalconV2Actuators
+config/propulsion_data/*.csv        →  APC Ct/Cp tabloları
+config/ardupilot/*.parm             →  ArduPlane SITL
 ```
 
-## Uçak Modeli
+Bu dosyalar yalnızca değer taşımaz; her değerin yanında nereden geldiği yazılıdır —
+XFLR5 analizi mi, üretici datasheet'i mi, belgelenmiş bir türetme mi, yoksa
+kaynağı olmayan bir seçim mi. Etiket seti kasıtlı olarak dürüst:
+
+| Etiket | Anlamı |
+| ------ | ------ |
+| `CONFIRMED` | Kaynak veride doğrudan verilmiş, değiştirilmeden kullanılmış |
+| `DERIVED` | `CONFIRMED` değerlerden belgelenmiş bir yöntemle hesaplanmış |
+| `ASSUMPTION` | Kaynak verisi yok; çalışan bir sayı gerektiği için seçilmiş, **doğrulanmamış** |
+| `TEMPORARY` | Fiziksel sabit değil, mühendislik güvenlik/yer tutucu değeri |
+| `DATA_REQUIRED` | Eksik; uydurmak yerine eksik olarak işaretlenmiş |
+
+Bir test başarısız olduğunda katsayı değiştirmek çözüm sayılmadı. Önce sırayla
+birimler, referans çerçeveler, işaret konvansiyonları, geometri, kuvvet uygulama
+noktaları, CG, atalet referansı ve çift sayılan kuvvetler kontrol edildi. Bu depodaki
+en pahalı hata ([CRITICAL limit-cycle](docs/validation/2026-09-10_airborne_actuator_limit_cycle_root_cause.md))
+tam olarak bu sırayla bulundu: sorun aerodinamikte değil, PID kazançlarının yanlış
+atalet referansı üzerinden türetilmesindeydi.
+
+## Runtime Arayüzü
+
+Her plugin Gazebo transport üzerinden konuşur, yani simülasyon çalışırken dışarıdan
+sürülebilir ve gözlenebilir.
+
+**Komut girişleri**
+
+| Topic | Tip |
+| ----- | --- |
+| `/model/falcon_v2/actuators/{left_aileron,right_aileron,left_elevator,right_elevator,rudder}/cmd_rad` | `gz.msgs.Double` |
+| `/model/falcon_v2/propulsion/{left,right}/throttle_cmd` | `gz.msgs.Double` |
+| `/model/falcon_v2/wind/steady_cmd` | `gz.msgs.Vector3d` |
+| `/model/falcon_v2/wind/gust_cmd` | `gz.msgs.Double_V` |
+
+**Diagnostik çıkışları**
+
+| Topic | İçerik |
+| ----- | ------ |
+| `/model/falcon_v2/aerodynamics/diagnostics` | `V, alpha, beta, qbar, CL, CD, CY, Cl, Cm, Cn` |
+| `/model/falcon_v2/propulsion/diagnostics` | Motor başına throttle, RPM, akım, J, Ct, Cp, thrust, torque |
+| `/model/falcon_v2/actuators/diagnostics` | Yüzey başına 7 alan × 5 yüzey — komut, setpoint, gerçek açı, hız, clamp durumları |
+| `/model/falcon_v2/sensors/pitot/airspeed_mps` | Pitot airspeed |
+| `/model/falcon_v2/wind` | Dünya çerçevesinde hava kütlesi hızı |
+
+Bu diagnostik akışları sonradan eklenmiş bir lüks değil — doğrulama raporlarındaki
+ölçümlerin çoğu, bir Python aynası yerine doğrudan çalışan plugin'in kendi
+çıktısından alınmıştır.
+
+## Uçak
+
+<table>
+<tr>
+<td width="50%"><img src="docs/images/planform_top_view.png" alt="Üstten planform görünümü: 2.093 m kanat açıklığı, çift çekici pervane"></td>
+<td width="50%"><img src="docs/images/front_view.png" alt="Önden görünüm: kanat açıklığı, dihedral ve her iki pervane"></td>
+</tr>
+</table>
 
 | Özellik | Değer |
 | ------- | ----- |
 | Kütle | 6.000 kg |
 | Kanat açıklığı | 2.093 m |
 | Kanat alanı | 0.4514 m² |
-| Referans veter | 0.224 m |
 | Ağırlık merkezi | (0.168309, 0, 0.100000) m |
 | Motorlar | 2 × SunnySky X2820 860KV |
-| Pervaneler | 2 × APC 13x6.5E (D = 0.3302 m) |
+| Pervaneler | 2 × APC 13x6.5E |
 | Batarya | 4S, 14.8 V nominal |
 | Kontrol yüzeyleri | 2 aileron, 2 elevator, 1 rudder (±45° mekanik) |
+| Model | 8 link, 7 joint, 4 sensör |
 
 **Koordinat sistemi.** Gazebo gövde çerçevesi **FLU**'dur (+X ileri, +Y sol,
-+Z yukarı), world çerçevesi ENU'dur. ArduPilot FRD gövde ve NED world kullanır;
-dönüşümler tek bir yerde, `plugins/sensors/Frames.hh` içinde tanımlıdır ve her
-zaman açıkça uygulanır — asla varsayımla geçilmez.
++Z yukarı), world çerçevesi ENU'dur. ArduPilot ise FRD gövde ve NED world kullanır.
+Bu dönüşümler tek bir yerde — `plugins/sensors/Frames.hh` — tanımlıdır ve her zaman
+açıkça uygulanır. Sessizce geçilen bir çerçeve dönüşümü bu projede en pahalı hata
+sınıfı oldu, o yüzden hepsi tek dosyada toplandı.
 
-**Yapı.** `base_link` gövdeyi, motorları ve sensörleri taşır. Beş revolute joint
-kontrol yüzeylerini, iki tanesi pervaneleri taşır. Collision geometrisi yalnızca
-primitiflerden oluşur (gövde için üç kutu, kanat/motor/yüzey başına birer kutu);
-hiçbir yerde yüksek poligonlu STL collision olarak kullanılmaz, pervanelerin
-collision'ı hiç yoktur.
+**Mesh'ler.** 12 STL görsel mesh ~143 MB tutar ve bu depo ile dağıtılmaz. Onlar
+olmadan Gazebo görsel çizmez, ancak **fizik ve entegrasyon etkilenmez**: kütle,
+atalet, collision ve tüm aerodinamik geometri `model/model.sdf` içinde sayısal
+değerlerdir, mesh'ten türetilmez. Collision geometrisi zaten yalnızca
+primitiflerden oluşur; hiçbir yerde yüksek poligonlu STL collision olarak kullanılmaz.
 
-**Mesh'ler.** 12 STL görsel mesh ~143 MB tutar ve bu repository ile dağıtılmaz.
-Onlar olmadan Gazebo görsel çizmez, ancak **fizik ve entegrasyon etkilenmez**:
-kütle, atalet, collision ve tüm aerodinamik geometri `model/model.sdf` içinde sayısal
-değerlerdir, mesh'ten türetilmez.
+## İtki Zinciri
 
-## Aerodinamik Model
-
-`plugins/aerodynamics/` her tick'te `base_link` üzerindeki kuvvet ve momenti
-hesaplar. Gövde hızı, açısal hızlar, attitude ve beş joint pozisyonu okunur;
-rüzgâr çıkarılarak bağıl hava akışı, oradan alpha ve beta türetilir. Alpha/beta
-işaret konvansiyonları standart FRD formlarından kopyalanmamış, FLU için ilk
-ilkelerden türetilmiş ve `plugins/aerodynamics/AeroModel.hh` içinde ilgili fonksiyonların başında
-belgelenmiştir.
-
-Katsayı yapısı:
-
-- **Longitudinal:** `CL0`, `CLa`, `CLq`, `Cm0`, `Cma`, `Cmq`
-- **Lateral-directional:** `CYb`, `Clb`, `Cnb`, `CYp`, `Clp`, `Cnp`, `CYr`, `Clr`, `Cnr`
-- **Sürükleme:** `CD0 + k·CL²` drag polar
-- **Kontrol yüzeyleri:** −45°…+45° arası 15 breakpoint üzerinde parçalı doğrusal
-  lookup tabloları (XFLR5 Type-1 wide-deflection sweep)
-
-High-alpha limiter, attached-flow geçişinden (9.25°) sonra `CL`'i doğrusal eğimle
-stall'a ekstrapole etmek yerine doyurur. Her interpolasyon domain-bounded'dır:
-uç breakpoint dışındaki girdi tam olarak o uç değeri döndürür, asla ekstrapole
-edilmez. Kuvvetler wind frame'de hesaplanıp gövde eksenlerine döndürülür; moment
-CG etrafında uygulanır.
-
-## İtki Sistemi
-
-`plugins/propulsion/` her motor için tam elektromekanik zinciri uygular:
+İtki modeli bilinçli olarak `throttle × max_thrust` değildir. Zincirin tamamı uygulanır:
 
 ```
 throttle → ESC/motor elektriksel (Kv, R, I0, akım limiti)
@@ -144,75 +209,95 @@ throttle → ESC/motor elektriksel (Kv, R, I0, akım limiti)
          → rotor açısal dinamiği (explicit-Euler ODE, her tick entegre edilir)
          → RPM → advance ratio J = V_axial / (n·D)
          → APC Ct(J, RPM) / Cp(J, RPM)   [gerçek veri üzerinde 2-B interpolasyon]
-         → thrust + propeller aerodinamik torku → reaction torque
+         → thrust + pervane aerodinamik torku → reaction torque
          → gerçek hub konumunda base_link'e uygulanan wrench
 ```
 
 Ct/Cp verisi APC'nin 13x6.5E için yayımladığı resmî performans dosyasından gelir;
-yumuşatma veya ekstrapolasyon olmadan CSV'ye dönüştürülmüştür. Dönen her katsayı
-ya tablodaki gerçek bir APC değeridir ya da iki gerçek değer arasında doğrusal
-interpolasyondur. Sağlama zinciri `config/propulsion_data/PROVENANCE.md` içinde
-kayıtlı, CSV'yi ham dosyadan yeniden üreten parser de repoda.
+yumuşatma veya ekstrapolasyon olmadan CSV'ye dönüştürülmüştür. Dönen her katsayı ya
+tablodaki gerçek bir APC değeridir ya da iki gerçek değer arasında doğrusal
+interpolasyondur. Dönüşümü yapan parser depoda, sağlama zinciri
+[`PROVENANCE.md`](config/propulsion_data/PROVENANCE.md) içinde.
 
-Rotor durumu gerçek bir ODE olduğundan throttle değişimi anlık thrust yerine
-gerçekçi spool-up üretir. Aynı omega durumu pervanelerin görsel dönüşünü de
-sürer, böylece görülen dönüş kuvveti üreten RPM ile daima aynıdır. İşletme RPM'i
-11500'de sınırlıdır; airspeed etkisi advance ratio üzerinden temsil edilir.
+Rotor durumu gerçek bir ODE olduğu için throttle değişimi anlık thrust yerine
+gerçekçi spool-up üretir. Aynı omega durumu pervanelerin görsel dönüşünü de sürer —
+yani ekranda görülen dönüş, kuvveti üreten RPM'in ta kendisidir.
 
-## Kontrol ve ArduPlane Entegrasyonu
+## Aktüatör Zinciri
 
-`plugins/actuators/` beş kontrol yüzeyini üç aşamada sürer:
+<table>
+<tr>
+<td width="50%"><img src="docs/images/control_surfaces.png" alt="Beş kontrol yüzeyi de 30° saptırılmış hâlde kuyruk bölgesi yakın planı"></td>
+<td width="50%"><img src="docs/images/aileron_deflection.png" alt="Sol aileron 30° aşağı saptırılmış hâlde kanat üstü yakın planı"></td>
+</tr>
+</table>
 
-1. **`ClampCommand()`** — mekanik hareket limitine (±45°) kırp
-2. **`RateLimitSetpoint()`** — servo slew-rate limitini uygula (300 °/s)
-3. **`PidEffort()`** — effort sınırlı PID ile joint torku üret (0.20 N·m),
-   `gz::sim::Joint::SetForce()` ile uygula
+<sub>Beş yüzeyin tamamı 30°'ye komut edilmiş hâlde. Aktüatör diagnostik akışından okunan gerçekleşen açılar: beşinde de ±0.5236 rad. Bu açılar bir pozisyon yazımının sonucu değil — fizik motorunun joint'e uygulanan torkla ulaştığı gerçek denge.</sub>
 
-Pozisyon yazmak yerine tork kullanmak kritiktir: pozisyon yazımı joint'i fizik
-motorunu atlayarak ışınlar ve rate/effort limitlerini uygulanamaz hâle getirir.
-PID kazançları her yüzeyin kendi menteşe ekseni etrafındaki ataletine göre,
-yüzey başına parallel-axis düzeltmesiyle türetilmiştir.
+```
+ham komut (rad)
+  → ClampCommand()        [mekanik hareket limiti, ±45°]
+  → RateLimitSetpoint()   [servo slew-rate limiti]
+  → PidEffort()           [effort sınırlı PID torku, anti-windup]
+  → Joint::SetForce()     [gerçek joint-space tork komutu]
+  → fizik motoru joint hareketini entegre eder
+```
 
-Gazebo ile ArduPlane, `model/model.sdf` içinde tanımlı resmî `ardupilot_gazebo`
-`ArduPilotPlugin` üzerinden bağlanır: 127.0.0.1:9002 UDP JSON, deterministik
-adım eşlemesi için `lock_step=1`. Yedi `COMMAND` tipi kanal, ArduPlane'in beş
-mantıksal servo çıkışını projenin yedi komut topic'ine dağıtır — SERVO1
-(aileron, iki taraf ters işaretli), SERVO2 (elevator, aynı işaretli), SERVO4
-(rudder), SERVO3/SERVO5 (sol/sağ throttle). Her kanalda `useForce=0`: ArduPlane
-hiçbir joint'i doğrudan sürmez.
+Pozisyon yazmak yerine tork kullanmak mimari bir karardı: pozisyon yazımı joint'i
+fizik motorunu atlayarak ışınlar ve rate/effort limitlerini uygulanamaz hâle getirir.
+`SetForce()` ise gerçek joint dinamiği üretir — ve kontrol yüzeyinin limitine
+dayandığı anı gözlenebilir kılar. Nitekim en kritik hata da böyle görüldü.
 
-Kolayca gözden kaçan iki nokta bilinçli olarak düzeltilmiştir:
+## Doğrulama
 
-- `gazeboXYZToNED` değeri `"0 0 0 180 0 90"` ile **ezilir**; plugin'in derlenmiş
-  varsayılanı ENU bir world için East ve North'u sessizce yer değiştirir.
-- ArduPilot bridge IMU'su 180°'lik X ekseni montaj dönüşü taşır, çünkü
-  `CreateStateJSON()` ham gyro/accel değerlerini FDM paketine hiçbir çerçeve
-  dönüşümü uygulamadan yazar. Bu dönüş olmadan ham FLU verisi ArduPlane'in FRD
-  varsayan EKF'ine ulaşır ve prearm, DCM roll/pitch tutarsızlığıyla başarısız olur.
+<img src="docs/images/in_flight.png" alt="ArduPlane SITL altında havada, pist üzerinde sola yatmış dönüşte" width="100%">
 
-## Önemli Dosyalar
+<sub>ArduPlane SITL altında kapalı çevrim uçuş — TAKEOFF → CRUISE → RTL dizisinin RTL dönüşü, ~100 m irtifa.</sub>
 
-| Dosya | Amaç |
-| ----- | ---- |
-| `model/model.sdf` | Uçak: 8 link, 7 joint, kütle/CG/atalet, collision primitifleri, 4 sensör, tüm plugin tanımları |
-| `config/aero_v1_config.yaml` | Referans geometri, stability derivative'ler, drag polar, high-alpha limiter, lookup tabloları |
-| `config/propulsion_v1_config.yaml` | Motor, ESC, batarya ve pervane parametreleri; rotor ataleti, RPM limitleri |
-| `config/actuator_v1_config.yaml` | Yüzey başına hareket, slew rate, effort limitleri, PID kazançları |
-| `config/ardupilot/falcon_v2_sitl.parm` | ArduPlane SITL parametre seti (servo fonksiyonları, TECS, airspeed zarfı, SITL origin) |
-| `config/propulsion_data/PER3_13x65E.dat` | APC 13x6.5E resmî performans verisi, değiştirilmemiş |
-| `config/propulsion_data/apc_13x65e_parsed.csv` | Aynı verinin CSV hâli; plugin'in okuduğu dosya |
-| `patches/ardupilot_gazebo_airspeed_wind_bridge.patch` | ArduPilotPlugin'e `<airspeed_topic>` / `<wind_topic>` ekler (zorunlu) |
-| `worlds/falcon_v2_runway.sdf` | Pist dünyası; uçak kalkış için yerde başlar |
-| `scripts/launch_ardupilot_sitl.sh` | Gazebo ve ArduPlane SITL'i bağlı şekilde başlatır |
+[`docs/validation/`](docs/validation/) altında, çalışan simülasyondan alınmış gerçek
+ölçüm verisine dayanan beş rapor var. Süreçteki iki kural:
 
-## V1 Kapsamı ve Bilinen Sınırlamalar
+- **Bir sonucu üreten aşama o sonucu onaylamaz.** Test koşumu, alan analizi ve
+  mühendislik incelemesi ayrı geçişlerdir; her sayısal iddia kabul edilmeden önce
+  ham veriden bağımsız olarak yeniden hesaplanır.
+- **Beklenti testten önce yazılır.** İşaretler ve yanıt yönleri simülasyon
+  çalıştırılmadan önce geometriden türetilip rapora yazılır.
 
-V1 uçurulabilir eksiksiz bir uçak sunar: tam 6-DOF dinamik, tüm stability
-derivative setiyle aerodinamik, gerçek pervane verisine dayalı çift itki zinciri,
-torkla sürülen kontrol yüzeyleri, simüle sensör seti, deterministik rüzgâr/gust
-ve ArduPlane SITL altında pistten kalkıştan itibaren kapalı çevrim uçuş.
+| Rapor | Sonuç |
+| ----- | ----- |
+| [Uçuş zarfı](docs/validation/2026-08-27_flight_envelope_validation.md) | 8 hız, 115 trim adayı. En düşük trim hızı 14 m/s; 12.5 m/s'de geçerli trim yok. |
+| [Motor arızası ve asimetrik itki](docs/validation/2026-08-27_engine_out_asymmetric_thrust_validation.md) | Test öncesi yazılan 3 işaret beklentisinin **3/3'ü** doğrulandı. Sol/sağ simetri <1e-6 N·m. |
+| [Rüzgâr ve gust](docs/validation/2026-08-27_wind_gust_disturbance_validation.md) | 14 ön-kayıtlı beklentinin **14'ü** tuttu. `qbar` makine hassasiyetinde eşleşti. |
+| [Limit-cycle kök nedeni](docs/validation/2026-09-10_airborne_actuator_limit_cycle_root_cause.md) | **CRITICAL.** Havadaki örneklerin %43.6–86.0'ı slew-rate limitine dayanıyordu. |
+| [Limit-cycle çözümü](docs/validation/2026-09-12_actuator_limit_cycle_fix_implementation.md) | Parallel-axis atalet düzeltmesi + bant genişliği + anti-windup. |
 
-Bilinen sınırlamalar:
+## Repository Yapısı
+
+```text
+falcon-v2/
+├── plugins/              Beş Gazebo system plugin'i (C++17, CMake)
+│   ├── aerodynamics/     AeroModel.hh + AerodynamicsSystem
+│   ├── propulsion/       PropulsionModel.hh + PropulsionSystem
+│   ├── actuators/        ActuatorModel.hh + ActuatorSystem
+│   ├── wind/             WindModel.hh + WindSystem
+│   └── sensors/          Pitot, magnetometre, Frames.hh
+├── config/               Plugin'lerin runtime'da okuduğu veri setleri
+│   ├── ardupilot/        ArduPlane SITL parametre dosyası
+│   └── propulsion_data/  Ham ve parse edilmiş APC pervane verisi
+├── model/                SDF uçak modeli (8 link, 7 joint, 4 sensör)
+├── worlds/               Gazebo world dosyaları
+├── patches/              ardupilot_gazebo için gerekli patch
+├── scripts/              Build ve launch yardımcıları
+└── docs/validation/      Ölçülmüş doğrulama raporları
+```
+
+## Bilinen Sınırlamalar
+
+Bu bölüm kasıtlı olarak uzun. Bir simülasyonun nerede geçerli olmadığını bilmek,
+nerede geçerli olduğunu bilmek kadar önemli.
+
+<details>
+<summary><b>Tamamını göster</b></summary>
 
 - **Sabit hava yoğunluğu** — ρ her yerde 1.225 kg/m³ (ISA deniz seviyesi).
   İrtifa/sıcaklık modeli yok; EAS ile TAS yapısal olarak özdeş.
@@ -232,9 +317,19 @@ Bilinen sınırlamalar:
   akış, sıkıştırılabilirlik ve montaj hatası düzeltmesi içermez.
 - **Özel magnetometre** — hedeflenen Gazebo sürümündeki yerleşik
   `gz-sim-magnetometer-system` world'ün `<magnetic_field>` değerini yok sayar.
-- **Doğrulanmamış işaret konvansiyonları** — alpha/beta XFLR5'in iç
-  konvansiyonuna karşı teyit edilmedi; pervane dönüş yönü için kaynak veri bakış
-  çerçevesi belirtmediğinden bu ayrıntı `DATA_REQUIRED`.
+- **Doğrulanmamış işaret konvansiyonları** — alpha/beta XFLR5'in iç konvansiyonuna
+  karşı teyit edilmedi; pervane dönüş yönü için kaynak veri bakış çerçevesi
+  belirtmediğinden bu ayrıntı `DATA_REQUIRED`.
 - **Doğrulanmamış `Ixz`** — çapraz terimin SDF beklentisine göre işareti sessizce
   çözülmek yerine açıkça işaretlenmiştir.
-- **Mesh'ler dağıtılmıyor** — bkz. [Uçak Modeli](#uçak-modeli).
+- **Mesh'ler dağıtılmıyor** — bkz. [Uçak](#uçak).
+
+</details>
+
+## Lisans
+
+[MIT](LICENSE) · © 2026 Emirhan Emir
+
+Uçak geometrisi ve aerodinamik kaynak verisi projeye özgüdür. APC pervane
+performans verisi APC Propellers'a ait olup referans amaçlı, değiştirilmeden
+dahil edilmiştir.
