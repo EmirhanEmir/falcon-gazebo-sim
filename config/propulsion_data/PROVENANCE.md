@@ -1,69 +1,66 @@
-# APC 13x6.5E performance data - provenance
+# APC 13x6.5E performans verisi - köken kaydı
 
-- **SOURCE:** APC Propellers official performance data
+- **KAYNAK:** APC Propellers resmî performans verisi
 - **MODEL:** 13x6.5E
-- **FILE (raw, immutable):** `PER3_13x65E.dat`
+- **DOSYA (ham, değiştirilemez):** `PER3_13x65E.dat`
 - **URL:** https://www.apcprop.com/files/PER3_13x65E.dat
-- **File version:** v2022-0915, simulated 2022-09-22
-- **Retrieved:** 2026-08-23. Verified independently against a reference
-  static-thrust table: the RPM = 5000/6000/9000/10000 static (J=0, V=0 mph)
-  rows match exactly.
+- **Dosya sürümü:** v2022-0915, simülasyon 2022-09-22
+- **Alınma:** 2026-08-23. Bağımsız bir statik thrust tablosuna karşı
+  doğrulandı: RPM = 5000/6000/9000/10000 statik (J=0, V=0 mph) satırları
+  birebir uyuşuyor.
 
-## Raw -> parsed relationship
+## Ham -> parse edilmiş ilişkisi
 
-`PER3_13x65E.dat` is never hand-edited. `apc_13x65e_parsed.csv` is
-mechanically generated from it by `parse_apc_dat.py` (same directory) - a
-pure reformatting pass: every `(rpm, J, Ct, Cp, power_W, torque_Nm,
-thrust_N)` row in the CSV is copied verbatim (as floats) from a
-corresponding row in the raw file. No coefficient is computed, smoothed,
-extrapolated, or invented by the parser. Per this project's SI/provenance
-rules, the parser uses the raw file's own SI columns (`W`, `N-m`, `N`) for
-thrust/torque/power - never the `Hp`/`In-Lbf`/`Lbf` imperial columns - so no
-unit conversion is required for those fields; `Ct`/`Cp`/`J` are already
-dimensionless/SI-consistent in the source file.
+`PER3_13x65E.dat` hiçbir zaman elle düzenlenmez. `apc_13x65e_parsed.csv`,
+aynı dizindeki `parse_apc_dat.py` ile bu dosyadan mekanik olarak üretilir;
+yapılan iş salt biçim dönüştürmedir: CSV'deki her `(rpm, J, Ct, Cp, power_W,
+torque_Nm, thrust_N)` satırı, ham dosyadaki karşılık gelen satırdan birebir
+(float olarak) kopyalanır. Parser hiçbir katsayıyı hesaplamaz, yumuşatmaz,
+ekstrapole etmez veya uydurmaz. Projenin SI/köken kurallarına uygun olarak
+parser, ham dosyanın kendi SI kolonlarını (`W`, `N-m`, `N`) kullanır —
+`Hp`/`In-Lbf`/`Lbf` İngiliz birim kolonlarını hiç okumaz — bu nedenle bu
+alanlar için birim dönüşümü gerekmez; `Ct`/`Cp`/`J` ise kaynak dosyada zaten
+boyutsuz/SI-uyumludur.
 
-To regenerate the parsed CSV from the raw file:
+Parse edilmiş CSV'yi ham dosyadan yeniden üretmek için:
 
 ```bash
 cd config/propulsion_data
 python3 parse_apc_dat.py
 ```
 
-## Parse summary (this revision, 2026-08-23)
+## Parse özeti
 
-- 18 RPM slices (1000 to 18000 RPM, step 1000 - the file's full range).
-- 537 data rows parsed (out of a nominal 540 = 18 x 30); 3 trailing rows
-  (one each in the 3000, 9000, and 18000 RPM slices) were truncated by APC's
-  own generator once thrust approached zero and were correctly dropped
-  (fewer than the required 11 numeric fields, including the SI Thrust(N)
-  column) rather than fabricated.
-- J values confirmed strictly increasing within every one of the 18 slices
-  (required for the project's specified per-slice linear interpolation
-  method) - see `parse_apc_dat.py`'s own monotonicity check output.
-- Spot-check against the project's reference static (J=0) table: RPM=5000 ->
+- 18 RPM dilimi (1000'den 18000 RPM'e, 1000 adımla - dosyanın tüm aralığı).
+- 537 veri satırı parse edildi (nominal 540 = 18 x 30 içinden); 3 son satır
+  (3000, 9000 ve 18000 RPM dilimlerinde birer tane) thrust sıfıra yaklaştığında
+  APC'nin kendi üreteci tarafından kesilmişti ve uydurulmak yerine doğru biçimde
+  atlandı (gerekli 11 sayısal alandan, yani SI Thrust(N) kolonundan yoksun
+  oldukları için).
+- J değerlerinin 18 dilimin her birinde kesin artan olduğu doğrulandı (dilim
+  başına doğrusal interpolasyon yöntemi bunu gerektirir) - bkz.
+  `parse_apc_dat.py` içindeki monotonluk kontrolünün çıktısı.
+- Referans statik (J=0) tabloya karşı noktasal kontrol: RPM=5000 ->
   Ct=0.0901, Cp=0.0309, Thrust=8.975 N; RPM=6000 -> Ct=0.0904, Cp=0.0306,
   Thrust=12.975 N; RPM=9000 -> Ct=0.0919, Cp=0.0303, Thrust=29.664 N;
-  RPM=10000 -> Ct=0.0925, Cp=0.0304, Thrust=36.877 N - all four reproduced
-  exactly in `apc_13x65e_parsed.csv`.
+  RPM=10000 -> Ct=0.0925, Cp=0.0304, Thrust=36.877 N - dördü de
+  `apc_13x65e_parsed.csv` içinde birebir yeniden üretiliyor.
 
-## Known finding - NOT a parsing bug, reported not silently absorbed
+## Bilinen bulgu - parse hatası DEĞİL, sessizce yutulmayıp raporlanmıştır
 
-Reconstructing dimensional thrust/power from the parsed Ct/Cp via this
-project's mandated formulas (`T = Ct*rho*n^2*D^4`, `P = Cp*rho*n^3*D^5`,
-`D = 0.3302 m`, `rho = 1.225 kg/m^3` - both CONFIRMED/mandated,
-`` sec 0/2) does **not** exactly reproduce the raw file's own
-tabulated `Thrust(N)`/`PWR(W)` columns - there is a small, systematic offset
-(`T_calc/T_ref` ~1.015, `P_calc/P_ref` ~1.019, consistent across all four
-static reference points). The two ratios are self-consistent with a ~0.4%
-smaller effective diameter than the nominal 0.3302 m
-(`1.015^(5/4) = 1.0185`, matching the observed power ratio almost exactly),
-suggesting APC's own internal performance-sim tool for this specific file
-used a slightly different effective diameter and/or air density than this
-project's mandated nominal values when it originally derived Ct/Cp from its
-own raw thrust/power. Per `the project specification`/`` sec 0
-("`D = 0.3302 m` ALWAYS... no exceptions") this project does **not** adjust
-D (or rho) to close this gap - `Ct(J)`/`Cp(J)` themselves (the dimensionless
-coefficients this project actually consumes) are used exactly as tabulated,
-unmodified. See `the propulsion model self-check`'s
-`APC_STATIC_*_TEST` cases for the documented tolerance this finding
-requires, and the project's final report for the full write-up.
+Parse edilmiş Ct/Cp değerlerinden, projenin zorunlu kıldığı formüllerle
+(`T = Ct*rho*n^2*D^4`, `P = Cp*rho*n^3*D^5`, `D = 0.3302 m`,
+`rho = 1.225 kg/m^3`) boyutlu thrust/güç geri hesaplandığında, ham dosyanın
+kendi `Thrust(N)`/`PWR(W)` kolonları **birebir** elde edilmiyor: küçük ve
+sistematik bir sapma var (`T_calc/T_ref` ~1.015, `P_calc/P_ref` ~1.019; dört
+statik referans noktasının tamamında tutarlı). İki oran, nominal 0.3302 m'den
+~%0.4 küçük bir efektif çap ile kendi içinde tutarlıdır
+(`1.015^(5/4) = 1.0185`, gözlenen güç oranıyla neredeyse tam örtüşür). Bu,
+APC'nin bu dosyayı üreten kendi iç performans aracının, Ct/Cp'yi kendi ham
+thrust/güç değerlerinden türetirken bu projenin zorunlu nominal
+değerlerinden biraz farklı bir efektif çap ve/veya hava yoğunluğu kullandığını
+düşündürüyor. Projenin kuralı gereği (`D = 0.3302 m` HER ZAMAN, istisnasız) bu
+fark kapatılmak için D (veya rho) ayarlanmaz; projenin fiilen tükettiği
+boyutsuz katsayılar olan `Ct(J)`/`Cp(J)` tabloda yazıldığı gibi, değiştirilmeden
+kullanılır. Statik doğrulama kontrolleri bu nedenle birebir eşitlik değil,
+belgelenmiş bir tolerans ile yapılır.

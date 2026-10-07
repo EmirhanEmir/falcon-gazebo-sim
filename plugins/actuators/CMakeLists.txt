@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.16)
 project(falcon_v2_actuators LANGUAGES CXX)
 
-# FALCON V2 - actuator/servo System plugin build.
-# See README.md in this directory for build/run instructions.
+# FALCON V2 - aktüatör/servo System plugin'i derlemesi.
+# Derleme/çalıştırma talimatları: bu dizindeki README.md.
 
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
@@ -16,7 +16,7 @@ find_package(gz-math7 REQUIRED)
 find_package(yaml-cpp REQUIRED)
 
 # ---------------------------------------------------------------------------
-# Main Gazebo System plugin (requires the full gz-sim runtime environment)
+# Ana Gazebo System plugin'i (tam gz-sim runtime ortamını gerektirir)
 # ---------------------------------------------------------------------------
 add_library(FalconV2Actuators SHARED ActuatorSystem.cc)
 target_compile_features(FalconV2Actuators PRIVATE cxx_std_17)

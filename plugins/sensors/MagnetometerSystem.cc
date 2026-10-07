@@ -1,10 +1,6 @@
-// =============================================================================
-// FALCON V2 - Simulated magnetometer sensor plugin (implementation)
-// =============================================================================
-// See MagnetometerSystem.hh for the architecture summary and the full
-// root-cause record for why this replaces the native gz-sim-magnetometer-
-// system for this project.
-// =============================================================================
+// FALCON V2 - Simüle magnetometre sensörü plugin'i (uygulama).
+// Mimari özeti ve yerleşik gz-sim-magnetometer-system'in bu projede neden
+// kullanılmadığının kök neden kaydı MagnetometerSystem.hh başlığındadır.
 #include "MagnetometerSystem.hh"
 
 #include <chrono>
@@ -88,15 +84,14 @@ void MagnetometerSystem::PreUpdate(
   gz::sim::Link baseLink(this->baseLinkEntity);
   const auto worldPoseOpt = baseLink.WorldPose(_ecm);
   if (!worldPoseOpt.has_value())
-    return;  // no stale publish
+    return;  // bayat yayın yapma
 
-  // Sensor mount pose has zero relative rotation to base_link (see
-  // model.sdf/) - base_link's own orientation IS the
-  // sensor's body-frame orientation. World vector -> body-frame vector via
-  // the inverse rotation (SAME convention already used for this project's
-  // IMU specific-force reading): for v_world fixed, v_body =
-  // q.RotateVectorReverse(v_world), where q rotates body vectors into world
-  // (q.RotateVector(v_body) == v_world).
+  // Sensör montaj pozunun base_link'e göre bağıl dönüşü sıfırdır (model.sdf),
+  // yani base_link'in kendi yönelimi sensörün gövde çerçevesi yönelimidir.
+  // Dünya vektörünü gövde çerçevesine ters dönüşle geçiririz - projedeki IMU
+  // özgül kuvvet okumasında kullanılan AYNI konvansiyon: sabit bir v_world için
+  // v_body = q.RotateVectorReverse(v_world), burada q gövde vektörlerini dünya
+  // çerçevesine döndürür (q.RotateVector(v_body) == v_world).
   const gz::math::Quaterniond qFluRelEnu = worldPoseOpt->Rot();
   const gz::math::Vector3d fieldBodyFlu =
       qFluRelEnu.RotateVectorReverse(this->worldMagneticFieldTesla);

@@ -1,52 +1,7 @@
-// =============================================================================
-// FALCON V2 - Propulsion V1 core math model
-// =============================================================================
-// Pure math only, plus trivial CSV table loading via <fstream>. No gz-sim
-// (ECM/Entity/System) dependency anywhere in this file.
-//
-// Chain implemented here, never bypassed and never collapsed into
-// throttle * maximum_thrust:
-//   throttle -> ESC/motor electrical -> motor torque -> rotor angular
-//   dynamics (explicit-Euler state, integrated by the CALLER every tick,
-//   never instantaneous) -> RPM -> advance ratio J -> APC Ct(J,RPM)/Cp(J,RPM)
-//   -> thrust + propeller aerodynamic torque -> reaction torque
-//
-// Every constant this header's caller must supply (Kv, R, I0, D, rho,
-// I_rotor, RPM cap, ...) is loaded from config/propulsion_v1_config.yaml by
-// PropulsionSystem.cc's Configure() step. No coefficient is hardcoded in this
-// header or in PropulsionSystem.cc.
-//
-// APC 13x6.5E Ct(J)/Cp(J) DATA: loaded at runtime from
-// config/propulsion_data/apc_13x65e_parsed.csv, itself mechanically generated
-// (never hand-edited) from the official APC performance-data file
-// config/propulsion_data/PER3_13x65E.dat by
-// config/propulsion_data/parse_apc_dat.py. See that script's header comment
-// and config/propulsion_data/PROVENANCE.md for the full raw -> parsed data
-// lineage. No Ct/Cp value is invented: every value returned by LookupCtCp()
-// below is either a real tabulated APC value or a linear interpolation
-// between two real tabulated APC values.
-//
-// PROPELLER DIAMETER: D = 0.3302 m always (APC 13x6.5E manufacturer nominal),
-// never the ~0.2734 m STL mesh figure. This header never reads mesh geometry;
-// D is a config value supplied by the caller.
-//
-// ROTATION-SIGN CONVENTION used throughout this header (see the "rotation"
-// block in config/propulsion_v1_config.yaml for the full provenance):
-// omega (rad/s) passed into every function below is expressed in EACH
-// MOTOR'S OWN "positive = normal spin-up direction" frame - omega > 0 always
-// means "this motor spinning up under positive throttle", for both the left
-// and right motor, regardless of which physical world/body +X sense that
-// corresponds to. This keeps the electrical/ODE/aero-loading math identical
-// in form for both motors: Kt/Ke/Ct/Cp do not change sign based on mounting
-// side, only the mechanical coupling to the shared body +X axis does. The
-// mapping from this per-motor frame to the shared body +X axis (for driving
-// the SDF joint's angular velocity and for the sign of the reaction torque
-// applied to base_link) is an explicit, separate, config-driven sign
-// (rotation.left_sign / rotation.right_sign) applied ONLY in
-// PropulsionSystem.cc, never inside this header. That mapping is
-// ASSUMPTION-tagged in the config: the source data's "Left=CCW, Right=CW"
-// statement does not specify a viewing frame.
-// =============================================================================
+// FALCON V2 — motor/ESC/pervane çekirdek matematiği.
+// Saf matematik; Gazebo (ECM/Entity/System) bağımlılığı yoktur.
+// Zincir: gaz -> elektrik -> motor torku -> rotor dinamiği -> RPM -> J ->
+// APC Ct/Cp -> itki + tork. Katsayılar config/propulsion_v1_config.yaml'den gelir.
 #ifndef FALCON_V2_PROPULSION_MODEL_HH_
 #define FALCON_V2_PROPULSION_MODEL_HH_
 
@@ -60,50 +15,45 @@
 namespace falcon_v2_propulsion
 {
 
-// ===========================================================================
-// Config structs - populated by the caller (PropulsionSystem.cc's
-// Configure()) from config/propulsion_v1_config.yaml and the parsed APC CSV.
-// No default value below is
-// meant to be trusted for a real run, mirroring AeroConfig's own comment -
-// defaults exist only so a missing config key fails loudly/zero rather than
-// reading uninitialized memory.
-// ===========================================================================
+// Yapılandırma yapıları: PropulsionSystem.cc, Configure() adımında YAML'den
+// ve ayrıştırılmış APC CSV'sinden doldurur. Aşağıdaki varsayılanlar gerçek bir
+// koşu için geçerli değildir; eksik bir anahtar sessizce makul bir değer
+// üretmesin diye sıfırdır.
 
-/// \brief Motor + ESC electrical parameters.
+/// \brief Motor + ESC elektrik parametreleri.
 struct MotorConfig
 {
-  double kvRpmPerVolt = 0.0;     // CONFIRMED, manufacturer nameplate
-  double resistanceOhm = 0.0;    // CONFIRMED, R (motor internal resistance)
-  double noLoadCurrentA = 0.0;   // CONFIRMED, I0 (reference point, see below)
-  double noLoadCurrentRefVoltage = 10.0;  // CONFIRMED context - I0 was measured at this voltage
-  double currentLimitA = 0.0;    // CONFIRMED rating (~65A/30s) - used as V1 hard clamp, ASSUMPTION-tagged (see propulsion_v1_config.yaml)
-  double powerLimitW = 0.0;      // CONFIRMED rating (~960W) - diagnostic only in V1, not a hard clamp
+  double kvRpmPerVolt = 0.0;     // KV, rpm/V
+  double resistanceOhm = 0.0;    // R, motor iç direnci (ohm)
+  double noLoadCurrentA = 0.0;   // I0, boşta akım (A)
+  double noLoadCurrentRefVoltage = 10.0;  // I0'ın karakterize edildiği gerilim (V)
+  double currentLimitA = 0.0;    // V1 anlık akım kırpma sınırı (A)
+  double powerLimitW = 0.0;      // Üretici güç sınırı (W); V1'de kırpma uygulanmaz
 };
 
-/// \brief Battery. V1 fixed-voltage model - no sag.
+/// \brief Batarya. V1'de sabit gerilim; SOC/gerilim düşümü modellenmez.
 struct BatteryConfig
 {
-  double vNominal = 0.0;  // CONFIRMED, V1 operating voltage (fixed, no SOC/sag model)
+  double vNominal = 0.0;  // İşletme gerilimi (V)
 };
 
-/// \brief Propeller physical parameters.
+/// \brief Pervanenin fiziksel parametreleri.
 struct PropellerConfig
 {
-  double diameterM = 0.0;  // CONFIRMED, D=0.3302 m always - NEVER the STL mesh figure
+  double diameterM = 0.0;  // D, pervane çapı (m) - üretici nominal değeri, STL ölçüsü değil
 };
 
-/// \brief Physics / numerical parameters.
+/// \brief Fizik / sayısal parametreler.
 struct PhysicsConfig
 {
-  double rho = 1.225;              // kg/m^3, CONFIRMED ISA sea-level, V1 fixed config parameter
-  double rotorInertiaKgM2 = 0.0;   // I_rotor, V1_PROVISIONAL_ROTATIONAL_INERTIA (see propulsion_v1_config.yaml)
-  double nSafeFloorRevS = 1.0e-3;  // TEMPORARY numerical-safety floor for the J denominator only (mirrors AeroModel.hh vSafeFloor)
-  double rpmCap = 0.0;             // V1 hard operating cap on |RPM| (saturates the omega integrator)
+  double rho = 1.225;              // Hava yoğunluğu (kg/m^3)
+  double rotorInertiaKgM2 = 0.0;   // I_rotor (kg*m^2), V1_PROVISIONAL
+  double nSafeFloorRevS = 1.0e-3;  // TEMPORARY: yalnızca J paydası için sayısal taban (devir/s)
+  double rpmCap = 0.0;             // |RPM| üst işletme sınırı; omega entegratörünü doyurur
 };
 
-/// \brief One RPM slice of the parsed APC performance table: for a fixed
-/// RPM, Ct/Cp as a function of J, both arrays STRICTLY increasing in J
-/// (verified at load time, see LoadApcTableCsv()).
+/// \brief Ayrıştırılmış APC tablosunun bir RPM dilimi: sabit RPM'de J'ye bağlı
+/// Ct/Cp. J dizisi kesin artandır (yükleme anında LoadApcTableCsv() doğrular).
 struct ApcRpmSlice
 {
   double rpm = 0.0;
@@ -112,8 +62,8 @@ struct ApcRpmSlice
   std::vector<double> Cp;
 };
 
-/// \brief Full parsed APC 13x6.5E performance table, slices sorted
-/// ascending by rpm. Loaded from apc_13x65e_parsed.csv - see file header.
+/// \brief Ayrıştırılmış APC 13x6.5E performans tablosunun tamamı; dilimler
+/// rpm'e göre artan sırada. Kaynak: apc_13x65e_parsed.csv.
 struct ApcTable
 {
   std::vector<ApcRpmSlice> slices;
@@ -122,15 +72,12 @@ struct ApcTable
   double MaxRpm() const { return slices.empty() ? 0.0 : slices.back().rpm; }
 };
 
-/// \brief Load the mechanically-parsed APC CSV (rpm,V_mph,J,Ct,Cp,power_W,
-/// torque_Nm,thrust_N) into an ApcTable. Groups rows by rpm (preserving
-/// file order within a slice, which the parser already guarantees is
-/// strictly increasing in J), sorts slices ascending by rpm. Returns false
-/// (with a message in errorOut, if given) on any I/O or parse failure, or if
-/// a slice's J array is found not to be strictly increasing (a load-time
-/// sanity check protecting the interpolation logic below, which assumes
-/// monotonic J per slice -'s own specified interpolation
-/// method).
+/// \brief Ayrıştırılmış APC CSV'sini (rpm,V_mph,J,Ct,Cp,power_W,torque_Nm,
+/// thrust_N) bir ApcTable'a yükler: satırları rpm'e göre gruplar, dilim içinde
+/// dosya sırasını korur, dilimleri rpm'e göre artan sıralar. Bir dilimin J
+/// dizisi kesin artan değilse veya G/Ç-ayrıştırma hatası olursa false döner
+/// (errorOut verilmişse mesaj yazar); aşağıdaki interpolasyon dilim başına
+/// monotonik J varsayar.
 inline bool LoadApcTableCsv(const std::string &path, ApcTable &table,
                              std::string *errorOut = nullptr)
 {
@@ -148,9 +95,8 @@ inline bool LoadApcTableCsv(const std::string &path, ApcTable &table,
     if (errorOut) *errorOut = "empty file '" + path + "'";
     return false;
   }
-  // line 0 is the header row (rpm,V_mph,J,Ct,Cp,power_W,torque_Nm,thrust_N) - skip.
+  // 0. satır kolon başlığıdır, atlanır.
 
-  // Preserve insertion order of first-seen RPM values, group rows.
   std::vector<double> sliceOrder;
   struct RawSlice { std::vector<double> J, Ct, Cp; };
   std::vector<RawSlice> rawSlices;
@@ -188,10 +134,8 @@ inline bool LoadApcTableCsv(const std::string &path, ApcTable &table,
       return false;
     }
     const double rpm = vals[0];
-    // vals[1]=V_mph (unused here), vals[2]=J, vals[3]=Ct, vals[4]=Cp,
-    // vals[5..7]=power_W/torque_Nm/thrust_N (unused for the interpolation
-    // table itself - retained in the CSV for cross-check use, not re-parsed
-    // into ApcTable, which only needs Ct(J)/Cp(J)).
+    // Kolon sırası: vals[2]=J, vals[3]=Ct, vals[4]=Cp. Tabloya yalnızca
+    // Ct(J)/Cp(J) alınır; kalan kolonlar CSV'de çapraz kontrol için durur.
     RawSlice &rs = findOrAdd(rpm);
     rs.J.push_back(vals[2]);
     rs.Ct.push_back(vals[3]);
@@ -232,63 +176,43 @@ inline bool LoadApcTableCsv(const std::string &path, ApcTable &table,
   return true;
 }
 
-// ===========================================================================
-// 1. ESC/motor electrical (sec 52 equation block)
-// ===========================================================================
+// --- ESC/motor elektrik modeli ---
 
-/// \brief Motor torque constant Kt = 60/(2*pi*KV), KV in rpm/V, Kt in N*m/A.
-/// Ke (back-EMF constant, V/(rad/s)) is numerically identical to Kt in SI
-/// units - callers use this same value for both.
+/// \brief Motor tork sabiti Kt = 60/(2*pi*KV); KV rpm/V, Kt N*m/A. SI
+/// biriminde ters-EMK sabiti Ke, V/(rad/s) olarak Kt ile sayısal olarak aynıdır.
 inline double MotorKt(double kvRpmPerVolt)
 {
-  if (kvRpmPerVolt <= 0.0) return 0.0;  // defensive only - a valid KV is always > 0
+  if (kvRpmPerVolt <= 0.0) return 0.0;
   return 60.0 / (2.0 * M_PI * kvRpmPerVolt);
 }
 
-/// \brief Result of one motor-electrical evaluation at a given throttle/
-/// battery-voltage/instantaneous-omega operating point.
+/// \brief Verilen gaz / batarya gerilimi / anlık omega çalışma noktasında tek
+/// bir motor-elektrik değerlendirmesinin sonucu.
 struct MotorElectricalResult
 {
-  double current_A = 0.0;      // I_used, after the two clamps below
-  double torque_Nm = 0.0;      // Q_motor = Kt*(I_used - I0_effective)
-  bool negativeCurrentClamped = false;  // true if the raw back-EMF-driven current was < 0 (regen not modeled - see header note)
-  bool currentLimited = false;          // true if I_used was clamped at MotorConfig::currentLimitA
+  double current_A = 0.0;      // I_used, kırpmalardan sonra (A)
+  double torque_Nm = 0.0;      // Q_motor = Kt*(I_used - I0) (N*m)
+  bool negativeCurrentClamped = false;  // ham akım < 0 idi ve 0'a kırpıldı
+  bool currentLimited = false;          // I_used, current_limit_A değerinde sınırlandı
 };
 
-/// \brief ESC + motor electrical model sec 2/52:
-///   V_ESC = throttle * V_battery
-///   I     = (V_ESC - Ke*omega) / R
-///   Q_motor = Kt * (I - I0_effective)
-///
-/// Two explicit, documented V1 policies (propulsion_v1_config.yaml
-/// "electrical_policy" block item 4 - both
-/// explicitly deferred/undocumented beyond this V1 simplification):
-///  (a) NEGATIVE-CURRENT CLAMP: if the raw back-EMF-driven current would be
-///      negative (back-EMF Ke*omega exceeds V_ESC - e.g. a windmilling prop
-///      under an engine-out condition, or throttle=0 with omega>0), it is
-///      clamped to 0 rather than modeled as regenerative/reverse current
-///      flowing back into the battery. ASSUMPTION: simple non-regenerative
-///      ESC. No battery-regen model exists in the source data, and none is
-///      fabricated here.
-///  (b) I0_EFFECTIVE: I0 is only characterized at ONE reference voltage
-///      (10 V). No voltage-scaling law for I0 exists
-///      in the source of truth, so V1 uses I0_effective = I0 (constant),
-///      ASSUMPTION-tagged. A true voltage-dependent I0 curve is
-///      DATA_REQUIRED.
-/// Current-limit clamp: I_used is additionally clamped at
-/// MotorConfig::currentLimitA (the ~65A/30s manufacturer rating,
-///) - ASSUMPTION: this V1 model applies the rating
-/// directly as an instantaneous hard clamp, not a true duration-limited
-/// (I^2*t) thermal model, since no such model exists in the source of truth.
-/// throttle01 is clamped to [0,1] here (defensive - the transport layer
-/// should already enforce this, PropulsionSystem.cc).
+/// \brief ESC + motor elektrik modeli:
+///   V_ESC   = gaz * V_batarya
+///   I       = (V_ESC - Ke*omega) / R
+///   Q_motor = Kt * (I - I0)
+/// V1 politikaları (gerekçeleri propulsion_v1_config.yaml "electrical_policy"
+/// bloğunda): ham akım negatif çıkarsa 0'a kırpılır (rejeneratif ESC
+/// modellenmez), I0 sabit alınır (tek referans gerilimde karakterize edilmiş;
+/// gerilime bağlı I0 eğrisi DATA_REQUIRED) ve akım current_limit_A değerinde
+/// anlık olarak sınırlanır (süreye bağlı ısıl model yoktur). Gaz girişi
+/// burada da [0,1] aralığına kırpılır.
 inline MotorElectricalResult MotorElectrical(
     const MotorConfig &cfg, double throttle01, double vBattery, double omega)
 {
   MotorElectricalResult out;
   const double throttle = std::clamp(throttle01, 0.0, 1.0);
   const double kt = MotorKt(cfg.kvRpmPerVolt);
-  const double ke = kt;  // SI numeric equivalence
+  const double ke = kt;  // SI'de Ke ile Kt sayısal olarak aynıdır
 
   const double vEsc = throttle * vBattery;
   double iRaw = 0.0;
@@ -314,9 +238,7 @@ inline MotorElectricalResult MotorElectrical(
   return out;
 }
 
-// ===========================================================================
-// 2. RPM safety cap
-// ===========================================================================
+// --- RPM güvenlik sınırı ---
 
 struct RpmCapResult
 {
@@ -324,16 +246,14 @@ struct RpmCapResult
   bool capActive = false;
 };
 
-/// \brief Saturates omega (rad/s, signed - see header rotation-sign note) so
-/// that |RPM| never exceeds rpmCap. This is the V1 hard numerical cap
-/// (distinct from, and independent of, both the
-/// theoretical no-load-RPM figure and the APC table's own [1000,18000]
-/// lookup-clamp range below).
+/// \brief omega'yı (rad/s, işaretli) |RPM| <= rpmCap olacak şekilde doyurur.
+/// Bu V1 işletme sınırıdır; teorik boşta-RPM değerinden ve APC tablosunun
+/// kendi arama-kırpma aralığından bağımsızdır.
 inline RpmCapResult ApplyRpmCap(double omega, double rpmCap)
 {
   RpmCapResult out;
   out.omega = omega;
-  if (rpmCap <= 0.0) return out;  // defensive: cap disabled if non-positive
+  if (rpmCap <= 0.0) return out;
   const double omegaCap = rpmCap * 2.0 * M_PI / 60.0;
   if (out.omega > omegaCap)
   {
@@ -348,24 +268,21 @@ inline RpmCapResult ApplyRpmCap(double omega, double rpmCap)
   return out;
 }
 
-// ===========================================================================
-// 3. Rotor angular dynamics ODE step
-// ===========================================================================
+// --- Rotor açısal dinamiği (ODE adımı) ---
 
 struct RotorStepResult
 {
-  double omega = 0.0;   // rad/s, new state after this step
-  double rpm = 0.0;      // derived diagnostic
+  double omega = 0.0;   // rad/s, bu adımdan sonraki yeni durum
+  double rpm = 0.0;      // türetilmiş teşhis değeri
   bool rpmCapActive = false;
 };
 
-/// \brief One explicit-Euler integration step of
+/// \brief Şu denklemin tek bir açık Euler entegrasyon adımı:
 ///   I_rotor * domega/dt = Q_motor - Q_propSigned
-/// qPropSigned must already be signed to OPPOSE omegaPrev (see PropAeroLoad
-/// below, which produces exactly this signed quantity) - this function does
-/// not itself infer a sign. RPM is never set instantaneously: this is the
-/// state-integration step every PreUpdate tick must call, using the real
-/// per-tick dt from the ECM's UpdateInfo (PropulsionSystem.cc).
+/// qPropSigned, omegaPrev'e KARŞI koyacak şekilde zaten işaretli gelmelidir
+/// (bkz. PropAeroLoad); bu fonksiyon işaret çıkarımı yapmaz. RPM hiçbir zaman
+/// anlık atanmaz: bu, her PreUpdate tikinde gerçek dt ile çağrılması gereken
+/// durum entegrasyonudur.
 inline RotorStepResult IntegrateRotorStep(
     double omegaPrev, double qMotor, double qPropSigned, double iRotor,
     double dt, double rpmCap)
@@ -383,16 +300,13 @@ inline RotorStepResult IntegrateRotorStep(
   return out;
 }
 
-// ===========================================================================
-// 4. Advance ratio
-// ===========================================================================
+// --- İlerleme oranı (advance ratio) ---
 
-/// \brief J = V_axial / (n*D), n in rev/s (ALWAYS >= 0 by construction - see
-/// PropAeroLoad, which passes n=|omega|/(2*pi)). nSafeFloor (rev/s) prevents
-/// an exact division by zero at n=0 (ZERO_RPM_NUMERICAL_TEST) - purely a
-/// numerical-safety measure: T/P_prop naturally -> 0 as n->0 regardless of
-/// the resulting (large-but-finite) J, since both formulas carry n^2/n^3
-/// factors (this task's item 6).
+/// \brief J = V_axial / (n*D). V_axial, gövde (FLU) çerçevesindeki itki
+/// ekseni (+X) üzerine izdüşürülmüş BAĞIL hava hızıdır (rüzgâr çıkarılmış
+/// hâli); n = |omega|/(2*pi) devir/s olup yapısı gereği daima >= 0. nSafeFloor
+/// yalnızca n=0'da tam sıfıra bölmeyi engeller; T ve P_prop kendi n^2/n^3
+/// çarpanları sayesinde n->0 giderken zaten 0'a gider.
 inline double AdvanceRatio(double vAxial, double n, double diameterM, double nSafeFloor)
 {
   const double nSafe = std::max(n, nSafeFloor);
@@ -400,25 +314,20 @@ inline double AdvanceRatio(double vAxial, double n, double diameterM, double nSa
   return vAxial / (nSafe * diameterM);
 }
 
-// ===========================================================================
-// 5. 2D Ct/Cp interpolation over the parsed APC table (
-//    this task's item 6 - the exact 2-stage method specified there)
-// ===========================================================================
+// --- Ayrıştırılmış APC tablosu üzerinde 2 boyutlu Ct/Cp interpolasyonu ---
 
 struct CtCpResult
 {
   double Ct = 0.0;
   double Cp = 0.0;
-  bool interpClamped = false;  // true if RPM and/or J had to be clamped to the table's own range
+  bool interpClamped = false;  // RPM ve/veya J tablonun aralığına kırpıldıysa true
 };
 
 namespace detail
 {
-/// \brief Linear interpolation of Ct/Cp within ONE RPM slice's own J array.
-/// Clamps J to that slice's own [Jmin,Jmax] first (slices have different J
-/// ranges - never assume a shared grid, per this task's explicit
-/// instruction). Slice's J array is required strictly increasing (enforced
-/// at load time by LoadApcTableCsv()).
+/// \brief Ct/Cp'yi TEK bir RPM diliminin kendi J dizisi içinde doğrusal
+/// interpolasyonla bulur. J önce o dilimin kendi [Jmin,Jmax] aralığına
+/// kırpılır: dilimlerin J aralıkları farklıdır, ortak ızgara varsayılmaz.
 inline void InterpWithinSlice(const ApcRpmSlice &slice, double J,
                                double &ctOut, double &cpOut, bool &jClamped)
 {
@@ -448,7 +357,7 @@ inline void InterpWithinSlice(const ApcRpmSlice &slice, double J,
     jClamped = true;
   }
 
-  // Find the bracketing pair [i-1, i] with J[i-1] <= jq <= J[i].
+  // jq'yu kuşatan [lo,hi] çiftini bul.
   std::size_t hi = 0;
   while (hi < slice.J.size() && slice.J[hi] < jq) ++hi;
   if (hi == 0)
@@ -472,15 +381,12 @@ inline void InterpWithinSlice(const ApcRpmSlice &slice, double J,
 }
 }  // namespace detail
 
-/// \brief Full 2-stage 2D interpolation exactly as specified by
-/// / this task: (1) find the two bracketing RPM slices,
-/// interpolate Ct/Cp within EACH using that slice's own J array/range; (2)
-/// linearly blend the two per-slice results by RPM position. RPM is clamped
-/// to the table's own [minRpm,maxRpm] range for lookup purposes if outside
-/// (interpClamped exposed as a diagnostic) - a defensive edge case (e.g.
-/// omega transiently overshooting during integration before the RPM cap
-/// logic engages), distinct from and NOT required to coincide with the
-/// operational RPM cap.
+/// \brief İki aşamalı 2B interpolasyon: (1) rpm'i kuşatan iki dilim bulunur ve
+/// her birinde Ct/Cp o dilimin kendi J dizisiyle hesaplanır; (2) iki sonuç
+/// rpm konumuna göre doğrusal harmanlanır. Aralık dışı rpm, arama amacıyla
+/// tablonun kendi [minRpm,maxRpm] aralığına kırpılır (interpClamped teşhis
+/// olarak dışa verilir); bu, işletme RPM sınırından ayrı bir güvenlik
+/// durumudur ve onunla çakışmak zorunda değildir.
 inline CtCpResult LookupCtCp(const ApcTable &table, double rpmQuery, double J)
 {
   CtCpResult out;
@@ -498,7 +404,7 @@ inline CtCpResult LookupCtCp(const ApcTable &table, double rpmQuery, double J)
     out.interpClamped = true;
   }
 
-  // Find bracketing slice indices [lo, hi] with slices[lo].rpm <= rpm <= slices[hi].rpm.
+  // rpm'i kuşatan dilim indekslerini [lo, hi] bul.
   std::size_t hi = 0;
   while (hi < table.slices.size() && table.slices[hi].rpm < rpm) ++hi;
   std::size_t lo;
@@ -521,13 +427,11 @@ inline CtCpResult LookupCtCp(const ApcTable &table, double rpmQuery, double J)
   return out;
 }
 
-// ===========================================================================
-// 6. Thrust / power / torque formulas (sec 54-56)
-// ===========================================================================
+// --- İtki / güç / tork formülleri ---
 
-/// \brief T = Ct * rho * n^2 * D^4. n in rev/s, ALWAYS >= 0 by construction
-/// (magnitude - see PropAeroLoad). Thrust acts along the fixed thrust axis
-/// (+X, the CONFIRMED value) regardless of rotation sign.
+/// \brief T = Ct * rho * n^2 * D^4. n devir/s cinsinden ve yapısı gereği daima
+/// >= 0'dır. İtki, dönüş yönünden bağımsız olarak sabit itki ekseni (+X)
+/// boyunca etki eder.
 inline double PropThrust(double ct, double rho, double n, double diameterM)
 {
   const double d2 = diameterM * diameterM;
@@ -541,39 +445,38 @@ inline double PropPower(double cp, double rho, double n, double diameterM)
   return cp * rho * n * n * n * (d2 * d2 * diameterM);
 }
 
-/// \brief Q_prop (torque MAGNITUDE) = P_prop / omega, omega safe-floored
-/// (rad/s) to avoid division by exactly zero at omega=0 - P_prop itself
-/// already -> 0 as n->0 (via the n^3 factor above) regardless of this floor,
-/// so the floor is purely a numerical-safety measure here too, matching the
-/// same reasoning as AdvanceRatio's nSafeFloor.
+/// \brief Q_prop (tork BÜYÜKLÜĞÜ) = P_prop / omega. omega=0'da tam sıfıra
+/// bölmemek için omega bir sayısal tabanla korunur; P_prop n^3 çarpanı
+/// nedeniyle n->0 giderken zaten 0'a gider, yani taban yalnızca sayısal
+/// güvenlik amaçlıdır.
 inline double PropTorqueFromPower(double pProp, double omegaAbs, double omegaSafeFloor)
 {
   const double omegaSafe = std::max(omegaAbs, omegaSafeFloor);
   return pProp / omegaSafe;
 }
 
-/// \brief Full per-motor propeller aerodynamic-loading evaluation for one
-/// timestep, combining AdvanceRatio + LookupCtCp + the three formulas above.
-/// omega is this motor's own-frame signed state (see header rotation-sign
-/// note) - n/J/Ct/Cp/thrust/pProp are all computed from |omega| (magnitude),
-/// since the APC table only characterizes forward (positive-J) operation
-/// and the thrust axis direction does not depend on rotation sign.
-/// qPropSigned is the torque this header returns for direct use in
-/// IntegrateRotorStep's ODE - signed to always OPPOSE omega (0 at omega=0).
+/// \brief Bir zaman adımı için pervane aerodinamik yüklenmesinin sonucu.
 struct PropLoadResult
 {
-  double n = 0.0;              // rev/s, |omega|/(2*pi)
-  double rpm = 0.0;             // diagnostic, signed (same sign as omega)
+  double n = 0.0;              // devir/s, |omega|/(2*pi)
+  double rpm = 0.0;             // teşhis; işaretli (omega ile aynı işaret)
   double J = 0.0;
   double Ct = 0.0;
   double Cp = 0.0;
-  double thrust_N = 0.0;        // magnitude, along the fixed +X thrust axis
+  double thrust_N = 0.0;        // büyüklük; sabit +X itki ekseni boyunca
   double pProp_W = 0.0;
   double qPropMagnitude_Nm = 0.0;
-  double qPropSigned_Nm = 0.0;   // opposes omega - the qProp term IntegrateRotorStep's ODE expects
+  double qPropSigned_Nm = 0.0;   // omega'ya karşı koyar; ODE'nin beklediği terim
   bool interpClamped = false;
 };
 
+/// \brief Tek bir motor için pervane aerodinamik yüklenmesinin tam
+/// değerlendirmesi: AdvanceRatio + LookupCtCp + yukarıdaki üç formül. omega, o
+/// motorun kendi çerçevesindeki işaretli durumudur; n/J/Ct/Cp/itki/pProp
+/// |omega| ile hesaplanır, çünkü APC tablosu yalnızca ileri (pozitif J)
+/// çalışmayı kapsar ve itki ekseninin yönü dönüş işaretine bağlı değildir.
+/// qPropSigned daima omega'ya karşı koyar (omega=0'da 0) ve doğrudan
+/// IntegrateRotorStep'in ODE'sinde kullanılmak üzere döndürülür.
 inline PropLoadResult PropAeroLoad(
     const ApcTable &table, double omega, double vAxial, double diameterM,
     double rho, double nSafeFloorRevS)
@@ -585,7 +488,7 @@ inline PropLoadResult PropAeroLoad(
 
   out.J = AdvanceRatio(vAxial, out.n, diameterM, nSafeFloorRevS);
 
-  const double rpmQuery = out.n * 60.0;  // always >= 0; table-clamped inside LookupCtCp
+  const double rpmQuery = out.n * 60.0;
   const CtCpResult ctcp = LookupCtCp(table, rpmQuery, out.J);
   out.Ct = ctcp.Ct;
   out.Cp = ctcp.Cp;

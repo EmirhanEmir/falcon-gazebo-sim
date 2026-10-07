@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.16)
 project(falcon_v2_propulsion LANGUAGES CXX)
 
-# FALCON V2 - propulsion System plugin build.
-# See README.md in this directory for build/run instructions.
+# FALCON V2 — itki System eklentisinin derleme tanımı.
+# Derleme/çalıştırma adımları için bu dizindeki README.md dosyasına bakın.
 
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
@@ -15,9 +15,7 @@ find_package(gz-msgs10 REQUIRED)
 find_package(gz-math7 REQUIRED)
 find_package(yaml-cpp REQUIRED)
 
-# ---------------------------------------------------------------------------
-# Main Gazebo System plugin (requires the full gz-sim runtime environment)
-# ---------------------------------------------------------------------------
+# Gazebo System eklentisi (tam gz-sim çalışma zamanı ortamını gerektirir)
 add_library(FalconV2Propulsion SHARED PropulsionSystem.cc)
 target_compile_features(FalconV2Propulsion PRIVATE cxx_std_17)
 target_compile_options(FalconV2Propulsion PRIVATE -Wall -Wextra -Wpedantic)

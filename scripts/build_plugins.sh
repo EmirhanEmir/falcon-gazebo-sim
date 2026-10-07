@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 #
-# FALCON V2 - build all five Gazebo system plugins.
+# FALCON V2 - beş Gazebo system plugin'inin tamamını derler.
 #
-# Each plugin is an independent CMake project and is built into its own
-# plugins/<name>/build/ directory, which is where the launch scripts expect
-# the resulting shared libraries.
+# Her plugin bağımsız bir CMake projesidir ve kendi plugins/<ad>/build/
+# dizinine derlenir; launch script'leri ortaya çıkan paylaşımlı kütüphaneleri
+# orada arar.
 #
-# Usage:
-#   ./scripts/build_plugins.sh [cmake-build-type]     # default: Release
+# Kullanım:
+#   ./scripts/build_plugins.sh [cmake-build-type]     # varsayılan: Release
 #
 set -euo pipefail
 

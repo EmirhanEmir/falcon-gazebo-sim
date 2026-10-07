@@ -1,83 +1,83 @@
-# FALCON V2 — Actuator/Servo Plugin
+# FALCON V2 — Aktüatör/Servo Plugin'i
 
-Gazebo Sim Harmonic System plugin implementing the physical actuator chain for
-the five control-surface joints: `left_aileron_joint`, `right_aileron_joint`,
-`left_elevator_joint`, `right_elevator_joint`, `rudder_joint`.
+Beş kontrol yüzeyi joint'i — `left_aileron_joint`, `right_aileron_joint`,
+`left_elevator_joint`, `right_elevator_joint`, `rudder_joint` — için fiziksel
+aktüatör zincirini uygulayan Gazebo Sim Harmonic System plugin'i.
 
-Scope: actuator command → finite-rate, finite-effort servo dynamics → real
-Gazebo joint motion. It changes no aerodynamic coefficient or control-sign
-mapping, and implements no ArduPlane/MAVLink/TECS logic — this plugin ends at
-the physical actuator interface.
+Kapsam: aktüatör komutu → sonlu hızlı, sonlu torklu servo dinamiği → gerçek
+Gazebo joint hareketi. Hiçbir aerodinamik katsayıyı veya kontrol işareti
+eşlemesini değiştirmez, ArduPlane/MAVLink/TECS mantığı içermez — bu plugin
+fiziksel aktüatör arayüzünde biter.
 
-## Architecture
+## Mimari
 
 ```
-raw command (rad, gz.msgs.Double, hold-last-valid)
-  → ClampCommand()        [mechanical travel limit, ±45°]
-  → RateLimitSetpoint()   [servo slew-rate limit]
-  → PidEffort()           [effort-bounded PID torque]
-  → gz::sim::Joint::SetForce()   [real joint-space torque command]
-  → the physics engine integrates the real joint motion
+ham komut (rad, gz.msgs.Double, son geçerli komut tutulur)
+  → ClampCommand()        [mekanik hareket limiti, ±45°]
+  → RateLimitSetpoint()   [servo slew-rate limiti]
+  → PidEffort()           [effort sınırlı PID torku]
+  → gz::sim::Joint::SetForce()   [gerçek joint-space tork komutu]
+  → fizik motoru gerçek joint hareketini entegre eder
 ```
 
-**Why torque-based, not a kinematic position write:** a position write would
-teleport the joint and bypass the physics engine entirely, making rate and
-effort limits unenforceable. `SetForce()` produces genuine joint dynamics.
+**Neden tork tabanlı, neden kinematik bir pozisyon yazımı değil:** pozisyon
+yazmak joint'i fizik motorunu tamamen atlayarak ışınlar ve hız ile effort
+limitlerini uygulanamaz hâle getirir. `SetForce()` gerçek joint dinamiği
+üretir.
 
-The PID gains are derived against each surface's inertia about its own hinge
-axis (parallel-axis corrected, per surface). Integral action is used rather
-than gravity feedforward so that any constant disturbance is rejected without
-modelling it; anti-windup freezes accumulation on target clamp, on
-same-direction effort saturation, and on rate saturation.
+PID kazançları her yüzeyin kendi menteşe ekseni etrafındaki ataletine göre
+türetilmiştir (yüzey başına, parallel-axis düzeltmeli). Yerçekimi ileri
+beslemesi yerine integral etki kullanılır; böylece herhangi bir sabit bozucu,
+onu modellemeye gerek kalmadan bastırılır. Anti-windup, hedef kırpıldığında,
+aynı yöndeki effort doygunluğunda ve hız doygunluğunda birikimi dondurur.
 
-Because the control-surface link masses in `model.sdf` are a deliberate
-near-massless numerical placeholder, the plugin additionally applies
-`SetVelocityLimits()` / `SetEffortLimits()` at `Configure()` as
-physics-engine-level hard constraints, using the same max-rate and max-effort
-values.
+`model.sdf` içindeki kontrol yüzeyi link kütleleri bilinçli olarak neredeyse
+kütlesiz sayısal yer tutucular olduğundan, plugin ayrıca `Configure()` anında
+aynı azami hız ve azami effort değerleriyle `SetVelocityLimits()` /
+`SetEffortLimits()` çağırarak fizik motoru seviyesinde sert kısıtlar uygular.
 
-## Files
+## Dosyalar
 
-| File | Purpose |
+| Dosya | Amaç |
 | ---- | ------- |
-| `ActuatorModel.hh` | Pure-math core: clamp, rate limit, PID with anti-windup. No Gazebo dependency at all. |
-| `ActuatorSystem.hh` / `.cc` | The `gz-sim8` System plugin: five command subscriptions, five persistent setpoint states, torque application, diagnostics. |
-| `CMakeLists.txt` | Build definition for `libFalconV2Actuators.so`. |
+| `ActuatorModel.hh` | Saf matematik çekirdeği: clamp, rate limit, anti-windup'lı PID. Hiç Gazebo bağımlılığı yok. |
+| `ActuatorSystem.hh` / `.cc` | `gz-sim8` System plugin'i: beş komut aboneliği, beş kalıcı setpoint durumu, tork uygulama, diagnostik. |
+| `CMakeLists.txt` | `libFalconV2Actuators.so` derleme tanımı. |
 
-Every numeric constant comes from `config/actuator_v1_config.yaml`.
+Her sayısal değer `config/actuator_v1_config.yaml` dosyasından gelir.
 
-## Dependencies
+## Bağımlılıklar
 
-- `gz-sim8`, `gz-plugin2` (component `register`), `gz-transport13`,
+- `gz-sim8`, `gz-plugin2` (`register` bileşeni), `gz-transport13`,
   `gz-msgs10`, `gz-math7`
-- `yaml-cpp` (via `libyaml-cpp-dev`)
-- CMake ≥ 3.16, a C++17 compiler
+- `yaml-cpp` (`libyaml-cpp-dev` üzerinden)
+- CMake ≥ 3.16, C++17 derleyici
 
-## Build
+## Derleme
 
 ```bash
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build -j$(nproc)
 ```
 
-Produces `build/libFalconV2Actuators.so`. `build/` is git-ignored.
+`build/libFalconV2Actuators.so` üretir. `build/` git tarafından yok sayılır.
 
-## Runtime interface
+## Runtime Arayüzü
 
-Each surface is commanded independently in physical-angle radians:
+Her yüzey fiziksel açı radyan cinsinden bağımsız olarak komut edilir:
 
 ```bash
 gz topic -t /model/falcon_v2/actuators/left_aileron/cmd_rad  -m gz.msgs.Double -p "data:  0.1745"
 gz topic -t /model/falcon_v2/actuators/right_aileron/cmd_rad -m gz.msgs.Double -p "data: -0.1745"
 ```
 
-Command topics: `/model/falcon_v2/actuators/{left_aileron, right_aileron,
-left_elevator, right_elevator, rudder}/cmd_rad`. A surface defaults to 0 rad
-(neutral) if never commanded, and holds its last valid command otherwise.
+Komut topic'leri: `/model/falcon_v2/actuators/{left_aileron, right_aileron,
+left_elevator, right_elevator, rudder}/cmd_rad`. Hiç komut almamış bir yüzey
+0 rad'da (nötr) kalır, aksi hâlde son geçerli komutunu tutar.
 
-Diagnostics on `/model/falcon_v2/actuators/diagnostics` are 35 fields —
-7 per surface, in the order left_aileron, right_aileron, left_elevator,
-right_elevator, rudder: `cmd_rad, target_clamped_rad, setpoint_rad,
+`/model/falcon_v2/actuators/diagnostics` üzerindeki diagnostik 35 alandır —
+left_aileron, right_aileron, left_elevator, right_elevator, rudder sırasıyla
+yüzey başına 7 alan: `cmd_rad, target_clamped_rad, setpoint_rad,
 actual_angle_rad, actual_rate_rad_s, target_clamp_active,
 effort_clamp_active`.
 

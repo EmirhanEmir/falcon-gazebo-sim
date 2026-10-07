@@ -1,17 +1,7 @@
-// =============================================================================
-// FALCON V2 - Gazebo Sim Harmonic aerodynamics System plugin
-// =============================================================================
-// Scope: strictly aerodynamic force/moment physics. No propulsion, no
-// control actuation (this system READS joint positions, it does not write
-// them), no ArduPilot/SITL. See plugins/aerodynamics/README.md for build
-// instructions.
-//
-// The class is intentionally thin: all math lives in AeroModel.hh, a pure,
-// Gazebo-independent header. This class's only job is to read Gazebo state
-// (link velocity/pose, joint positions, wind topic), build an AeroState, call
-// falcon_v2_aero::ComputeAero(), apply the resulting force/moment to
-// base_link, and optionally publish diagnostics.
-// =============================================================================
+// FALCON V2 — Gazebo Sim Harmonic aerodinamik System eklentisi.
+// Kapsam yalnızca aerodinamik kuvvet/moment fiziğidir: itki, kumanda eyletimi
+// ve otopilot bu sınıfın dışındadır (kumanda eklem açıları yalnızca OKUNUR).
+// Sınıf kasten incedir; tüm matematik Gazebo'dan bağımsız AeroModel.hh'de durur.
 #ifndef FALCON_V2_AERODYNAMICS_SYSTEM_HH_
 #define FALCON_V2_AERODYNAMICS_SYSTEM_HH_
 
@@ -45,14 +35,12 @@ class AerodynamicsSystem :
               const gz::sim::UpdateInfo &_info,
               gz::sim::EntityComponentManager &_ecm) override;
 
-  /// \brief Wind topic subscriber callback. Wind velocity is expressed in
-  /// the WORLD frame, m/s. Defaults to zero wind if no message has ever
-  /// been received.
+  /// \brief Rüzgâr konusu geri çağrımı. Rüzgâr hızı DÜNYA çerçevesinde, m/s;
+  /// hiç mesaj gelmediyse sıfır rüzgâr varsayılır.
   private: void OnWind(const gz::msgs::Vector3d &_msg);
 
-  /// \brief Load config/aero_v1_config.yaml
-  /// (path given by the <config_path> SDF parameter) into this->config.
-  /// \return true on success.
+  /// \brief config/aero_v1_config.yaml dosyasını (<config_path> SDF
+  /// parametresindeki yoldan) this->config içine yükler.
   private: bool LoadConfig(const std::string &_path);
 
   private: gz::sim::Entity modelEntity{gz::sim::kNullEntity};
@@ -69,8 +57,8 @@ class AerodynamicsSystem :
   private: gz::transport::Node node;
   private: gz::math::Vector3d windWorld{gz::math::Vector3d::Zero};
 
-  /// \brief Diagnostics publisher, see PublishDiagnostics(). Topic/rate
-  /// documented in and printed once at Configure time.
+  /// \brief Tanı yayıncısı; konu adı ve alan sırası Configure() sırasında bir
+  /// kez günlüğe yazılır.
   private: gz::transport::Node::Publisher diagPub;
   private: double diagRateHz{20.0};
   private: double diagAccumulator{0.0};

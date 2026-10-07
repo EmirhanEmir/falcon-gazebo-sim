@@ -1,25 +1,7 @@
-// =============================================================================
-// FALCON V2 - Aerodynamics V1 core math model
-// =============================================================================
-// Pure math only: no gz-sim (ECM/Entity/System) dependency. The only external
-// dependency is gz-math7 (Vector3d), already pulled in via gz-sim8.
-//
-// The control-surface aerodynamic effect (elevator/aileron/rudder) is a
-// bounded piecewise-linear wide-deflection lookup table, sourced from an
-// XFLR5 Type-1 fixed-condition wide-deflection sweep. See the
-// "Piecewise-linear control-surface lookup" section below.
-//
-// Every coefficient consumed by this header comes from
-// config/aero_v1_config.yaml, which the caller loads and passes in as an
-// AeroConfig. No coefficient is hardcoded here.
-//
-// FRAME CONVENTION: Gazebo/CAD FLU body frame throughout (+X forward, +Y
-// left, +Z up). All vectors in this header are BODY-FRAME unless explicitly
-// named "*_world". The alpha/beta sign derivations are documented in detail
-// immediately above their functions below; both were derived from first
-// principles for FLU rather than copied from the standard FRD textbook forms,
-// and verified by explicit rotation-matrix construction.
-// =============================================================================
+// FALCON V2 — aerodinamik kuvvet/moment modelinin matematik çekirdeği.
+// Saf matematik; gz-sim (ECM/Entity/System) bağımlılığı yoktur, tek bağımlılık
+// gz-math7'dir. Tüm katsayılar config/aero_v1_config.yaml'den gelir; burada
+// hiçbir katsayı gömülü değildir. Tüm vektörler Gazebo FLU gövde çerçevesindedir.
 #ifndef FALCON_V2_AERO_MODEL_HH_
 #define FALCON_V2_AERO_MODEL_HH_
 
@@ -32,189 +14,112 @@
 namespace falcon_v2_aero
 {
 
-/// \brief Number of breakpoints in the shared wide-deflection control-
-/// surface lookup-table domain (HIGH_DEFLECTION_CONTROL_AERO_IMPLEMENTATION,
-/// 2026-08-26). Fixed by the XFLR5 wide-deflection source data's own sweep
-/// grid (FALCON_V2_CONTROL_SURFACE_WIDE_DEFLECTION_RESULTS.txt) - not a
-/// tunable parameter. The same 15-point grid (deg) is used for all three
-/// control surfaces:
-///   [-45,-35,-25,-15,-10,-5,-2,0,+2,+5,+10,+15,+25,+35,+45]
+/// \brief Kumanda yüzeyi arama tablolarının paylaşılan kırılma noktası sayısı.
+/// XFLR5 geniş sapma taramasının kendi ızgarası tarafından sabitlenmiştir
+/// (ayarlanabilir bir parametre değildir); üç yüzey için de aynı 15 noktalı
+/// ızgara (derece): [-45,-35,-25,-15,-10,-5,-2,0,+2,+5,+10,+15,+25,+35,+45]
 constexpr int kNumCtrlBreakpoints = 15;
 
-/// \brief Index of the delta=0 breakpoint within the 15-point grid above.
-/// Used in AeroConfig::Prepare() to baseline-difference the aileron/rudder
-/// FULL-VALUE CD/CL/Cm rows (those rows are raw fixed-alpha sweep values,
-/// not already baseline-differenced in the source file, unlike the elevator
-/// table - see the field comments below).
+/// \brief Yukarıdaki ızgarada delta=0 kırılma noktasının indeksi. Prepare()
+/// içinde, kaynak dosyada ham (referansa göre farklandırılmamış) verilen
+/// kanatçık/dümen CD/CL/Cm satırlarını taban çizgisine göre farklandırmak için
+/// kullanılır.
 constexpr int kCtrlZeroIndex = 7;
 
-/// \brief Fixed-size array type for one wide-deflection lookup curve.
+/// \brief Tek bir geniş sapma arama eğrisi için sabit boyutlu dizi tipi.
 using CtrlLookupArray = std::array<double, kNumCtrlBreakpoints>;
 
-/// \brief All numeric parameters this model needs, loaded from
-/// config/aero_v1_config.yaml by the plugin's
-/// Configure() step (see AerodynamicsSystem.cc). No default value here is
-/// meant to be trusted for a real run - the loader must always overwrite
-/// every field from the YAML file; defaults exist only so a missing YAML key
-/// fails loudly (e.g. S=0 makes qbar*S=0, an obviously-wrong but non-NaN,
-/// non-crashing zero-force output) rather than reading uninitialized memory.
+/// \brief Modelin ihtiyaç duyduğu tüm sayısal parametreler; eklenti
+/// Configure() aşamasında config/aero_v1_config.yaml'den yükler.
+/// Aşağıdaki varsayılanlar gerçek bir koşu için güvenilir değildir: yükleyici
+/// her alanı YAML'den yazmak zorundadır. Varsayılanlar yalnızca eksik bir
+/// YAML anahtarının sessizce değil, görünür biçimde (ör. S=0 ile qbar*S=0,
+/// yani NaN olmayan ama bariz yanlış sıfır kuvvet) hata vermesi içindir.
 struct AeroConfig
 {
-  // Reference geometry
-  double S = 0.0;        // wing area, m^2
-  double b = 0.0;        // wingspan, m
-  double c_ref = 0.0;    // aerodynamic reference chord, m (NOT manufacturer avg chord)
+  double S = 0.0;        // kanat alanı, m^2
+  double b = 0.0;        // kanat açıklığı, m
+  double c_ref = 0.0;    // aerodinamik referans veter, m (üreticinin ortalama veteri DEĞİL)
 
-  // Environment
-  double rho = 1.225;         // air density, kg/m^3 (ISA sea level, config parameter)
-  double vSafeFloor = 1.0e-3; // m/s, TEMPORARY numerical-safety-only V floor for *_hat denominators
+  double rho = 1.225;         // hava yoğunluğu, kg/m^3
+  double vSafeFloor = 1.0e-3; // m/s, yalnızca *_hat paydaları için sayısal güvenlik tabanı
 
-  // Longitudinal (7.1; CL0/Cm0 DERIVED this pass).
-  // NOTE (HIGH_DEFLECTION_CONTROL_AERO_IMPLEMENTATION, 2026-08-26): Cmde is
-  // now SUPERSEDED_BY_LOOKUP - the elevator pitching-moment control effect
-  // is applied EXCLUSIVELY via ctrlElevDCm below (full-lookup-replaces-
-  // static-term architecture, see ComputeAero()). Cmde is retained only as
-  // the documented small-signal reference constant (updated this pass from
-  // -0.73 to -1.000/rad per the new fixed-condition XFLR5 data), verified
-  // to be closely reproduced by a finite difference of the lookup table near
-  // delta_e = 0 - it is NOT read by ComputeAero() itself.
-  // CLde is a NEW field this pass, same status (reference-only; the
-  // CL_delta_e effect is applied exclusively via ctrlElevDCL, never as
-  // CLde*deltaE - that would double-count).
+  // Cmde ve CLde SUPERSEDED_BY_LOOKUP'tır: asansör etkisi yalnızca aşağıdaki
+  // ctrlElevDCm/ctrlElevDCL tablolarıyla uygulanır. Bu skalerler sadece
+  // belgelenmiş küçük sinyal referansıdır, ComputeAero() tarafından okunmaz
+  // (ikisini birlikte eklemek etkiyi iki kez sayardı).
   double CLa = 0.0, Cma = 0.0, CLq = 0.0, Cmq = 0.0, Cmde = 0.0, CLde = 0.0;
   double CL0 = 0.0, Cm0 = 0.0;
 
-  // Lateral-directional.
-  // NOTE (HIGH_DEFLECTION_CONTROL_AERO_IMPLEMENTATION, 2026-08-26): CYda/
-  // CYdr/Clda/Cnda/Cndr are now SUPERSEDED_BY_LOOKUP - the aileron/rudder
-  // CY/Cl/Cn control effect is applied EXCLUSIVELY via the ctrlAile*/
-  // ctrlRudd* wide-deflection tables below (full-lookup-replaces-static-
-  // term architecture). These scalars are retained only as documented
-  // small-signal reference constants (updated this pass per the new
-  // fixed-condition XFLR5 data - see config/aero_v1_config.yaml for the full
-  // per-value provenance). Reference-only: NOT read by ComputeAero()
-  // itself.
-  // Cldr is the ONE exception: task 1B (Cl_delta_r sign conflict between
-  // the two XFLR5 sessions) was resolved UNRESOLVED_KEEP_CURRENT (no
-  // decisive geometric/methodological reason found to prefer either sign -
-  // and aero_v1_config.yaml for the full record), so
-  // Cldr KEEPS its old value (+0.0007/rad) and IS still functionally used:
-  // AeroConfig::Prepare() builds ctrlRuddCl as a bounded LINEAR EXTENSION
-  // of this exact constant (ctrlRuddCl[i] = Cldr * ctrlBreakpointsRad[i]),
-  // NOT from the new (disputed-sign) wide-deflection Cl(delta_r) table.
+  // CYda/CYdr/Clda/Cnda/Cndr de SUPERSEDED_BY_LOOKUP'tır: kanatçık/dümen
+  // CY/Cl/Cn etkisi yalnızca ctrlAile*/ctrlRudd* tablolarıyla uygulanır,
+  // bu skalerler referans amaçlıdır ve ComputeAero() tarafından okunmaz.
+  // TEK istisna Cldr'dir ve işlevsel olarak KULLANILIR: Prepare(), ctrlRuddCl
+  // dizisini bu sabitin sınırlı doğrusal uzantısı olarak kurar
+  // (ctrlRuddCl[i] = Cldr * ctrlBreakpointsRad[i]); geniş sapma
+  // Cl(delta_r) tablosu işaret uyuşmazlığı nedeniyle kullanılmaz.
   double CYb = 0.0, CYp = 0.0, CYr = 0.0, CYda = 0.0, CYdr = 0.0;
   double Clb = 0.0, Clp = 0.0, Clr = 0.0, Clda = 0.0, Cldr = 0.0;
   double Cnb = 0.0, Cnp = 0.0, Cnr = 0.0, Cnda = 0.0, Cndr = 0.0;
 
-  // Drag polar (V1_CALIBRATED)
+  // Sürükleme poları (V1_CALIBRATED)
   double CD0 = 0.0, dragK = 0.0;
 
-  // High-alpha smooth-saturation limiter (V1_SMOOTH_SATURATION, this pass)
-  double CLmax = 1.42;           // manufacturer performance-calc input, MD sec 3
-  double alphaTransition = 0.0;  // rad, DERIVED = midpoint of 9-9.5 deg XFLR5 reliability band
+  // Yüksek hücum açısı yumuşak doyum sınırlayıcısı.
+  double CLmax = 1.42;           // üretici performans hesabı girdisi
+  double alphaTransition = 0.0;  // rad, DERIVED: XFLR5 güvenilir akım bandının orta noktası
 
-  // Control-joint-to-deflection-sign mapping. Signs VERIFIED_BY_GAZEBO_GEOMETRY_SIGN_TEST,
-  // task CONTROL_SURFACE_SIGN_MAPPING, 2026-08-22 ( 19.13).
-  // Literal defaults below are pre-load placeholders only, overwritten from
-  // aero_v1_config.yaml's control_mapping block (elevator_sign = -1.0,
-  // aileron_sign/rudder_sign = +1.0) at config-load time. NOTE
-  // (2026-08-26): the old generic `controlDeflectionClamp` (+/-10 deg,
-  // V1_CONSERVATIVE_CLAMP) field that used to live here has been RETIRED
-  // for control-surface use - see the wide-deflection lookup block below,
-  // whose own domain bound (+/-45 deg, InterpLinear()) is the new "no
-  // silent extrapolation" boundary. This is NOT the same thing as, and does
-  // not touch, the separate high-alpha limiter above (an angle-of-attack
-  // concept, unrelated to control-surface deflection).
+  // Kumanda eklem açısı -> aerodinamik sapma işaret eşlemesi. Değerler
+  // config/aero_v1_config.yaml'deki control_mapping bloğundan yüklenir;
+  // buradaki sabitler yalnızca yükleme öncesi yer tutucudur.
   double elevatorSign = 1.0, aileronSign = 1.0, rudderSign = 1.0;
 
-  // ---------------------------------------------------------------------
-  // Wide-deflection control-surface lookup tables. Source: XFLR5 Type 1
-  // fixed-speed sweep (V = 18.162 m/s, alpha = 2.472 deg, beta = 0, viscous
-  // OFF; only the swept surface deflected, the others held at 0). Loaded
-  // from the `control_surface_lookup` block of config/aero_v1_config.yaml.
-  //
-  // Breakpoints are shared by all 3 surfaces, stored here in RADIANS
-  // (converted from the YAML's breakpoints_deg at load time):
-  //   [-45,-35,-25,-15,-10,-5,-2,0,+2,+5,+10,+15,+25,+35,+45] deg
-  //
-  // Domain is BOUNDED at +/-45 deg (the actuator's own mechanical range,
-  // config/actuator_v1_config.yaml min/max_angle_rad
-  // = +/-0.7853981634 rad) - InterpLinear() clamps any input outside
-  // [breakpoints.front(), breakpoints.back()] to the nearest edge value
-  // (no silent extrapolation) rather than extrapolating past reference
-  // data.
-  //
-  // Confidence labeling (DOCS-ONLY metadata - does not change any runtime
-  // computation below; recorded in aero_v1_config.yaml/):
-  //   |delta| <= 10 deg  -> HIGH_CONFIDENCE_SMALL_SIGNAL
-  //   10 < |delta| <= 25 -> MEDIUM_CONFIDENCE_NONLINEAR_REFERENCE
-  //   |delta| > 25       -> LOW_CONFIDENCE_HIGH_DEFLECTION_REFERENCE
-  // (the +/-35/+/-45 deg XFLR5/VLM points are explicitly NOT
-  // "REAL_FLIGHT_VALIDATED".)
-  // ---------------------------------------------------------------------
+  // Geniş sapma kumanda yüzeyi arama tabloları. Kırılma noktaları üç yüzey
+  // için paylaşılır ve burada RADYAN olarak tutulur (YAML'deki
+  // breakpoints_deg değerleri yükleme anında dönüştürülür).
+  // Tanım aralığı +/-45 derecede SINIRLIDIR (eyleyicinin mekanik aralığı):
+  // InterpLinear() aralık dışı girdiyi en yakın uç değere kırpar, referans
+  // verinin ötesine sessizce ekstrapolasyon YAPMAZ.
   CtrlLookupArray ctrlBreakpointsRad{};
 
-  // Elevator: values are ALREADY baseline-differenced in the source file
-  // itself (the delta_e=0 row is exactly 0 by construction) - "full lookup
-  // contribution" architecture:
+  // Asansör: değerler kaynak dosyada zaten taban çizgisine göre
+  // farklandırılmıştır (delta_e=0 satırı tanımı gereği tam sıfırdır).
+  // "Tam arama katkısı" mimarisi:
   //   CL = SaturatedCL(alpha) + CLq*qHat + ctrlElevDCL(delta_e)
   //   cmStatic = Cm0 + Cma*alpha + ctrlElevDCm(delta_e)
-  // (ctrlElevDCm REPLACES the old `+ Cmde*deltaE` term exactly - never add
-  // both, that would double-count). ctrlElevDCD feeds the Part-4 drag
-  // build-up below.
+  // ctrlElevDCm, eski `+ Cmde*deltaE` terimini birebir DEĞİŞTİRİR; ikisi
+  // asla birlikte eklenmez. ctrlElevDCD sürükleme toplamına beslenir.
   CtrlLookupArray ctrlElevDCL{}, ctrlElevDCD{}, ctrlElevDCm{};
 
-  // Aileron: Cl/Cn/CY are RAW values from the source sweep (the baseline at
-  // delta_a=0 is already ~0 in the source data - CY0=-0.00002, Cn0=+0.00001,
-  // Cl0=0.00000 - a tiny numerical-solver residual, NOT zeroed out here;
-  // used exactly as given per the project's no-fabrication rule). These
-  // REPLACE the old Clda*deltaA/Cnda*deltaA/CYda*deltaA static terms
-  // exactly (full-lookup-replaces-static-term, same pattern as elevator).
-  // ctrlAileCDFull/CLFull/CmFull are FULL VALUES at fixed-alpha (a delta_a
-  // sweep, not already baseline-differenced in the source file) -
-  // AeroConfig::Prepare() differences them against the delta_a=0 row
-  // (kCtrlZeroIndex) to produce ctrlAileDCD/DCL/DCm, the even/symmetric
-  // secondary corrections (CD feeds Part-4 drag; CL/Cm are small optional
-  // corrections included per the task brief, since the data gives them
-  // cleanly at no extra cost).
+  // Kanatçık: Cl/Cn/CY kaynak taramasından gelen HAM değerlerdir (delta_a=0
+  // taban çizgisi kaynak veride zaten ~0'dır; kalan çok küçük sayısal çözücü
+  // artığı, kaynak veriye müdahale etmeme kuralı gereği sıfırlanmamıştır).
+  // ctrlAileCDFull/CLFull/CmFull ise sabit alfadaki TAM değerlerdir; Prepare()
+  // bunları delta_a=0 satırına (kCtrlZeroIndex) göre farklandırarak simetrik
+  // ikincil düzeltmeleri (ctrlAileDCD/DCL/DCm) üretir.
   CtrlLookupArray ctrlAileCl{}, ctrlAileCn{}, ctrlAileCY{};
   CtrlLookupArray ctrlAileCDFull{}, ctrlAileCLFull{}, ctrlAileCmFull{};
-  CtrlLookupArray ctrlAileDCD{}, ctrlAileDCL{}, ctrlAileDCm{};  // DERIVED in Prepare()
+  CtrlLookupArray ctrlAileDCD{}, ctrlAileDCL{}, ctrlAileDCm{};  // Prepare() içinde DERIVED
 
-  // Rudder: CY/Cn are RAW values (baseline at delta_r=0 already ~0, same
-  // residual-noise note as aileron above) - REPLACE the old CYdr*deltaR/
-  // Cndr*deltaR static terms exactly.
-  //
-  // Cl_delta_r is the ONE surface/coefficient where task 1B's
-  // UNRESOLVED_KEEP_CURRENT resolution applies (see the Cldr field comment
-  // above and/aero_v1_config.yaml for the full record): the
-  // new wide-deflection Cl(delta_r) table is NOT loaded into this struct at
-  // all (its raw values are recorded in aero_v1_config.yaml purely for
-  // provenance/traceability, explicitly marked NOT_LOADED). Instead,
-  // ctrlRuddCl is DERIVED in Prepare() as a bounded LINEAR EXTENSION of the
-  // OLD Cldr small-signal constant - see Prepare() below.
-  //
-  // ctrlRuddCDFull is a FULL VALUE table, differenced into ctrlRuddDCD in
-  // Prepare() exactly like the aileron CD table above.
+  // Dümen: CY/Cn HAM değerlerdir (delta_r=0 taban çizgisi ~0, kanatçıkla aynı
+  // artık gürültü notu). ctrlRuddCl YAML'den yüklenmez; Prepare() içinde
+  // Cldr'den türetilir (yukarıdaki Cldr notuna bakınız). ctrlRuddCDFull TAM
+  // değer tablosudur ve Prepare() içinde ctrlRuddDCD'ye farklandırılır.
   CtrlLookupArray ctrlRuddCY{}, ctrlRuddCn{};
-  CtrlLookupArray ctrlRuddCl{};      // DERIVED in Prepare() from Cldr - see note above, NOT loaded from YAML
+  CtrlLookupArray ctrlRuddCl{};      // Prepare() içinde Cldr'den DERIVED, YAML'den yüklenmez
   CtrlLookupArray ctrlRuddCDFull{};
-  CtrlLookupArray ctrlRuddDCD{};     // DERIVED in Prepare()
+  CtrlLookupArray ctrlRuddDCD{};     // Prepare() içinde DERIVED
 
-  // ---- Derived-once saturation constants (computed by Prepare(), not read
-  // from YAML directly - keeping a single source of truth for the formula in
-  // this header rather than duplicating the arithmetic in the config file).
+  // Prepare() tarafından bir kez hesaplanan doyum sabitleri: formülün tek
+  // kaynağı bu başlıktır, aritmetik config dosyasında tekrarlanmaz.
   double satHeadroomPos = 0.0, satKPos = 0.0;
   double satAneg = 0.0, satKNeg = 0.0;
   bool prepared = false;
 
-  /// \brief Must be called once after every field above (except the
-  /// satXxx/ctrlAileD*/ctrlRuddD*/ctrlRuddCl/prepared bookkeeping/derived
-  /// fields) is populated from YAML. Computes the C1-continuous high-alpha
-  /// saturation constants documented in, AND (this pass)
-  /// the baseline-differenced aileron/rudder CD/CL/Cm wide-deflection
-  /// tables and the Cldr-derived rudder-roll lookup. Safe to call multiple
-  /// times (idempotent).
+  /// \brief YAML'den okunan tüm alanlar doldurulduktan sonra bir kez
+  /// çağrılmalıdır: C1 sürekli yüksek hücum açısı doyum sabitlerini,
+  /// farklandırılmış kanatçık/dümen tablolarını ve Cldr'den türetilen dümen
+  /// yuvarlanma aramasını hesaplar. Birden fazla çağrı güvenlidir (idempotent).
   void Prepare()
   {
     const double clLinAtT = CL0 + CLa * alphaTransition;
@@ -225,22 +130,17 @@ struct AeroConfig
     satAneg = clLinAtNegT + CLmax;
     satKNeg = (satAneg > 1e-9) ? (CLa / satAneg) : 0.0;
 
-    // ---- Wide-deflection lookup derived tables (HIGH_DEFLECTION_CONTROL_
-    // AERO_IMPLEMENTATION, 2026-08-26) ----
     for (int i = 0; i < kNumCtrlBreakpoints; ++i)
     {
-      // Aileron/rudder FULL-VALUE rows -> baseline-differenced secondary
-      // corrections (delta_a=0 / delta_r=0 row is kCtrlZeroIndex).
+      // Kanatçık/dümen TAM değer satırları -> taban çizgisine göre
+      // farklandırılmış ikincil düzeltmeler.
       ctrlAileDCD[i] = ctrlAileCDFull[i] - ctrlAileCDFull[kCtrlZeroIndex];
       ctrlAileDCL[i] = ctrlAileCLFull[i] - ctrlAileCLFull[kCtrlZeroIndex];
       ctrlAileDCm[i] = ctrlAileCmFull[i] - ctrlAileCmFull[kCtrlZeroIndex];
       ctrlRuddDCD[i] = ctrlRuddCDFull[i] - ctrlRuddCDFull[kCtrlZeroIndex];
 
-      // 1B UNRESOLVED_KEEP_CURRENT: ctrlRuddCl is a bounded LINEAR
-      // EXTENSION of the OLD Cldr small-signal constant across the full
-      // +/-45 deg breakpoint grid - NOT the new wide-deflection table's
-      // disputed-sign nonlinear shape. See the Cldr/ctrlRuddCl field
-      // comments above for the full resolution record.
+      // Dümen yuvarlanma araması, geniş sapma tablosunun işareti tartışmalı
+      // olduğu için Cldr sabitinin sınırlı DOĞRUSAL UZANTISIDIR.
       ctrlRuddCl[i] = Cldr * ctrlBreakpointsRad[i];
     }
 
@@ -248,22 +148,19 @@ struct AeroConfig
   }
 };
 
-/// \brief Per-timestep aerodynamic state input, already resolved into body
-/// frame and already run through the control-sign-mapping layer
-/// (AerodynamicsSystem.cc does the joint-position-to-delta_x conversion
-/// before calling ComputeAero(); this header does not know about joints).
-/// deltaA/deltaE/deltaR are sign-mapped but NOT pre-clamped here - the
-/// wide-deflection lookup's own +/-45 deg domain bound (InterpLinear())
-/// is now the single place bounding these inputs (HIGH_DEFLECTION_CONTROL_
-/// AERO_IMPLEMENTATION, 2026-08-26).
+/// \brief Bir zaman adımına ait aerodinamik durum girdisi; gövde çerçevesine
+/// çözülmüş ve kumanda işaret eşlemesinden geçirilmiş olarak gelir (eklem
+/// açısı -> delta dönüşümünü AerodynamicsSystem.cc yapar, bu başlık eklemleri
+/// bilmez). deltaA/deltaE/deltaR önceden kırpılmaz; tek sınır arama
+/// tablosunun +/-45 derecelik tanım aralığıdır.
 struct AeroState
 {
-  double u = 0.0, v = 0.0, w = 0.0;       // body-frame relative wind velocity, m/s (Vrel = Vbody - Vwind)
-  double p = 0.0, q = 0.0, r = 0.0;       // body-frame angular velocity, rad/s (roll/pitch/yaw rate about X/Y/Z)
-  double deltaA = 0.0, deltaE = 0.0, deltaR = 0.0; // rad, sign-mapped (see struct comment re: no pre-clamp)
+  double u = 0.0, v = 0.0, w = 0.0;       // gövde çerçevesinde bağıl rüzgâr hızı, m/s (Vrel = Vbody - Vwind)
+  double p = 0.0, q = 0.0, r = 0.0;       // gövde çerçevesinde açısal hız, rad/s (X/Y/Z eksenleri)
+  double deltaA = 0.0, deltaE = 0.0, deltaR = 0.0; // rad, işareti eşlenmiş
 };
 
-/// \brief Full per-timestep diagnostic + force/moment output.
+/// \brief Bir zaman adımına ait tam tanı çıktısı ile kuvvet/moment sonucu.
 struct AeroOutput
 {
   double V = 0.0, alpha = 0.0, beta = 0.0, qbar = 0.0;
@@ -273,126 +170,80 @@ struct AeroOutput
 };
 
 // -----------------------------------------------------------------------
-// Axis-rotation physical meanings used throughout this file (re-derived
-// this pass by explicit rotation-matrix construction, NOT copied from FRD
-// textbook shorthand - every claim below was checked with an actual 90 deg
-// / 5 deg numeric rotation, not verbal intuition for
-// the full derivation log). Using the standard right-handed active-rotation
-// matrices Rx/Ry/Rz (identical algebraic form in any frame; only the
-// PHYSICAL labels of the axes - forward/left/up vs forward/right/down -
-// differ between FLU and FRD):
-//   +X (roll)  rotation -> LEFT wingtip moves UP. This is the SAME physical
-//     roll sense as FRD's textbook "positive roll = right wing down" (both
-//     Y and Z flip sign of meaning between FRD/FLU, an EVEN number of
-//     flips, so the roll-axis handedness is unchanged between the two
-//     frames - only the wing used to describe it changes).
-//   +Y (pitch) rotation -> NOSE DOWN. This is the OPPOSITE of the
-//     traditional aerospace "q>0 / positive Cm = nose up" shorthand, which
-//     IS consistent with strict right-hand-rule rotation in FRD (Z=down)
-//     but flips in FLU (Z=up) because only Z (not X) changed meaning for
-//     this axis pair - an ODD number of flips.
-//   +Z (yaw)   rotation -> NOSE LEFT. Also flipped vs FRD's "r>0=nose
-//     right" (only Y changed meaning for this axis pair - also an odd
-//     number of flips).
-// These are used below to interpret every Mx/My/Mz sign claim in this file
-// and in's sign-behavior table.
+// FLU'da eksen dönüşlerinin fiziksel anlamı (dönüş matrisi kurularak
+// doğrulanmıştır; FRD ders kitabı kısayolundan kopyalanmamıştır). Rx/Ry/Rz
+// matrislerinin cebirsel biçimi her çerçevede aynıdır; yalnızca eksenlerin
+// FİZİKSEL anlamı (ileri/sol/yukarı ile ileri/sağ/aşağı) değişir:
+//   +X (yuvarlanma) dönüşü -> SOL kanat ucu YUKARI kalkar. Yuvarlanma
+//     ekseninin elleri FRD ile FLU arasında değişmez (Y ve Z birlikte, yani
+//     çift sayıda anlam değiştirir).
+//   +Y (yunuslama) dönüşü -> BURUN AŞAĞI. Bu, geleneksel "q>0 / pozitif Cm =
+//     burun yukarı" kısayolunun TERSİDİR; o kısayol yalnızca FRD'de (Z aşağı)
+//     geçerlidir, FLU'da tek bir eksen anlam değiştirdiği için işaret döner.
+//   +Z (sapma) dönüşü -> BURUN SOLA. FRD'deki "r>0 = burun sağa" ile yine
+//     terstir (bu eksen çifti için yalnızca Y anlam değiştirir).
+// Dosyadaki her Mx/My/Mz işaret iddiası bu tabloya göre yorumlanır.
 // -----------------------------------------------------------------------
 
 // -----------------------------------------------------------------------
-// Angle of attack (alpha) - FLU derivation
+// Hücum açısı (alpha) — FLU türetimi
 // -----------------------------------------------------------------------
-// The textbook FRD form is alpha = atan2(w, u) (X-forward, Z-DOWN). Since
-// pitch (+Y) rotation-sense flips between FRD and FLU (see above), a naive
-// copy risks the wrong sign. Re-derived directly: a nose-up disturbance by
-// physical angle theta corresponds (per the "+Y rotation -> nose down"
-// finding above) to a rotation of -theta about +Y. With the flight path
-// unchanged in world coordinates (level, Vrel_world=(V,0,0)), the resulting
-// body-frame relative wind is u=V*cos(theta), w=-V*sin(theta) for
-// nose-up theta>0 (verified numerically for both signs of theta). Since
-// theta IS the angle of attack by definition of this scenario, this gives
-// alpha = atan2(-w, u) - note the explicit MINUS sign on w, the FLU-vs-FRD
-// flip the task brief calls out, re-derived (not copied) and confirmed by
-// direct rotation-matrix computation, not verbal analogy.
-// Physical meaning: alpha > 0 <=> nose pitched up relative to the relative
-// wind (standard "positive alpha increases effective wing incidence" sense)
-// - this part of the derivation has NO free convention choice (unlike beta
-// below): "nose up" has one unambiguous physical meaning.
-// NOTE: this sign is not confirmed against XFLR5's own internal convention.
+// FRD ders kitabı biçimi alpha = atan2(w, u) olup Z aşağı varsayar; yunuslama
+// dönüş yönü FRD ile FLU arasında döndüğü için doğrudan kopyalanamaz. Yeniden
+// türetim: burun yukarı theta açısı, +Y ekseni etrafında -theta dönüşüne
+// karşılık gelir; uçuş yolu dünya çerçevesinde değişmezken gövde çerçevesindeki
+// bağıl rüzgâr u=V*cos(theta), w=-V*sin(theta) olur. Buradan alpha = atan2(-w, u)
+// çıkar; w üzerindeki EKSİ işareti FLU'ya özgü farktır.
+// Fiziksel anlam: alpha > 0 <=> burun bağıl rüzgâra göre yukarı. Bu kısımda
+// serbest işaret seçimi yoktur ("burun yukarı" tek bir fiziksel anlama gelir).
+// Bu işaret XFLR5'in kendi iç konvansiyonuna karşı doğrulanmamıştır.
 inline double AngleOfAttack(double u, double /*v*/, double w)
 {
   return std::atan2(-w, u);
 }
 
 // -----------------------------------------------------------------------
-// Sideslip (beta) - FLU derivation
+// Yan kayma (beta) — FLU türetimi
 // -----------------------------------------------------------------------
-// Unlike alpha, beta's sign is a genuine CONVENTION CHOICE (both "positive
-// = wind from the right" and "positive = wind from the left" are used in
-// different texts; there is no unique physical necessity the way there is
-// for "nose up"). Two candidate formulas were derived and checked against
-// the GIVEN (unmodified) CYb/Cnb signs and their
-// stated physical meanings, using a nose-yawed-left-by-psi disturbance
-// (Vrel unchanged in world coords -> body-frame v = -V*sin(psi) for psi>0,
-// which is exactly the "relative wind from the right" case):
-//   Candidate A: beta = atan2(-v, hypot(u,w))  [preserves the FRD textbook
-//     "positive beta = wind from right" literal physical meaning]
-//   Candidate B: beta = atan2(+v, hypot(u,w))  [same formula structure as
-//     the naive/un-adjusted FRD copy; physical meaning becomes "positive
-//     beta = wind from the LEFT" because the yaw axis (+Z) flips sense
-//     between FRD/FLU - see the axis-rotation note above]
-// Checked against the GIVEN Cnb=+0.03554 (stated in
-// as "directionally statically stable") and CYb=-0.13216, using the
-// confirmed "+Z rotation -> nose LEFT" finding above: for the nose-slipped-
-// left/wind-from-right disturbance, Candidate A produces Cnb*beta > 0 ->
-// +Mz -> NOSE LEFT (DESTABILIZING, amplifies the disturbance); Candidate B
-// produces Cnb*beta < 0 -> -Mz -> NOSE RIGHT (RESTORING, matches the stated
-// physical meaning). CYb under Candidate B also gives a sideforce pushing
-// the aircraft AWAY from a right-side crosswind (physically correct, basic
-// pressure-force direction). Candidate B is therefore ADOPTED:
-//   beta = atan2(v, hypot(u,w))    [physical meaning: positive beta = wind
-//                                    from the aircraft's LEFT side]
-// This is a documented INFERENCE from matching two independent, reliable
-// physical checks (directional weathercock stability + crosswind push
-// direction) against the fixed/unmodified Cnb and CYb signs - it is NOT a
-// coefficient adjustment (Cnb/CYb are never touched) and NOT a claim of
-// final confirmation. A third possible check (Clb "dihedral effect") was
-// attempted but NOT used as evidence either way - the physical direction of
-// the dihedral-sideslip roll coupling was not re-derivable here with
-// confidence from first principles (roll-axis handedness does not flip
-// between FRD/FLU per the note above, but the fluid-dynamic dihedral
-// mechanism itself is subtle enough that this document does not assert a
-// verified direction for it). This sideslip convention is therefore stated
-// explicitly here rather than asserted as verified.
+// Alpha'nın aksine beta'nın işareti gerçek bir KONVANSİYON SEÇİMİDİR (hem
+// "pozitif = rüzgâr sağdan" hem "soldan" kullanımı literatürde vardır). İki
+// aday, VERİLEN (değiştirilmemiş) CYb/Cnb işaretleri ve bunların belirtilen
+// fiziksel anlamına karşı sınandı; burun sola psi kadar kaydığında gövde
+// çerçevesinde v = -V*sin(psi) olur (yani rüzgâr sağdan):
+//   Aday A: beta = atan2(-v, hypot(u,w))  -> Cnb*beta > 0, +Mz, burun SOLA:
+//     bozulmayı büyütür, KARARSIZLAŞTIRICI.
+//   Aday B: beta = atan2(+v, hypot(u,w))  -> Cnb*beta < 0, -Mz, burun SAĞA:
+//     DÜZELTİCİ; Cnb=+0.03554'ün "yönsel statik kararlı" anlamıyla uyumlu.
+// Ayrıca Aday B'de CYb, uçağı sağdan gelen yan rüzgârdan UZAĞA iten bir yan
+// kuvvet verir (fiziksel olarak doğru). Bu nedenle Aday B BENİMSENMİŞTİR:
+//   beta = atan2(v, hypot(u,w))   [fiziksel anlam: pozitif beta = rüzgâr SOLDAN]
+// Bu, sabit tutulan Cnb/CYb işaretlerine iki bağımsız fiziksel kontrolün
+// uydurulmasından gelen belgelenmiş bir ÇIKARIMDIR; katsayı ayarı değildir
+// (Cnb/CYb'ye hiç dokunulmaz) ve nihai doğrulama iddiası da değildir. Clb
+// (dihedral etkisi) üçüncü bir kontrol olarak denendi ancak kanıt olarak
+// KULLANILMADI: dihedral-yan kayma yuvarlanma eşleşmesinin yönü burada ilk
+// ilkelerden güvenle türetilemedi.
 inline double Sideslip(double u, double v, double w)
 {
   return std::atan2(v, std::hypot(u, w));
 }
 
 // -----------------------------------------------------------------------
-// Wind-axis -> body-axis force rotation - FLU derivation (not the naive
-// Fx=-D, Fz=L shortcut)
+// Rüzgâr ekseni -> gövde ekseni kuvvet dönüşümü — FLU türetimi
+// (naif Fx=-D, Fz=L kısayolu değil)
 // -----------------------------------------------------------------------
-// Built from the SAME rotation R(alpha,beta) = Ry(alpha) * Rz(beta) implied
-// by the alpha/beta formulas above (guarantees the force rotation is
-// exactly self-consistent with the angle formulas actually used - not a
-// separately-copied textbook formula that could silently disagree in sign
-// convention; verified by reconstructing R(alpha,beta) @ (1,0,0) = Vrel/V to
-// ~1e-16 over thousands of random trials, and confirming R(0,0)=identity,
-// i.e. wind axes = body axes at zero alpha/beta).
-// Force in wind axes: (-D, Y, L) along (Xw, Yw, Zw); Xw is defined along the
-// relative-wind unit vector (drag opposes the relative wind exactly, by
-// definition, independent of any rotation-matrix convention - a useful
-// cross-check), Zw reduces to body +Z (up) and Yw to body +Y (left) at
-// alpha=beta=0.
-// Closed form (expand F_body = R(alpha,beta) @ (-D, Y, L)^T with
-// R = Ry(alpha)*Rz(beta), beta per the Candidate-B convention above):
+// Yukarıdaki alpha/beta formüllerinin ima ettiği AYNI dönüşten kurulmuştur:
+// R(alpha,beta) = Ry(alpha) * Rz(beta). Böylece kuvvet dönüşümü kullanılan
+// açı formülleriyle birebir tutarlıdır. Doğrulama: R(alpha,beta) @ (1,0,0)
+// = Vrel/V ve R(0,0) = birim matris (sıfır alfa/beta'da rüzgâr eksenleri
+// gövde eksenlerine eşittir).
+// Rüzgâr eksenlerinde kuvvet (Xw, Yw, Zw) boyunca (-D, Y, L)'dir; Xw bağıl
+// rüzgâr birim vektörü yönündedir (sürükleme tanımı gereği bağıl rüzgâra tam
+// ters), Zw gövde +Z'ye (yukarı) ve Yw gövde +Y'ye (sol) indirgenir.
+// Kapalı biçim:
 //   Fx = -D*cos(a)*cos(b) - Y*cos(a)*sin(b) + L*sin(a)
 //   Fy = -D*sin(b) + Y*cos(b)
 //   Fz =  D*sin(a)*cos(b) + Y*sin(a)*sin(b) + L*cos(a)
-// Verified: at alpha=beta=0, reduces to (Fx,Fy,Fz)=(-D,Y,L) exactly, matching
-// the naive case as the correct zero-angle special case, not a coincidence -
-// the general form correctly rotates as alpha/beta move away from zero
-// (checked for positive AND negative alpha).
 inline gz::math::Vector3d WindToBodyForce(
     double lift, double drag, double sideForce, double alpha, double beta)
 {
@@ -407,76 +258,45 @@ inline gz::math::Vector3d WindToBodyForce(
 }
 
 // -----------------------------------------------------------------------
-// Cma/My pitch-axis sign convention
+// Cma / My yunuslama ekseni işaret konvansiyonu
 // -----------------------------------------------------------------------
-// Unlike the rate/damping terms (Cmq*q_hat, Clp*p_hat, Cnr*r_hat), which are
-// mathematically SELF-referential (a negative coefficient times a rate
-// always produces a moment opposing that SAME rate, about the SAME axis -
-// true in any frame/handedness, no convention risk - proved algebraically:
-// Mx/My/Mz = [qbar*S*(b or c_ref)*Cxq/(2*vSafe)] * (p, q, or r), i.e. always
-// a NEGATIVE-constant multiple of the SAME rate when Cxq<0, hence always
-// opposing it, regardless of any axis-handedness convention), the STATIC
-// terms (Cm0, Cma*alpha, and now the elevator/aileron wide-deflection
-// pitching-moment lookup corrections - formerly Cmde*deltaE) are NOT
-// self-referential: each relates an independently-defined ANGLE (alpha, or
-// a control deflection - not a rate) to a moment about +Y. Given the
-// confirmed "+Y rotation -> NOSE DOWN" finding above (opposite of the
-// traditional "positive Cm/My = nose up" aerospace shorthand, which is only
-// consistent with strict right-hand-rule rotation in FRD, not FLU), a
-// LITERAL, unmodified application of My = qbar*S*c_ref*Cm to the STATIC
-// portion of Cm produces, for a nose-up disturbance (alpha>0, Cma<0): a
-// moment that is DESTABILIZING (nose-up-reinforcing), the OPPOSITE of the
-// textbook-expected restoring (nose-down) behavior.
-//
-// This was measured directly (My = -2.83 N*m at alpha = +8 deg, reinforcing
-// rather than restoring) and re-derived from first principles by
-// rotation-matrix construction on both the +X and +Z axes, confirming: (a)
-// roll/+X handedness does NOT flip between FRD/FLU, so Cl/Mx needs no
-// correction; (b) yaw/+Z handedness DOES flip, exactly like pitch/+Y, but
-// is already absorbed by the Sideslip() convention CHOICE above - beta had
-// a genuine free sign convention to select, alpha did not, so yaw got a
-// "free" fix where pitch could not; (c) the RATE term Cmq*qHat is affected
-// by the SAME FLU mirroring on BOTH q (read raw from the FLU ECM) and My's
-// output - a double-cancellation, not a coincidence, matching the already-
-// passing Cmq_DAMPING_SIGN_TEST exactly). validation's conclusion, applied
-// here: negate ONLY the static group when mapping onto the FLU +Y torque
-// axis; the rate group (Cmq*qHat) is already correct and must NOT be
-// flipped. The elevator/aileron wide-deflection pitching-moment lookup
-// corrections (ctrlElevDCm/ctrlAileDCm, this pass, replacing Cmde*deltaE)
-// are included in the static group deliberately - each is a geometric
-// angle input (control deflection), not a rate, so it has the same
-// axis-handedness exposure as Cma*alpha, independently of the SEPARATE
-// question of whether a positive Gazebo joint command physically means
-// trailing-edge-down (already resolved for all 3 surfaces, task
-// CONTROL_SURFACE_SIGN_MAPPING). Cm0 and Cma are flipped together as a
-// single group (never independently) because Cm0 was specifically derived
-// so that Cm0+Cma*alpha_trim=0 at the neutral trim point (
-// sec 19.3) - flipping only one would break that zero-moment trim
-// condition. out.Cm itself is still reported in XFLR5's own (unflipped)
-// convention, for comparability against the source sweep tables; only the
-// MOMENT computation (my, below) applies the correction.
+// Hız/sönüm terimleri (Cmq*qHat, Clp*pHat, Cnr*rHat) matematiksel olarak
+// KENDİNE GÖNDERMELİDİR: negatif bir katsayı ile bir hızın çarpımı, aynı eksen
+// etrafında daima o hıza karşı koyan bir moment üretir; bu her çerçevede
+// doğrudur, konvansiyon riski yoktur.
+// STATİK terimler (Cm0, Cma*alpha ve kumanda sapması arama düzeltmeleri) ise
+// kendine göndermeli değildir: her biri bağımsız tanımlı bir AÇIYI +Y
+// etrafındaki bir momente bağlar. "+Y dönüşü -> BURUN AŞAĞI" bulgusu
+// nedeniyle My = qbar*S*c_ref*Cm formülünün statik kısma birebir uygulanması,
+// burun yukarı bozulmada (alpha>0, Cma<0) KARARSIZLAŞTIRICI bir moment verir;
+// bu, beklenen düzeltici davranışın tersidir.
+// Bu nedenle FLU +Y tork eksenine eşlemede YALNIZCA statik grup negatiflenir;
+// hız grubu (Cmq*qHat) zaten doğrudur ve çevrilmemelidir (q hem FLU'dan ham
+// okunduğu hem de My çıktısında aynı aynalamanın bulunduğu için etki iki kez
+// sadeleşir). Kumanda sapması moment düzeltmeleri statik gruba dahildir:
+// her biri bir hız değil geometrik açı girdisidir, dolayısıyla Cma*alpha ile
+// aynı eksen elleri duyarlılığına sahiptir. Cm0 ile Cma daima tek bir grup
+// olarak çevrilir: Cm0, denge noktasında Cm0+Cma*alpha_trim=0 olacak şekilde
+// türetildiği için yalnız birini çevirmek sıfır moment denge koşulunu bozar.
+// out.Cm kaynak tarama tablolarıyla karşılaştırılabilsin diye XFLR5'in kendi
+// (çevrilmemiş) konvansiyonunda raporlanır; düzeltme yalnızca aşağıdaki my
+// hesabına uygulanır.
 // -----------------------------------------------------------------------
 
 // -----------------------------------------------------------------------
-// High-alpha smooth saturation (V1_SMOOTH_SATURATION)
+// Yüksek hücum açısında yumuşak doyum
 // -----------------------------------------------------------------------
-// Below |alpha| <= alphaTransition (DERIVED = midpoint of the XFLR5
-// attached-flow reliability band, 9-9.5 deg): CL is exactly the linear
-// model (CL0 + CLa*alpha), reproducing the validated region exactly.
-// Beyond that, CL asymptotically (never exceeding) approaches +/-CLmax via
-// a C1-continuous (matching value AND slope at the transition point)
-// exponential, so there is no kink and no unexplained free parameter - the
-// decay rate k is itself computed from CLa/CL0/CLmax/alphaTransition, not a
-// separately-chosen constant. See AeroConfig::Prepare() for the constants
-// and for the full derivation/numeric table.
-// Positive side traces to real data (CLmax=1.42 manufacturer value, 9-9.5
-// deg XFLR5 reliability limit). Negative side is ASSUMPTION-tagged (see
-// aero_v1_config.yaml high_alpha_limiter.negative_side_note) - no
-// full-aircraft negative-alpha stall data exists in the source of truth;
-// the symmetric bound exists purely to prevent unbounded negative
-// lift/drag growth (the stated V1 requirement), not as validated physics.
-// NOT TOUCHED by the HIGH_DEFLECTION_CONTROL_AERO_IMPLEMENTATION pass - this
-// is an angle-of-attack concept, unrelated to control-surface deflection.
+// |alpha| <= alphaTransition bölgesinde CL tam olarak doğrusal modeldir
+// (CL0 + CLa*alpha), yani doğrulanmış bölge birebir yeniden üretilir. Ötesinde
+// CL, C1 sürekli (geçiş noktasında hem değer hem eğim eşleşir) bir üstel ile
+// +/-CLmax'a asimptotik yaklaşır ve onu asla aşmaz; sönüm oranı k'nın kendisi
+// CLa/CL0/CLmax/alphaTransition'dan hesaplanır, ayrıca seçilmiş serbest bir
+// sabit değildir.
+// Pozitif taraf gerçek veriye dayanır (CLmax=1.42 üretici değeri ve XFLR5
+// güvenilir akım sınırı). Negatif taraf ASSUMPTION etiketlidir: tam uçak için
+// negatif alfa stall verisi yoktur; simetrik sınır yalnızca sınırsız negatif
+// taşıma/sürükleme büyümesini engellemek için vardır, doğrulanmış fizik
+// değildir.
 inline double SaturatedCL(const AeroConfig &cfg, double alpha)
 {
   const double clLinear = cfg.CL0 + cfg.CLa * alpha;
@@ -493,19 +313,11 @@ inline double SaturatedCL(const AeroConfig &cfg, double alpha)
   return clLinear;
 }
 
-// -----------------------------------------------------------------------
-// Piecewise-linear control-surface wide-deflection lookup
-// (HIGH_DEFLECTION_CONTROL_AERO_IMPLEMENTATION, 2026-08-26)
-// -----------------------------------------------------------------------
-// Standard piecewise-linear interpolation over a fixed, sorted (strictly
-// increasing) set of breakpoints. DOMAIN-BOUNDED: any input at or beyond
-// the first/last breakpoint returns the first/last VALUE exactly (clamped),
-// never extrapolated. This is the no-silent-extrapolation boundary for
-// control-surface deflections, at +/-45 deg (the actuator's mechanical
-// range). Method: linear interpolation between the two bracketing
-// breakpoints; the valid range is exactly
-// [breakpoints.front(), breakpoints.back()] = +/-45 deg for every curve
-// using this function in this file.
+/// \brief Sabit ve kesin artan kırılma noktaları üzerinde parçalı DOĞRUSAL
+/// interpolasyon. TANIM ARALIĞI SINIRLIDIR: ilk/son kırılma noktasında veya
+/// ötesinde ilk/son DEĞER aynen döner (kırpma), asla ekstrapolasyon yapılmaz.
+/// Geçerli aralık tam olarak [breakpoints.front(), breakpoints.back()], yani
+/// bu dosyadaki her eğri için +/-45 derecedir.
 inline double InterpLinear(const CtrlLookupArray &breakpoints,
                             const CtrlLookupArray &values, double x)
 {
@@ -516,9 +328,8 @@ inline double InterpLinear(const CtrlLookupArray &breakpoints,
   if (x >= hi)
     return values.back();
 
-  // Breakpoints are sorted strictly increasing, so std::upper_bound finds
-  // the first breakpoint
-  // strictly greater than x, giving the upper end of the bracketing segment.
+  // Kırılma noktaları kesin artan olduğundan std::upper_bound, x'ten kesin
+  // büyük ilk noktayı, yani kuşatan aralığın üst ucunu verir.
   const auto it = std::upper_bound(breakpoints.begin(), breakpoints.end(), x);
   const std::size_t i1 = static_cast<std::size_t>(it - breakpoints.begin());
   const std::size_t i0 = i1 - 1;
@@ -527,9 +338,8 @@ inline double InterpLinear(const CtrlLookupArray &breakpoints,
   return values[i0] + t * (values[i1] - values[i0]);
 }
 
-/// \brief Full V1 aerodynamic model evaluation for one timestep. Pure
-/// function: no side effects, no Gazebo dependency. See file header for the
-/// full architecture/provenance notes.
+/// \brief Bir zaman adımı için tam aerodinamik model değerlendirmesi. Saf
+/// fonksiyon: yan etkisi ve Gazebo bağımlılığı yoktur.
 inline AeroOutput ComputeAero(const AeroConfig &cfg, const AeroState &st)
 {
   AeroOutput out;
@@ -537,38 +347,25 @@ inline AeroOutput ComputeAero(const AeroConfig &cfg, const AeroState &st)
   const double u = st.u, v = st.v, w = st.w;
   const double vSq = u * u + v * v + w * w;
   out.V = std::sqrt(vSq);
-  out.qbar = 0.5 * cfg.rho * vSq; // exactly zero at true V=0: no protection needed here
+  out.qbar = 0.5 * cfg.rho * vSq; // gerçek V=0'da tam sıfır: burada korumaya gerek yok
 
   out.alpha = AngleOfAttack(u, v, w);
   out.beta = Sideslip(u, v, w);
 
-  // V floor ONLY for the *_hat rate-normalization denominators (division by
-  // 2V) - qbar above already uses the true (unclamped) V, so qbar*(*_hat)
-  // still -> 0 correctly as V -> 0 even though *_hat itself is a large-but-
-  // finite number at that instant (never Inf/NaN). See ZERO_AIRSPEED_AERO_TEST.
+  // V tabanı YALNIZCA *_hat hız normalizasyon paydaları (2V) içindir. qbar
+  // yukarıda gerçek (kırpılmamış) V'yi kullandığı için qbar*(*_hat) çarpımı
+  // V -> 0 giderken doğru biçimde sıfıra gider; *_hat o anda büyük ama sonlu
+  // kalır, asla Inf/NaN olmaz.
   const double vSafe = std::max(out.V, cfg.vSafeFloor);
   const double pHat = st.p * cfg.b / (2.0 * vSafe);
   const double qHat = st.q * cfg.c_ref / (2.0 * vSafe);
   const double rHat = st.r * cfg.b / (2.0 * vSafe);
 
-  // -----------------------------------------------------------------------
-  // Control-surface aerodynamic effect: WIDE-DEFLECTION PIECEWISE-LINEAR
-  // LOOKUP (HIGH_DEFLECTION_CONTROL_AERO_IMPLEMENTATION, 2026-08-26).
-  // REPLACES the old linear-coefficient + generic +/-10 deg clamp model
-  // entirely, for all three surfaces. st.deltaA/E/R are already sign-mapped
-  // (AerodynamicsSystem.cc) and are used DIRECTLY here (no pre-clamp - the
-  // old V1_CONSERVATIVE_CLAMP `controlDeflectionClamp` field is RETIRED);
-  // InterpLinear()'s own domain bound (+/-45 deg) is now the single "no
-  // silent extrapolation" boundary, matching the actuator's mechanical
-  // range instead of the old conservative +/-10 deg aero-input clamp.
-  //
-  // ARCHITECTURE: "full lookup replaces the static control term only" - each
-  // lookup result below is used EXACTLY where the corresponding old
-  // Cxda/Cxdr/Cmde*deltaX linear term used to be, never in addition to it
-  // (no double-count). The old scalar constants (Clda/Cnda/CYda/CYdr/Cndr/
-  // Cmde/CLde) remain in AeroConfig purely as small-signal reference
-  // values - they are not read here.
-  // -----------------------------------------------------------------------
+  // Kumanda yüzeyi etkisi: geniş sapma parçalı doğrusal arama. st.deltaA/E/R
+  // zaten işaret eşlenmiştir ve doğrudan kullanılır; tek sınır InterpLinear()
+  // tanım aralığıdır (+/-45 derece, eyleyicinin mekanik aralığı).
+  // Her arama sonucu, karşılık gelen eski doğrusal terimin TAM YERİNE geçer,
+  // onun üstüne eklenmez (çift sayım olmaz).
   const double dCYa = InterpLinear(cfg.ctrlBreakpointsRad, cfg.ctrlAileCY, st.deltaA);
   const double dCla = InterpLinear(cfg.ctrlBreakpointsRad, cfg.ctrlAileCl, st.deltaA);
   const double dCna = InterpLinear(cfg.ctrlBreakpointsRad, cfg.ctrlAileCn, st.deltaA);
@@ -585,59 +382,36 @@ inline AeroOutput ComputeAero(const AeroConfig &cfg, const AeroState &st)
   const double dCmeCtrl = InterpLinear(cfg.ctrlBreakpointsRad, cfg.ctrlElevDCm, st.deltaE);
   const double dCDeCtrl = InterpLinear(cfg.ctrlBreakpointsRad, cfg.ctrlElevDCD, st.deltaE);
 
-  // Coefficient build-up. Cross-axis (untouched) stability-derivative terms
-  // (beta/p_hat/q_hat/r_hat) are exactly as before; only the control-
-  // deflection contribution changed (linear-with-clamp -> lookup).
   out.CY = cfg.CYb * out.beta + cfg.CYp * pHat + cfg.CYr * rHat + dCYa + dCYr;
   out.Cl = cfg.Clb * out.beta + cfg.Clp * pHat + cfg.Clr * rHat + dCla + dClr;
   out.Cn = cfg.Cnb * out.beta + cfg.Cnp * pHat + cfg.Cnr * rHat + dCna + dCnr;
 
-  // Cm split into a STATIC/angle-derived group (Cm0, Cma*alpha, and now the
-  // elevator + aileron wide-deflection pitching-moment lookup corrections -
-  // each relates an independently-defined ANGLE to a moment, exactly like
-  // the Cma*alpha term analyzed in the "RESOLVED FINDING" comment above)
-  // and a RATE group (Cmq*qHat - self-referential, unaffected by this
-  // pass). Only the STATIC group needs the FLU pitch-axis sign correction
-  // when mapped onto My below; the RATE group must NOT be flipped.
-  // out.Cm itself is reported in XFLR5's OWN (unflipped) convention, for
-  // diagnostics/comparability against the source-of-truth sweep tables -
-  // only the MOMENT computation (my, below) applies the correction.
+  // Cm, STATİK/açı kaynaklı gruba (Cm0, Cma*alpha ve asansör + kanatçık
+  // yunuslama momenti düzeltmeleri) ve HIZ grubuna (Cmq*qHat) ayrılır.
+  // Aşağıda My'ye eşlenirken yalnızca STATİK grup FLU işaret düzeltmesi alır;
+  // hız grubu çevrilmez. out.Cm ise tanı amacıyla XFLR5'in kendi
+  // (çevrilmemiş) konvansiyonunda raporlanır.
   const double cmStatic = cfg.Cm0 + cfg.Cma * out.alpha + dCmeCtrl + dCmaCtrl;
   const double cmRate = cfg.Cmq * qHat;
   out.Cm = cmStatic + cmRate;
 
-  // CL: high-alpha smooth saturation applied to the alpha-driven STATIC
-  // term only (unchanged from the prior pass); CLq*qHat (RATE term) added
-  // on top, unsaturated. NEW this pass: the elevator wide-deflection lift
-  // lookup (dCLeCtrl, previously entirely absent - CLde was deliberately
-  // omitted.1/aero_v1_config.yaml) and the
-  // aileron secondary lift correction (dCLaCtrl, also new) are added on
-  // top, exactly mirroring the "full lookup replaces static term" pattern.
+  // CL: yumuşak doyum yalnızca alfa kaynaklı STATİK terime uygulanır; hız
+  // terimi CLq*qHat ile kumanda arama katkıları doyumsuz olarak eklenir.
   out.CL = SaturatedCL(cfg, out.alpha) + cfg.CLq * qHat + dCLeCtrl + dCLaCtrl;
 
-  // CD: Part-4 drag integration (HIGH_DEFLECTION_CONTROL_AERO_IMPLEMENTATION,
-  // 2026-08-26). V1 full-aircraft calibrated polar (CD0 + k*CL^2, unchanged)
-  // PLUS the three per-surface wide-deflection drag corrections, summed
-  // ADDITIVELY. This is an explicit, documented V1 SIMPLIFICATION for
-  // simultaneous multi-surface deflection: the three dCD_x corrections were
-  // each measured with ONLY that one surface deflected (single-surface
-  // isolated sweeps) - simply adding them when multiple surfaces are
-  // deflected together has NOT been validated against a true combined-
-  // deflection XFLR5 sweep (no such multi-surface sweep exists in the
-  // source of truth). Flagged here and in as
-  // V1_ADDITIVE_MULTI_SURFACE_DRAG_APPROXIMATION - not fabricated
-  // interaction physics, just a linear superposition assumption.
+  // CD: V1 kalibre edilmiş tam uçak poları (CD0 + k*CL^2) artı üç yüzeye ait
+  // geniş sapma sürükleme düzeltmesi, TOPLAMSAL olarak. Bu, eşzamanlı çok
+  // yüzeyli sapma için belgelenmiş bir V1 BASİTLEŞTİRMESİDİR: her dCD_x
+  // yalnızca o yüzey saptırılmışken ölçülmüştür ve birlikte toplanmaları
+  // gerçek bir birleşik sapma taramasına karşı doğrulanmamıştır
+  // (V1_ADDITIVE_MULTI_SURFACE_DRAG_APPROXIMATION). Uydurulmuş etkileşim
+  // fiziği değil, doğrusal süperpozisyon varsayımıdır.
   //
-  // Floored at CD0 (never below the zero-control-deflection parasite+
-  // induced baseline): several dCD_x values are slightly NEGATIVE near
-  // small deflections (e.g. elevator dCD=-0.00034 at delta_e=-5 deg,
-  // aileron/rudder tables are drag-increasing at all nonzero deflections so
-  // only elevator can go negative) - CD0 is chosen as the floor (rather
-  // than 0) because CD0 is itself the aircraft's own documented, real
-  // parasite-drag constant that always physically
-  // exists regardless of control-surface deflection; flooring at exactly 0
-  // would imply a physically implausible zero-drag airframe and would be
-  // less defensible than flooring at the aircraft's own baseline.
+  // Taban CD0'dır: bazı dCD_x değerleri küçük sapmalarda hafifçe NEGATİFTİR.
+  // Sıfır yerine CD0'da sınırlamanın nedeni, CD0'ın uçağın kumanda sapmasından
+  // bağımsız olarak fiziksel olarak her zaman var olan parazit sürükleme
+  // sabiti olmasıdır; tam sıfırda sınırlamak sürüklemesi olmayan bir gövde
+  // anlamına gelirdi.
   const double cdRaw = cfg.CD0 + cfg.dragK * out.CL * out.CL +
                         dCDeCtrl + dCDaCtrl + dCDrCtrl;
   out.CD = std::max(cdRaw, cfg.CD0);
@@ -648,18 +422,14 @@ inline AeroOutput ComputeAero(const AeroConfig &cfg, const AeroState &st)
 
   out.forceBody = WindToBodyForce(lift, drag, sideForce, out.alpha, out.beta);
 
-  // Moments: Mx (roll) and Mz (yaw) use the given Cl/Cn directly, no axis-
-  // handedness correction - roll-axis handedness does not flip between
-  // FRD/FLU (see the axis-rotation table earlier in this file), and yaw-
-  // axis handedness, while it DOES flip, is already absorbed by the
-  // Sideslip() convention choice (Candidate B was selected specifically
-  // because it makes the given Cnb/CYb signs behave correctly through the
-  // UNMODIFIED Mz=qbar*S*b*Cn formula - see the Sideslip() derivation
-  // comment and). This was independently
-  // re-derived and confirmed by `validation`'s review (rotation-matrix
-  // construction on both +X and +Z axes) - no change needed here.
-  // My (pitch) applies the resolved sign correction from above: only
-  // cmStatic is negated relative to XFLR5's own convention; cmRate is not.
+  // Momentler: Mx (yuvarlanma) ve Mz (sapma) verilen Cl/Cn'yi doğrudan
+  // kullanır, eksen elleri düzeltmesi gerekmez. Yuvarlanma ekseninin elleri
+  // FRD ile FLU arasında değişmez; sapma ekseninin elleri değişir ama bu
+  // zaten Sideslip() konvansiyon seçimiyle soğurulmuştur (Aday B tam olarak
+  // verilen Cnb/CYb işaretlerinin DEĞİŞTİRİLMEMİŞ Mz=qbar*S*b*Cn formülünden
+  // doğru davranması için seçilmiştir). My ise yukarıda açıklanan düzeltmeyi
+  // uygular: XFLR5 konvansiyonuna göre yalnızca cmStatic negatiflenir,
+  // cmRate negatiflenmez.
   const double mx = out.qbar * cfg.S * cfg.b * out.Cl;
   const double my = out.qbar * cfg.S * cfg.c_ref * (-cmStatic + cmRate);
   const double mz = out.qbar * cfg.S * cfg.b * out.Cn;

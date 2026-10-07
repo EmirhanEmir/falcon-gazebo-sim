@@ -1,12 +1,8 @@
-// =============================================================================
-// FALCON V2 - Gazebo Sim Harmonic propulsion System plugin (implementation)
-// =============================================================================
-// See PropulsionSystem.hh for the architecture summary. Every numeric
-// constant used here comes from config/propulsion_v1_config.yaml, loaded at
-// Configure() time - no coefficient is hardcoded in this file. Joint and link
-// names below are structural identifiers matching model/model.sdf, not
-// physics constants.
-// =============================================================================
+// FALCON V2 — itki sistemi eklentisinin gerçeklemesi.
+// Mimari özet için PropulsionSystem.hh'ye bakın. Buradaki hiçbir katsayı
+// gömülü değildir: tümü Configure() anında config/propulsion_v1_config.yaml
+// dosyasından okunur. Aşağıdaki eklem/bağlantı adları model.sdf ile eşleşen
+// yapısal tanımlayıcılardır, fiziksel sabit değildir.
 #include "PropulsionSystem.hh"
 
 #include <algorithm>
@@ -68,7 +64,7 @@ void PropulsionSystem::Configure(
     return;
   }
 
-  // Optional overrides (mirrors AerodynamicsSystem.cc's pattern).
+  // SDF üzerinden isteğe bağlı geçersiz kılmalar.
   this->physicsCfg.rho = _sdf->Get<double>("air_density", this->physicsCfg.rho).first;
   this->diagRateHz = _sdf->Get<double>("diagnostics_rate_hz", this->diagRateHz).first;
   const std::string windTopic =
@@ -80,7 +76,7 @@ void PropulsionSystem::Configure(
   const std::string diagTopic = _sdf->Get<std::string>(
       "diagnostics_topic", "/model/falcon_v2/propulsion/diagnostics").first;
 
-  // ---- Resolve link/joint entities ----
+  // ---- Bağlantı/eklem varlıklarının çözümlenmesi ----
   this->baseLinkEntity = model.LinkByName(_ecm, kBaseLinkName);
   this->leftPropJoint = model.JointByName(_ecm, kLeftPropJoint);
   this->rightPropJoint = model.JointByName(_ecm, kRightPropJoint);
@@ -106,7 +102,7 @@ void PropulsionSystem::Configure(
   gz::sim::Link baseLink(this->baseLinkEntity);
   baseLink.EnableVelocityChecks(_ecm, true);
 
-  // ---- Topic subscriptions ----
+  // ---- Konu abonelikleri ----
   if (!this->node.Subscribe(windTopic, &PropulsionSystem::OnWind, this))
   {
     gzerr << "[FalconV2Propulsion] Failed to subscribe to wind topic '"
@@ -206,9 +202,8 @@ bool PropulsionSystem::LoadConfig(const std::string &_path)
     gzerr << "[FalconV2Propulsion] propeller.apc_parsed_csv_path is empty.\n";
     return false;
   }
-  // apc_parsed_csv_path in the YAML is relative to the YAML file's own
-  // directory; make it absolute before loading. An already-absolute path is
-  // used as-is.
+  // YAML'deki apc_parsed_csv_path, YAML dosyasının bulunduğu dizine görelidir;
+  // yüklemeden önce mutlak hâle getirilir. Zaten mutlak olan yol aynen kullanılır.
   std::string resolvedCsvPath = apcCsvPath;
   if (apcCsvPath[0] != '/')
   {
@@ -264,54 +259,48 @@ void PropulsionSystem::StepMotor(
 {
   gz::sim::Link baseLink(this->baseLinkEntity);
 
-  // ---- 5. Local axial airspeed at this motor's own hub ----
-  // WorldLinearVelocity(ecm, offset) returns the world-frame velocity of the
-  // point [offset] away from the link's own origin (offset expressed in the
-  // link-fixed/body frame) - i.e. exactly V_point = V_origin + omega x
-  // offset, algebraically identical to the CG-relative formulation
-  // (V_cg + omega x r_from_cg) since both are valid reference points on the
-  // same rigid body; using this gz-sim primitive directly (rather than
-  // re-deriving the cross product by hand) avoids a second, potentially
-  // inconsistent implementation of the same rigid-body kinematics already
-  // used elsewhere in this project.
+  // ---- Bu motorun kendi göbeğindeki eksenel hava hızı ----
+  // WorldLinearVelocity(ecm, offset), bağlantının orijininden [offset] kadar
+  // uzaktaki noktanın dünya çerçevesindeki hızını verir (offset gövde
+  // çerçevesinde), yani V_nokta = V_orijin + omega x offset. Aynı rijit cisim
+  // üzerindeki iki geçerli referans noktası olduğundan bu, CG'ye göre yazılan
+  // (V_cg + omega x r) ifadesiyle cebirsel olarak özdeştir.
   const auto hubVelWorldOpt = baseLink.WorldLinearVelocity(_ecm, _hubOffsetBody);
   double vAxial = 0.0;
   if (hubVelWorldOpt.has_value())
   {
-    // Relative airflow: Vrel = Vhub - Vwind (same convention as
-    // AerodynamicsSystem.cc), projected onto this motor's thrust axis.
+    // Bağıl hava akışı: Vrel = Vgöbek - Vrüzgâr (dünya çerçevesinde), itki
+    // ekseni üzerine izdüşürülür; J'yi besleyen eksenel bileşen budur.
     const gz::math::Vector3d hubVelRel = *hubVelWorldOpt - this->windWorld;
     const gz::math::Vector3d thrustAxisWorld = _worldRot.RotateVector(this->thrustAxisBody);
     vAxial = hubVelRel.Dot(thrustAxisWorld);
   }
-  // else: velocity checks not yet enabled for this tick (first tick(s) after
-  // Configure()) - fall back to vAxial=0 this step rather than use stale
-  // data; the omega ODE still advances correctly (thrust simply computed at
-  // zero local airspeed for this one tick).
+  // Aksi hâlde (Configure() sonrası ilk tiklerde hız kontrolleri henüz etkin
+  // değilse) bayat veri yerine bu adımda vAxial=0 kullanılır; omega ODE'si
+  // yine doğru ilerler.
 
-  // ---- 2. ESC/motor electrical (own-frame omega) ----
+  // ---- ESC/motor elektriği (motorun kendi çerçevesindeki omega) ----
   const MotorElectricalResult elec = MotorElectrical(
       this->motorCfg, _throttleCmd, this->batteryCfg.vNominal, _omegaOwnState);
 
-  // ---- 5/6. Propeller aerodynamic loading at the CURRENT (pre-step) omega ----
+  // ---- MEVCUT (adım öncesi) omega'da pervane aerodinamik yüklenmesi ----
   const PropLoadResult load = PropAeroLoad(
       this->apcTable, _omegaOwnState, vAxial, this->propCfg.diameterM,
       this->physicsCfg.rho, this->physicsCfg.nSafeFloorRevS);
 
-  // ---- 3/4. Rotor ODE step (explicit Euler, RPM cap saturation) ----
+  // ---- Rotor ODE adımı (açık Euler, RPM sınırında doyum) ----
   const RotorStepResult step = IntegrateRotorStep(
       _omegaOwnState, elec.torque_Nm, load.qPropSigned_Nm,
       this->physicsCfg.rotorInertiaKgM2, dt, this->physicsCfg.rpmCap);
   _omegaOwnState = step.omega;
 
-  // ---- 9. Force/moment application at the REAL hub, base_link ----
-  // Thrust acts along the fixed +X thrust axis (rotation-sign-independent -
-  // both motors intake/accelerate air along the same physical +X sense
-  // regardless of which way they spin). Reaction torque
-  // (Q_reaction = -Q_prop) is mapped from this motor's
-  // own-frame sign onto the shared body +X axis via the SAME rotation_sign
-  // multiplier used for the joint-velocity drive below - see
-  // propulsion_v1_config.yaml "rotation" block.
+  // ---- Kuvvet/momentin GERÇEK göbekte, base_link üzerine uygulanması ----
+  // İtki, dönüş yönünden bağımsız olarak sabit +X itki ekseni boyuncadır: her
+  // iki motor da hangi yöne dönerse dönsün havayı aynı fiziksel +X yönünde
+  // hızlandırır. Reaksiyon torku (Q_reaction = -Q_prop) ise motorun kendi
+  // çerçevesindeki işaretinden paylaşılan gövde +X eksenine, aşağıdaki görsel
+  // eklemle AYNI rotation_sign çarpanıyla eşlenir; yani işareti motorun dönüş
+  // yönüne bağlıdır (bkz. propulsion_v1_config.yaml "rotation" bloğu).
   const gz::math::Vector3d thrustForceBody = this->thrustAxisBody * load.thrust_N;
   const gz::math::Vector3d thrustForceWorld = _worldRot.RotateVector(thrustForceBody);
 
@@ -320,40 +309,21 @@ void PropulsionSystem::StepMotor(
   const gz::math::Vector3d reactionTorqueBody = this->thrustAxisBody * reactionTorqueBodyX;
   const gz::math::Vector3d reactionTorqueWorld = _worldRot.RotateVector(reactionTorqueBody);
 
-  // Single combined call: the force's own r x F moment (from the hub
-  // offset) plus the explicit pure reaction-torque couple - no separate,
-  // hand-coded r x F shortcut anywhere in this file.
+  // Tek bir birleşik çağrı: kuvvetin göbek konumundan doğan r x F momenti ile
+  // açık saf reaksiyon-tork çifti birlikte uygulanır. Uygulama noktası CG
+  // değil, gerçek göbek konumudur (_hubOffsetBody).
   baseLink.AddWorldWrench(_ecm, thrustForceWorld, reactionTorqueWorld, _hubOffsetBody);
 
-  // ---- Drive the visual prop joint from the SAME omega state (KINEMATIC
-  // position write, NOT SetVelocity) ----
-  // RESOLVED (2026-08-23, PROPULSION_V1_IMPLEMENTATION fix-loop): this
-  // block previously used Joint::SetVelocity(). gz/sim/Joint.hh documents
-  // SetVelocity() as "the physics engine is expected to compute the
-  // necessary joint torque for the commanded velocity and apply it in the
-  // next simulation step" - i.e. a genuine force-based servo, confirmed
-  // directly from the header (not inferred). Because this joint's SDF
-  // rotational inertia (I=2.7349e-4 kg*m^2, model.sdf left_prop/right_prop)
-  // equals this plugin's own I_rotor, any such servo torque would equal
-  // I_rotor*dOmega/dt by construction and would apply to base_link through
-  // the joint IN ADDITION to the explicit AddWorldWrench() reaction torque
-  // above - a duplicated-force risk during any transient (dOmega/dt != 0;
-  // identically zero only at settled equilibrium, which is why the prior
-  // steady-state PRIORITY_CHECK test could not detect it).
-  //
-  // Fix: integrate a NEW, purely-cosmetic angular-position state (theta,
-  // own-frame/rotation-sign convention, same as the old velocity command)
-  // from the SAME authoritative omega state already used for thrust/
-  // reaction-torque above, then write it via Joint::ResetPosition(), which
-  // gz/sim/Joint.hh documents as directly modifying the joint's internal
-  // state (contrasted explicitly against SetVelocity's "does not modify the
-  // internal state" / physics-engine-torque behavior) - a kinematic write,
-  // not something the constraint solver applies force to achieve - exactly
-  // what driving a joint without letting it participate in real dynamics
-  // requires.
-  // theta itself feeds NOTHING physical - it is wrapped into (-pi, pi] each
-  // tick purely to avoid unbounded double growth over a long sim; only
-  // omega (unchanged above) drives thrust/torque/RPM.
+  // ---- Görsel pervane eklemi, AYNI omega durumundan sürülür (KİNEMATİK
+  // konum yazımı; SetVelocity DEĞİL) ----
+  // Joint::SetVelocity() kuvvet tabanlı bir servodur: fizik motoru istenen hız
+  // için gereken eklem torkunu hesaplayıp uygular. Bu eklemin SDF atalet
+  // değeri eklentinin I_rotor'una eşit olduğundan, böyle bir servo torku her
+  // geçici rejimde (dOmega/dt != 0) base_link'e yukarıdaki açık
+  // AddWorldWrench() reaksiyon torkuna EK olarak binerdi. Bu nedenle konum,
+  // doğrudan iç eklem durumunu yazan Joint::ResetPosition() ile sürülür.
+  // theta hiçbir fiziksel büyüklüğü beslemez; uzun koşularda sınırsız büyümeyi
+  // önlemek için her tikte (-pi, pi] aralığına sarılır.
   if (_propJoint != gz::sim::kNullEntity)
   {
     const double jointOmegaBodyX = _rotationSign * _omegaOwnState;
@@ -362,7 +332,7 @@ void PropulsionSystem::StepMotor(
     gz::sim::Joint(_propJoint).ResetPosition(_ecm, {_thetaOwnState});
   }
 
-  // ---- Diagnostics (see Configure()'s logged field-order comment) ----
+  // ---- Teşhis (alan sırası Configure() içinde kayda yazılır) ----
   _diagOut.push_back(_throttleCmd);
   _diagOut.push_back(elec.current_A);
   _diagOut.push_back(elec.torque_Nm);
@@ -395,9 +365,8 @@ void PropulsionSystem::PreUpdate(
   const auto worldPoseOpt = baseLink.WorldPose(_ecm);
   if (!worldPoseOpt.has_value())
   {
-    // Pose/velocity checks not yet enabled for this step - skip, apply no
-    // force this step rather than use stale/garbage data (mirrors
-    // AerodynamicsSystem.cc's PreUpdate() guard).
+    // Bu adımda poz/hız kontrolleri henüz etkin değil: bayat veri kullanmak
+    // yerine bu adımda hiç kuvvet uygulamadan çıkılır.
     return;
   }
   const gz::math::Quaterniond &worldRot = worldPoseOpt->Rot();

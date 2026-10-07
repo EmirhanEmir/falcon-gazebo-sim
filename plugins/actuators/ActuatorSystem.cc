@@ -1,11 +1,8 @@
-// =============================================================================
-// FALCON V2 - Gazebo Sim Harmonic actuator/servo System plugin (implementation)
-// =============================================================================
-// See ActuatorSystem.hh for the architecture summary. Every numeric constant
-// used here comes from config/actuator_v1_config.yaml, loaded at Configure()
-// time - no coefficient is hardcoded in this file. Joint names below are
-// structural identifiers matching model/model.sdf, not physics constants.
-// =============================================================================
+// FALCON V2 - Aktüatör/servo System plugin'i (uygulama).
+// Mimari özeti için ActuatorSystem.hh. Burada kullanılan her sayısal değer
+// Configure() anında config/actuator_v1_config.yaml'den okunur; bu dosyada
+// hiçbir katsayı sabitlenmemiştir. Aşağıdaki joint adları model/model.sdf ile
+// eşleşen yapısal tanımlayıcılardır, fizik sabiti değildir.
 #include "ActuatorSystem.hh"
 
 #include <algorithm>
@@ -30,11 +27,8 @@ using namespace falcon_v2_actuators;
 
 namespace
 {
-// Structural identifiers (CONFIRMED from model/model.sdf, cross-checked by
-// direct grep for this task - not aerodynamic/servo coefficients, so these
-// are not subject to the "no magic numbers" coefficient rule; they are
-// names). Order MUST match the SurfaceIndex enum in ActuatorSystem.hh and
-// the actuator_v1_config.yaml "surfaces" map keys.
+// Sıra, ActuatorSystem.hh'deki SurfaceIndex enum'ı ve YAML "surfaces"
+// anahtarlarıyla birebir aynı olmak ZORUNDADIR.
 constexpr std::array<const char *, kNumSurfaces> kJointNames = {
     "left_aileron_joint", "right_aileron_joint", "left_elevator_joint",
     "right_elevator_joint", "rudder_joint"};
@@ -47,10 +41,6 @@ constexpr std::array<const char *, kNumSurfaces> kDefaultCmdTopics = {
     "/model/falcon_v2/actuators/left_elevator/cmd_rad",
     "/model/falcon_v2/actuators/right_elevator/cmd_rad",
     "/model/falcon_v2/actuators/rudder/cmd_rad"};
-// SDF <plugin> parameter names for overriding each default command topic
-// above (optional - see model.sdf's actuator <plugin> block; each falls
-// back to the corresponding kDefaultCmdTopics entry if absent, same pattern
-// as PropulsionSystem.cc's left_throttle_topic/right_throttle_topic).
 constexpr std::array<const char *, kNumSurfaces> kCmdTopicSdfParams = {
     "left_aileron_cmd_topic", "right_aileron_cmd_topic",
     "left_elevator_cmd_topic", "right_elevator_cmd_topic",
@@ -74,7 +64,6 @@ void ActuatorSystem::Configure(
     return;
   }
 
-  // ---- Load the structured servo/actuator dataset (source of truth) ----
   const std::string configPath = _sdf->Get<std::string>("config_path", "").first;
   if (configPath.empty())
   {
@@ -94,7 +83,6 @@ void ActuatorSystem::Configure(
   const std::string diagTopic = _sdf->Get<std::string>(
       "diagnostics_topic", "/model/falcon_v2/actuators/diagnostics").first;
 
-  // ---- Resolve the 5 joint entities ----
   std::array<std::string, kNumSurfaces> cmdTopics{};
   for (std::size_t i = 0; i < kNumSurfaces; ++i)
   {
@@ -112,15 +100,14 @@ void ActuatorSystem::Configure(
     joint.EnablePositionCheck(_ecm, true);
     joint.EnableVelocityCheck(_ecm, true);
 
-    // ---- Physics-engine-level hard constraints (defense in depth) ----
-    // See ActuatorModel.hh's header comment for why this is NOT optional
-    // given the current TEMPORARY_NUMERICAL_MASS placeholder link inertia
-    // (model/model.sdf): the PD torque below is software-clamped to
-    // +/-max_effort already, but a real-servo-scale torque acting on a
-    // near-massless placeholder link could otherwise integrate to an
-    // extremely large velocity within a single physics step. Setting the
-    // joint's own velocity/effort limits gives the physics engine itself a
-    // hard constraint on the REAL joint, independent of that mismatch.
+    // Fizik motoru seviyesinde sert kısıtlar - PID'in yazılım kırpmasına ek
+    // olarak ve ondan bağımsız. Gerekçesi: kontrol yüzeyi link'leri
+    // model/model.sdf'de kasıtlı olarak neredeyse kütlesiz sayısal yer
+    // tutucular taşır, dolayısıyla gerçek servo mertebesindeki bir tork bu
+    // yer tutucu atalete etki ederken tek bir fizik adımında çok büyük bir
+    // hıza entegre olabilir. Joint'in kendi hız/effort limitlerini kurmak,
+    // bu atalet uyuşmazlığından bağımsız olarak GERÇEK joint'e sert bir
+    // kısıt getirir.
     joint.SetVelocityLimits(
         _ecm, {gz::math::Vector2d(-this->config[i].maxRateRadS,
                                    this->config[i].maxRateRadS)});
@@ -128,10 +115,6 @@ void ActuatorSystem::Configure(
         _ecm, {gz::math::Vector2d(-this->config[i].maxEffortNm,
                                    this->config[i].maxEffortNm)});
 
-    // ---- Command topic subscription (hold-last-valid-command failsafe -
-    // see ActuatorSystem.hh's OnCommand() doc comment). Topic optionally
-    // overridable via SDF (mirrors PropulsionSystem.cc's throttle-topic
-    // override pattern), defaulting to kDefaultCmdTopics[i]. ----
     const std::string cmdTopic = _sdf->Get<std::string>(
         kCmdTopicSdfParams[i], kDefaultCmdTopics[i]).first;
     cmdTopics[i] = cmdTopic;
@@ -143,9 +126,6 @@ void ActuatorSystem::Configure(
             << cmdTopic << "' for surface '" << this->jointName[i] << "'.\n";
     }
 
-    // Neutral start - no command ever received yet (CommandRad[i] already
-    // zero-initialized by ActuatorSystem.hh's in-class member initializer;
-    // restated here defensively, not a behavior change).
     this->commandRad[i] = 0.0;
     this->setpointRad[i] = 0.0;
     this->integralRadS[i] = 0.0;
@@ -181,27 +161,19 @@ bool ActuatorSystem::LoadConfig(const std::string &_path)
 
   try
   {
-    // control_law's kp/kd/ki are the documented FALLBACK values as of
-    // 2026-09-12 (F1) - the live gains are the per-surface ones read in the
-    // surfaces loop below. Kept mandatory here (not optional) so a config
-    // missing the control_law block still fails loudly rather than
-    // silently running with zero gains.
+    // control_law kp/kd/ki belgelenmiş YEDEK değerlerdir; canlı kazançlar
+    // aşağıdaki yüzey döngüsünde okunan yüzey başına değerlerdir. Blok yine de
+    // zorunlu tutulur, böylece eksikse sessizce sıfır kazançla çalışmak yerine
+    // yüklenme yüksek sesle başarısız olur.
     auto lawNode = root["control_law"];
     const double kp = lawNode["kp_nm_per_rad"].as<double>();
     const double kd = lawNode["kd_nm_per_rad_s"].as<double>();
-    // ki_nm_per_rad_s added 2026-08-24 (gravity-droop fix). Read with a
-    // 0.0 default (not lawNode["..."].as<double>() unconditionally) so an
-    // older config file missing this key degrades to the pre-fix pure-P(D)
-    // behavior (inert, loud-by-absence-in-review) rather than failing to
-    // load entirely - matches ActuatorConfig::ki's own documented default.
+    // ki ve sp_weight_b varsayılanlı okunur: bu anahtarları içermeyen eski bir
+    // config, yüklenememek yerine belgelenmiş eski davranışa düşer (ki=0 saf
+    // P(D), sp_weight_b=1.0 ağırlıksız P terimi).
     const double ki =
         lawNode["ki_nm_per_rad_s"] ? lawNode["ki_nm_per_rad_s"].as<double>()
                                     : 0.0;
-    // sp_weight_b added 2026-08-24 (round-2 OVERSHOOT_AFTER_STEP fix). Same
-    // graceful-degradation pattern as ki above: an older config file missing
-    // this key reads as 1.0 (ActuatorConfig::spWeightB's own documented
-    // default), which is mathematically identical to the pre-round-2 P-term
-    // - not a silent behavior change for a config that predates this fix.
     const double spWeightB =
         lawNode["sp_weight_b"] ? lawNode["sp_weight_b"].as<double>() : 1.0;
 
@@ -214,25 +186,15 @@ bool ActuatorSystem::LoadConfig(const std::string &_path)
       cfg.maxAngleRad = s["max_angle_rad"].as<double>();
       cfg.maxRateRadS = s["max_rate_rad_s"].as<double>();
       cfg.maxEffortNm = s["max_effort_nm"].as<double>();
-      // PER-SURFACE gains, added 2026-09-12 (ACTUATOR_CONTROL_LIMIT_CYCLE_
-      // FIX, change F1). The gains are derived from each surface's own
-      // inertia ABOUT ITS OWN HINGE AXIS (I_hinge = I_com,nn + m*d_perp^2),
-      // and those three inertias genuinely differ (aileron 1.054098e-06,
-      // elevator 6.100859e-07, rudder 5.826813e-07 kg*m^2), so one shared
-      // number cannot be right for all five - see
-      // actuator_v1_config.yaml's hinge_inertia_derivation_note. Read with
-      // a fallback to the shared control_law values (kp/kd/ki above), the
-      // SAME graceful-degradation pattern already used for
-      // ki_nm_per_rad_s and sp_weight_b: a config that omits a per-surface
-      // gain degrades to a documented, deliberately-gentle shared value
-      // rather than to zero or to uninitialized memory.
+      // Kazançlar yüzey başınadır: her yüzeyin kendi menteşe ekseni etrafındaki
+      // ataletinden türetilir ve bu atalet değerleri gerçekten farklıdır, tek
+      // paylaşılan bir sayı beş yüzey için doğru olamaz. Eksikse paylaşılan
+      // control_law değerine düşer.
       cfg.kp = s["kp_nm_per_rad"] ? s["kp_nm_per_rad"].as<double>() : kp;
       cfg.kd = s["kd_nm_per_rad_s"] ? s["kd_nm_per_rad_s"].as<double>() : kd;
       cfg.ki = s["ki_nm_per_rad_s"] ? s["ki_nm_per_rad_s"].as<double>() : ki;
-      // sp_weight_b is deliberately NOT per-surface: it is a dimensionless
-      // structural choice, not an inertia-derived gain (see the YAML's
-      // sp_weight_derivation_note). Shared, and UNCHANGED by the
-      // 2026-09-12 fix.
+      // sp_weight_b kasten yüzey başına DEĞİLDİR: atalete bağlı bir kazanç
+      // değil, boyutsuz bir yapısal seçimdir.
       cfg.spWeightB = spWeightB;
       this->config[i] = cfg;
     }
@@ -250,14 +212,12 @@ bool ActuatorSystem::LoadConfig(const std::string &_path)
 //////////////////////////////////////////////////
 void ActuatorSystem::OnCommand(std::size_t idx, const gz::msgs::Double &_msg)
 {
-  if (idx >= kNumSurfaces) return;  // defensive only
+  if (idx >= kNumSurfaces) return;
   const double v = _msg.data();
   if (!std::isfinite(v))
   {
-    // Never let a NaN/Inf command reach the setpoint chain - hold the
-    // previous valid command instead (consistent with the hold-last-valid
-    // failsafe policy; an invalid message is treated the same as no
-    // message).
+    // NaN/Inf bir komut setpoint zincirine asla girmez; son geçerli komut
+    // tutulur (geçersiz mesaj, mesaj yokluğuyla aynı şekilde ele alınır).
     gzerr << "[FalconV2Actuators] Ignored non-finite command on surface "
           << idx << ".\n";
     return;
@@ -284,8 +244,8 @@ void ActuatorSystem::PreUpdate(
   {
     if (this->jointEntity[i] == gz::sim::kNullEntity)
     {
-      // Joint missing (already reported at Configure()) - emit zeros so the
-      // diagnostics vector stays a fixed, documented length/order.
+      // Joint yok (Configure() bunu zaten bildirdi) - diagnostik vektörünün
+      // uzunluğu/sırası sabit kalsın diye sıfır basılır.
       for (int f = 0; f < 7; ++f) diag.push_back(0.0);
       continue;
     }
@@ -296,30 +256,21 @@ void ActuatorSystem::PreUpdate(
     if (!posOpt.has_value() || posOpt->empty() ||
         !velOpt.has_value() || velOpt->empty())
     {
-      // Position/velocity checks not yet enabled for this step (first
-      // tick(s) after Configure()) - skip this surface this step rather
-      // than use stale/garbage data or apply an uninformed torque. The
-      // setpoint state itself is left unchanged (still zero/last value) -
-      // this cannot itself be a jump, it is simply "no motion commanded
-      // yet".
+      // Pozisyon/hız okuması bu adımda henüz hazır değil (Configure()
+      // sonrasındaki ilk tick'ler): bayat veriyle bilinçsiz tork uygulamak
+      // yerine bu yüzey atlanır. Setpoint durumu değişmez.
       for (int f = 0; f < 7; ++f) diag.push_back(0.0);
       continue;
     }
     const double actualAngle = (*posOpt)[0];
     const double actualRate = (*velOpt)[0];
 
-    // ---- Stage 1+2: travel-clamped, rate-limited setpoint ----
     const SetpointStepResult step = StepSetpoint(
         this->commandRad[i], this->setpointRad[i], this->config[i], dt);
     this->setpointRad[i] = step.setpointRad;
 
-    // ---- Stage 3: effort-bounded PID torque, applied via SetForce() (real
-    // joint-space torque, integrated by gz-sim's own physics engine - never
-    // ResetPosition()/a teleport for these 5 real actuated joints). Integral
-    // term added 2026-08-24 (gravity-droop fix, see ActuatorModel.hh) -
-    // integralRadS[i] is persistent per-surface state, exactly like
-    // setpointRad[i] above; targetClampActive feeds PidEffort()'s
-    // anti-windup freeze condition directly from Stage 1's own result. ----
+    // Effort sınırlı PID torku SetForce() ile uygulanır: fizik motorunun
+    // entegre ettiği gerçek joint-space torku, ResetPosition()/ışınlama değil.
     const EffortResult eff = PidEffort(
         step.setpointRad, actualAngle, actualRate, this->integralRadS[i], dt,
         step.targetWasClamped, this->config[i]);

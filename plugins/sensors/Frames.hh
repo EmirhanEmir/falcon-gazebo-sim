@@ -1,24 +1,20 @@
-// =============================================================================
-// FALCON V2 - Sensor-suite reference-frame transform library (pure math)
-// =============================================================================
-// Pure math only: gz-math7 dependency only, no gz-sim/ECM dependency.
+// FALCON V2 - Sensör paketinin referans çerçevesi dönüşüm kütüphanesi.
+// Saf matematik: yalnızca gz-math7, gz-sim/ECM bağımlılığı yok. Çağıranlar
+// hazır vektör/kuaterniyonları verir, burada canlı Gazebo durumu okunmaz.
+// Sınır: projedeki her çerçeve/işaret dönüşümü BİR KEZ burada türetilir, başka
+// hiçbir dosya aynı dönüşümü yeniden türetmez.
 //
-// SCOPE: every frame/sign conversion the sensor suite needs, derived once
-// here so no other file re-derives (and potentially mis-derives) the same
-// transform. Nothing in this header reads live Gazebo state; callers supply
-// already-fetched vectors and quaternions.
-//
-// ----------------------------------------------------------------------------
-// GOVERNING FRAME FACTS
-//   - This project's Gazebo body frame is FLU (+X forward, +Y left, +Z up),
-//     which is exactly the body frame the official ardupilot_gazebo
-//     ArduPilotPlugin assumes by default (its gazeboXYZToNED transform).
-//   - ArduPilot's own body frame is FRD (+X forward, +Y right, +Z down).
-//   - Gazebo's world frame in this project is ENU (+X east, +Y north,
-//     +Z up), matching sdformat's spherical_coordinates.sdf default
+// -----------------------------------------------------------------------------
+// GEÇERLİ ÇERÇEVE GERÇEKLERİ
+//   - Bu projenin Gazebo gövde çerçevesi FLU'dur (+X ileri, +Y sol, +Z yukarı).
+//     Resmî ardupilot_gazebo ArduPilotPlugin'in varsayılan olarak kabul ettiği
+//     gövde çerçevesi de tam olarak budur (gazeboXYZToNED dönüşümü).
+//   - ArduPilot'un kendi gövde çerçevesi FRD'dir (+X ileri, +Y sağ, +Z aşağı).
+//   - Bu projede Gazebo dünya çerçevesi ENU'dur (+X doğu, +Y kuzey, +Z yukarı);
+//     sdformat'ın spherical_coordinates varsayılanı ile aynı
 //     (world_frame_orientation = "ENU").
-//   - ArduPilot's world frame is NED (+X north, +Y east, +Z down).
-// ----------------------------------------------------------------------------
+//   - ArduPilot'un dünya çerçevesi NED'dir (+X kuzey, +Y doğu, +Z aşağı).
+// -----------------------------------------------------------------------------
 #ifndef FALCON_V2_SENSORS_FRAMES_HH_
 #define FALCON_V2_SENSORS_FRAMES_HH_
 
@@ -32,113 +28,101 @@ namespace falcon_v2_sensors
 {
 
 // =============================================================================
-// FLU <-> FRD (body-frame free vectors: angular velocity, specific
-// force/linear acceleration, magnetometer body-frame field, and any
-// body-relative position/offset vector)
+// FLU <-> FRD (gövde çerçevesindeki serbest vektörler: açısal hız, özgül
+// kuvvet/doğrusal ivme, magnetometrenin gövde çerçevesi alanı ve gövdeye göre
+// her konum/ofset vektörü)
 // =============================================================================
 //
-// DERIVATION: the ardupilot_gazebo plugin's own default
-// gazeboXYZToNED = Pose3d(0,0,0, GZ_PI,0,0) is a 180 deg rotation about the
-// body's own X axis. As a rotation MATRIX this is R = diag(1,-1,-1)
-// (standard rotation-about-X-by-pi matrix: R = [[1,0,0],[0,cos(pi),-sin(pi)],
-// [0,sin(pi),cos(pi)]] = [[1,0,0],[0,-1,0],[0,0,-1]]). Applied to an FLU
-// vector (x,y,z): R*(x,y,z)^T = (x,-y,-z) - i.e. X (forward) is UNCHANGED,
-// Y and Z both negate. This matches FLU->FRD directly: forward stays
-// forward; left(+Y_flu) becomes -Y_frd i.e. right is now +Y_frd; up(+Z_flu)
-// becomes -Z_frd i.e. down is now +Z_frd. R is orthogonal (R^T R = I), proper
-// (det(R) = +1, a genuine rotation not a reflection), and idempotent under
-// two applications (R^2 = I, i.e. a 180 deg rotation is its own inverse -
-// FLU->FRD and FRD->FLU are THE SAME formula).
+// TÜRETME: ardupilot_gazebo plugin'inin kendi varsayılanı
+// gazeboXYZToNED = Pose3d(0,0,0, GZ_PI,0,0), yani gövdenin kendi X ekseni
+// etrafında 180 derecelik bir dönüştür. MATRİS olarak R = diag(1,-1,-1)
+// (standart X etrafı pi dönüşü: [[1,0,0],[0,cos(pi),-sin(pi)],
+// [0,sin(pi),cos(pi)]] = [[1,0,0],[0,-1,0],[0,0,-1]]). Bir FLU vektörüne
+// uygulandığında R*(x,y,z)^T = (x,-y,-z): X (ileri) DEĞİŞMEZ, Y ve Z işaret
+// değiştirir. Bu doğrudan FLU->FRD'dir - ileri ileri kalır; sol (+Y_flu) -Y_frd
+// olur, yani sağ artık +Y_frd'dir; yukarı (+Z_flu) -Z_frd olur, yani aşağı
+// artık +Z_frd'dir. R ortogonaldir (R^T R = I), properdir (det(R) = +1, yansıma
+// değil gerçek bir dönüş) ve iki uygulamada birim olur (R^2 = I: 180 derecelik
+// bir dönüş kendi tersidir, yani FLU->FRD ile FRD->FLU AYNI formüldür).
 //
-// Any ordinary body-frame 3-vector rigidly attached to the aircraft
-// (angular velocity, specific force/proper acceleration, a magnetometer's
-// body-frame field reading, a body-relative offset such as a sensor's
-// mount point relative to the body origin) transforms via this SAME
-// formula, because all of these are "free vectors" that rotate exactly like
-// any other vector under a fixed rotation between two frames rigidly
-// attached to the same body - there is no separate formula needed per
-// physical quantity.
+// Uçağa rijit bağlı herhangi bir sıradan gövde vektörü (açısal hız, özgül
+// kuvvet, magnetometrenin gövde çerçevesi okuması, bir sensörün gövde
+// orijinine göre montaj ofseti) AYNI formülle dönüşür: bunların hepsi "serbest
+// vektör"dür ve aynı cisme rijit bağlı iki çerçeve arasındaki sabit bir dönüş
+// altında diğer her vektör gibi döner. Fiziksel büyüklük başına ayrı bir
+// formül gerekmez.
 inline gz::math::Vector3d FluFrdSwap(const gz::math::Vector3d &_v)
 {
   return gz::math::Vector3d(_v.X(), -_v.Y(), -_v.Z());
 }
 
 // =============================================================================
-// ENU <-> NED (world-frame free vectors: GPS ENU velocity -> NED velocity,
-// world-frame Earth magnetic field, or any world-relative position/
-// displacement vector, e.g. an EKF-origin-relative NED position built from a
-// Gazebo ENU displacement)
+// ENU <-> NED (dünya çerçevesindeki serbest vektörler: GPS ENU hızından NED
+// hızına, dünya çerçevesi yer manyetik alanı veya dünyaya göre her
+// konum/yerdeğiştirme vektörü)
 // =============================================================================
 //
-// DERIVATION: world ENU (East,North,Up) -> NED (North,East,Down) swaps the
-// first two components and negates the third: f(x,y,z) = (y,x,-z). As a
-// matrix, M = [[0,1,0],[1,0,0],[0,0,-1]]. Confirmed algebraically (not just
-// restated) by ENU_NED_ROTATION_PROPERTIES_TEST: M is orthogonal
-// (M^T M = I), proper (det(M) = +1 - a genuine rotation, specifically a
-// 180 deg rotation about the horizontal North-East bisector axis
-// (1,1,0)/sqrt(2), since trace(M) = 0+0-1 = -1 = 1+2*cos(theta) => theta =
-// 180 deg), and idempotent under two applications (M^2 = I - ENU->NED and
-// NED->ENU are THE SAME formula, exactly like the FLU/FRD case above,
-// though the two rotations are about DIFFERENT axes and must never be
-// confused/interchanged - see the class-level warning below).
+// TÜRETME: ENU (Doğu,Kuzey,Yukarı) -> NED (Kuzey,Doğu,Aşağı) ilk iki bileşeni
+// yer değiştirir ve üçüncüyü işaret değiştirir: f(x,y,z) = (y,x,-z). Matris
+// olarak M = [[0,1,0],[1,0,0],[0,0,-1]]. M ortogonaldir (M^T M = I) ve
+// properdir (det(M) = +1): yatay Kuzey-Doğu açıortay ekseni (1,1,0)/sqrt(2)
+// etrafında 180 derecelik gerçek bir dönüş - trace(M) = 0+0-1 = -1 =
+// 1+2*cos(theta) olduğundan theta = 180 derece. İki uygulamada birim olur
+// (M^2 = I): ENU->NED ile NED->ENU, yukarıdaki FLU/FRD durumunda olduğu gibi,
+// AYNI formüldür - ancak iki dönüş FARKLI eksenler etrafındadır ve asla
+// birbirinin yerine kullanılmamalıdır (aşağıdaki uyarı).
 inline gz::math::Vector3d EnuNedSwap(const gz::math::Vector3d &_v)
 {
   return gz::math::Vector3d(_v.Y(), _v.X(), -_v.Z());
 }
 
 // =============================================================================
-// EXPLICIT WARNING: FluFrdSwap() and EnuNedSwap() are algebraically
-// DIFFERENT rotations (about different physical axes - body X vs. the
-// horizontal North-East bisector) that happen to share the "both are a 180
-// deg involution" property. Applying FluFrdSwap() to a WORLD-frame vector,
-// or EnuNedSwap() to a BODY-frame vector, is a frame-category error and
-// will silently produce a wrong-but-finite result - every call site must be
-// able to name which category (body vs. world) the vector it is converting
-// belongs to.
+// AÇIK UYARI: FluFrdSwap() ile EnuNedSwap() cebirsel olarak FARKLI dönüşlerdir
+// (farklı fiziksel eksenler etrafında - gövde X'i ile yatay Kuzey-Doğu
+// açıortayı) ve yalnızca "ikisi de 180 derecelik bir involüsyon" özelliğini
+// paylaşırlar. FluFrdSwap()'ı bir DÜNYA vektörüne, ya da EnuNedSwap()'ı bir
+// GÖVDE vektörüne uygulamak çerçeve kategorisi hatasıdır: sessizce yanlış ama
+// sonlu bir sonuç üretir. Her çağrı yeri, dönüştürdüğü vektörün hangi
+// kategoriye (gövde mi dünya mı) ait olduğunu adlandırabilmek zorundadır.
 // =============================================================================
 
 // =============================================================================
-// Altitude (world "up", meters, positive above this project's world origin)
-// <-> NED "Down" coordinate. Trivial by definition (Down = -Up), but stated
-// explicitly so it is not conflated with EnuNedSwap() above, which acts on a
-// 3-vector rather than a scalar altitude.
+// İrtifa (dünya "yukarı" yönü, metre, bu projenin dünya orijini üzerinde
+// pozitif) <-> NED "Down" bileşeni. Tanım gereği aşikâr (Down = -Up), ama
+// skaler irtifa ile 3-vektör üzerinde çalışan EnuNedSwap() karıştırılmasın
+// diye ayrıca yazılmıştır.
 // =============================================================================
 inline double AltitudeToNedDown(double _altitudeM) { return -_altitudeM; }
 inline double NedDownToAltitude(double _downM) { return -_downM; }
 
 // =============================================================================
-// Attitude quaternion convention change.
+// Attitude kuaterniyonu konvansiyon değişimi.
 // =============================================================================
-// Input: qFluRelEnu - the orientation of the body FLU frame relative to the
-// world ENU frame, in the standard "body-to-world" active-rotation sense
-// used by gz-sim's IMU sensor (localization=ENU) and by gz::math::Quaternion
-// itself: for any body-frame vector v_body, q.RotateVector(v_body) returns
-// that same physical vector expressed in world coordinates
-// (v_world = q * v_body * q^-1).
+// Girdi: qFluRelEnu - gövde FLU çerçevesinin dünya ENU çerçevesine göre
+// yönelimi; gz-sim'in IMU sensörünün (localization=ENU) ve gz::math::Quaternion
+// sınıfının kendi kullandığı standart "gövdeden dünyaya" aktif dönüş anlamında:
+// herhangi bir gövde vektörü v_body için q.RotateVector(v_body) aynı fiziksel
+// vektörü dünya koordinatlarında verir (v_world = q * v_body * q^-1).
 //
-// Output: the equivalent orientation of the body FRD frame relative to the
-// world NED frame, in the same active-rotation sense, i.e. for any
-// FRD-frame vector v_frd,
+// Çıktı: gövde FRD çerçevesinin dünya NED çerçevesine göre eşdeğer yönelimi,
+// aynı aktif dönüş anlamında; yani her v_frd için
 //   result.RotateVector(v_frd) == EnuNedSwap(qFluRelEnu.RotateVector(FluFrdSwap(v_frd)))
-// for ALL v_frd - this identity is exactly what
-// ATTITUDE_QUATERNION_TRANSFORM_TEST checks numerically (a self-consistency
-// check that does not depend on hand-picking a "known" Euler angle).
+// Bu kimlik, elle seçilmiş "bilinen" bir Euler açısına dayanmayan bir
+// öz-tutarlılık kontrolüdür ve sayısal olarak doğrulanabilir.
 //
-// DERIVATION: let R = the FLU<->FRD rotation matrix (self-inverse) and
-// R' = the ENU<->NED rotation matrix (self-inverse), and let Q_fe be the
-// rotation matrix corresponding to qFluRelEnu. Substituting
-// v_body_flu = R * v_body_frd (R self-inverse) into
-// v_world_enu = Q_fe * v_body_flu and then v_world_ned = R' * v_world_enu
-// gives v_world_ned = (R' * Q_fe * R) * v_body_frd - i.e. the desired
-// FRD-to-NED rotation matrix is R' * Q_fe * R. Expressed as a quaternion
-// product (Hamilton product composition matches matrix product composition
-// for gz::math::Quaternion, confirmed via the RotateVector identity test
-// above): result = qEnuToNedRot * qFluRelEnu * qFluToFrdRot, where
-// qFluToFrdRot is the quaternion for a 180 deg rotation about body X, and
-// qEnuToNedRot is the quaternion for a 180 deg rotation about the
-// world (1,1,0)/sqrt(2) axis - exactly the two rotations derived above for
-// FluFrdSwap()/EnuNedSwap(), now applied as quaternions instead of 3x3
-// matrices acting on plain vectors.
+// TÜRETME: R = FLU<->FRD dönüş matrisi (kendi tersi), R' = ENU<->NED dönüş
+// matrisi (kendi tersi), Q_fe = qFluRelEnu'nun dönüş matrisi olsun.
+// v_body_flu = R * v_body_frd (R kendi tersi) ifadesini
+// v_world_enu = Q_fe * v_body_flu içine koyup ardından
+// v_world_ned = R' * v_world_enu uygulanırsa
+// v_world_ned = (R' * Q_fe * R) * v_body_frd elde edilir; yani aranan
+// FRD->NED dönüş matrisi R' * Q_fe * R'dir. Kuaterniyon çarpımı olarak
+// (gz::math::Quaternion için Hamilton çarpımı bileşkesi matris çarpımı
+// bileşkesiyle örtüşür): result = qEnuToNedRot * qFluRelEnu * qFluToFrdRot.
+// Burada qFluToFrdRot gövde X'i etrafındaki 180 derecelik dönüşün,
+// qEnuToNedRot ise dünya (1,1,0)/sqrt(2) ekseni etrafındaki 180 derecelik
+// dönüşün kuaterniyonudur - yukarıda FluFrdSwap()/EnuNedSwap() için türetilen
+// iki dönüşün, 3x3 matris yerine kuaterniyon olarak uygulanmış hâli.
 inline gz::math::Quaterniond AttitudeFluEnuToFrdNed(
     const gz::math::Quaterniond &_qFluRelEnu)
 {
@@ -150,13 +134,11 @@ inline gz::math::Quaterniond AttitudeFluEnuToFrdNed(
 }
 
 // =============================================================================
-// Heading (radians, standard aviation/compass convention: 0 = north,
-// positive CLOCKWISE toward east when viewed from above) from the
-// horizontal (north, east) components of an NED-frame vector (magnetic
-// field or ground-track velocity). atan2(east, north) - NOT atan2(north,
-// east) - is what produces the clockwise-from-north convention (verified
-// numerically by HEADING_CARDINAL_TEST: north-only input -> 0 rad,
-// east-only input -> +pi/2 rad).
+// Heading (radyan, standart havacılık/pusula konvansiyonu: 0 = kuzey, yukarıdan
+// bakıldığında doğuya doğru SAAT YÖNÜ pozitif), bir NED vektörünün (manyetik
+// alan ya da yer izi hızı) yatay (kuzey, doğu) bileşenlerinden. Saat yönü
+// konvansiyonunu üreten şey atan2(east, north)'tur - atan2(north, east) DEĞİL:
+// yalnızca kuzey girdisi 0 rad, yalnızca doğu girdisi +pi/2 rad verir.
 // =============================================================================
 inline double HeadingFromNedHorizontalRad(double _north, double _east)
 {

@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.16)
 project(falcon_v2_aerodynamics LANGUAGES CXX)
 
-# FALCON V2 - aerodynamics System plugin build.
-# See README.md in this directory for build/run instructions.
+# FALCON V2 — aerodinamik System eklentisi derleme tanımı.
+# Derleme/çalıştırma talimatları için bu dizindeki README.md dosyasına bakınız.
 
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
@@ -16,7 +16,7 @@ find_package(gz-math7 REQUIRED)
 find_package(yaml-cpp REQUIRED)
 
 # ---------------------------------------------------------------------------
-# Main Gazebo System plugin (requires the full gz-sim runtime environment)
+# Ana Gazebo System eklentisi (tam gz-sim çalışma ortamını gerektirir).
 # ---------------------------------------------------------------------------
 add_library(FalconV2Aerodynamics SHARED AerodynamicsSystem.cc)
 target_compile_features(FalconV2Aerodynamics PRIVATE cxx_std_17)

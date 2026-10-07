@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.16)
 project(falcon_v2_wind LANGUAGES CXX)
 
-# FALCON V2 - wind/gust generator System plugin build.
-# See README.md in this directory for build/run instructions.
+# FALCON V2 — rüzgâr/hamle üreticisi System eklentisi derleme tanımı.
+# Derleme/çalıştırma talimatları için bu dizindeki README.md dosyasına bakınız.
 
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
@@ -15,10 +15,9 @@ find_package(gz-msgs10 REQUIRED)
 find_package(gz-math7 REQUIRED)
 
 # ---------------------------------------------------------------------------
-# Main Gazebo System plugin (requires the full gz-sim runtime environment).
-# No yaml-cpp dependency: unlike the aerodynamics/propulsion/actuator
-# plugins, this plugin has no structured coefficient dataset to load - its
-# only inputs are SDF parameters and live command topics.
+# Ana Gazebo System eklentisi (tam gz-sim çalışma ortamını gerektirir).
+# yaml-cpp bağımlılığı yoktur: bu eklentinin yüklenecek bir katsayı veri
+# kümesi yoktur; tek girdileri SDF parametreleri ve canlı komut konularıdır.
 # ---------------------------------------------------------------------------
 add_library(FalconV2Wind SHARED WindSystem.cc)
 target_compile_features(FalconV2Wind PRIVATE cxx_std_17)

@@ -1,44 +1,35 @@
 # =============================================================================
-# FALCON V2 - ArduPlane SITL parameter profile V1
+# FALCON V2 - ArduPlane SITL parametre profili V1
 # =============================================================================
-# Full provenance / classification for every value (and every value
-# deliberately EXCLUDED) below:
+# Biçim: ArduPilot'un kendi Tools/autotest/default_params/*.parm konvansiyonu -
+# boşlukla ayrılmış NAME VALUE satırları, "#" ile başlayan yorum
+# satırları. arduplane --defaults ve sim_vehicle.py --add-param-file tam
+# olarak bu biçimi ayrıştırır. Gerçek uçağın virgüllü CSV GCS dışa
+# aktarımı DEĞİLDİR; o dosya farklı bir GCS tarafı konvansiyonudur ve
+# asla değiştirilmez ya da toptan kopyalanmaz.
 #
-# Format: ArduPilot's own Tools/autotest/default_params/*.parm convention -
-# whitespace-separated NAME VALUE, "#" comment lines - the format
-# pymavlink/mavparm.py's load() (used by sim_vehicle.py --add-param-file)
-# actually parses. Deliberately NOT the real aircraft's comma-CSV GCS-export
-# format -
-# that file is a different, GCS-side export convention and is NEVER modified
-# or copied wholesale.
+# İÇERMEZ: RC kalibrasyon donanım ayrıntıları, INS/COMPASS/BARO cihaz
+# kimlikleri ve kalibrasyon ofsetleri, BRD/CAN/SERIAL donanım
+# yapılandırması, bayat BATT_* değerleri, pitotsuz eski ARSPD_TYPE=0
+# yapılandırması ve NAVL1/EK3/AHRS/GPS/FLTMODE/FENCE/ARMING/AFS grupları. Bu
+# dosya hiçbir PID'i yeniden ayarlamaz, autotune çalıştırmaz.
 #
-# DOES NOT include: RC calibration hardware specifics, INS/COMPASS/BARO
-# device IDs and calibration offsets, BRD/CAN/SERIAL hardware config, stale
-# BATT_* values, the old no-pitot ARSPD_TYPE=0 config, NAVL1/EK3/AHRS/
-# GPS/FLTMODE/FENCE/ARMING/AFS groups (all REVIEW_AND_ADAPT or
-# DROP_OR_DO_NOT_IMPORT - see the migration doc). No PID is retuned, no
-# autotune is executed by writing this file.
-#
-# TECS: the TECS_* GROUP REMAINS EXCLUDED AS A GROUP (still classified
-# REVIEW_AND_ADAPT in the migration doc sec 3) - EXCEPT for exactly ONE
-# Falcon-V2-specific SIM-VALIDATED value, TECS_PTCH_DAMP, adopted
-# 2026-09-05 by stage ARDUPLANE_TECS_PTCH_DAMP_ADOPTION_INTEGRATION and set
-# below under the heading FALCON_V2_SIM_VALIDATED_TECS_PITCH_DAMPING.
-# Every OTHER TECS_* value is still left at ArduPlane's own compiled
-# firmware default and is NOT imported from the real aircraft's.param.
-# Source-of-truth records:
-#
-# Adopting that single value does NOT retune any PID and does NOT execute
-# autotune - both of those statements above remain true and unchanged.
+# TECS: TECS_* grubu BİR GRUP OLARAK hariç tutulmaya devam eder - tek istisna,
+# Falcon V2'ye özgü ve simülasyonda doğrulanmış tek değer olan
+# TECS_PTCH_DAMP'tır (aşağıdaki FALCON_V2_SIM_VALIDATED_TECS_PITCH_DAMPING
+# bölümü). Diğer her TECS_* değeri ArduPlane'in derlenmiş firmware
+# varsayılanında kalır ve gerçek uçağın parametre dosyasından içe
+# alınmaz. O tek değerin benimsenmesi de hiçbir PID'i yeniden ayarlamaz ve
+# autotune çalıştırmaz.
 # =============================================================================
 
 # -----------------------------------------------------------------------------
-# Roll/Pitch rate controller - FALCON_V2_MANUFACTURER_INITIAL_PID
-# (Titan Dynamics Falcon V2 Build & User Manual Rev 1.0-sourced values, given
-# directly by the project owner for this work - see migration doc sec 1).
-# NEVER labeled FINAL_TUNED_PID or FLIGHT_VALIDATED_FINAL_PID. Autotune is
-# NOT executed by this file - AUTOTUNE_LEVEL is recorded as the
-# manufacturer-recommended starting point only.
+# Roll/Pitch rate denetleyicisi - FALCON_V2_MANUFACTURER_INITIAL_PID
+# (Titan Dynamics Falcon V2 Build & User Manual Rev 1.0 kaynaklı değerler,
+# proje sahibi tarafından doğrudan verilmiştir).
+# ASLA FINAL_TUNED_PID veya FLIGHT_VALIDATED_FINAL_PID olarak etiketlenmez.
+# AUTOTUNE_LEVEL yalnızca üreticinin önerdiği başlangıç noktası olarak
+# kayda geçirilmiştir; bu dosya autotune çalıştırmaz.
 # -----------------------------------------------------------------------------
 RLL_RATE_P    0.25
 RLL_RATE_I    0.125
@@ -48,15 +39,38 @@ PTCH_RATE_P   0.25
 PTCH_RATE_I   0.125
 PTCH_RATE_D   0.002
 PTCH_RATE_FF  0.125
-# MANUFACTURER_RECOMMENDED_AUTOTUNE_LEVEL - not executed this stage.
+# MANUFACTURER_RECOMMENDED_AUTOTUNE_LEVEL - bu dosyada çalıştırılmaz.
 AUTOTUNE_LEVEL 8
 
 # -----------------------------------------------------------------------------
-# Servo function mapping - REAL_PARAM_CONFIGURATION, CONFIRMED against
-# installed ArduPlane 4.8.0-dev libraries/SRV_Channel/SRV_Channel.h enum
+# Servo fonksiyon eşlemesi - REAL_PARAM_CONFIGURATION, kurulu ArduPlane
+# 4.8.0-dev libraries/SRV_Channel/SRV_Channel.h enum'ına karşı CONFIRMED
 # (k_aileron=4, k_elevator=19, k_rudder=21, k_throttleLeft=73,
-# k_throttleRight=74). Channel numbers 1-5 kept identical to the real
-# aircraft's own wiring (migration doc sec 2) - not renumbered.
+# k_throttleRight=74). 1-5 kanal numaraları gerçek uçağın kendi
+# kablolamasıyla aynı tutulmuştur, yeniden numaralandırılmamıştır.
+#
+# TRAVEL ÖLÇEKLEME (kontrol yüzeyleri, SERVO1/2/4: MIN=800, MAX=2200,
+# TRIM=1500 us). ArduPilotPlugin bu PWM aralığını [0,1]'e normalize eder;
+# model/model.sdf'deki <control> blokları offset=-0.5 ve
+# multiplier=+/-1.5707963268 uygular. Sonuç uç noktaları tam olarak
+# +/-0.7853981634 rad = +/-45 deg, yani yüzeylerin mekanik hareket limitidir;
+# TRIM=1500 us ise tam olarak 0 rad (nötr) verir. Throttle kanalları
+# (SERVO3/5) farklıdır: MIN=1000, MAX=2000, TRIM=1000 (==MIN,
+# rölanti-düşük, throttle tipi bir fonksiyon için standart), multiplier=1
+# ve offset=0 ile komut doğrudan [0,1] aralığında kalır.
+#
+# İŞARET/YÖN. SERVOn_REVERSED bayrakları <control> multiplier işaretleriyle
+# birlikte komut->fiziksel yön eşlemesini belirler; varsayılmaz, ölçülerek
+# doğrulanmıştır. Çalışan bir Gazebo örneğinde ölçülen eşleme:
+#   SERVO1 (aileron, REVERSED=1): sağa yatış komutu -> SERVO1 PWM 800 ->
+#     sol aileron firar kenarı AŞAĞI, sağ aileron firar kenarı YUKARI ->
+#     ölçülen Cl>0, yani FLU'da sağa yatış. Komut yönüyle uyumlu.
+#   SERVO2 (elevator, REVERSED=0): burun yukarı komutu -> SERVO2 PWM 2200 ->
+#     iki elevator da firar kenarı YUKARI (ortak mod) -> ölçülen Cm>0,
+#     yani My<0 = burun yukarı. Komut yönüyle uyumlu.
+#   SERVO4 (rudder, REVERSED=1): sağa dönüş komutu -> SERVO4 PWM 800 ->
+#     rudder firar kenarı SAĞA (-Y) -> ölçülen Cn<0, yani Mz<0 = burun
+#     sağa. Komut yönüyle uyumlu.
 # -----------------------------------------------------------------------------
 SERVO1_FUNCTION   4
 SERVO1_MIN        800
@@ -89,204 +103,196 @@ SERVO5_TRIM       1000
 SERVO5_REVERSED   0
 
 # -----------------------------------------------------------------------------
-# PTCH_TRIM_DEG - ARDUPLANE_FBWA_LEVEL_PITCH_REFERENCE_CORRECTION (2026-08-28).
-# FBWA / stabilized-mode neutral-pitch-stick attitude-target OFFSET in degrees.
-# Semantics CONFIRMED from ArduPlane source (V4.8.0-dev, ArduPilot commit
-# 409226a637 / ArduPilot-4.6.0-beta1-7902-g409226a637, installed at
-# /home/emirhan/gazebo_sim/ardupilot):
-#   ArduPlane/Attitude.cpp:244  demanded_pitch = nav_pitch_cd
-#                                 + int32_t(g.pitch_trim * 100.0)
-#                                 + k_throttle_scaled * g.kff_throttle_to_pitch
-#   ArduPlane/Parameters.cpp:651-657  GSCALAR(pitch_trim,"PTCH_TRIM_DEG",0.0f)
-#                                      range -45..45, User:Standard
-# Applied UNCONDITIONALLY inside stabilize_pitch_get_pitch_out() (no airspeed
-# / mode / FBWA_TDRAG gate); KFF_THR2PTCH is 0 (ArduPlane default, not set in
-# this file) so the throttle term is zero. FBWA (ModeFBWA::run -> Mode::run
-# -> Plane::stabilize_pitch, mode.cpp:274) at neutral stick has
-# nav_pitch_cd = 0, so the pitch controller then targets AHRS pitch =
-# PTCH_TRIM_DEG. It is a CONTROLLER DEMAND OFFSET only - it does NOT touch the
-# AHRS/EKF attitude estimate. It does NOT affect MANUAL: ModeManual::run()
-# (mode_manual.cpp:17-20) calls only reset_controllers(), never
-# stabilize_pitch() - MANUAL stays pure stick->servo passthrough.
-# Note: with PTCH_TRIM_DEG != 0, GCS ATTITUDE.pitch is reported as
-# (true_pitch - PTCH_TRIM_DEG) unless FLIGHT_OPTIONS bit 8 GCS_REMOVE_TRIM_PITCH
-# is set (GCS_MAVLink_Plane.cpp:139-141) - reporting only, physics unchanged.
-# NAV_CONTROLLER_OUTPUT.nav_pitch stays raw nav_pitch_cd*0.01 (= 0 at neutral).
-# VALUE = +2.49 deg: the MEASURED straight-and-level nose-up pitch attitude of
-# this airframe+aero+propulsion model: measured pitch* = +2.487 deg at the
-# longitudinal equilibrium (V* 18.162 m/s, throttle* 0.4957,
-# elevator* +4.092 deg, alpha* 2.472 deg, world_vz +0.005 m/s).
+# PTCH_TRIM_DEG - FBWA/stabilize modunda nötr pitch çubuğuna karşılık
+# gelen attitude hedefinin derece cinsinden OFSETİ.
+# Semantik, kurulu ArduPlane kaynağından (V4.8.0-dev) CONFIRMED:
+#   ArduPlane/Attitude.cpp  demanded_pitch = nav_pitch_cd
+#                             + int32_t(g.pitch_trim * 100.0)
+#                             + k_throttle_scaled * g.kff_throttle_to_pitch
+#   ArduPlane/Parameters.cpp  GSCALAR(pitch_trim,"PTCH_TRIM_DEG",0.0f),
+#                             aralık -45..45
+# stabilize_pitch_get_pitch_out() içinde KOŞULSUZ uygulanır
+# (airspeed/mod/FBWA_TDRAG kapısı yoktur); KFF_THR2PTCH bu dosyada
+# ayarlanmadığı için ArduPlane varsayılanı 0'dır, yani throttle terimi
+# sıfırdır. FBWA'da nötr çubukta nav_pitch_cd = 0 olduğundan pitch
+# denetleyicisi doğrudan AHRS pitch = PTCH_TRIM_DEG hedefler. Bu yalnızca bir
+# DENETLEYİCİ HEDEF OFSETİDİR - AHRS/EKF attitude kestirimine dokunmaz.
+# MANUAL modu etkilenmez: ModeManual::run() yalnızca reset_controllers()
+# çağırır, stabilize_pitch() hiç çağrılmaz, yani MANUAL saf
+# çubuk->servo geçişidir.
+# Not: PTCH_TRIM_DEG != 0 iken GCS ATTITUDE.pitch, FLIGHT_OPTIONS bit 8
+# (GCS_REMOVE_TRIM_PITCH) ayarlanmadıkça (true_pitch - PTCH_TRIM_DEG) olarak
+# raporlanır - yalnızca raporlama, fizik değişmez.
+# DEĞER = +2.49 deg: bu gövde+aero+itki modelinin ÖLÇÜLEN düz ve seviyeli
+# burun yukarı pitch attitude'ü; boylamsal dengede pitch* = +2.487 deg (V*
+# 18.162 m/s, throttle* 0.4957, elevator* +4.092 deg, alpha* 2.472 deg, world_vz
+# +0.005 m/s). Provenance sınıfı: GAZEBO_VALIDATION.
 # -----------------------------------------------------------------------------
 PTCH_TRIM_DEG    2.49
 
 # -----------------------------------------------------------------------------
-# Simulated pitot - SITL_REQUIRED / SIMULATION_ADDED_PITOT_SENSOR. The real
-# Falcon V2 had NO pitot (old ARSPD_TYPE=0 in yeni_pixhawk.param) - this is a
-# NEW simulation-only capability, not a real-flight-proven sensor.
-# ARSPD_TYPE=100 (SITL backend) CONFIRMED exact via installed AP_Airspeed.h
-# enum TYPE_SITL=100 - not ambiguous, no PID_MAPPING_REVIEW_REQUIRED-style
-# flag needed for this value. Wiring PitotSystem.cc's differential pressure
-# into AP::sitl()->state.airspeed_raw_pressure is NEXT-STAGE work, not done
-# by this file (migration doc sec 4/16).
+# Simüle pitot - SITL_REQUIRED / SIMULATION_ADDED_PITOT_SENSOR. Gerçek Falcon
+# V2'de pitot YOKTU (eski yapılandırmada ARSPD_TYPE=0); bu, gerçek uçuşta
+# kanıtlanmış bir sensör değil, simülasyona özgü YENİ bir yetenektir.
+# ARSPD_TYPE=100 (SITL arka ucu) kurulu AP_Airspeed.h içindeki enum
+# TYPE_SITL=100 ile birebir CONFIRMED - belirsizlik yoktur.
+# PitotSystem.cc'nin diferansiyel basıncını
+# AP::sitl()->state.airspeed_raw_pressure alanına bağlamak bu dosyanın işi
+# değildir; o köprü patches/ altındaki patch ile sağlanır.
 # -----------------------------------------------------------------------------
 ARSPD_TYPE      100
 ARSPD_USE       1
 
-# AIRSPEED_MIN/CRUISE/MAX - GAZEBO_VALIDATION, SIMULATION_DERIVED_FROM_
-# GAZEBO_ENVELOPE.
-# 12.5 m/s (moment-infeasible trim) is NEVER used as MIN. 30 m/s is NOT used
-# as MAX just because it numerically worked once - 28 m/s (a
-# PROVISIONAL_EDGE_ENVELOPE point with margin) is used instead.
+# AIRSPEED_MIN/CRUISE/MAX - GAZEBO_VALIDATION,
+# SIMULATION_DERIVED_FROM_GAZEBO_ENVELOPE. Uçuş zarfı doğrulamasında 12.5
+# m/s moment bakımından trim edilemez bulunmuştur, bu yüzden MIN olarak ASLA
+# kullanılmaz. 30 m/s de yalnızca bir kez sayısal olarak çalıştı diye MAX
+# yapılmaz; onun yerine marjlı bir zarf kenarı noktası olan 28 m/s
+# kullanılır.
 AIRSPEED_MIN      16
 AIRSPEED_CRUISE   18
 AIRSPEED_MAX      28
-# DATA_REQUIRED - no validated stall speed exists in this repository's
-# Gazebo test results. Left at ArduPlane's own default (0 = unused),
-# matching the real.param's own value (also 0) - not a regression, not a
-# fabricated number.
+# DATA_REQUIRED - bu depoda doğrulanmış bir stall hızı yoktur. ArduPlane'in
+# kendi varsayılanında (0 = kullanılmıyor) bırakılmıştır; gerçek
+# uçağın parametresi de 0'dır. Bu bir gerileme değildir, uydurma bir sayı
+# da değildir.
 AIRSPEED_STALL    0
 
 # -----------------------------------------------------------------------------
-# TECS_PTCH_DAMP - FALCON_V2_SIM_VALIDATED_TECS_PITCH_DAMPING (2026-09-05,
-# stage ARDUPLANE_TECS_PTCH_DAMP_ADOPTION_INTEGRATION).
+# TECS_PTCH_DAMP - FALCON_V2_SIM_VALIDATED_TECS_PITCH_DAMPING.
 #
-# THE ONLY TECS_* VALUE THIS FILE SETS. Every other TECS_* parameter stays at
-# ArduPlane's compiled firmware default (arduplane is launched with -w, wiped
-# EEPROM), and the TECS group as a whole remains REVIEW_AND_ADAPT / excluded -
-# see the file header and + sec 18.
+# BU DOSYANIN AYARLADIĞI TEK TECS_* DEĞERİ. Diğer her TECS_* parametresi
+# ArduPlane'in derlenmiş firmware varsayılanında kalır (arduplane -w ile,
+# yani silinmiş EEPROM ile başlatılır) ve TECS grubu bütün olarak hariç
+# tutulmaya devam eder - bkz. dosya başlığı.
 #
-# SUPERSEDES the ArduPlane compiled firmware default 0.3
-# (libraries/AP_TECS/AP_TECS.cpp:107, @Range 0.1 1.0, ArduPlane V4.8.0-dev,
-# ArduPilot commit 409226a637). 0.3 is NOT deleted from the record: it is kept
-# visible as the superseded firmware default in
+# ArduPlane derlenmiş firmware varsayılanı 0.3'ün YERİNİ ALIR
+# (libraries/AP_TECS/AP_TECS.cpp, @Range 0.1 1.0, ArduPlane V4.8.0-dev). 0.3
+# kayıttan silinmemiştir: yerini alınan firmware varsayılanı olarak burada
+# görünür kalır.
 #
-# DERIVATION (DERIVED_CALCULATION from AP_TECS source; full algebra in
-#-2):
-# TECS_PTCH_DAMP is the ONLY derivative term in the TECS pitch/energy-balance
-# loop, and 0.3 -> 0.6 moves the PD corner (1+Kd)/(Tc*Kd) from 1.867 to 1.033
-# rad/s, i.e. from ABOVE to BELOW the closed-loop energy mode at ~1.1-1.3
-# rad/s, so the PD pair finally delivers real phase lead AT the mode frequency
-# instead of pure proportional stiffening.
+# TÜRETME (DERIVED_CALCULATION, AP_TECS kaynağından): TECS_PTCH_DAMP, TECS
+# pitch/enerji-dengesi döngüsündeki TEK türev terimidir ve 0.3 -> 0.6
+# değişimi PD köşesini (1+Kd)/(Tc*Kd) 1.867'den 1.033 rad/s'ye taşır; yani
+# ~1.1-1.3 rad/s'deki kapalı çevrim enerji modunun ÜSTÜNDEN ALTINA iner.
+# Böylece PD çifti mod frekansında saf oransal sertleşme yerine gerçek faz
+# öncelemesi sağlar.
 #
-# EVIDENCE - TWO INDEPENDENT CAMPAIGNS, agreeing on the EFFECT (direction and
-# magnitude of improvement), not on absolute numbers. Adoption rests on that
-# agreement, NOT on either campaign's absolute values:
-#   this repository, 2026-09-05 (ARDUPLANE_LONGITUDINAL_PHUGOID_DAMPING_
-#     VALIDATION): tau 22.07 -> 8.65 s, zeta 0.0407 -> 0.0872, airspeed std
-#     0.186 -> 0.066 m/s, altitude-hold p2p 2.148 -> 0.635 m, max elevator
-#     6.29 deg
-#   an independent adoption campaign, separate working copy, THIS REPOSITORY
-#     NOT TOUCHED: tau 26.0 -> 9.3 s, zeta 0.0347 -> 0.083, airspeed std
-#     0.40 -> 0.11 m/s, altitude-hold p2p 2.1 -> 0.59 m, max elevator 8.25 deg;
-#     repeat runs at both settings (0.6 repeatable), sanity runs at 17.0 m/s,
-#     19.5 m/s and -5 m/s headwind, no growing oscillation, no throttle
-#     saturation, no actuator clamp, no NaN/Inf; validation 0 CRITICAL /
-#     0 MAJOR -> ADOPT. Its repeat runs and extra envelope points are what
-#     closed this project's own RUN_TO_RUN_SCATTER and ENVELOPE_COVERAGE
-#     adoption gates.
-#   Both campaigns changed exactly ONE functional thing: TECS_PTCH_DAMP.
-# Provenance class: DERIVED_CALCULATION + GAZEBO_VALIDATION.
+# KANIT - İKİ BAĞIMSIZ KAMPANYA, mutlak sayılarda değil ETKİDE
+# (iyileşmenin yönü ve büyüklüğünde) uyuşuyor. Benimseme bu uyuşmaya
+# dayanır, iki kampanyanın mutlak değerlerine değil:
+#   bu depo: tau 22.07 -> 8.65 s, zeta 0.0407 -> 0.0872, airspeed std 0.186 ->
+#   0.066 m/s, irtifa tutma p2p 2.148 -> 0.635 m, azami elevator 6.29 deg
+#   ayrı bir çalışma kopyasında yürütülen bağımsız kampanya (BU
+#   DEPOYA DOKUNULMADI): tau 26.0 -> 9.3 s, zeta 0.0347 -> 0.083, airspeed std
+#   0.40 -> 0.11 m/s, irtifa tutma p2p 2.1 -> 0.59 m, azami elevator 8.25 deg;
+#   iki ayarda da tekrar koşumları (0.6 tekrarlanabilir), 17.0 m/s, 19.5 m/s
+#   ve -5 m/s karşı rüzgârda akıl sağlığı koşumları, büyüyen
+#   salınım yok, throttle doyması yok, aktüatör kırpması yok, NaN/Inf
+#   yok; inceleme 0 CRITICAL / 0 MAJOR -> BENIMSE. Bu kampanyanın tekrar
+#   koşumları ve ek zarf noktaları, koşum-arası saçılma ve zarf kapsamı
+#   benimseme kapılarını kapatan şeydir.
+#   Her iki kampanya da işlevsel olarak TEK şeyi değiştirdi: TECS_PTCH_DAMP.
+# Provenance sınıfı: DERIVED_CALCULATION + GAZEBO_VALIDATION.
 #
-# SIM-SPECIFIC - EXPLICITLY NOT THE REAL-AIRCRAFT VALUE. The real Falcon V2's
-# GCS export
-# line 1035 carries TECS_PTCH_DAMP,0.3 (the untuned ArduPlane default); that
-# file is NEVER modified and was not modified. 0.6 is validated ONLY against
-# the Gazebo Falcon V2 model. Transferring it to the real aircraft is NOT
-# authorised by this work and would require separate flight validation.
+# SİMÜLASYONA ÖZGÜ - AÇIKÇA GERÇEK UÇAK DEĞERİ DEĞİLDİR. Gerçek
+# Falcon V2'nin GCS dışa aktarımı TECS_PTCH_DAMP,0.3 taşır (ayarlanmamış
+# ArduPlane varsayılanı); o dosya hiç değiştirilmemiştir ve
+# değiştirilmeyecektir. 0.6 yalnızca Gazebo Falcon V2 modeline karşı
+# doğrulanmıştır. Gerçek uçağa taşınması bu çalışmayla
+# YETKİLENDİRİLMEMİŞTİR ve ayrı uçuş doğrulaması gerektirir.
 # -----------------------------------------------------------------------------
 TECS_PTCH_DAMP    0.6
 
 # =============================================================================
-# SIMULATION ENVIRONMENT - SITL ORIGIN / ALTITUDE DATUM
+# SİMÜLASYON ORTAMI - SITL ORİJİNİ / İRTİFA DATUMU
 # =============================================================================
-# Before these were set, ArduPlane's airspeed was derived from ground
-# velocity and the simulator zeroed the wind vector on every frame.
-# These are SITL-simulator parameters (SIM_*), NOT aircraft parameters. They
-# exist only inside the simulator and have no counterpart on the real vehicle.
-# The four SIM_OPOS_* values in THIS section set NO PID, NO TECS value, NO
-# aerodynamic/propulsion quantity. (File-level scope note: the only TECS value
-# set anywhere in this file is TECS_PTCH_DAMP, in its own section above; it is
-# not set here and nothing in this section touches it.)
+# Bunlar ayarlanmadan önce ArduPlane'in airspeed'i yer hızından türetiliyor
+# ve simülatör rüzgâr vektörünü her karede sıfırlıyordu.
+# Bu parametreler SITL simülatör parametreleridir (SIM_*), uçak parametresi
+# DEĞİLDİR; yalnızca simülatörün içinde var olurlar ve gerçek araçta
+# karşılıkları yoktur. Bu bölümdeki dört SIM_OPOS_* değeri hiçbir PID,
+# hiçbir TECS değeri, hiçbir aerodinamik/itki büyüklüğü ayarlamaz.
+# (Dosya kapsamı notu: bu dosyada ayarlanan tek TECS değeri, kendi
+# bölümündeki TECS_PTCH_DAMP'tır; burada ayarlanmaz ve bu bölüm ona
+# dokunmaz.)
 #
-# ROOT CAUSE THEY FIX (source-cited, ArduPilot commit 409226a637):
-#   The launch scripts passed `-O 0,0,0,0`. That flag IS parsed
-#   (SITL_cmdline.cpp:471-472 -> :646-658), but
-#   libraries/AP_HAL_SITL/SITL_cmdline.cpp:761-766 inside parse_home()
-#   contains:
+# DÜZELTTİKLERİ KÖK NEDEN (ArduPilot kaynağı referanslı):
+#   Launch script'leri `-O 0,0,0,0` geçiriyordu. Bu bayrak AYRIŞTIRILIR, ancak
+#   libraries/AP_HAL_SITL/SITL_cmdline.cpp içindeki parse_home() şunu içerir:
 #       if (loc.lat == 0 && loc.lng == 0) {
 #           // default to CMAC instead of middle of the ocean...
 #           loc.lat = -35.363261*1e7; loc.lng = 149.165230*1e7;
 #           loc.alt = 584*100;
 #       }
-#   i.e. a lat/lng of exactly 0,0 SILENTLY REWRITES THE ALTITUDE TOO, to the
-#   584 m CMAC field elevation. The requested alt=0 was discarded. Yaw is
-#   parsed after the guard, which is why the banner read
-#   "Home: -35.363261 149.165230 alt=584.000000m hdg=0.000000".
+#   Yani tam olarak 0,0 olan bir enlem/boylam İRTİFAYI DA SESSİZCE EZER ve
+#   584 m CMAC saha yüksekliğine çeker; istenen alt=0 atılır. Yaw bu
+#   korumadan SONRA ayrıştırıldığı için açılış banner'ı "Home:
+#   -35.363261 149.165230 alt=584.000000m hdg=0.000000" okunuyordu.
 #
-# Consequence chain that produced the observed 673 m / EAS2TAS 1.033:
-#   1. SIM_Aircraft.cpp:80-95 set_start_location() -> home/origin alt = 584 m
-#   2. AP_Baro.cpp:1015-1024 update_field_elevation() auto-sets
-#      _field_elevation_active = origin.alt*0.01 = 584 m
-#   3. AP_Baro.h:106 get_altitude_AMSL() = (height above boot ground) +
-#      _field_elevation_active = 89 + 584 = 673 m
-#   4. AP_Baro_atmosphere.cpp:299-304 _get_EAS2TAS() ->
-#      get_air_density_for_alt_amsl(673) = 1.148 kg/m^3 -> EAS2TAS = 1.033
-#   while the Gazebo aerodynamics plugin uses a FIXED rho = 1.225 kg/m^3
-#   (config/aero_v1_config.yaml, ISA sea level)
-#   and the test worlds declare <elevation>0.0</elevation>.
+# Gözlenen 673 m / EAS2TAS 1.033'ü üreten zincir:
+#   1. SIM_Aircraft.cpp set_start_location() -> home/origin alt = 584 m
+#   2. AP_Baro.cpp update_field_elevation() _field_elevation_active'i
+#   origin.alt*0.01 = 584 m olarak otomatik ayarlar
+#   3. AP_Baro.h get_altitude_AMSL() = (açılış zeminine göre yükseklik) +
+#   _field_elevation_active = 89 + 584 = 673 m
+#   4. AP_Baro_atmosphere.cpp _get_EAS2TAS() ->
+#   get_air_density_for_alt_amsl(673) = 1.148 kg/m^3 -> EAS2TAS = 1.033
+#   Oysa Gazebo aerodinamik plugin'i SABİT rho = 1.225 kg/m^3 kullanır
+#   (config/aero_v1_config.yaml, ISA deniz seviyesi) ve test world'leri
+#   <elevation>0.0</elevation> beyan eder.
 #
-# FIX: do NOT pass -O at all. With no -O, home_is_set stays false and
-# SIM_Aircraft.cpp:694-707 Aircraft::update_home() builds the origin directly
-# from these SIM_OPOS_* parameters - a code path with NO CMAC substitution,
-# so lat=0/lng=0/alt=0 is honoured exactly.
+# ÇÖZÜM: -O hiç geçirilmez. -O yokken home_is_set false kalır ve
+# SIM_Aircraft.cpp Aircraft::update_home() orijini doğrudan bu SIM_OPOS_*
+# parametrelerinden kurar - CMAC ikamesi içermeyen bir kod yolu, yani
+# lat=0/lng=0/alt=0 aynen onurlandırılır.
 #
-# VALUES:
+# DEĞERLER:
 #
-#   SIM_OPOS_ALT = 0  -- THE VALUE THIS STAGE ACTUALLY CHANGES.
-#     Taken verbatim from the test worlds' own <spherical_coordinates>
-#     <elevation>0.0</elevation> (e.g. worlds/
-#     falcon_v2_ardupilot_basic_closed_loop_flight_world.sdf:64), and
-#     consistent with the fixed rho = 1.225 kg/m^3 (ISA SEA LEVEL) that
-#     config/aero_v1_config.yaml uses for every
-#     aerodynamic force. This establishes the datum relationship, which is now
-#     explicit and checkable:
-#         ArduPlane altitude AMSL (m)  ==  Gazebo world z (m, ENU, +up)
-#     LIVE-VERIFIED 2026-09-02: SITL banner "Home: -35.363261 149.165230
-#     alt=0.000000m hdg=0.000000" (was alt=584.000000m).
-#     Provenance class: SIMULATION_DATUM_ALIGNMENT (read off the world file,
-#     not invented).
+#   SIM_OPOS_ALT = 0  -- BU BÖLÜMÜN ASIL DEĞİŞTİRDİĞİ DEĞER.
+#     Test world'lerinin kendi <spherical_coordinates>
+#     <elevation>0.0</elevation> değerinden birebir alınmıştır ve
+#     config/aero_v1_config.yaml'ın her aerodinamik kuvvet için kullandığı
+#     sabit rho = 1.225 kg/m^3 (ISA DENİZ SEVİYESİ) ile tutarlıdır.
+#     Böylece datum ilişkisi açık ve denetlenebilir hâle gelir:
+#         ArduPlane irtifası AMSL (m)  ==  Gazebo world z (m, ENU, +yukarı)
+#     CANLI DOĞRULANDI: SITL banner'ı "Home: -35.363261 149.165230
+#     alt=0.000000m hdg=0.000000" (öncesinde alt=584.000000m).
+#     Provenance sınıfı: SIMULATION_DATUM_ALIGNMENT (world dosyasından
+#     okunmuştur, uydurulmamıştır).
 #
 #   SIM_OPOS_LAT / SIM_OPOS_LNG = CMAC (-35.363261, 149.165230)
-#     DELIBERATELY UNCHANGED from the value every prior validated stage
-#     actually ran at, so that this stage changes the ALTITUDE datum ONLY and
-#     nothing else (SITL's synthetic compass field and declination are derived
-#     from home lat/lng; moving them would perturb the EKF for no physical
-#     gain). The horizontal datum has NO effect on any Falcon V2 physics: the
-#     aerodynamics, propulsion, actuator and pitot plugins are all local-frame,
-#     and no Gazebo GPS/NavSat output is in the ArduPilot loop (the JSON FDM
-#     backend synthesises GPS from home + local position - see
-#.
-#     WHY NOT 0,0 (which is what the world declares): ArduPilot cannot
-#     represent a vehicle at exactly lat=0/lng=0/alt=0 -
-#     AP_Common/Location.h:198 `initialised()` returns
-#     (lat != 0 || lng != 0 || alt != 0), and AP_AHRS.cpp:492-494 raises
-#     `AP_HAL::panic("uninitialised location returned by _get_location")` on a
-#     SITL build. This was LIVE-REPRODUCED on 2026-09-02 with
-#     SIM_OPOS_LAT/LNG/ALT all 0: ArduPlane booted, printed
-#     "Home: 0.000000 0.000000 alt=0.000000m hdg=0.000000", then panicked.
-#     KNOWN, RECORDED, HARMLESS DISCREPANCY: the worlds declare
-#     latitude_deg/longitude_deg 0.0 while SITL uses CMAC. Only the ALTITUDE
-#     datum is physically meaningful here and it is now aligned exactly.
-#     No real Falcon V2 flight-site georeference exists - DATA_REQUIRED; when
-#     one is supplied, set these three and the worlds' <spherical_coordinates>
-#     from it together.
+#     Önceki her doğrulanmış koşumun fiilen çalıştığı değerden
+#     KASTEN DEĞİŞTİRİLMEMİŞTİR; böylece yalnızca İRTİFA datumu
+#     değişir, başka hiçbir şey değişmez (SITL'in sentetik pusula alanı
+#     ve manyetik sapması home enlem/boylamından türetilir; onları oynatmak
+#     hiçbir fiziksel kazanç olmadan EKF'yi bozardı). Yatay datumun Falcon V2
+#     fiziğine hiç etkisi yoktur: aerodinamik, itki, aktüatör ve pitot
+#     plugin'lerinin tamamı yerel çerçevededir ve ArduPilot döngüsünde
+#     Gazebo GPS/NavSat çıkışı yoktur (JSON FDM arka ucu GPS'i home + yerel
+#     konumdan sentezler).
+#     NEDEN 0,0 DEĞİL (world'ün beyan ettiği değer): ArduPilot tam olarak
+#     lat=0/lng=0/alt=0 konumunu temsil edemez - AP_Common/Location.h
+#     `initialised()` (lat != 0 || lng != 0 || alt != 0) döndürür ve
+#     AP_AHRS.cpp bir SITL derlemesinde `AP_HAL::panic("uninitialised location
+#     returned by _get_location")` fırlatır. Bu, SIM_OPOS_LAT/LNG/ALT üçü
+#     de 0 iken canlı olarak YENİDEN ÜRETİLDİ: ArduPlane açıldı, "Home:
+#     0.000000 0.000000 alt=0.000000m hdg=0.000000" yazdı, sonra panikledi.
+#     BİLİNEN, KAYITLI, ZARARSIZ TUTARSIZLIK: world'ler
+#     latitude_deg/longitude_deg 0.0 beyan ederken SITL CMAC kullanır. Burada
+#     fiziksel olarak anlamlı olan tek şey İRTİFA datumudur ve o artık tam
+#     hizalanmıştır. Gerçek Falcon V2 uçuş sahasının coğrafi referansı
+#     yoktur - DATA_REQUIRED; biri verildiğinde bu üç değer ve world'lerin
+#     <spherical_coordinates> bloğu birlikte ondan ayarlanmalıdır.
 #
 #   SIM_OPOS_HDG = 0
-#     Matches the worlds' <heading_deg>0.0</heading_deg> AND the heading every
-#     prior run actually used (the old `-O 0,0,0,0` yaw field WAS honoured -
-#     it is parsed after the CMAC guard - so all prior stages ran at hdg 0,
-#     not at the SIM_OPOS_HDG firmware default of 353). Explicitly restated
-#     here so dropping -O changes nothing about heading.
+#     World'lerin <heading_deg>0.0</heading_deg> değeriyle VE her önceki
+#     koşumun fiilen kullandığı heading ile aynıdır (eski `-O 0,0,0,0`
+#     bayrağının yaw alanı onurlandırılıyordu, çünkü CMAC
+#     korumasından sonra ayrıştırılır - yani tüm önceki koşumlar hdg
+#     0'da çalıştı, SIM_OPOS_HDG firmware varsayılanı olan 353'te değil).
+#     -O'nun kaldırılmasının heading hakkında hiçbir şeyi
+#     değiştirmediği açıkça burada yeniden belirtilmiştir.
 # -----------------------------------------------------------------------------
 SIM_OPOS_LAT    -35.363261
 SIM_OPOS_LNG    149.165230

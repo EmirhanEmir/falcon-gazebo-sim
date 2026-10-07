@@ -1,21 +1,21 @@
 #!/usr/bin/env bash
 #
-# FALCON V2 - ArduPlane SITL + Gazebo Sim Harmonic launcher.
+# FALCON V2 - ArduPlane SITL + Gazebo Sim Harmonic başlatıcısı.
 #
-# Starts Gazebo (loading the FALCON V2 model and its five system plugins)
-# and ArduPlane SITL with the JSON FDM backend, connected to each other.
-# It only sets environment variables and launches existing binaries: no
-# aircraft parameter, SDF or .parm file is modified.
+# Gazebo'yu (FALCON V2 modeli ve beş system plugin'i ile) ve JSON FDM arka
+# ucunu kullanan ArduPlane SITL'i birbirine bağlı olarak başlatır. Yalnızca
+# ortam değişkeni ayarlar ve mevcut ikilileri çalıştırır: hiçbir uçak
+# parametresi, SDF ya da .parm dosyası değiştirilmez.
 #
-# Usage:
+# Kullanım:
 #   ./scripts/launch_ardupilot_sitl.sh [--gui] [world.sdf]
 #
-#   --gui        Launch Gazebo with the GUI (default: headless).
-#   world.sdf    World file override (default: worlds/falcon_v2_runway.sdf).
+#   --gui        Gazebo'yu GUI ile başlat (varsayılan: headless).
+#   world.sdf    World dosyasını değiştir (varsayılan: worlds/falcon_v2_runway.sdf).
 #
-# External paths may be overridden via the environment:
-#   ARDUPILOT_ROOT           ArduPilot source tree (built for SITL)
-#   ARDUPILOT_GAZEBO_BUILD   ardupilot_gazebo build directory
+# Depo dışı yollar ortam değişkenleriyle değiştirilebilir:
+#   ARDUPILOT_ROOT           ArduPilot kaynak ağacı (SITL için derlenmiş)
+#   ARDUPILOT_GAZEBO_BUILD   ardupilot_gazebo build dizini
 #
 set -uo pipefail
 
@@ -42,7 +42,7 @@ for arg in "$@"; do
   esac
 done
 
-# ---- Sanity checks (fail loud, not silently) ----
+# ---- Ön kontroller (sessizce değil, yüksek sesle başarısız ol) ----
 for f in \
   "$REPO_ROOT/plugins/aerodynamics/build/libFalconV2Aerodynamics.so" \
   "$REPO_ROOT/plugins/propulsion/build/libFalconV2Propulsion.so" \
@@ -77,8 +77,8 @@ fi
 export GZ_SIM_SYSTEM_PLUGIN_PATH="$REPO_ROOT/plugins/aerodynamics/build:$REPO_ROOT/plugins/propulsion/build:$REPO_ROOT/plugins/actuators/build:$REPO_ROOT/plugins/wind/build:$REPO_ROOT/plugins/sensors/build:$ARDUPILOT_GAZEBO_BUILD${GZ_SIM_SYSTEM_PLUGIN_PATH:+:$GZ_SIM_SYSTEM_PLUGIN_PATH}"
 export GZ_SIM_RESOURCE_PATH="$REPO_ROOT:$REPO_ROOT/model${GZ_SIM_RESOURCE_PATH:+:$GZ_SIM_RESOURCE_PATH}"
 
-# The <config_path> entries in model/model.sdf are repository-relative, so
-# Gazebo must run with the repository root as its working directory.
+# model/model.sdf içindeki <config_path> girdileri depoya göreli olduğundan
+# Gazebo'nun çalışma dizini depo kökü olmak zorundadır.
 cd "$REPO_ROOT" || exit 1
 
 echo "======================================================================"
@@ -141,18 +141,18 @@ else
 fi
 GZ_PID=$!
 
-# Give Gazebo a moment to load the model/plugins and start listening on
-# the FDM UDP port before ArduPlane tries to connect.
+# ArduPlane bağlanmayı denemeden önce Gazebo'nun modeli/plugin'leri yüklemesi
+# ve FDM UDP portunu dinlemeye başlaması için kısa bir süre bırak.
 sleep 5
 
-# -w wipes stale eeprom.bin/parameter state from a prior run in this working
-# directory only; the checked-in falcon_v2_sitl.parm is read-only input.
+# -w yalnızca bu çalışma dizinindeki önceki koşumdan kalan eeprom.bin/parametre
+# durumunu siler; depodaki falcon_v2_sitl.parm salt okunur girdidir.
 #
-# Do NOT add `-O 0,0,0,0`: ArduPilot's parse_home() silently replaces a
-# lat/lng of exactly 0,0 with the CMAC default and overrides the requested
-# altitude with 584 m, which corrupts the atmosphere model (EAS2TAS 1.033).
-# The simulation origin is set exactly via SIM_OPOS_LAT/LNG/ALT/HDG in
-# config/ardupilot/falcon_v2_sitl.parm instead.
+# `-O 0,0,0,0` EKLENMEMELİDİR: ArduPilot'un parse_home() fonksiyonu tam olarak
+# 0,0 olan bir enlem/boylamı sessizce CMAC varsayılanıyla değiştirir ve istenen
+# irtifayı 584 m ile ezer; bu da atmosfer modelini bozar (EAS2TAS 1.033).
+# Simülasyon orijini bunun yerine config/ardupilot/falcon_v2_sitl.parm
+# içindeki SIM_OPOS_LAT/LNG/ALT/HDG ile tam olarak kurulur.
 "$ARDUPLANE_BIN" \
   -w -M json \
   --defaults "$SITL_PARM" \

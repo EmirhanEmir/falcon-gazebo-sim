@@ -1,12 +1,8 @@
-// =============================================================================
-// FALCON V2 - Gazebo Sim Harmonic aerodynamics System plugin (implementation)
-// =============================================================================
-// See AerodynamicsSystem.hh for the architecture summary. Every numeric
-// constant used here comes from config/aero_v1_config.yaml, loaded at
-// Configure() time - no coefficient is hardcoded in this file. Joint and link
-// names below are structural identifiers matching model/model.sdf, not
-// physics constants.
-// =============================================================================
+// FALCON V2 — aerodinamik System eklentisinin Gazebo bağlantı katmanı.
+// Mimari özet için AerodynamicsSystem.hh'ye bakınız. Burada kullanılan her
+// sayısal sabit Configure() anında config/aero_v1_config.yaml'den yüklenir;
+// bu dosyada gömülü katsayı yoktur. Eklem/bağ adları model.sdf ile eşleşen
+// yapısal tanımlayıcılardır, fizik sabiti değildir.
 #include "AerodynamicsSystem.hh"
 
 #include <algorithm>
@@ -28,9 +24,7 @@ using namespace falcon_v2_aero;
 
 namespace
 {
-// Structural identifiers (CONFIRMED from model/model.sdf, cross-checked by
-// direct grep for this task - not aerodynamic coefficients, so these are not
-// subject to the "no magic numbers" coefficient rule; they are names).
+// model.sdf ile birebir eşleşen yapısal adlar (aerodinamik katsayı değil).
 constexpr const char *kBaseLinkName = "base_link";
 constexpr const char *kLeftAileronJoint = "left_aileron_joint";
 constexpr const char *kRightAileronJoint = "right_aileron_joint";
@@ -56,7 +50,7 @@ void AerodynamicsSystem::Configure(
     return;
   }
 
-  // ---- Load the structured coefficient dataset (source of truth) ----
+  // ---- Katsayı veri kümesini yükle ----
   const auto configPathPair = _sdf->Get<std::string>("config_path", "");
   const std::string configPath = configPathPair.first;
   if (configPath.empty())
@@ -73,9 +67,9 @@ void AerodynamicsSystem::Configure(
     return;
   }
 
-  // Optional overrides (documented in model.sdf's <plugin> block comment).
-  // Every one of these has a fallback to the YAML-loaded value, so an
-  // absent SDF parameter never silently zeroes a coefficient.
+  // İsteğe bağlı SDF geçersiz kılmaları. Her birinin YAML'den yüklenen değere
+  // geri dönüşü vardır; eksik bir SDF parametresi bir katsayıyı asla sessizce
+  // sıfırlamaz.
   this->config.rho = _sdf->Get<double>("air_density", this->config.rho).first;
   this->diagRateHz = _sdf->Get<double>("diagnostics_rate_hz", this->diagRateHz).first;
   const std::string windTopic =
@@ -83,7 +77,7 @@ void AerodynamicsSystem::Configure(
 
   this->config.Prepare();
 
-  // ---- Resolve link/joint entities ----
+  // ---- Bağ/eklem varlıklarını çöz ----
   this->baseLinkEntity = model.LinkByName(_ecm, kBaseLinkName);
   this->leftAileronJoint = model.JointByName(_ecm, kLeftAileronJoint);
   this->rightAileronJoint = model.JointByName(_ecm, kRightAileronJoint);
@@ -124,14 +118,14 @@ void AerodynamicsSystem::Configure(
     }
   }
 
-  // ---- Wind topic subscription (Vwind = 0 until a publisher exists) ----
+  // ---- Rüzgâr konusu aboneliği (yayıncı yoksa Vwind = 0) ----
   if (!this->node.Subscribe(windTopic, &AerodynamicsSystem::OnWind, this))
   {
     gzerr << "[FalconV2Aerodynamics] Failed to subscribe to wind topic '"
           << windTopic << "'.\n";
   }
 
-  // ---- Diagnostics publisher (throttled - see PreUpdate) ----
+  // ---- Tanı yayıncısı (PreUpdate içinde hız sınırlanır) ----
   const std::string diagTopic = "/model/falcon_v2/aerodynamics/diagnostics";
   this->diagPub = this->node.Advertise<gz::msgs::Double_V>(diagTopic);
 
@@ -175,20 +169,18 @@ bool AerodynamicsSystem::LoadConfig(const std::string &_path)
     this->config.Cma = lon["Cma_per_rad"].as<double>();
     this->config.CLq = lon["CLq"].as<double>();
     this->config.Cmq = lon["Cmq"].as<double>();
-    // Cmde/CLde: SUPERSEDED_BY_LOOKUP - loaded for cross-check only, NOT
-    // read by ComputeAero() itself (replaced by
-    // control_surface_lookup.elevator, loaded below).
+    // Cmde/CLde: SUPERSEDED_BY_LOOKUP. Yalnızca çapraz kontrol için yüklenir,
+    // ComputeAero() tarafından okunmaz; yerini aşağıda yüklenen
+    // control_surface_lookup.elevator tabloları alır.
     this->config.Cmde = lon["Cmde_per_rad"].as<double>();
     this->config.CLde = lon["CLde_per_rad"].as<double>();
     this->config.CL0 = lon["CL0"].as<double>();
     this->config.Cm0 = lon["Cm0"].as<double>();
 
-    // CYda/CYdr/Clda/Cnda/Cndr: SUPERSEDED_BY_LOOKUP - loaded for
-    // cross-check only, NOT read by ComputeAero() itself (replaced by
-    // control_surface_lookup.aileron/rudder, loaded below). Cldr is the one
-    // exception that is still functionally used: the rudder-roll lookup is
-    // derived from this exact scalar rather than from the wide-deflection
-    // table (see AeroConfig::Prepare()).
+    // CYda/CYdr/Clda/Cnda/Cndr: SUPERSEDED_BY_LOOKUP. Yalnızca çapraz kontrol
+    // için yüklenir, ComputeAero() tarafından okunmaz. Cldr tek istisnadır ve
+    // işlevsel olarak kullanılır: dümen yuvarlanma araması geniş sapma
+    // tablosundan değil doğrudan bu skalerden türetilir (AeroConfig::Prepare).
     auto lat = root["lateral_directional"];
     this->config.CYb = lat["CYb"].as<double>();
     this->config.CYp = lat["CYp"].as<double>();
@@ -219,14 +211,11 @@ bool AerodynamicsSystem::LoadConfig(const std::string &_path)
     this->config.elevatorSign = ctrl["elevator_sign"].as<double>();
     this->config.aileronSign = ctrl["aileron_sign"].as<double>();
     this->config.rudderSign = ctrl["rudder_sign"].as<double>();
-    // NOTE: control_deflection_clamp_deg was RETIRED this pass
-    // (HIGH_DEFLECTION_CONTROL_AERO_IMPLEMENTATION, 2026-08-26) - no longer
-    // present in the YAML, so it is intentionally not read here anymore.
-    // The wide-deflection lookup tables' own +/-45 deg domain bound
-    // (InterpLinear() in AeroModel.hh) is now the "no silent extrapolation"
-    // boundary for control-surface deflections.
+    // Genel kumanda sapma kırpması artık YAML'de yoktur ve kasten okunmaz:
+    // ekstrapolasyon sınırı artık geniş sapma arama tablolarının kendi
+    // +/-45 derecelik tanım aralığıdır (AeroModel.hh içindeki InterpLinear).
 
-    // ---- Wide-deflection control-surface lookup tables (this pass) ----
+    // ---- Geniş sapma kumanda yüzeyi arama tabloları ----
     auto loadArr = [](const YAML::Node &node, falcon_v2_aero::CtrlLookupArray &arr)
     {
       for (std::size_t i = 0; i < arr.size(); ++i)
@@ -236,7 +225,7 @@ bool AerodynamicsSystem::LoadConfig(const std::string &_path)
     auto csl = root["control_surface_lookup"];
     loadArr(csl["breakpoints_deg"], this->config.ctrlBreakpointsRad);
     for (auto &x : this->config.ctrlBreakpointsRad)
-      x *= M_PI / 180.0;  // deg -> rad, done once at load time
+      x *= M_PI / 180.0;  // derece -> radyan, yükleme anında bir kez
 
     auto elev = csl["elevator"];
     loadArr(elev["dCL"], this->config.ctrlElevDCL);
@@ -251,11 +240,8 @@ bool AerodynamicsSystem::LoadConfig(const std::string &_path)
     loadArr(aile["CL_full"], this->config.ctrlAileCLFull);
     loadArr(aile["Cm_full"], this->config.ctrlAileCmFull);
 
-    // Rudder: Cl is intentionally NOT loaded from the YAML's
-    // Cl_NOT_LOADED_disputed_sign_reference_only array (task 1B,
-    // UNRESOLVED_KEEP_CURRENT - see aero_v1_config.yaml
-    // lateral_directional.Cldr_per_rad for the full record). AeroConfig::
-    // Prepare() derives ctrlRuddCl from the Cldr scalar instead.
+    // Dümen Cl dizisi, işareti tartışmalı olduğu için YAML'den KASTEN
+    // yüklenmez; AeroConfig::Prepare() onu Cldr skalerinden türetir.
     auto rudd = csl["rudder"];
     loadArr(rudd["CY"], this->config.ctrlRuddCY);
     loadArr(rudd["Cn"], this->config.ctrlRuddCn);
@@ -292,25 +278,24 @@ void AerodynamicsSystem::PreUpdate(
   if (!worldPoseOpt.has_value() || !worldLinVelOpt.has_value() ||
       !worldAngVelOpt.has_value())
   {
-    // Velocity/pose checks not yet enabled for this step (first tick(s)
-    // after Configure()) - skip, apply no force this step rather than use
-    // stale/garbage data. Resumes automatically once populated.
+    // Configure() sonrasındaki ilk tiklerde hız/konum kontrolleri henüz
+    // etkin olmayabilir; eski veya anlamsız veri kullanmak yerine bu adımda
+    // hiç kuvvet uygulamadan çıkılır. Veri dolduğunda kendiliğinden sürer.
     return;
   }
 
   const gz::math::Quaterniond &worldRot = worldPoseOpt->Rot();
 
-  // Body-frame relative wind: Vrel = Vbody - Vwind, both expressed in body
-  // axes. Vwind arrives via OnWind().
+  // Gövde çerçevesinde bağıl rüzgâr: Vrel = Vbody - Vwind. Dünya çerçevesinde
+  // çıkarılır, sonra ters döndürmeyle gövde eksenlerine taşınır.
   const gz::math::Vector3d velWorld = *worldLinVelOpt - this->windWorld;
   const gz::math::Vector3d velBody = worldRot.RotateVectorReverse(velWorld);
   const gz::math::Vector3d angVelBody =
       worldRot.RotateVectorReverse(*worldAngVelOpt);
 
-  // ---- Control-surface joint positions -> deflection mapping ----
-  // See aero_v1_config.yaml control_mapping block for the full documented
-  // rationale (VERIFIED_BY_GAZEBO_GEOMETRY_SIGN_TEST, task
-  // CONTROL_SURFACE_SIGN_MAPPING, 2026-08-22 19.13).
+  // ---- Kumanda eklem açıları -> sapma eşlemesi ----
+  // İşaret gerekçesinin tamamı aero_v1_config.yaml içindeki control_mapping
+  // bloğundadır.
   auto jointPos = [&_ecm](gz::sim::Entity e) -> double
   {
     if (e == gz::sim::kNullEntity)
@@ -345,18 +330,15 @@ void AerodynamicsSystem::PreUpdate(
   const gz::math::Vector3d forceWorld = worldRot.RotateVector(out.forceBody);
   const gz::math::Vector3d momentWorld = worldRot.RotateVector(out.momentBody);
 
-  // Force applied AT the link's center of mass (base_link's <inertial><pose>
-  // is exactly the documented Gazebo/CAD CG) -
-  // AddWorldForce(ecm, force) [2-arg overload] applies at CoM by construction
-  // per the gz-sim8 Link.hh API, so this contributes ZERO extra moment.
-  // Moments are the fully-formed Cl/Cm/Cn-derived Mx/My/Mz, applied as a
-  // PURE torque (zero force in the AddWorldWrench call) so there is no
-  // second, unaccounted r x F contribution "force
-  // application point" section for the full double-counting analysis.
+  // Kuvvet, bağın kütle merkezinde uygulanır: iki argümanlı AddWorldForce()
+  // gz-sim8 API'sinde tanımı gereği kütle merkezine etki eder, dolayısıyla
+  // fazladan bir moment katkısı doğmaz. Momentler ise Cl/Cm/Cn'den türetilmiş
+  // tam Mx/My/Mz olarak SAF tork biçiminde (çağrıda kuvvet sıfır) uygulanır;
+  // böylece ikinci bir r x F katkısı oluşmaz ve çift sayım olmaz.
   baseLink.AddWorldForce(_ecm, forceWorld);
   baseLink.AddWorldWrench(_ecm, gz::math::Vector3d::Zero, momentWorld);
 
-  // ---- Throttled diagnostics ----
+  // ---- Hız sınırlanmış tanı yayını ----
   const double dtSec =
       std::chrono::duration<double>(_info.dt).count();
   this->diagAccumulator += dtSec;

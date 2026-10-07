@@ -1,74 +1,74 @@
-# FALCON V2 — Wind/Gust Generator Plugin
+# FALCON V2 — Rüzgâr/Hamle Üreticisi Eklentisi
 
-Gazebo Sim Harmonic System plugin providing a minimal, deterministic
-atmospheric wind and gust **publisher**.
+Asgari ve deterministik bir atmosferik rüzgâr ve hamle **yayıncısı** sağlayan
+Gazebo Sim Harmonic System eklentisi.
 
-It computes `V_wind_world = V_steady + V_gust(t)` — world frame, m/s, the
-velocity of the air mass, not the meteorological "wind coming from" phrasing
-— and publishes it every `PreUpdate()` tick on `/model/falcon_v2/wind`, the
-topic the aerodynamics, propulsion and pitot plugins already consume as
-`Vrel = Vbody − Vwind`. This is the only wind source in the project; no
-second consumption path exists.
+`V_wind_world = V_steady + V_gust(t)` hesaplar — dünya çerçevesi, m/s, hava
+kütlesinin hızı; meteorolojideki "rüzgârın geldiği yön" ifadesi değil — ve bunu
+her `PreUpdate()` tikinde `/model/falcon_v2/wind` konusunda yayınlar. Bu konu,
+aerodinamik, itki ve pitot eklentilerinin halihazırda `Vrel = Vbody − Vwind`
+olarak tükettiği konudur. Projedeki tek rüzgâr kaynağı budur; ikinci bir
+tüketim yolu yoktur.
 
-This plugin **never** applies a direct force or wrench to any link — no
-`AddWorldForce`/`AddWorldWrench` call exists anywhere in it. Its only physical
-output is the published velocity vector.
+Bu eklenti hiçbir bağa **asla** doğrudan kuvvet veya tork uygulamaz — içinde
+hiçbir `AddWorldForce`/`AddWorldWrench` çağrısı yoktur. Tek fiziksel çıktısı
+yayınlanan hız vektörüdür.
 
-**Not modelled:** spatial wind gradients (shear or gust fronts varying with
-aircraft position), terrain effects, wake effects, and Dryden/Von Karman
-stochastic turbulence.
+**Modellenmeyenler:** uzamsal rüzgâr gradyanları (uçağın konumuna göre değişen
+kayma veya hamle cepheleri), arazi etkileri, iz etkileri ve Dryden/Von Karman
+stokastik türbülansı.
 
-## Files
+## Dosyalar
 
-| File | Purpose |
+| Dosya | Amaç |
 | ---- | ------- |
-| `WindModel.hh` | Pure math: 1-cosine gust envelope, gust-vector evaluation, steady+gust composition, direction normalisation. Depends only on `gz-math7`. |
-| `WindSystem.hh` / `.cc` | The `gz-sim8` System plugin: SDF parameter reads, command subscriptions, per-tick publishing. |
-| `CMakeLists.txt` | Build definition for `libFalconV2Wind.so`. |
+| `WindModel.hh` | Saf matematik: 1-kosinüs hamle zarfı, hamle vektörü hesabı, sabit+hamle bileşimi, yön normalizasyonu. Yalnızca `gz-math7`'ye bağımlıdır. |
+| `WindSystem.hh` / `.cc` | `gz-sim8` System eklentisi: SDF parametre okuma, komut abonelikleri, tik başına yayın. |
+| `CMakeLists.txt` | `libFalconV2Wind.so` derleme tanımı. |
 
-## Dependencies
+## Bağımlılıklar
 
-- `gz-sim8`, `gz-plugin2` (component `register`), `gz-transport13`,
+- `gz-sim8`, `gz-plugin2` (`register` bileşeni), `gz-transport13`,
   `gz-msgs10`, `gz-math7`
-- CMake ≥ 3.16, a C++17 compiler
+- CMake ≥ 3.16, C++17 derleyicisi
 
-No `yaml-cpp`: this plugin has no coefficient dataset to load — its only
-inputs are SDF parameters and live command topics.
+`yaml-cpp` gerekmez: bu eklentinin yüklenecek bir katsayı veri kümesi yoktur —
+tek girdileri SDF parametreleri ve canlı komut konularıdır.
 
-## Build
+## Derleme
 
 ```bash
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build -j$(nproc)
 ```
 
-Produces `build/libFalconV2Wind.so`. `build/` is git-ignored.
+Çıktı: `build/libFalconV2Wind.so`. `build/` dizini git tarafından yok sayılır.
 
-## Runtime interface
+## Çalışma zamanı arayüzü
 
-Set a steady wind:
+Sabit rüzgâr ayarlamak için:
 
 ```bash
 gz topic -t /model/falcon_v2/wind/steady_cmd -m gz.msgs.Vector3d -p "x: 5.0, y: 0.0, z: 0.0"
 ```
 
-Schedule a 1-cosine gust. Field order is fixed:
-`[dir_x, dir_y, dir_z, amplitude_mps, start_delay_s, duration_s]`, where
-`start_delay_s` is relative to the command's own receipt time, not absolute
-sim time:
+1-kosinüs hamlesi zamanlamak için. Alan sırası sabittir:
+`[dir_x, dir_y, dir_z, amplitude_mps, start_delay_s, duration_s]`; buradaki
+`start_delay_s`, mutlak benzetim zamanına değil komutun kendi alınma zamanına
+görelidir:
 
 ```bash
 gz topic -t /model/falcon_v2/wind/gust_cmd -m gz.msgs.Double_V \
   -p "data: [1.0, 0.0, 0.0, 8.0, 2.0, 3.0]"
 ```
 
-That is a gust blowing toward world +X, peaking at 8 m/s, starting 2 s after
-the command is received and lasting 3 s.
+Bu komut, dünya +X yönüne esen, tepe değeri 8 m/s olan, komut alındıktan 2 s
+sonra başlayıp 3 s süren bir hamledir.
 
-**Limitation:** only one gust may be scheduled or in progress at a time — a
-new gust command replaces any existing one.
+**Sınır:** aynı anda yalnızca bir hamle zamanlanabilir veya sürebilir — yeni
+bir hamle komutu mevcut olanı değiştirir.
 
-Observe the published wind:
+Yayınlanan rüzgârı izlemek için:
 
 ```bash
 gz topic -e -t /model/falcon_v2/wind

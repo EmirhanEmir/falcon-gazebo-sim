@@ -1,498 +1,355 @@
 # =============================================================================
-# FALCON V2 - Aerodynamics V1 coefficient/config dataset (source of truth)
+# FALCON V2 — Aerodinamik katsayı/yapılandırma veri kümesi (kaynak veri)
 # =============================================================================
-# Owner: aerodynamics
-# Task:  AERODYNAMICS_V1_IMPLEMENTATION (2026-08-22)
-# UPDATED: HIGH_DEFLECTION_CONTROL_AERO_IMPLEMENTATION (2026-08-26) - added
-#   the control_surface_lookup block (wide-deflection piecewise-linear
-#   elevator/aileron/rudder tables, +/-45 deg domain), updated 6 small-signal
-#   control-derivative scalars per the new XFLR5 fixed-condition dataset,
-#   added CLde_per_rad, and RETIRED control_deflection_clamp_deg (see the
-#   control_mapping section below and for the full
-#   record, including the 1A CYda_per_rad and 1B Cldr_per_rad resolutions).
+# Bu dosya, plugins/aerodynamics/ altındaki "FalconV2Aerodynamics" Gazebo Sim
+# Harmonic System eklentisinin kullandığı her sayısal aerodinamik parametrenin
+# tek yapılandırılmış kaynağıdır. Eklenti dosyayı Configure() anında,
+# model/model.sdf içindeki <config_path> SDF parametresinde verilen yoldan
+# yükler. Aerodinamik veri kümeleri eklentinin kaynak koduna gömülmez.
 #
-# This file is the single structured-data source for every numeric aerodynamic
-# parameter consumed by plugins/aerodynamics/ (the Gazebo Sim Harmonic System
-# plugin "FalconV2Aerodynamics"). Per the project specification's source-of-truth policy,
-# aerodynamic datasets live here, not hardcoded inline in plugin source code.
-# The plugin loads this file at Configure time from the path given by the
-# <config_path> SDF plugin parameter in model/model.sdf.
+# KÖKEN KURALI: aşağıdaki her değer kaynağını belirtir ve hiçbiri
+# uydurulmamıştır. Türetme gerektiren yerlerde (CL0, Cm0, yüksek hücum açısı
+# doyum sabitleri, kanatçık/dümen CD/CL/Cm taban farklandırması) yöntem değerin
+# yanında özetlenmiştir.
 #
-# PROVENANCE RULE: every value below cites the exact source. Nothing here is
-# invented. Where a task-authorized derivation was required (CL0, Cm0, the
-# high-alpha saturation constants, the aileron/rudder CD/CL/Cm baseline
-# differencing in AeroConfig::Prepare), the derivation is summarized inline
-# and the full arithmetic is recorded in
-# (search "AERODYNAMICS_V1_IMPLEMENTATION" and
-# "HIGH_DEFLECTION_CONTROL_AERO_IMPLEMENTATION").
+# DURUM ETİKETLERİ — bunlar literal, büyük harfli belirteçlerdir; çevrilmez ve
+# yeniden adlandırılmaz. Yalnızca etraflarındaki açıklama Türkçedir:
+#   CONFIRMED      - kaynak veride doğrudan verilen, değiştirilmeden kullanılan
+#                    değer.
+#   DERIVED        - CONFIRMED değerlerden belgelenmiş bir yöntemle hesaplanan
+#                    değer.
+#   V1_CALIBRATED  - kaynak veri kümesinin kendi kalibrasyon etiketi
+#                    (sürükleme poları).
+#   ASSUMPTION     - kaynak verisi olmayan; V1 için çalışan bir sayı gerektiği
+#                    için kullanılan ve açıkça DOĞRULANMAMIŞ değer.
+#   TEMPORARY      - fiziksel sabit değil, mühendislik güvenliği için konulmuş
+#                    yer tutucu değer.
+#   DATA_REQUIRED  - eksik; elde edilmesi gereken veri.
+#   VERIFIED_BY_GAZEBO_GEOMETRY_SIGN_TEST - başlangıçta ASSUMPTION iken,
+#                    geometrik belirleme ve çalışan bir Gazebo örneğinde
+#                    bağımsız canlı kinematik/aerodinamik moment ölçümleriyle
+#                    doğrulanmış değer.
+#   SUPERSEDED_BY_LOOKUP - AeroModel.hh'deki kuvvet/moment formülünün artık
+#                    okumadığı skaler kumanda türevi; yerini geniş sapma arama
+#                    tablosu almıştır, yalnızca küçük sinyal referansı olarak
+#                    saklanır.
+#   RESOLVED_NEW_VALUE_VALID / UNRESOLVED_KEEP_CURRENT - birbiriyle uyuşmayan
+#                    iki XFLR5 analiz oturumu arasında verilen belgelenmiş
+#                    kararın iki olası sonucu (CYda_per_rad ve Cldr_per_rad
+#                    notlarına bakınız).
 #
-# STATUS TAGS USED BELOW (consistent with's legend):
-#   CONFIRMED         - stated directly by the project specification / master dataset /,
-#                        used exactly as given, not modified.
-#   DERIVED           - computed from CONFIRMED values via a documented method,
-#                        shown in.
-#   V1_CALIBRATED     - master dataset's own calibration label (drag polar).
-#   ASSUMPTION        - a value with no source data; used because a working
-#                        number was required for V1, explicitly NOT validated.
-#   TEMPORARY         - a placeholder/engineering-safety value, not a physical
-#                        constant.
-#   VERIFIED_BY_GAZEBO_GEOMETRY_SIGN_TEST - was ASSUMPTION, now confirmed by
-#                        the controls layer's geometric determination plus
-#                        the test harness's independent live kinematic/aero-
-#                        moment measurements in a running Gazebo instance
-#                        (task CONTROL_SURFACE_SIGN_MAPPING, 2026-08-22).
-#   SUPERSEDED_BY_LOOKUP - a scalar control derivative that is no longer read
-#                        by the force/moment formula in AeroModel.hh (its
-#                        role was taken over by a wide-deflection lookup
-#                        table); retained only as a documented small-signal
-#                        reference value, task HIGH_DEFLECTION_CONTROL_AERO_
-#                        IMPLEMENTATION (2026-08-26).
-#   RESOLVED_NEW_VALUE_VALID / UNRESOLVED_KEEP_CURRENT - the two possible
-#                        outcomes of a documented judgment call between two
-#                        disagreeing XFLR5 analysis sessions (see the
-#                        CYda_per_rad and Cldr_per_rad notes below).
-#
-# Do not edit numeric values here without updating's
-# provenance record. Do not add new coefficients not present in the project specification /
-# the master dataset / an authorized derivation - report DATA_REQUIRED
-# instead ( for the current list).
+# Buradaki sayısal değerler, köken kaydı birlikte güncellenmeden
+# değiştirilmemelidir. Kaynak veride ya da yetkilendirilmiş bir türetmede
+# bulunmayan yeni katsayı eklenmez; eksik veri DATA_REQUIRED olarak bildirilir.
 # =============================================================================
 
 reference_geometry:
-  # S, b: the project specification manufacturer geometry / MD sec 3. c_ref: XFLR5's own internal
-  # aerodynamic reference chord, MD sec 24/37/70 -
-  # explicitly NOT the manufacturer's 0.176 m average chord (do not conflate).
-  wing_area_S_m2: 0.4514                # CONFIRMED, the project specification
-  wingspan_b_m: 2.093                   # CONFIRMED, the project specification
-  reference_chord_c_ref_m: 0.224        # CONFIRMED (MD sec 24/37/70)
+  # S ve b üretici geometrisidir. c_ref ise XFLR5'in kendi iç aerodinamik
+  # referans veteridir; üreticinin 0.176 m ortalama veteri DEĞİLDİR (bu ikisi
+  # karıştırılmamalıdır).
+  wing_area_S_m2: 0.4514                # CONFIRMED, üretici geometrisi
+  wingspan_b_m: 2.093                   # CONFIRMED, üretici geometrisi
+  reference_chord_c_ref_m: 0.224        # CONFIRMED, XFLR5 aerodinamik referans veteri
 
 environment:
-  air_density_rho_kg_m3: 1.225          # CONFIRMED, standard sea-level (ISA), V1 fixed value per task brief
-  # Numerical-safety-only floor for the V-denominator in p_hat/q_hat/r_hat.
-  # NOT a physical constant. Chosen far below any realistic flight speed so it
-  # never distorts real dynamic-pressure-scaled forces (qbar~V^2 already goes
-  # to exactly zero at true V=0, independent of this floor).
-  v_safe_floor_m_s: 0.0010              # TEMPORARY, engineering numerical-safety choice
+  air_density_rho_kg_m3: 1.225          # CONFIRMED, standart deniz seviyesi (ISA); V1 için sabit
+  # p_hat/q_hat/r_hat paydalarındaki V için YALNIZCA sayısal güvenlik tabanı;
+  # fiziksel bir sabit değildir. Gerçekçi her uçuş hızının çok altında
+  # seçildiğinden gerçek dinamik basınç ölçekli kuvvetleri bozmaz: qbar ~ V^2
+  # zaten gerçek V=0'da, bu tabandan bağımsız olarak tam sıfır olur.
+  v_safe_floor_m_s: 0.0010              # TEMPORARY, sayısal güvenlik seçimi
 
-# CG used by this plugin for reference only (force is applied at the link's
-# own <inertial><pose>, i.e. wherever the CG is placed in
-# model.sdf - this plugin does NOT hardcode a duplicate CG value for force
-# application; this entry is retained purely for documentation/traceability).
+# Bu blok yalnızca belgeleme/izlenebilirlik içindir. Kuvvet, bağın kendi
+# <inertial><pose> konumunda, yani model.sdf'te ağırlık merkezi nereye
+# konulmuşsa orada uygulanır; eklenti kuvvet uygulaması için burada ikinci bir
+# CG değeri tutmaz.
 cg_reference:
-  gazebo_cad_cg_m: [0.168309, 0.0, 0.100000]   # CONFIRMED - cited only, not re-applied by the plugin
+  gazebo_cad_cg_m: [0.168309, 0.0, 0.100000]   # CONFIRMED — yalnızca anılır, eklenti tarafından kullanılmaz
 
 longitudinal:
-  CLa_per_rad: 5.44594        # CONFIRMED (MD sec 30/37/70)
-  Cma_per_rad: -1.65805       # CONFIRMED
-  CLq: 9.48457                # CONFIRMED (q_hat-normalized)
-  Cmq: -10.22875               # CONFIRMED
-  # Cmde_per_rad: UPDATED this revision (2026-08-26, task
-  # HIGH_DEFLECTION_CONTROL_AERO_IMPLEMENTATION), -0.73 -> -1.000/rad, per
-  # the new XFLR5 Type-1 FIXED-CONDITION control-effectiveness sweep
-  # (control_surface_analysis/FALCON_V2_CONTROL_SURFACE_WIDE_DEFLECTION_
-  # RESULTS.txt, "Recommended consolidated elevator small-signal values",
-  # Cm_delta_e=-1.000/rad, consistent to <0.3% across two independent
-  # operating points and the +/-2/+/-5/+/-10/+/-15/+/-25 deg central-
-  # difference windows). This is unconditional per the task's Part 2 -
-  # SUPERSEDED_BY_LOOKUP for the actual Cm formula (see
-  # control_surface_lookup.elevator.dCm below, which fully replaces the old
-  # `Cmde*deltaE` term - not added on top). Retained here ONLY as the
-  # documented small-signal reference value, verified by the plugin's
-  # to be closely reproduced by a finite
-  # difference of the lookup table near delta_e=0.
-  Cmde_per_rad: -1.000        # UPDATED (was -0.73) (this revision); SUPERSEDED_BY_LOOKUP, reference-only
-  # CLde_per_rad: NEW field this revision. Previously DELIBERATELY OMITTED - a
-  # finite-difference extraction attempt from the OLD Type-7 elevator
-  # trim-sweep table produced estimates ranging
-  # 0.080-0.508 /rad across adjacent row pairs (a >6x spread, with a
-  # discontinuity straddling delta_e=0), because each row of that table is a
-  # distinct trim SEARCH result (different V/alpha per delta_e), not a
-  # fixed-speed direct control sweep - fabricating a CLde from that unstable
-  # extraction would have violated the project's no-fabrication rule. The
-  # NEW fixed-condition sweep does not have this problem (V and alpha are
-  # held fixed, only delta_e varies) and gives a stable +0.414/rad across
-  # +/-2/+/-5/+/-10/+/-15/+/-25/+/-35 deg windows and two independent
-  # operating points (primary V=18.162 m/s and secondary V=21.244 m/s
-  # sweeps) - "Recommended consolidated elevator small-signal values".
-  # SUPERSEDED_BY_LOOKUP for the actual CL formula (see
-  # control_surface_lookup.elevator.dCL below); applied EXCLUSIVELY via
-  # that lookup, never as CLde*deltaE (would double-count). Reference-only.
-  CLde_per_rad: 0.414          # NEW (2026-08-26); SUPERSEDED_BY_LOOKUP, reference-only
-  CL0: 0.437035           # DERIVED (this revision): CL0 = CL_trim - CLa*alpha_trim(rad); CL_trim=0.471685, alpha_trim=0.36455 deg
-  Cm0: 0.010550            # DERIVED (this revision): Cm0 = -Cma*alpha_trim(rad), from Cm_trim=0 at delta_e=0, q_hat=0
+  CLa_per_rad: 5.44594        # CONFIRMED, XFLR5 tam uçak analizi
+  Cma_per_rad: -1.65805       # CONFIRMED, XFLR5
+  CLq: 9.48457                # CONFIRMED, XFLR5 (q_hat ile normalize)
+  Cmq: -10.22875               # CONFIRMED, XFLR5
+  # XFLR5 Type-1 sabit koşullu kumanda etkinliği taraması: Cm_delta_e =
+  # -1.000/rad; iki bağımsız çalışma noktası ve +/-2 ... +/-25 derecelik merkezi
+  # fark pencereleri arasında %0.3'ten iyi tutarlı. Gerçek Cm formülü için
+  # SUPERSEDED_BY_LOOKUP: etki tümüyle control_surface_lookup.elevator.dCm ile
+  # uygulanır, bu skaler onun üstüne eklenmez.
+  Cmde_per_rad: -1.000        # SUPERSEDED_BY_LOOKUP, yalnızca küçük sinyal referansı
+  # CLde daha önce kasten boş bırakılmıştı: eski Type-7 asansör denge
+  # taramasından yapılan sonlu fark çıkarımı komşu satır çiftleri arasında
+  # 0.080 ile 0.508 /rad arasında değişiyordu (6 kattan fazla yayılma), çünkü o
+  # tablonun her satırı ayrı bir denge ARAMA sonucudur (her delta_e için farklı
+  # V ve alfa). Sabit koşullu yeni tarama bu soruna sahip değildir (V ve alfa
+  # sabit, yalnızca delta_e değişir) ve +0.414/rad değerini kararlı verir.
+  # SUPERSEDED_BY_LOOKUP: etki yalnızca control_surface_lookup.elevator.dCL ile
+  # uygulanır; ayrıca CLde*deltaE olarak eklenmesi çift sayım olurdu.
+  CLde_per_rad: 0.414          # SUPERSEDED_BY_LOOKUP, yalnızca küçük sinyal referansı
+  # DERIVED: CL0 = CL_trim - CLa*alpha_trim(rad), CL_trim=0.471685, alpha_trim=0.36455 derece
+  CL0: 0.437035
+  # DERIVED: Cm0 = -Cma*alpha_trim(rad); delta_e=0 ve q_hat=0'da Cm_trim=0 koşulundan
+  Cm0: 0.010550
 
 lateral_directional:
-  # NOTE (2026-08-26, task HIGH_DEFLECTION_CONTROL_AERO_IMPLEMENTATION): all
-  # five *da_per_rad/*dr_per_rad control-derivative scalars below are now
-  # SUPERSEDED_BY_LOOKUP for the actual CY/Cl/Cn formula (see
-  # control_surface_lookup below, which fully replaces each corresponding
-  # linear term - not added on top). They are retained ONLY as documented
-  # small-signal reference constants, each verified by the plugin's
-  # to be closely reproduced by a finite difference of the
-  # relevant lookup table near delta=0 - EXCEPT Cldr_per_rad, which remains
-  # functionally used (see its own note below, 1B resolution).
-  CYb: -0.13216            # CONFIRMED, the project specification / (unchanged, beta term - not part of this revision)
-  CYp: -0.04567            # CONFIRMED (unchanged, rate term)
-  CYr: 0.08776             # CONFIRMED (unchanged, rate term)
-  # CYda_per_rad: 1A RESOLUTION = RESOLVED_NEW_VALUE_VALID (2026-08-26).
-  # Old value (0.0254, full +/-10 deg range) vs new XFLR5 fixed-condition
-  # value (0.0045) differ by ~5.7x. Verified directly against both source
-  # tables before deciding:
-  #   - OLD source (, MD sec 33-36) is a Type-7
-  #     RE-TRIMMED sweep: alpha varies 0.421 deg (delta_a=0) -> 1.565 deg
-  #     (delta_a=+/-10 deg), V varies 21.19->20.59 m/s across the same
-  #     range - confirmed non-fixed-condition, real trim-path contamination
-  #     by construction (this is the SAME table Clda_per_rad/Cnda_per_rad
-  #     below are also drawn from).
-  #   - NEW source (control_surface_analysis/
-  #     FALCON_V2_CONTROL_SURFACE_WIDE_DEFLECTION_RESULTS.txt) is Type-1
-  #     FIXED SPEED, fixed alpha=2.472 deg, only the aileron deflected - a
-  #     true isolated control derivative, internally consistent to 2
-  #     significant figures across +/-2/+/-5/+/-10 deg windows (0.00458,
-  #     0.00447, 0.00458 /rad).
-  #   - Live mechanical/definitional bug RULED OUT: checked whether the two
-  #     sessions use a different delta_a normalization (differential
-  #     half-angle vs full WF gain). Both tables use the IDENTICAL
-  #     differential convention (new file's own "Mapping validation":
-  #     delta_a=-10deg -> Cl=-0.07230, delta_a=+10deg -> Cl=+0.07231,
-  #     directly comparable in scale/sign to the old table's Cl(+/-10)=
-  #     +/-0.0534) - the Clda ratio old:new is only ~1.34x and Cnda ratio is
-  #     only ~1.18x, NOT the ~2x/0.5x jump a definitional/factor-of-two bug
-  #     would produce uniformly across all three coefficients sharing the
-  #     same delta_a input. A universal bug would affect Cl/Cn/CY by a
-  #     similar factor; only CY is anomalously large, which points to a
-  #     coefficient-specific sensitivity, not a global mapping/sign error.
-  #   - Decision: RESOLVED_NEW_VALUE_VALID. The new value is adopted because
-  #     (a) its methodology (true fixed-condition, isolated-surface sweep)
-  #     is strictly superior to the old re-trimmed sweep for extracting a
-  #     small-signal control derivative, (b) no alternative bug explanation
-  #     survived the mapping/sign check above, (c) the new value is highly
-  #     internally self-consistent across 3 independent windows, and (d) a
-  #     physically plausible mechanism exists (CY_delta_a is a small,
-  #     tertiary sideforce term generated mostly through fuselage/vertical-
-  #     tail sidewash response to the aileron-deflected wing wake - a
-  #     coupling that is intrinsically more alpha-sensitive than the
-  #     direct, locally-dominated Cl/Cn effects, so it is plausible for the
-  #     old sweep's 0.4-1.1 deg alpha excursion to disproportionately
-  #     distort this specific small term). Honest counter-evidence noted:
-  #     within the OLD dataset alone, its own near-center-vs-full-range
-  #     window instability is NOT larger in relative terms for CYda (0.0254
-  #     vs 0.0268, ~5.5%) than for Clda (0.308 vs 0.330, ~7%) - so the
-  #     "smallness causes disproportionate contamination" argument is
-  #     suggestive, not proven, by itself. The decision rests primarily on
-  #     (a)/(b)/(c) above, not on this specific magnitude argument. See
-  # for the full written record.
-  CYda_per_rad: 0.0045     # RESOLVED_NEW_VALUE_VALID (was 0.0254) (this revision); SUPERSEDED_BY_LOOKUP, reference-only
-  # CYdr_per_rad: UPDATED unconditionally (Part 2), 0.085 -> 0.0916/rad, new
-  # fixed-condition data (~7.3% higher than old, ACCEPTABLE_DIFFERENCE per
-  # the prior CONTROL_AUTHORITY_EFFECTIVENESS_VALIDATION pass - same
-  # older-sweep-vs-newer-fixed-condition pattern as Cmde/Clda/Cnda above).
-  CYdr_per_rad: 0.0916     # UPDATED (was 0.085) (this revision); SUPERSEDED_BY_LOOKUP, reference-only
+  # Aşağıdaki beş *da_per_rad / *dr_per_rad kumanda türevi, gerçek CY/Cl/Cn
+  # formülü için SUPERSEDED_BY_LOOKUP'tır: yerlerini control_surface_lookup
+  # tabloları tümüyle alır, üstlerine eklenmezler ve yalnızca belgelenmiş küçük
+  # sinyal referansı olarak saklanırlar. TEK istisna Cldr_per_rad'dır; kendi
+  # notuna bakınız.
+  CYb: -0.13216            # CONFIRMED, tam uçak referans noktası (beta terimi)
+  CYp: -0.04567            # CONFIRMED (hız terimi)
+  CYr: 0.08776             # CONFIRMED (hız terimi)
+  # İki XFLR5 oturumu arasındaki ~5.7 katlık fark incelendi. Eski kaynak
+  # yeniden dengelenen bir Type-7 taramasıdır (sapma aralığı boyunca alfa
+  # 0.421 -> 1.565 derece, V 21.19 -> 20.59 m/s), yani sabit koşullu değildir.
+  # Yeni kaynak Type-1 sabit hız, sabit alfa=2.472 derece ve yalnızca kanatçık
+  # saptırılmış gerçek bir izole kumanda türevidir; +/-2/+/-5/+/-10 derece
+  # pencerelerinde iki anlamlı basamağa kadar tutarlıdır. Tanım/ölçek hatası
+  # olasılığı da sınandı: her iki tablo AYNI diferansiyel delta_a
+  # konvansiyonunu kullanıyor, dolayısıyla genel bir eşleme hatası yoktur.
+  # Metodolojik olarak üstün olan yeni değer benimsendi.
+  CYda_per_rad: 0.0045     # RESOLVED_NEW_VALUE_VALID (eski: 0.0254); SUPERSEDED_BY_LOOKUP, yalnızca referans
+  # Sabit koşullu yeni veriyle güncellendi; eskisinden ~%7.3 yüksek, kabul
+  # edilebilir fark aralığında.
+  CYdr_per_rad: 0.0916     # SUPERSEDED_BY_LOOKUP, yalnızca referans (eski: 0.085)
 
-  Clb: -0.00717             # CONFIRMED (unchanged, dihedral/beta term - not part of this revision)
-  Clp: -0.54187             # CONFIRMED (unchanged, rate term)
-  Clr: 0.10586              # CONFIRMED (unchanged, rate term)
-  # Clda_per_rad: UPDATED unconditionally (Part 2), 0.308 -> 0.414/rad, new
-  # fixed-condition data (~26% higher than old - KNOWN_IMPLEMENTATION_GAP
-  # per the prior validation pass, old-dataset-vintage gap, same direction/
-  # sign, not a defect).
-  Clda_per_rad: 0.414      # UPDATED (was 0.308) (this revision); SUPERSEDED_BY_LOOKUP, reference-only
-  # Cldr_per_rad: 1B RESOLUTION = UNRESOLVED_KEEP_CURRENT (2026-08-26).
-  # Old value +0.0007/rad (, MD sec 29/32, Type-7
-  # sweep at the neutral-vertical-fin trim point V=21.244 m/s/alpha=0.364
-  # deg) vs new fixed-condition value -0.00065/rad (V=18.162 m/s/alpha=2.472
-  # deg) - OPPOSITE SIGN, comparable magnitude. Checked for a decisive
-  # geometric/methodological reason to prefer one session over the other:
-  #   - Both sessions: viscous OFF (checked directly, both explicitly state
-  #     this).
-  #   - Vertical-tail/rudder hinge geometry (MD sec 26-29): no stated
-  #     difference between the two sessions' aircraft definitions - both
-  #     appear to use the same underlying vertical-tail/rudder geometry
-  #     (same hinge x/c-vs-Z taper schedule, same "neutral fin" full-
-  #     aircraft configuration terminology used throughout the master
-  #     dataset for this aircraft's baseline vertical-fin rigging).
-  #   - Panel count / VLM mesh density: NOT stated in either source
-  #     document for either session - cannot be compared.
-  #   - Fin incidence/rigging/"toe-in": no evidence of a second, differently
-  #     -rigged fin configuration exists anywhere in the master dataset or
-  #     the new wide-deflection file - "neutral fin" appears to be this
-  #     aircraft's one documented vertical-fin configuration, not one of
-  #     several being compared.
-  #   - The ONLY identified difference between the two sessions is the
-  #     operating point itself (alpha 0.364 vs 2.472 deg, V 21.244 vs 18.162
-  #     m/s). Cl_delta_r is ~2 orders of magnitude smaller than
-  #     CY_delta_r/Cn_delta_r (a tertiary rudder-to-roll coupling, plausibly
-  #     from asymmetric vertical-tail/rudder loading interacting with
-  #     dihedral/wing effects at nonzero alpha) - it is PLAUSIBLE that this
-  #     specific alpha/V change flips the sign of such a small residual
-  #     term, but this is not provable from the documentation available
-  #     (no direct XFLR5 project-file rudder positive-TE-direction
-  #     comparison was performed or is possible from the text-only source
-  #     files in this repository).
-  #   - Decision: UNRESOLVED_KEEP_CURRENT. No decisive reason was found to
-  #     prefer either sign, so per the task's explicit instruction not to
-  #     force a resolution that cannot be defended, the OLD value is KEPT.
-  #     This does NOT mean the current implementation is "known correct" -
-  #     it means neither sign has been shown to be more correct than the
-  #     other with the evidence in this repository. Remains a flagged open
-  #     item for a future pass with direct access to both underlying XFLR5
-  #     project files.
-  #   - CONSISTENCY (wide-deflection lookup): per this UNRESOLVED_KEEP_
-  #     CURRENT decision, the new wide-deflection Cl(delta_r) TABLE (see
-  #     control_surface_lookup.rudder.Cl_NOT_LOADED_disputed_sign below) is
-  #     explicitly NOT loaded/used by the plugin - using it would silently
-  #     inject the disputed sign into the wide-deflection model even though
-  #     the small-signal constant here was kept at the OLD sign. Instead,
-  #     the plugin builds its wide-deflection Cl(delta_r) lookup as a
-  #     BOUNDED LINEAR EXTENSION of this exact Cldr_per_rad constant, out to
-  #     +/-45 deg (AeroConfig::Prepare in AeroModel.hh:
-  #     ctrlRuddCl[i] = Cldr * ctrlBreakpointsRad[i]). The TRUE wide-
-  #     deflection Cl(delta_r) shape (linear vs. the new table's own
-  #     apparent nonlinearity, and its sign) remains DATA_REQUIRED /
-  #     unresolved for a future pass.
-  Cldr_per_rad: 0.0007     # UNRESOLVED_KEEP_CURRENT (unchanged) (this revision); FUNCTIONALLY USED to derive control_surface_lookup.rudder's Cl lookup (linear extension), see AeroModel.hh
+  Clb: -0.00717             # CONFIRMED (dihedral/beta terimi)
+  Clp: -0.54187             # CONFIRMED (hız terimi)
+  Clr: 0.10586              # CONFIRMED (hız terimi)
+  # Sabit koşullu yeni veriyle güncellendi; eskisinden ~%26 yüksek. İşaret ve
+  # yön aynı; eski veri kümesi vintajından kaynaklanan bilinen bir fark,
+  # bir hata değil.
+  Clda_per_rad: 0.414      # SUPERSEDED_BY_LOOKUP, yalnızca referans (eski: 0.308)
+  # İki XFLR5 oturumu bu katsayı için TERS İŞARET veriyor (eski +0.0007/rad,
+  # yeni -0.00065/rad; büyüklükler benzer). Birini diğerine yeğlemek için
+  # kesin bir gerekçe arandı: her iki oturumda da viskoz kapalı; dikey
+  # kuyruk/dümen menteşe geometrisi aynı; panel/VLM ağ yoğunluğu hiçbir
+  # kaynakta belirtilmediği için karşılaştırılamıyor; ikinci bir fin
+  # ayar/eğim yapılandırması yok. Belirlenen TEK fark çalışma noktasıdır
+  # (alfa 0.364'e karşı 2.472 derece, V 21.244'e karşı 18.162 m/s).
+  # Cl_delta_r, CY_delta_r ve Cn_delta_r'den iki mertebe küçük üçüncül bir
+  # eşleşme olduğu için böyle bir çalışma noktası değişiminin işaretini
+  # çevirmesi olasıdır; ancak eldeki belgelerle kanıtlanamaz. Karar:
+  # UNRESOLVED_KEEP_CURRENT — eski değer korunur. Bu, mevcut uygulamanın
+  # "doğru bilindiği" anlamına GELMEZ; hiçbir işaretin diğerinden daha doğru
+  # olduğu gösterilememiştir ve konu açık bir madde olarak işaretlidir.
+  # TUTARLILIK: aynı karar gereği yeni geniş sapma Cl(delta_r) TABLOSU
+  # yüklenmez (aşağıdaki rudder.Cl_NOT_LOADED_disputed_sign_reference_only);
+  # eklenti dümen yuvarlanma aramasını bu skalerin +/-45 dereceye kadar
+  # SINIRLI DOĞRUSAL UZANTISI olarak kurar (AeroModel.hh,
+  # AeroConfig::Prepare: ctrlRuddCl[i] = Cldr * ctrlBreakpointsRad[i]).
+  # Gerçek geniş sapma Cl(delta_r) biçimi ve işareti DATA_REQUIRED'dır.
+  Cldr_per_rad: 0.0007     # UNRESOLVED_KEEP_CURRENT; dümen Cl aramasını türetmek için İŞLEVSEL OLARAK KULLANILIR, bkz. AeroModel.hh
 
-  Cnb: 0.03554              # CONFIRMED (unchanged, directional-stability term - not part of this revision)
-  Cnp: -0.05878             # CONFIRMED (unchanged, rate term)
-  Cnr: -0.02227             # CONFIRMED (unchanged, rate term)
-  # Cnda_per_rad: UPDATED unconditionally (Part 2), 0.00144 -> 0.0017/rad,
-  # new fixed-condition data (~18% higher than old - measured effective
-  # Gazebo value was ~30% low vs new per the prior validation pass, same
-  # older-sweep-vs-newer-fixed-condition pattern).
-  Cnda_per_rad: 0.0017     # UPDATED (was 0.00144) (this revision); SUPERSEDED_BY_LOOKUP, reference-only
-  # Cndr_per_rad: UPDATED unconditionally (Part 2), -0.025 -> -0.0272/rad,
-  # new fixed-condition data (~8.2% larger magnitude than old,
-  # ACCEPTABLE_DIFFERENCE per the prior validation pass).
-  Cndr_per_rad: -0.0272    # UPDATED (was -0.025) (this revision); SUPERSEDED_BY_LOOKUP, reference-only
+  Cnb: 0.03554              # CONFIRMED (yönsel kararlılık terimi)
+  Cnp: -0.05878             # CONFIRMED (hız terimi)
+  Cnr: -0.02227             # CONFIRMED (hız terimi)
+  # Sabit koşullu yeni veriyle güncellendi; eskisinden ~%18 yüksek, aynı
+  # eski-tarama/yeni-sabit-koşul deseni.
+  Cnda_per_rad: 0.0017     # SUPERSEDED_BY_LOOKUP, yalnızca referans (eski: 0.00144)
+  # Sabit koşullu yeni veriyle güncellendi; büyüklük eskisinden ~%8.2 fazla,
+  # kabul edilebilir fark aralığında.
+  Cndr_per_rad: -0.0272    # SUPERSEDED_BY_LOOKUP, yalnızca referans (eski: -0.025)
 
 drag_polar:
-  # V1 full-aircraft calibrated drag model. NEVER the inviscid Type-7
-  # control-sweep CDv/CDi values (those have CDv=0, not real total drag -
-  #).
-  CD0: 0.0351               # V1_CALIBRATED (MD sec 38/39)
+  # V1 kalibre edilmiş tam uçak sürükleme modeli. Type-7 kumanda taramasının
+  # viskoz olmayan CDv/CDi değerleri ASLA kullanılmaz: o taramada CDv=0 olduğu
+  # için gerçek toplam sürüklemeyi vermezler.
+  CD0: 0.0351               # V1_CALIBRATED
   k: 0.0528                 # V1_CALIBRATED
 
 high_alpha_limiter:
-  # V1_SMOOTH_SATURATION. Positive side: real data (CLmax manufacturer value,
-  # 9-9.5 deg XFLR5 attached-flow reliability boundary). Negative side:
-  # ASSUMPTION (see notes) - no negative-alpha full-aircraft CLmin/stall data
-  # exists in the source of truth.
-  CLmax_manufacturer: 1.42              # CONFIRMED as a manufacturer performance-calc input (MD sec 3), NOT flight-measured -/11
-  alpha_transition_deg: 9.25            # DERIVED: midpoint of the stated 9-9.5 deg XFLR5 attached-flow reliability band (/11)
-  # Positive-side formula (alpha > alpha_transition):
+  # Yumuşak doyum sınırlayıcısı. Pozitif taraf gerçek veriye dayanır (üretici
+  # CLmax değeri ve XFLR5'in 9-9.5 derecelik yapışık akım güvenilirlik sınırı).
+  # Negatif taraf ASSUMPTION'dır: kaynak veride negatif alfa için tam uçak
+  # CLmin/stall verisi yoktur.
+  CLmax_manufacturer: 1.42              # CONFIRMED, üretici performans hesabı girdisi (uçuşta ölçülmüş DEĞİL)
+  alpha_transition_deg: 9.25            # DERIVED: XFLR5 9-9.5 derecelik yapışık akım güvenilirlik bandının orta noktası
+  # Pozitif taraf formülü (alpha > alpha_transition):
   #   CL = CLmax - (CLmax - CL_lin(alpha_t)) * exp(-k_pos*(alpha-alpha_t))
-  #   k_pos = CLa / (CLmax - CL_lin(alpha_t))   [C1-continuous with the linear branch at alpha_t; no free/unexplained parameter]
-  # Computed once at load time by the plugin from CLa/CL0/CLmax/alpha_transition_deg - not restated as a separate config number to avoid a
-  # second, potentially-inconsistent source of truth for the same derived quantity.
+  #   k_pos = CLa / (CLmax - CL_lin(alpha_t))   [geçiş noktasında doğrusal dalla C1 sürekli; açıklanmayan serbest parametre yok]
+  # Eklenti bu sabitleri yükleme anında CLa/CL0/CLmax/alpha_transition_deg
+  # değerlerinden bir kez hesaplar; aynı türetilmiş nicelik için ikinci ve
+  # tutarsız kalabilecek bir kaynak oluşmaması adına burada ayrıca sayı olarak
+  # yazılmaz.
   negative_side_status: ASSUMPTION
   negative_side_note: >
-    No full-aircraft negative-alpha CLmin/stall data exists anywhere in the
-    source of truth (only positive CLmax=1.42 is given; the wing-only 3D VLM
-    table in extends to alpha=-8 deg with no stated
-    CLmin/stall onset). Per the task brief's explicit instruction not to
-    invent symmetry without source support, the negative-side saturation
-    below uses a SYMMETRIC MAGNITUDE bound (-CLmax, -alpha_transition) purely
-    as a numerical safety measure to prevent unbounded negative lift/drag
-    growth (the stated V1 requirement), not as a claim of validated negative-
-    alpha stall physics. True negative-alpha stall behavior remains
-    DATA_REQUIRED. Formula (alpha < -alpha_transition), by the same C1-
-    continuity construction: CL = -CLmax + A_neg*exp(k_neg*(alpha-(-alpha_t))),
+    Kaynak veride negatif alfa için tam uçak CLmin/stall verisi yoktur:
+    yalnızca pozitif CLmax=1.42 verilmiştir ve eldeki kanat-tekil 3B VLM
+    tablosu alfa=-8 dereceye kadar uzanmakla birlikte bir CLmin veya stall
+    başlangıcı belirtmez. Kaynak desteği olmadan simetri uydurmama kuralı
+    gereği, negatif taraftaki doyum SİMETRİK BÜYÜKLÜK sınırı
+    (-CLmax, -alpha_transition) yalnızca sınırsız negatif taşıma/sürükleme
+    büyümesini engelleyen sayısal bir güvenlik önlemidir; doğrulanmış negatif
+    alfa stall fiziği iddiası değildir. Gerçek negatif alfa stall davranışı
+    DATA_REQUIRED durumundadır. Formül (alpha < -alpha_transition), aynı C1
+    süreklilik kurgusuyla: CL = -CLmax + A_neg*exp(k_neg*(alpha-(-alpha_t))),
     A_neg = CL_lin(-alpha_t) + CLmax, k_neg = CLa/A_neg.
 
 control_mapping:
-  # Explicit joint-position -> aerodynamic-deflection-sign mapping layer.
+  # Eklem açısı -> aerodinamik sapma işaret eşlemesi katmanı. Üç işaret
+  # parametresi de VERIFIED_BY_GAZEBO_GEOMETRY_SIGN_TEST'tir: pozitif bir eklem
+  # açısının ürettiği fiziksel firar kenarı yönü beş kumanda ekleminin tümü
+  # için geometrik olarak belirlenmiş, ardından çalışan bir Gazebo örneğinde
+  # canlı kinematik VE canlı aerodinamik moment ölçümleriyle bağımsız olarak
+  # doğrulanmıştır (dokuz ölçümün dokuzu hipotezi doğruladı, çürüten yok).
   #
-  # STATUS UPDATE (2026-08-22, task CONTROL_SURFACE_SIGN_MAPPING): all three
-  # sign parameters below are now VERIFIED_BY_GAZEBO_GEOMETRY_SIGN_TEST, no
-  # longer ASSUMPTION. Provenance: `the controls layer` performed a full
-  # geometric determination of the physical TE-direction produced by a
-  # positive joint angle on all 5 control-surface joints; `live testing`
-  # independently confirmed every part of it with live kinematic AND live
-  # aero-moment measurements in a running Gazebo Sim Harmonic instance
-  # (9/9 CONFIRMS-HYPOTHESIS, no refutations). Full records:
-  # See
-  # for this document's own summary of the change.
-  #
-  # elevator_sign CHANGED this revision: 1.0 -> -1.0 (was backward). Live
-  # kinematic measurement: a positive left_elevator_joint/right_elevator_joint
-  # angle moves the trailing edge UP on BOTH sides (world-Z of the TE
-  # reference point rises monotonically with +angle, bit-identical between
-  # the two joints - i.e. the two joints share the same sign sense, not a
-  # true mirror, matching the already-documented +Y-dominant-axis finding).
-  # XFLR5 convention is +delta_e = TE-DOWN, so a
-  # physical TE-up joint motion is XFLR5-NEGATIVE - hence sign=-1.0.
-  # Independently cross-confirmed by aero-moment evidence gathered under the
-  # PRE-FIX sign (elevator_sign=+1.0): commanding
-  # theta_left=theta_right=+8deg (a physical TE-up motion, per the kinematic
-  # finding above) measured My=+1.128 N*m (nose-down, using this plugin's own
-  # already-resolved My sign convention, sec 19.12) - backward from the
-  # textbook TE-up -> nose-up relationship, confirming the pre-fix sign was
-  # wrong in exactly the direction now corrected.
-  elevator_sign: -1.0           # VERIFIED_BY_GAZEBO_GEOMETRY_SIGN_TEST (CHANGED from +1.0 this revision - was backward, see note above)
-  # aileron_sign CONFIRMED CORRECT at +1.0 (no change). Live kinematic test:
-  # both aileron joints share the same TE-up-for-positive-angle direction
-  # (common-mode, not naturally differential - matching the already-
-  # documented aileron_differential_convention below). Live aero-moment
-  # test: theta_left=-8deg/theta_right=+8deg measured Mx=+4.877 N*m
-  # (reproduced twice, matching to 4 sig figs); common-mode command
-  # (theta_left=theta_right=+8deg) measured Mx=0.0 exactly, confirming
-  # delta_a=0.5*aileron_sign*(theta_right-theta_left) correctly rejects
-  # common-mode input as intended.
-  aileron_sign: 1.0             # VERIFIED_BY_GAZEBO_GEOMETRY_SIGN_TEST (unchanged value, status upgraded from ASSUMPTION)
-  # rudder_sign CONFIRMED CORRECT at +1.0 (no change). Live kinematic test:
-  # a positive rudder_joint angle moves the TE toward -Y (right). Live
-  # aero-moment test: theta_rudder=+8deg measured Mz=-0.446 N*m (nose-right,
-  # reproduced twice).
-  rudder_sign: 1.0              # VERIFIED_BY_GAZEBO_GEOMETRY_SIGN_TEST (unchanged value, status upgraded from ASSUMPTION)
+  # elevator_sign = -1.0: canlı kinematik ölçüm, pozitif asansör eklem açısının
+  # firar kenarını HER İKİ tarafta da YUKARI taşıdığını gösterdi. XFLR5
+  # konvansiyonunda +delta_e firar kenarı AŞAĞI olduğundan, fiziksel firar
+  # kenarı yukarı hareketi XFLR5 işaretinde NEGATİFTİR. Aerodinamik moment
+  # kanıtı da bunu bağımsız olarak doğruladı: işaret +1.0 iken her iki asansör
+  # +8 derece komutlandığında My = +1.128 N*m (burun aşağı) ölçüldü, yani
+  # beklenen firar kenarı yukarı -> burun yukarı ilişkisinin tersi.
+  elevator_sign: -1.0           # VERIFIED_BY_GAZEBO_GEOMETRY_SIGN_TEST
+  # aileron_sign = +1.0 doğrulandı. Canlı kinematik: iki kanatçık eklemi de
+  # pozitif açı için aynı firar kenarı yukarı yönünü paylaşır (ortak mod;
+  # doğal olarak diferansiyel değil). Canlı aerodinamik moment: sol -8 / sağ
+  # +8 derece komutu Mx = +4.877 N*m verdi (iki kez yinelendi, dört anlamlı
+  # basamak uyumlu); ortak mod komutu (her iki taraf +8 derece) tam olarak
+  # Mx = 0.0 verdi; bu da delta_a formülünün ortak mod girdisini amaçlandığı
+  # gibi reddettiğini doğrular.
+  aileron_sign: 1.0             # VERIFIED_BY_GAZEBO_GEOMETRY_SIGN_TEST
+  # rudder_sign = +1.0 doğrulandı. Canlı kinematik: pozitif dümen eklem açısı
+  # firar kenarını -Y (sağ) yönüne taşır. Canlı aerodinamik moment: +8 derece
+  # dümen komutu Mz = -0.446 N*m (burun sağa) verdi (iki kez yinelendi).
+  rudder_sign: 1.0              # VERIFIED_BY_GAZEBO_GEOMETRY_SIGN_TEST
   aileron_differential_convention: >
-    delta_a (the single scalar fed into CY/Cl/Cn) is extracted as
+    CY/Cl/Cn hesabına beslenen tek skaler delta_a şu şekilde çıkarılır:
     0.5*aileron_sign*(theta_right_aileron_joint - theta_left_aileron_joint).
-    Rationale: found that left_aileron_joint and
-    right_aileron_joint's fitted rotation axes share the SAME +Y-dominant
-    sign sense (not a true sign-flipped mirror), so an equal-sign joint
-    command on both sides is expected to produce the SAME physical
-    trailing-edge direction on both sides (a symmetric/flap-like motion, not
-    differential roll) - so the DIFFERENCE of the two joint angles, not
-    their sum, is what isolates the differential (roll-producing) component
-    that XFLR5's WF1-WF6 sweep represents as a single delta_a parameter.
-    VERIFIED_BY_GAZEBO_GEOMETRY_SIGN_TEST this revision (2026-08-22) - see the
-    aileron_sign note above for the confirming live evidence (common-mode
-    Mx=0.0 exactly).
+    Gerekçe: left_aileron_joint ile right_aileron_joint için uydurulan dönme
+    eksenleri AYNI +Y baskın işaret yönünü paylaşır (işareti çevrilmiş
+    gerçek bir ayna değildir), dolayısıyla iki tarafa aynı işaretli eklem
+    komutu vermek her iki tarafta AYNI fiziksel firar kenarı yönünü üretir;
+    bu, diferansiyel yuvarlanma değil simetrik, flap benzeri bir harekettir.
+    Bu nedenle XFLR5'in WF1-WF6 taramasının tek bir delta_a parametresi
+    olarak temsil ettiği diferansiyel (yuvarlanma üreten) bileşeni izole
+    eden şey, iki eklem açısının TOPLAMI değil FARKIDIR. Durum:
+    VERIFIED_BY_GAZEBO_GEOMETRY_SIGN_TEST; doğrulayan canlı kanıt için
+    yukarıdaki aileron_sign notuna bakınız (ortak mod komutunda Mx tam
+    olarak 0.0).
   elevator_symmetric_convention: >
     delta_e = 0.5*elevator_sign*(theta_left_elevator_joint + theta_right_elevator_joint).
-    Rationale: unlike the ailerons, the elevator's two joints are intended to
-    move together (same physical direction) for pure pitch, so the SUM (not
-    difference) of the two joint angles is used.
-    VERIFIED_BY_GAZEBO_GEOMETRY_SIGN_TEST this revision (2026-08-22) - the
-    common-sign/common-mode kinematic finding in the elevator_sign note
-    above directly confirms this SUM convention (both joints move the same
-    physical direction together).
-    KNOWN_V1_LIMITATION: this SUM formula is correct for normal symmetric
-    elevator actuation, but it means an asymmetric left/right elevator
-    command is NOT modeled as a separate aerodynamic degree of freedom -
-    the formula only ever sees (theta_left + theta_right), never their
-    difference, so any asymmetry is silently invisible to the aero model.
-    The SDF's shared-sign hinge geometry makes such asymmetry physically
-    meaningful (e.g. a jammed/failed actuator, or a future differential-
-    elevator design), so this is a real modeling gap, not just a
-    theoretical one. No fix or new coefficient is proposed here - logged
-    as a candidate item for a future dedicated review.
+    Gerekçe: kanatçıkların aksine asansörün iki eklemi, saf yunuslama için
+    birlikte ve aynı fiziksel yönde hareket etmek üzere tasarlanmıştır; bu
+    yüzden iki eklem açısının farkı değil TOPLAMI kullanılır. Durum:
+    VERIFIED_BY_GAZEBO_GEOMETRY_SIGN_TEST; elevator_sign notundaki ortak
+    işaret/ortak mod kinematik bulgusu bu TOPLAM konvansiyonunu doğrudan
+    doğrular (iki eklem de aynı fiziksel yönde birlikte hareket eder).
+    KNOWN_V1_LIMITATION: bu TOPLAM formülü normal simetrik asansör
+    eyletimi için doğrudur, ancak asimetrik bir sol/sağ asansör komutunun
+    ayrı bir aerodinamik serbestlik derecesi olarak MODELLENMEDİĞİ anlamına
+    gelir; formül yalnızca (theta_left + theta_right) değerini görür, farkı
+    asla görmez, dolayısıyla her türlü asimetri aerodinamik model için
+    sessizce görünmezdir. SDF'teki ortak işaretli menteşe geometrisi böyle
+    bir asimetriyi fiziksel olarak anlamlı kıldığından (örn. sıkışmış veya
+    arızalı bir eyleyici, ya da ileride diferansiyel asansör tasarımı), bu
+    kuramsal değil gerçek bir modelleme boşluğudur. Burada bir düzeltme ya
+    da yeni katsayı önerilmez; ileride ayrı bir inceleme için aday madde
+    olarak kayıtlıdır.
   rudder_convention: >
-    delta_r = rudder_sign*theta_rudder_joint (single joint, no combination needed).
-  # control_deflection_clamp_deg: RETIRED this revision (2026-08-26, task
-  # HIGH_DEFLECTION_CONTROL_AERO_IMPLEMENTATION). This key USED TO clamp
-  # delta_a/delta_e/delta_r to +/-10 deg (V1_CONSERVATIVE_CLAMP) before the
-  # OLD linear coefficient formulas ran, because control derivatives were
-  # only directly swept to +/-10 deg at that time. A new XFLR5 Type-1
-  # fixed-condition WIDE-DEFLECTION sweep (control_surface_analysis/
-  # FALCON_V2_CONTROL_SURFACE_WIDE_DEFLECTION_RESULTS.txt) now covers the
-  # full +/-45 deg actuator mechanical range (config/actuator_v1_config.yaml
-  # min/max_angle_rad) with real per-
-  # breakpoint data, so the generic +/-10 deg input clamp is no longer the
-  # correct "no silent extrapolation" boundary - it has been REPLACED by
-  # the wide-deflection lookup tables' OWN domain bound below
-  # (control_surface_lookup.domain_bound_deg = 45.0, enforced by
-  # InterpLinear in AeroModel.hh, which clamps to the first/last
-  # breakpoint rather than extrapolating). This key is intentionally
-  # REMOVED (not just set to 45) so a stale reader cannot mistake it for a
-  # still-applied generic clamp - the loader (AerodynamicsSystem.cc) no
-  # longer reads this key. NOTE: this is unrelated to, and does not modify,
-  # the separate high_alpha_limiter block above (an angle-of-attack
-  # concept) or the actuator's own mechanical +/-45 deg joint limits
-  # (config/actuator_v1_config.yaml, untouched by
-  # this or any aerodynamics-owned file).
+    delta_r = rudder_sign*theta_rudder_joint (tek eklem, birleştirme gerekmez).
+  # Genel kumanda sapma kırpması (control_deflection_clamp_deg) bu dosyadan
+  # KALDIRILMIŞTIR. Eskiden delta_a/delta_e/delta_r değerlerini +/-10 dereceye
+  # kırpıyordu, çünkü o tarihte kumanda türevleri yalnızca +/-10 dereceye kadar
+  # doğrudan taranmıştı. Yeni XFLR5 Type-1 sabit koşullu geniş sapma taraması
+  # eyleyicinin tüm +/-45 derecelik mekanik aralığını
+  # (config/actuator_v1_config.yaml) gerçek kırılma noktası verisiyle
+  # kapsadığından, doğru "sessiz ekstrapolasyon yok" sınırı artık aşağıdaki
+  # arama tablolarının kendi tanım aralığıdır
+  # (control_surface_lookup.domain_bound_deg = 45.0; AeroModel.hh içindeki
+  # InterpLinear, ekstrapolasyon yerine ilk/son kırılma noktasına kırpar).
+  # Anahtar 45'e ayarlanmak yerine kasten SİLİNMİŞTİR, böylece onu hâlâ
+  # uygulanan genel bir kırpma sanan bir okuyucu yanılmaz; yükleyici
+  # (AerodynamicsSystem.cc) artık bu anahtarı okumaz. Bu değişiklik yukarıdaki
+  # high_alpha_limiter bloğuyla (bir hücum açısı kavramı) ve eyleyicinin kendi
+  # mekanik eklem sınırlarıyla ilgisizdir.
 
 # =============================================================================
-# Wide-deflection control-surface lookup tables
-# (task HIGH_DEFLECTION_CONTROL_AERO_IMPLEMENTATION, 2026-08-26)
+# Geniş sapma kumanda yüzeyi arama tabloları
 # =============================================================================
-# Source (verified 1:1 against this file before transcription below):
+# Kaynak: XFLR5, Type 1 (sabit hız), 3D-Panel/VLM2, viskoz KAPALI,
+# kütle 6.000 kg. Birincil çalışma noktası: V = 18.162 m/s, alfa = 2.472
+# derece, beta = 0 derece. Her taramada yalnızca sınanan kumanda yüzeyi
+# saptırılmış, diğerleri 0'da tutulmuştur.
 #
-# FALCON_V2_CONTROL_SURFACE_WIDE_DEFLECTION_RESULTS.txt
-#   XFLR5, Type 1 (Fixed speed), 3D-Panels/VLM2, Viscous=OFF, Mass=6.000 kg
-#   Primary operating point: V=18.162 m/s, alpha=2.472 deg, beta=0 deg
-#   Only the tested control surface was deflected per sweep; others held 0.
+# MİMARİ (uygulaması için AeroModel.hh ComputeAero):
+#   - Her yüzeyin CY/Cl/Cn (kanatçık/dümen) ya da CL/Cm (asansör) katkısı,
+#     karşılık gelen eski "katsayı x sapma" teriminin TAM YERİNE geçen bir
+#     aramadır; onun üstüne asla eklenmez (çift sayım olmaz).
+#   - Kırılma noktaları arasında parçalı DOĞRUSAL interpolasyon uygulanır
+#     (yöntem burada ve AeroModel.hh'deki InterpLinear'da belgelidir).
+#     Geçerli, ekstrapolasyonsuz aralık tam olarak [-45, +45] derecedir;
+#     aralık dışı girdiler en yakın uç değere KIRPILIR.
+#   - CD katkıları, V1_CALIBRATED CD0 + k*CL^2 polarının üzerine TOPLAMSAL
+#     ikincil düzeltmelerdir. Eşzamanlı çok yüzeyli sapma etkileşimi için
+#     DOĞRULANMAMIŞ bir yaklaşımdır
+#     (V1_ADDITIVE_MULTI_SURFACE_DRAG_APPROXIMATION).
 #
-# ARCHITECTURE (see AeroModel.hh ComputeAero for the implementation):
-#   - Each surface's contribution to CY/Cl/Cn (aileron/rudder) or CL/Cm
-#     (elevator) is a FULL LOOKUP that REPLACES the corresponding old
-#     linear coefficient*deflection term ENTIRELY - never added on top of
-#     it (no double-count).
-#   - Piecewise-LINEAR interpolation between breakpoints (method documented
-#     here and in AeroModel.hh's InterpLinear); valid/non-extrapolated
-#     range is exactly [-45, +45] deg - inputs outside this range are
-#     CLAMPED to the nearest edge value, never extrapolated.
-#   - CD contributions (elevator/aileron/rudder) are ADDITIVE secondary
-#     corrections on top of the V1_CALIBRATED CD0+k*CL^2 polar (Part 4,
-#     documented V1_ADDITIVE_MULTI_SURFACE_DRAG_APPROXIMATION - NOT
-#     validated for simultaneous multi-surface deflection interaction).
-#
-# CONFIDENCE LABELING (per the source file's own convention; DOCS-ONLY
-# metadata - does not change any runtime computation):
-#   |delta| <= 10 deg   -> HIGH_CONFIDENCE_SMALL_SIGNAL
-#   10 < |delta| <= 25  -> MEDIUM_CONFIDENCE_NONLINEAR_REFERENCE
-#   |delta| > 25        -> LOW_CONFIDENCE_HIGH_DEFLECTION_REFERENCE
-# The +/-35/+/-45 deg points are XFLR5/VLM reference data ONLY - they are
-# explicitly NOT "REAL_FLIGHT_VALIDATED" (no wind-tunnel or flight-test
-# confirmation exists for this aircraft at these deflections; separated-
-# flow/stall/hinge-region nonlinearities are not fully modeled by VLM).
+# GÜVEN ETİKETLEME (kaynak dosyanın kendi kuralı; yalnızca belgeleme amaçlı
+# üstveri, hiçbir çalışma zamanı hesabını değiştirmez):
+#   |delta| <= 10 derece   -> HIGH_CONFIDENCE_SMALL_SIGNAL
+#   10 < |delta| <= 25     -> MEDIUM_CONFIDENCE_NONLINEAR_REFERENCE
+#   |delta| > 25           -> LOW_CONFIDENCE_HIGH_DEFLECTION_REFERENCE
+# +/-35 ve +/-45 derece noktaları YALNIZCA XFLR5/VLM referans verisidir;
+# açıkça "REAL_FLIGHT_VALIDATED" DEĞİLDİR (bu uçak için bu sapmalarda rüzgâr
+# tüneli veya uçuş testi doğrulaması yoktur ve ayrılmış akım / stall / menteşe
+# bölgesi doğrusalsızlıkları VLM ile tam modellenmez).
 control_surface_lookup:
-  domain_bound_deg: 45.0   # Matches the actuator mechanical range exactly (config/actuator_v1_config.yaml +/-0.7853981634 rad)
+  domain_bound_deg: 45.0   # Eyleyicinin mekanik aralığıyla birebir aynı (config/actuator_v1_config.yaml, +/-0.7853981634 rad)
   breakpoints_deg: [-45, -35, -25, -15, -10, -5, -2, 0, 2, 5, 10, 15, 25, 35, 45]
-  confidence_bands:   # DOCS-ONLY metadata, not read by the plugin
+  confidence_bands:   # yalnızca belgeleme amaçlı üstveri, eklenti okumaz
     - {max_abs_deg: 10.0, label: HIGH_CONFIDENCE_SMALL_SIGNAL}
     - {max_abs_deg: 25.0, label: MEDIUM_CONFIDENCE_NONLINEAR_REFERENCE}
     - {max_abs_deg: 45.0, label: LOW_CONFIDENCE_HIGH_DEFLECTION_REFERENCE}
 
   elevator:
-    # Source: "Primary elevator baseline-difference table" - values ARE
-    # ALREADY baseline-differenced against delta_e=0 in the source file
-    # itself (delta_e=0 row is exactly 0). "Full lookup contribution"
-    # architecture - REPLACES `Cmde*deltaE` and adds a CL contribution that
-    # did not exist before (CLde was previously omitted entirely).
+    # Kaynak: birincil asansör taban farkı tablosu. Değerler kaynak dosyanın
+    # kendisinde delta_e=0'a göre ZATEN farklandırılmıştır (delta_e=0 satırı
+    # tam sıfırdır). "Tam arama katkısı" mimarisi: dCm, eski Cmde*deltaE
+    # teriminin YERİNE geçer; dCL ise daha önce hiç bulunmayan bir CL katkısı
+    # ekler (CLde eskiden tümüyle atlanmıştı).
     dCL: [-0.32181, -0.25256, -0.18095, -0.10846, -0.07223, -0.03608, -0.01443, 0, 0.01442, 0.03605, 0.07211, 0.10821, 0.18053, 0.25257, 0.32309]
     dCD: [0.03392, 0.01880, 0.00826, 0.00194, 0.00031, -0.00034, -0.00026, 0, 0.00041, 0.00133, 0.00366, 0.00701, 0.01673, 0.03060, 0.04846]
     dCm: [0.77221, 0.60714, 0.43568, 0.26150, 0.17425, 0.08710, 0.03483, 0, -0.03485, -0.08714, -0.17440, -0.26184, -0.43732, -0.61249, -0.78429]
 
   aileron:
-    # Source: "Full aileron wide-deflection sweep" - Cl/Cn/CY are RAW (the
-    # source's own delta_a=0 baseline is CY0=-0.00002, Cl0=0.00000,
-    # Cn0=+0.00001 - a tiny numerical-solver residual, NOT zeroed out here,
-    # used exactly as given per the no-fabrication rule). REPLACE the old
-    # Clda/Cnda/CYda*deltaA static terms exactly.
+    # Kaynak: tam kanatçık geniş sapma taraması. Cl/Cn/CY HAM değerlerdir;
+    # kaynağın kendi delta_a=0 taban çizgisi CY0=-0.00002, Cl0=0.00000,
+    # Cn0=+0.00001'dir (çok küçük bir sayısal çözücü artığı). Kaynak veriye
+    # müdahale etmeme kuralı gereği sıfırlanmamış, olduğu gibi kullanılmıştır.
+    # Bu diziler eski Clda/Cnda/CYda*deltaA terimlerinin tam yerine geçer.
     Cl: [-0.31890, -0.25052, -0.18001, -0.10836, -0.07230, -0.03617, -0.01447, 0, 0.01447, 0.03617, 0.07231, 0.10836, 0.18001, 0.25052, 0.31890]
     Cn: [-0.00123, -0.00099, -0.00072, -0.00044, -0.00029, -0.00014, -0.00005, 0.00001, 0.00007, 0.00016, 0.00030, 0.00045, 0.00073, 0.00101, 0.00124]
     CY: [-0.00486, -0.00354, -0.00228, -0.00126, -0.00082, -0.00041, -0.00018, -0.00002, 0.00014, 0.00037, 0.00078, 0.00122, 0.00224, 0.00350, 0.00482]
-    # CD/CL/Cm below are FULL VALUES from the source sweep (delta_a sweep at
-    # fixed alpha=2.472 deg) - NOT baseline-differenced in the source file.
-    # The plugin (AeroConfig::Prepare) subtracts the delta_a=0 row
-    # (index 7) to produce the even/symmetric secondary corrections
-    # dCD_a/dCL_a/dCm_a used in Part 4 drag and the optional small CL/Cm
-    # corrections (included per the task brief - the data gives them
-    # cleanly at no extra cost).
+    # Aşağıdaki CD/CL/Cm, sabit alfa = 2.472 derecedeki TAM değerlerdir ve
+    # kaynak dosyada taban çizgisine göre farklandırılmamıştır. Eklenti
+    # (AeroConfig::Prepare) delta_a=0 satırını (indeks 7) çıkararak simetrik
+    # ikincil düzeltmeleri üretir: dCD_a sürükleme toplamına, dCL_a/dCm_a ise
+    # küçük CL/Cm düzeltmeleri olarak kullanılır.
     CD_full: [0.18174, 0.11664, 0.06757, 0.03407, 0.02355, 0.01723, 0.01546, 0.01513, 0.01546, 0.01723, 0.02355, 0.03407, 0.06757, 0.11664, 0.18174]
     CL_full: [0.62116, 0.64137, 0.65493, 0.66353, 0.66613, 0.66766, 0.66809, 0.66817, 0.66809, 0.66766, 0.66613, 0.66353, 0.65492, 0.64136, 0.62115]
     Cm_full: [-0.07619, -0.07310, -0.06746, -0.06297, -0.06142, -0.06046, -0.06019, -0.06013, -0.06019, -0.06046, -0.06142, -0.06296, -0.06745, -0.07308, -0.07617]
 
   rudder:
-    # Source: "Full rudder wide-deflection sweep" - CY/Cn are RAW (baseline
-    # at delta_r=0 already ~0: CY0=-0.00002, Cn0=+0.00001 - same residual-
-    # noise note as aileron above). REPLACE the old CYdr/Cndr*deltaR static
-    # terms exactly.
+    # Kaynak: tam dümen geniş sapma taraması. CY/Cn HAM değerlerdir
+    # (delta_r=0 taban çizgisi CY0=-0.00002, Cn0=+0.00001; kanatçıkla aynı
+    # artık gürültü notu) ve eski CYdr/Cndr*deltaR terimlerinin tam yerine
+    # geçer.
     CY: [-0.07094, -0.05601, -0.04023, -0.02411, -0.01604, -0.00801, -0.00321, -0.00002, 0.00317, 0.00797, 0.01600, 0.02407, 0.04020, 0.05598, 0.07093]
     Cn: [0.02115, 0.01666, 0.01195, 0.00715, 0.00475, 0.00238, 0.00095, 0.00001, -0.00094, -0.00236, -0.00474, -0.00713, -0.01194, -0.01665, -0.02114]
-    # Cl: 1B UNRESOLVED_KEEP_CURRENT (see lateral_directional.Cldr_per_rad
-    # note above for the full resolution record). The new source table's
-    # raw Cl(delta_r) values are reproduced below FOR PROVENANCE/
-    # TRACEABILITY ONLY - the plugin does NOT load or use this array (no
-    # corresponding loader key exists in AerodynamicsSystem.cc). The
-    # plugin instead derives its rudder-roll lookup as a bounded linear
-    # extension of lateral_directional.Cldr_per_rad (+0.0007/rad, the OLD
-    # value) - see AeroModel.hh AeroConfig::Prepare. This preserves the
-    # UNRESOLVED_KEEP_CURRENT decision consistently in the wide-deflection
-    # model instead of silently re-introducing the disputed new sign here.
+    # Cl: UNRESOLVED_KEEP_CURRENT (tam gerekçe için yukarıdaki
+    # lateral_directional.Cldr_per_rad notuna bakınız). Yeni kaynak tablosunun
+    # ham Cl(delta_r) değerleri aşağıda YALNIZCA KÖKEN/İZLENEBİLİRLİK için
+    # yazılıdır; eklenti bu diziyi yüklemez ve kullanmaz
+    # (AerodynamicsSystem.cc içinde karşılık gelen bir yükleyici anahtarı
+    # yoktur). Eklenti dümen yuvarlanma aramasını bunun yerine
+    # lateral_directional.Cldr_per_rad değerinin sınırlı doğrusal uzantısı
+    # olarak türetir (AeroModel.hh, AeroConfig::Prepare). Böylece tartışmalı
+    # yeni işaret sessizce geri getirilmemiş olur.
     Cl_NOT_LOADED_disputed_sign_reference_only: [0.00054, 0.00042, 0.00030, 0.00018, 0.00012, 0.00006, 0.00002, 0, -0.00002, -0.00006, -0.00012, -0.00018, -0.00030, -0.00042, -0.00054]
-    # CD below is a FULL VALUE table (same pattern as aileron CD_full
-    # above) - the plugin subtracts the delta_r=0 row (index 7) to produce
-    # dCD_r for Part 4 drag.
+    # Aşağıdaki CD bir TAM değer tablosudur (kanatçık CD_full ile aynı desen);
+    # eklenti delta_r=0 satırını (indeks 7) çıkararak sürükleme için dCD_r'yi
+    # üretir.
     CD_full: [0.02974, 0.02390, 0.01932, 0.01682, 0.01584, 0.01528, 0.01516, 0.01513, 0.01516, 0.01528, 0.01583, 0.01682, 0.01932, 0.02390, 0.02974]

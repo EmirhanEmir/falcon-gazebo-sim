@@ -1,14 +1,10 @@
-// =============================================================================
-// FALCON V2 - Simulated pitot (airspeed) sensor Gazebo Sim Harmonic plugin
-// =============================================================================
-// Scope: a custom sensor-layer System plugin, not the native gz-sim air_speed
-// sensor - see the PitotModel.hh header comment for why. It reads base_link's
-// world-frame velocity from the ECM (ground truth, read-only) and the
-// project's /model/falcon_v2/wind topic, computes airspeed and differential
-// pressure via PitotModel.hh, and publishes the result. This plugin creates
-// no new command path into aerodynamics, propulsion or actuators: it is
-// purely a read-only measurement layer.
-// =============================================================================
+// FALCON V2 - Simüle pitot (airspeed) sensörü Gazebo Sim Harmonic plugin'i.
+// base_link'in dünya çerçevesindeki hızını ECM'den ve rüzgârı
+// /model/falcon_v2/wind topic'inden okur, PitotModel.hh ile airspeed ve
+// diferansiyel basıncı hesaplar, sonucu yayınlar. Yerleşik gz-sim air_speed
+// sensörü yerine neden özel bir plugin olduğu: PitotModel.hh başlığı.
+// Sınır: salt okunur bir ölçüm katmanıdır; aerodinamik, itki veya aktüatöre
+// yeni bir komut yolu açmaz.
 #ifndef FALCON_V2_SENSORS_PITOT_SYSTEM_HH_
 #define FALCON_V2_SENSORS_PITOT_SYSTEM_HH_
 
@@ -42,17 +38,16 @@ class PitotSystem :
               const gz::sim::UpdateInfo &_info,
               gz::sim::EntityComponentManager &_ecm) override;
 
-  /// \brief Hold-last-valid-command wind update (same failsafe policy as
-  /// every other *::On*Cmd() in this project - non-finite rejected,
-  /// previous value held).
+  /// \brief Rüzgâr güncellemesi; projedeki diğer komut geri çağrılarıyla aynı
+  /// failsafe politikası: sonlu olmayan değer reddedilir, önceki değer tutulur.
   private: void OnWind(const gz::msgs::Vector3d &_msg);
 
   private: gz::sim::Entity modelEntity{gz::sim::kNullEntity};
   private: gz::sim::Entity baseLinkEntity{gz::sim::kNullEntity};
 
-  /// \brief Sensor mount point, expressed as an offset from base_link's own
-  /// origin, in the body-fixed (FLU) frame. Co-located with the Gazebo/CAD
-  /// CG at (0.168309, 0, 0.100000) m; see model.sdf.
+  /// \brief Sensör montaj noktası: base_link orijinine göre ofset, gövdeye
+  /// sabit (FLU) çerçevede. Gazebo/CAD ağırlık merkeziyle aynı konumda,
+  /// (0.168309, 0, 0.100000) m; bkz. model.sdf.
   private: gz::math::Vector3d mountOffsetBody{gz::math::Vector3d::Zero};
 
   private: gz::transport::Node node;
@@ -61,24 +56,22 @@ class PitotSystem :
 
   private: gz::math::Vector3d windWorld{gz::math::Vector3d::Zero};
 
-  /// \brief Air density (kg/m^3), CITED (not invented) from
-  /// config/aero_v1_config.yaml
-  /// environment.air_density_rho_kg_m3 via the <air_density_rho_kg_m3> SDF
-  /// override (default matches that file's CONFIRMED 1.225 value - see
-  /// model.sdf plugin block comment).
+  /// \brief Hava yoğunluğu (kg/m^3); burada türetilmez,
+  /// config/aero_v1_config.yaml içindeki environment.air_density_rho_kg_m3
+  /// değerinden <air_density_rho_kg_m3> SDF parametresiyle gelir. Varsayılan,
+  /// o dosyanın CONFIRMED 1.225 değeriyle aynıdır.
   private: double rhoKgM3{1.225};
 
-  /// \brief Update rate (Hz). V1_PROVISIONAL.
+  /// \brief Yayın hızı (Hz). V1_PROVISIONAL.
   private: double updateRateHz{10.0};
   private: double timeSinceLastPublishSec{0.0};
 
-  /// \brief V1_PROVISIONAL_SENSOR_NOISE: optional zero-mean Gaussian noise
-  /// on the published airspeed (m/s stddev). Default 0.0 = OFF
-  /// (deterministic mode, the default/validated mode per task instruction).
-  /// NOT a Cube Orange or any real pitot sensor's characterized noise
-  /// figure - an explicitly-flagged placeholder only, off by default.
+  /// \brief V1_PROVISIONAL_SENSOR_NOISE: yayınlanan airspeed üzerine opsiyonel,
+  /// sıfır ortalamalı Gauss gürültüsü (m/s standart sapma). Varsayılan 0.0 =
+  /// KAPALI (deterministik mod). Gerçek bir pitot sensörünün karakterize
+  /// edilmiş gürültü değeri DEĞİLDİR; açıkça işaretlenmiş bir yer tutucudur.
   private: double noiseStddevMps{0.0};
-  private: std::mt19937 noiseRng{12345u};  // fixed seed - deterministic even when enabled
+  private: std::mt19937 noiseRng{12345u};  // sabit seed - açıkken de deterministik
   private: std::normal_distribution<double> noiseDist{0.0, 1.0};
 };
 

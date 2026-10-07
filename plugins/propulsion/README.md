@@ -1,68 +1,69 @@
-# FALCON V2 — Propulsion Plugin
+# FALCON V2 — İtki Plugin'i
 
-Gazebo Sim Harmonic System plugin implementing the twin motor/ESC/propeller
-chain: 2 × SunnySky X2820 860KV motors driving 2 × APC 13x6.5E propellers on
-a 4S pack.
+Çift motor/ESC/pervane zincirini uygulayan Gazebo Sim Harmonic system plugin'i:
+4S pack üzerinde 2 × SunnySky X2820 860KV motor, 2 × APC 13x6.5E pervane.
 
-Scope: propulsion physics only. No aerodynamic coefficients, no control
-actuation, no autopilot logic.
+Kapsam yalnızca itki fiziğidir. Aerodinamik katsayı, kontrol yüzeyi tahriki veya
+otopilot mantığı içermez.
 
-## Model chain
+## Model zinciri
 
 ```
-throttle → ESC/motor electrical → motor torque
-         → rotor angular dynamics (explicit-Euler state, integrated each tick)
+throttle → ESC/motor elektriksel → motor torku
+         → rotor açısal dinamiği (explicit-Euler durum, her tick entegre edilir)
          → RPM → advance ratio J → APC Ct(J,RPM) / Cp(J,RPM)
-         → thrust + propeller aerodynamic torque → reaction torque
-         → force/moment applied to base_link at the real hub
+         → thrust + pervane aerodinamik torku → reaction torque
+         → gerçek hub konumunda base_link'e uygulanan kuvvet/moment
 ```
 
-The chain is never collapsed into `throttle × maximum_thrust`. The same omega
-state drives the propeller joints' angular velocity, so the visual spin can
-never diverge from the RPM actually producing forces.
+Zincir hiçbir zaman `throttle × maximum_thrust` hâline indirgenmez. Pervane
+eklemlerinin açısal hızını da aynı omega durumu sürer; böylece görsel dönüş,
+kuvveti üreten RPM'den hiçbir zaman ayrışamaz.
 
-## Files
+## Dosyalar
 
-| File | Purpose |
+| Dosya | Amaç |
 | ---- | ------- |
-| `PropulsionModel.hh` | Pure-math core: Kt/Ke, electrical model, rotor ODE step, advance ratio, APC table parsing and 2-D Ct/Cp interpolation, thrust/power/torque. No Gazebo dependency. |
-| `PropulsionSystem.hh` / `.cc` | The `gz-sim8` System plugin: maintains the two omega states, applies the wrench at each hub, drives the prop joints, publishes diagnostics. |
-| `CMakeLists.txt` | Build definition for `libFalconV2Propulsion.so`. |
+| `PropulsionModel.hh` | Saf matematik çekirdeği: Kt/Ke, elektriksel model, rotor ODE adımı, advance ratio, APC tablosunun okunması ve 2-B Ct/Cp interpolasyonu, thrust/güç/tork. Gazebo bağımlılığı yoktur. |
+| `PropulsionSystem.hh` / `.cc` | `gz-sim8` system plugin'i: iki omega durumunu tutar, her hub'da wrench uygular, pervane eklemlerini sürer, teşhis yayınlar. |
+| `CMakeLists.txt` | `libFalconV2Propulsion.so` için derleme tanımı. |
 
-Parameters come from `config/propulsion_v1_config.yaml`. The Ct/Cp data comes
-from `config/propulsion_data/apc_13x65e_parsed.csv`, mechanically parsed from
-the official APC performance file `PER3_13x65E.dat` — see
-`config/propulsion_data/PROVENANCE.md`. No Ct/Cp value is invented: every
-value is either a tabulated APC value or a linear interpolation between two.
+Parametreler `config/propulsion_v1_config.yaml` dosyasından gelir. Ct/Cp verisi
+ise `config/propulsion_data/apc_13x65e_parsed.csv` dosyasından gelir; bu CSV,
+resmî APC performans dosyası `PER3_13x65E.dat` üzerinden mekanik olarak
+üretilmiştir — bkz. `config/propulsion_data/PROVENANCE.md`. Hiçbir Ct/Cp değeri
+uydurulmamıştır: dönen her değer ya tablodaki gerçek bir APC değeridir ya da iki
+gerçek değer arasında doğrusal interpolasyondur.
 
-## Dependencies
+## Bağımlılıklar
 
-- `gz-sim8`, `gz-plugin2` (component `register`), `gz-transport13`,
+- `gz-sim8`, `gz-plugin2` (`register` bileşeni), `gz-transport13`,
   `gz-msgs10`, `gz-math7`
-- `yaml-cpp` (via `libyaml-cpp-dev`)
-- CMake ≥ 3.16, a C++17 compiler
+- `yaml-cpp` (`libyaml-cpp-dev` paketi ile)
+- CMake ≥ 3.16, C++17 derleyicisi
 
-## Build
+## Derleme
 
 ```bash
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build -j$(nproc)
 ```
 
-Produces `build/libFalconV2Propulsion.so`. `build/` is git-ignored.
+Çıktı: `build/libFalconV2Propulsion.so`. `build/` dizini git tarafından
+yoksayılır.
 
-## Runtime interface
+## Runtime arayüzü
 
-| Topic | Type | Direction |
+| Topic | Tip | Yön |
 | ----- | ---- | --------- |
-| `/model/falcon_v2/propulsion/left/throttle_cmd` | `gz.msgs.Double` | subscribe, clamped to [0,1] |
-| `/model/falcon_v2/propulsion/right/throttle_cmd` | `gz.msgs.Double` | subscribe, clamped to [0,1] |
-| `/model/falcon_v2/wind` | `gz.msgs.Vector3d` | subscribe |
-| `/model/falcon_v2/propulsion/diagnostics` | `gz.msgs.Double_V` | publish |
+| `/model/falcon_v2/propulsion/left/throttle_cmd` | `gz.msgs.Double` | abone, [0,1] aralığına kırpılır |
+| `/model/falcon_v2/propulsion/right/throttle_cmd` | `gz.msgs.Double` | abone, [0,1] aralığına kırpılır |
+| `/model/falcon_v2/wind` | `gz.msgs.Vector3d` | abone |
+| `/model/falcon_v2/propulsion/diagnostics` | `gz.msgs.Double_V` | yayın |
 
-Throttle defaults to 0 if never commanded. Under ArduPlane SITL these topics
-are driven by the ArduPilotPlugin control channels in `model/model.sdf`.
+Hiç komut gelmezse throttle 0'dır. ArduPlane SITL altında bu topic'ler
+`model/model.sdf` içindeki ArduPilotPlugin kontrol kanalları tarafından sürülür.
 
-Diagnostics are 28 fields — 14 per motor, left then right:
+Teşhis mesajı 28 alandır — motor başına 14, önce sol sonra sağ:
 `throttle, current_A, Qmotor, omega_ownframe, rpm, J, Ct, Cp, thrust_N,
 Qprop, interpClamped, rpmCapActive, negCurClamped, curLimited`.

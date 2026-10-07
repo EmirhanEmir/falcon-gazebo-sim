@@ -1,51 +1,51 @@
 #!/usr/bin/env python3
 # =============================================================================
-# FALCON V2 - APC 13x6.5E performance-data parser (raw .dat -> structured CSV)
+# FALCON V2 — APC 13x6.5E performans verisi ayrıştırıcısı (ham .dat -> CSV)
 # =============================================================================
-# INPUT (immutable, never hand-edited):
+# GİRDİ (değiştirilemez, elle düzenlenmez):
 #   config/propulsion_data/PER3_13x65E.dat
-#   SOURCE: APC Propellers official performance data
+#   KAYNAK: APC Propellers resmi performans verisi
 #   MODEL:  13x6.5E
 #   URL:    https://www.apcprop.com/files/PER3_13x65E.dat
-#   File version: v2022-0915, simulated 2022-09-22. Retrieved 2026-08-23.
+#   Dosya sürümü: v2022-0915, simülasyon 2022-09-22. Alınma: 2026-08-23.
 #
-# OUTPUT (generated, machine-readable, re-creatable from the input by
-# re-running this script - never hand-edited either):
+# ÇIKTI (üretilmiş, makine okunur; bu betik yeniden çalıştırılarak girdiden
+# yeniden oluşturulabilir — o da elle düzenlenmez):
 #   config/propulsion_data/apc_13x65e_parsed.csv
 #
-# WHAT THIS SCRIPT DOES: pure mechanical reformatting. It does NOT compute,
-# smooth, extrapolate, or invent any coefficient. Every (rpm, J, Ct, Cp,
-# power_W, torque_Nm, thrust_N) row in the output is copied verbatim (as
-# floats) from a corresponding row in the raw file. Per the project's SI/
-# provenance rules, this parser deliberately uses the file's own SI columns
-# (W, N-m, N) for thrust/torque/power - never the Hp/In-Lbf/Lbf imperial
-# columns - so no unit conversion is performed or required for those fields.
+# BETİĞİN YAPTIĞI İŞ: salt mekanik biçim dönüştürme. Hiçbir yumuşatma
+# (smoothing), hiçbir dışdeğerleme (extrapolation), hiçbir eğri uydurma (curve
+# fitting) ve hiçbir katsayı hesabı yapılmaz. Çıktıdaki her
+# (rpm, J, Ct, Cp, power_W, torque_Nm, thrust_N) satırı, ham dosyadaki karşılık
+# gelen satırdan birebir (float olarak) kopyalanır. Projenin SI/köken
+# kurallarına uygun olarak dosyanın kendi SI kolonları (W, N-m, N) kullanılır;
+# Hp/In-Lbf/Lbf İngiliz birim kolonları hiç okunmaz, dolayısıyla bu alanlar için
+# birim dönüşümü ne yapılır ne de gerekir.
 #
-# FILE FORMAT (reverse-engineered from the raw file, documented here since
-# APC does not ship a machine-readable schema):
-#   - CRLF line endings.
-#   - A free-text header block (title/version/date/definitions) before the
-#     first "PROP RPM =" marker - ignored.
-#   - The file is divided into 18 RPM slices (1000..18000 step 1000), each
-#     introduced by a line "PROP RPM =     <rpm>".
-#   - Each slice has a 2-line column header ("V  J  Pe  Ct  Cp  PWR  Torque
-#     Thrust  PWR  Torque  Thrust  THR/PWR  Mach  Reyn  FOM" then a units
-#     line) followed by data rows, one per simulated airspeed point (V=0
-#     first, i.e. the static/J=0 condition, then increasing V/J).
-#   - Each data row has 15 whitespace-separated numeric fields:
+# DOSYA BİÇİMİ (ham dosyadan çözümlenmiştir; APC makine okunur bir şema
+# yayınlamadığı için burada belgelenir):
+#   - CRLF satır sonları.
+#   - İlk "PROP RPM =" işaretine kadar serbest metin başlık bloğu - atlanır.
+#   - Dosya 18 RPM dilimine ayrılmıştır (1000..18000, 1000 adımla); her dilim
+#     "PROP RPM =     <rpm>" satırıyla başlar.
+#   - Her dilimde 2 satırlık kolon başlığı ("V  J  Pe  Ct  Cp  PWR  Torque
+#     Thrust  PWR  Torque  Thrust  THR/PWR  Mach  Reyn  FOM" ve ardından birim
+#     satırı) bulunur; sonra simüle edilen her hava hızı için bir veri satırı
+#     gelir (önce V=0, yani statik/J=0 durumu, sonra artan V/J).
+#   - Her veri satırı boşlukla ayrılmış 15 sayısal alan içerir:
 #       0 V(mph)  1 J  2 Pe  3 Ct  4 Cp  5 PWR(Hp)  6 Torque(In-Lbf)
 #       7 Thrust(Lbf)  8 PWR(W)  9 Torque(N-m)  10 Thrust(N)  11 THR/PWR(g/W)
 #       12 Mach  13 Reyn  14 FOM
-#   - A slice's LAST row is sometimes truncated by APC's own generator once
-#     thrust approaches zero/negative (e.g. the 18000 RPM slice's final row
-#     has only V and J, no further columns). This parser detects and skips
-#     any row with fewer than 11 numeric tokens (i.e. missing the SI
-#     Thrust(N) column at index 10) rather than fabricating the missing
-#     fields - a dropped-row count is printed for traceability.
-#   - J values are strictly increasing within a slice (V increases
-#     monotonically in the source table, and J=V/(nD) with n fixed within a
-#     slice) - relied upon by the consumer's per-slice linear interpolation,
-#     verified by this script (see the monotonicity check below).
+#   - Bir dilimin SON satırı, itki sıfıra/negatife yaklaştığında APC'nin kendi
+#     üretecinin kestiği hâlde gelebilir (örn. 18000 RPM diliminin son
+#     satırında yalnızca V ve J vardır). Bu betik 11'den az sayısal belirteç
+#     içeren (yani SI Thrust(N) kolonu, indeks 10, eksik olan) satırları eksik
+#     alanları uydurmak yerine atlar; atlanan satır sayısı izlenebilirlik için
+#     yazdırılır.
+#   - J değerleri bir dilim içinde kesin artandır (kaynak tabloda V monotonik
+#     artar ve dilim içinde n sabit olduğundan J=V/(nD)). Tüketici tarafın dilim
+#     başına doğrusal interpolasyonu buna dayanır; betik bunu doğrular (aşağıdaki
+#     monotonluk kontrolü).
 # =============================================================================
 import csv
 import sys
@@ -55,7 +55,7 @@ HERE = Path(__file__).resolve().parent
 RAW_PATH = HERE / "PER3_13x65E.dat"
 OUT_PATH = HERE / "apc_13x65e_parsed.csv"
 
-MIN_FIELDS = 11  # need at least through column 10 (Thrust, N)
+MIN_FIELDS = 11  # en az 10. kolona (Thrust, N) kadar alan gerekir
 
 
 def parse(raw_path: Path):
@@ -70,24 +70,24 @@ def parse(raw_path: Path):
             if not stripped:
                 continue
             if stripped.startswith("PROP RPM"):
-                # Format: "PROP RPM =       1000"
+                # Biçim: "PROP RPM =       1000"
                 current_rpm = float(stripped.split("=")[1].strip())
                 slice_counts.setdefault(current_rpm, 0)
                 continue
 
             tokens = stripped.split()
             if len(tokens) < MIN_FIELDS:
-                # Header/units lines (letters, parens, dashes) also land here
-                # and are correctly rejected below by the float() parse -
-                # this length check alone already screens out the truncated
-                # trailing rows some slices have.
+                # Başlık/birim satırları da buraya düşer ve float()
+                # ayrıştırması tarafından doğru biçimde reddedilir; bu uzunluk
+                # kontrolü, bazı dilimlerdeki kesilmiş son satırları tek başına
+                # zaten ayıklar.
                 if current_rpm is not None and tokens and _looks_like_row(tokens):
                     skipped_incomplete += 1
                 continue
             try:
                 vals = [float(t) for t in tokens[:15]]
             except ValueError:
-                continue  # header/units line, not a data row
+                continue  # başlık/birim satırı, veri satırı değil
             if current_rpm is None:
                 continue
 
@@ -108,8 +108,8 @@ def parse(raw_path: Path):
 
 
 def _looks_like_row(tokens):
-    """True if the first token parses as a float (i.e. this was a real,
-    if truncated, data row rather than a text/header line)."""
+    """İlk belirteç float olarak ayrıştırılıyorsa True döner: yani bu satır
+    metin/başlık satırı değil, (kesilmiş olsa bile) gerçek bir veri satırıdır."""
     try:
         float(tokens[0])
         return True

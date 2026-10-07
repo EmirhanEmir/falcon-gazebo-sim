@@ -1,54 +1,54 @@
-# FALCON V2 — Aerodynamics Plugin
+# FALCON V2 — Aerodinamik Eklentisi
 
-Gazebo Sim Harmonic System plugin implementing the aircraft's aerodynamic
-force and moment model.
+Uçağın aerodinamik kuvvet ve moment modelini uygulayan Gazebo Sim Harmonic
+System eklentisi.
 
-Scope: aerodynamic physics only. It reads the five control-surface joint
-positions; it does not command them, and it implements no propulsion or
-autopilot logic.
+Kapsam yalnızca aerodinamik fiziktir. Beş kumanda yüzeyi ekleminin açısını
+okur; onları komutlamaz ve içinde itki ya da otopilot mantığı bulunmaz.
 
-## Files
+## Dosyalar
 
-| File | Purpose |
+| Dosya | Amaç |
 | ---- | ------- |
-| `AeroModel.hh` | Pure-math core: alpha/beta, dynamic pressure, coefficient build-up, wind→body force rotation, control-surface lookup. Depends only on `gz-math7`. |
-| `AerodynamicsSystem.hh` / `.cc` | The `gz-sim8` System plugin: reads Gazebo state, calls `ComputeAero()`, applies the force/moment to `base_link`, publishes diagnostics. |
-| `CMakeLists.txt` | Build definition for `libFalconV2Aerodynamics.so`. |
+| `AeroModel.hh` | Saf matematik çekirdeği: alfa/beta, dinamik basınç, katsayı toplamı, rüzgâr→gövde kuvvet dönüşümü, kumanda yüzeyi araması. Yalnızca `gz-math7`'ye bağımlıdır. |
+| `AerodynamicsSystem.hh` / `.cc` | `gz-sim8` System eklentisi: Gazebo durumunu okur, `ComputeAero()` çağırır, kuvvet/momenti `base_link`'e uygular, tanı yayınlar. |
+| `CMakeLists.txt` | `libFalconV2Aerodynamics.so` derleme tanımı. |
 
-Every coefficient is loaded at `Configure()` time from
-`config/aero_v1_config.yaml`. No coefficient is hardcoded in C++.
+Her katsayı `Configure()` anında `config/aero_v1_config.yaml` dosyasından
+yüklenir. C++ içinde gömülü katsayı yoktur.
 
-## Dependencies
+## Bağımlılıklar
 
-- `gz-sim8`, `gz-plugin2` (component `register`), `gz-transport13`,
+- `gz-sim8`, `gz-plugin2` (`register` bileşeni), `gz-transport13`,
   `gz-msgs10`, `gz-math7`
-- `yaml-cpp` (via `libyaml-cpp-dev`)
-- CMake ≥ 3.16, a C++17 compiler
+- `yaml-cpp` (`libyaml-cpp-dev` paketiyle)
+- CMake ≥ 3.16, C++17 derleyicisi
 
-## Build
+## Derleme
 
 ```bash
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build -j$(nproc)
 ```
 
-Produces `build/libFalconV2Aerodynamics.so`. `build/` is git-ignored.
-`scripts/build_plugins.sh` builds this and the other four plugins together.
+Çıktı: `build/libFalconV2Aerodynamics.so`. `build/` dizini git tarafından
+yok sayılır. `scripts/build_plugins.sh` bunu ve diğer dört eklentiyi birlikte
+derler.
 
-## Runtime interface
+## Çalışma zamanı arayüzü
 
-`model/model.sdf` contains the
+`model/model.sdf` içinde
 `<plugin filename="FalconV2Aerodynamics" name="falcon_v2_aero::AerodynamicsSystem">`
-block with its `<config_path>`, `<air_density>`, `<wind_topic>` and
-`<diagnostics_rate_hz>` parameters.
+bloğu, `<config_path>`, `<air_density>`, `<wind_topic>` ve
+`<diagnostics_rate_hz>` parametreleriyle birlikte bulunur.
 
-| Topic | Type | Direction |
+| Konu | Tip | Yön |
 | ----- | ---- | --------- |
-| `/model/falcon_v2/wind` | `gz.msgs.Vector3d` | subscribe (world-frame air-mass velocity, m/s) |
-| `/model/falcon_v2/aerodynamics/diagnostics` | `gz.msgs.Double_V` | publish |
+| `/model/falcon_v2/wind` | `gz.msgs.Vector3d` | abone (dünya çerçevesinde hava kütlesi hızı, m/s) |
+| `/model/falcon_v2/aerodynamics/diagnostics` | `gz.msgs.Double_V` | yayın |
 
-Diagnostics field order: `V, alpha_rad, beta_rad, qbar, CL, CD, CY, Cl, Cm, Cn`.
-Observe them live with:
+Tanı alanlarının sırası: `V, alpha_rad, beta_rad, qbar, CL, CD, CY, Cl, Cm, Cn`.
+Canlı izlemek için:
 
 ```bash
 gz topic -e -t /model/falcon_v2/aerodynamics/diagnostics

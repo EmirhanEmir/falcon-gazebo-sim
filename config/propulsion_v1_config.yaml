@@ -1,162 +1,147 @@
 # =============================================================================
-# FALCON V2 - Propulsion V1 coefficient/config dataset (source of truth)
+# FALCON V2 — itki (propulsion) yapılandırma ve katsayı veri kümesi
 # =============================================================================
-# Owner: propulsion
-# Task:  PROPULSION_V1_IMPLEMENTATION (2026-08-23)
+# plugins/propulsion/ altındaki Gazebo Sim Harmonic System eklentisinin
+# ("FalconV2Propulsion") kullandığı her sayısal itki parametresinin tek
+# yapılandırılmış kaynağı budur. Veri kümeleri eklenti kaynak koduna gömülmez;
+# eklenti bu dosyayı Configure() anında, model/model.sdf içindeki <config_path>
+# SDF parametresinde verilen yoldan okur.
 #
-# This file is the single structured-data source for every numeric propulsion
-# parameter consumed by plugins/propulsion/ (the Gazebo Sim Harmonic System
-# plugin "FalconV2Propulsion"). Per the project specification's source-of-truth policy,
-# propulsion datasets live here, not hardcoded inline in plugin source code.
-# The plugin loads this file at Configure time from the path given by the
-# <config_path> SDF plugin parameter in model/model.sdf. Mirrors
-# config/aero_v1_config.yaml's format/conventions
-# exactly.
+# KÖKEN KURALI: aşağıdaki her değer kaynağını belirtir — üretici verisi, APC
+# performans dosyası, belgelenmiş bir türetme ya da açıkça işaretlenmiş bir
+# varsayım. Hiçbir değer uydurulmamıştır; her alan aşağıdaki durum
+# etiketlerinden birini taşır.
 #
-# PROVENANCE RULE: every value below cites its exact source
-# section). Nothing here is
-# invented. Every field carries one of the status tags below.
+# DURUM ETİKETLERİ (bunlar sabit sözcüklerdir, çevrilmez/yeniden adlandırılmaz):
+#   CONFIRMED      - üretici/kaynak veride doğrudan verilmiş, aynen kullanılmış.
+#   DERIVED        - CONFIRMED değerlerden belgelenmiş bir yöntemle hesaplanmış.
+#   V1_PROVISIONAL - gerçek ölçüm/kalibrasyon beklenen, açıkça geçici değer.
+#   ASSUMPTION     - kaynak verisi bulunmayan, doğrulanmamış ama bu sürüm için
+#                    gerekli olan değer ya da model politikası seçimi.
+#   TEMPORARY      - fiziksel sabit değil, sayısal güvenlik amaçlı yer tutucu.
+#   DATA_REQUIRED  - gerçekten eksik; tahmin edilmemiş.
 #
-# STATUS TAGS USED BELOW (consistent with's/aero_v1_config's
-# legend):
-#   CONFIRMED   - stated directly by the project specification / the master dataset /
-#, used exactly as given, not modified.
-#   DERIVED     - computed from CONFIRMED values via a documented method.
-#   V1_PROVISIONAL - an explicitly-flagged placeholder pending a real
-#                 measurement/calibration (e.g. rotational inertia).
-#   ASSUMPTION  - a value with no source data; used because a working number
-#                 was required for V1, explicitly NOT validated. Includes
-#                 this V1's electrical-model policy choices (negative-current
-#                 clamp, I0 voltage-independence, current-limit-as-hard-clamp).
-#   TEMPORARY   - a numerical-safety placeholder, not a physical constant.
-#   DATA_REQUIRED - genuinely missing, not guessed.
-#
-# Do not edit numeric values here without updating's
-# provenance record. Do not add new coefficients/curves not present in
-# the project specification / the master dataset / an authorized derivation, and never
-# fabricate a Ct/Cp value - the ONLY Ct/Cp data this plugin uses is the real
-# parsed APC table (propeller.apc_parsed_csv_path below).
+# Buradaki sayısal değerler köken kaydı güncellenmeden değiştirilmemelidir.
+# Ct/Cp için tek veri kaynağı gerçek, ayrıştırılmış APC tablosudur
+# (propeller.apc_parsed_csv_path); hiçbir Ct/Cp değeri uydurulmaz.
 # =============================================================================
 
 motor:
   model: "SunnySky X2820 860KV"                # CONFIRMED
-  kv_rpm_per_v: 860.0                           # CONFIRMED, manufacturer nameplate
-  resistance_ohm: 0.0258                        # CONFIRMED (~25.8 mOhm)
-  no_load_current_A: 1.3                        # CONFIRMED - reference point only, see no_load_current_ref_voltage_V
-  no_load_current_ref_voltage_V: 10.0           # CONFIRMED - I0 was measured/stated at this voltage
-  mass_kg: 0.143                                # CONFIRMED (per motor) - reference only; NOT used as a rotational-inertia input in V1 (see physics.i_rotor_kg_m2 below)
-  current_limit_A: 65.0                         # CONFIRMED rating (~65A/30s)
-  power_limit_W: 960.0                          # CONFIRMED rating (~960W/motor)
+  kv_rpm_per_v: 860.0                           # CONFIRMED — üretici etiket değeri
+  resistance_ohm: 0.0258                        # CONFIRMED — motor iç direnci (~25.8 mOhm)
+  no_load_current_A: 1.3                        # CONFIRMED — yalnızca referans noktası, bkz. no_load_current_ref_voltage_V
+  no_load_current_ref_voltage_V: 10.0           # CONFIRMED — I0 bu gerilimde ölçülmüş/belirtilmiştir
+  mass_kg: 0.143                                # CONFIRMED (motor başına) — yalnızca referans; V1'de dönel atalet girdisi olarak kullanılmaz (bkz. physics.i_rotor_kg_m2)
+  current_limit_A: 65.0                         # CONFIRMED üretici değeri (~65A/30s)
+  power_limit_W: 960.0                          # CONFIRMED üretici değeri (~960W/motor)
 
   electrical_policy:
     negative_current_clamp: >
-      I_used = max(I_raw, 0) where I_raw = (V_ESC - Ke*omega)/R. If the
-      back-EMF (Ke*omega) exceeds the applied voltage (V_ESC) - e.g. a
-      windmilling propeller under an engine-out condition in forward flight,
-      or throttle=0 with omega>0 - I_raw would be negative. No battery-regen
-      / reverse-current model exists anywhere in the source of truth, so V1
-      clamps this to zero current rather than fabricating one.
-    negative_current_clamp_status: ASSUMPTION   # simple non-regenerative-ESC assumption.2/8.2 item 4 (ESC dynamic response explicitly V2)
+      I_used = max(I_raw, 0); burada I_raw = (V_ESC - Ke*omega)/R. Ters EMK
+      (Ke*omega) uygulanan gerilimi (V_ESC) aşarsa - örneğin ileri uçuşta
+      motor arızası sırasında yel değirmeni gibi dönen bir pervanede, ya da
+      throttle=0 iken omega>0 durumunda - I_raw negatif olurdu. Kaynak veride
+      batarya rejenerasyonu / ters akım modeli bulunmadığı için V1, olmayan
+      bir model uydurmak yerine akımı sıfıra kırpar.
+    negative_current_clamp_status: ASSUMPTION   # basit, rejeneratif olmayan ESC varsayımı; ESC'nin dinamik yanıtı V1 kapsamı dışındadır
     i0_effective_policy: >
-      I0_effective = motor.no_load_current_A (held CONSTANT across all
-      operating voltages/RPM). I0 is only characterized at ONE reference
-      voltage (10 V) anywhere in the source of truth - no voltage-scaling
-      law for I0 exists, so none is invented.
-    i0_effective_status: ASSUMPTION             # - a true voltage-dependent I0 curve is DATA_REQUIRED
+      I0_effective = motor.no_load_current_A (tüm işletme gerilimleri ve
+      devirler boyunca SABİT tutulur). Kaynak veride I0 yalnızca TEK bir
+      referans gerilimde (10 V) karakterize edilmiştir; I0 için gerilime
+      bağlı bir ölçekleme yasası bulunmadığından böyle bir yasa uydurulmaz.
+    i0_effective_status: ASSUMPTION             # gerilime bağlı gerçek I0 eğrisi DATA_REQUIRED
     current_limit_clamp_policy: >
-      I_used is additionally clamped at motor.current_limit_A (the ~65A/30s
-      manufacturer rating), applied as a V1 instantaneous hard clamp.
-    current_limit_clamp_status: ASSUMPTION      # this V1 model does NOT implement a true duration-limited (I^2*t) thermal model - none exists in the source of truth
+      I_used ayrıca motor.current_limit_A değerinde (~65A/30s üretici
+      değeri) kırpılır; V1'de anlık ve kesin bir kırpma olarak uygulanır.
+    current_limit_clamp_status: ASSUMPTION      # süreye bağlı (I^2*t) ısıl model uygulanmaz; kaynak veride böyle bir model yoktur
 
 battery:
   main_pack: "4S 22000mAh 25C"                  # CONFIRMED
-  v_nominal_V: 14.8                             # CONFIRMED, this specific pack's spec
+  v_nominal_V: 14.8                             # CONFIRMED — bu pakete ait üretici değeri
   v_full_V: 16.8                                # CONFIRMED
-  v1_operating_voltage_V: 14.8                  # V1_PROVISIONAL: fixed at Vnominal, no SOC/sag model - battery internal resistance / discharge curve is DATA_REQUIRED (/8.2 item 7, explicitly deferred to V2)
+  v1_operating_voltage_V: 14.8                  # V1_PROVISIONAL — nominal gerilimde sabit; SOC/gerilim düşümü modeli yok. Batarya iç direnci / deşarj eğrisi DATA_REQUIRED.
 
 propeller:
   model: "APC 13x6.5E"                          # CONFIRMED
-  diameter_m: 0.3302                            # CONFIRMED - 13in nominal. NEVER the ~0.2734m STL mesh figure - used everywhere, always, no exceptions.
-  pitch_m: 0.1651                               # CONFIRMED - 6.5in nominal (not directly consumed by the V1 Ct(J)/Cp(J) formulas, retained for reference/provenance)
-  mass_kg: 0.0301                               # CONFIRMED (per propeller) - matches model.sdf left_prop/right_prop <inertial><mass>
+  diameter_m: 0.3302                            # CONFIRMED — 13 inç nominal. Her yerde bu değer kullanılır; ~0.2734 m'lik STL mesh ölçüsü asla kullanılmaz.
+  pitch_m: 0.1651                               # CONFIRMED — 6.5 inç nominal; Ct(J)/Cp(J) formüllerine girmez, köken kaydı için tutulur
+  mass_kg: 0.0301                               # CONFIRMED (pervane başına) — model.sdf left_prop/right_prop <inertial><mass> ile aynı
   apc_raw_data_path: "propulsion_data/PER3_13x65E.dat"
-  apc_raw_data_source: "APC Propellers official performance data, https://www.apcprop.com/files/PER3_13x65E.dat, file v2022-0915, simulated 2022-09-22, retrieved 2026-08-23" # CONFIRMED, see propulsion_data/PROVENANCE.md
-  apc_parsed_csv_path: "propulsion_data/apc_13x65e_parsed.csv"  # DERIVED, mechanically parsed from apc_raw_data_path by propulsion_data/parse_apc_dat.py - never hand-edited
-  rpm_table_min: 1000.0                         # CONFIRMED (from the parsed APC table's own range)
-  rpm_table_max: 18000.0                        # CONFIRMED (from the parsed APC table's own range)
-  rpm_physical_limit: 11538.0                   # DERIVED = 150000/13 (APC "Thin Electric" structural guideline for a 13in prop)
-  rpm_cap_v1: 11500.0                           # V1_PROVISIONAL hard operating cap on |RPM| (numerical/operational clamp on the omega state), slightly below rpm_physical_limit - distinct from, and not required to coincide with, apc table's own [rpm_table_min,rpm_table_max] lookup-clamp range
+  apc_raw_data_source: "APC Propellers official performance data, https://www.apcprop.com/files/PER3_13x65E.dat, file v2022-0915, simulated 2022-09-22, retrieved 2026-08-23" # CONFIRMED, bkz. propulsion_data/PROVENANCE.md
+  apc_parsed_csv_path: "propulsion_data/apc_13x65e_parsed.csv"  # DERIVED — apc_raw_data_path dosyasından propulsion_data/parse_apc_dat.py ile makine üretimi; elle düzenlenmez
+  rpm_table_min: 1000.0                         # CONFIRMED — ayrıştırılmış APC tablosunun kendi aralığı
+  rpm_table_max: 18000.0                        # CONFIRMED — ayrıştırılmış APC tablosunun kendi aralığı
+  rpm_physical_limit: 11538.0                   # DERIVED = 150000/13 (13 inç "Thin Electric" pervane için APC yapısal kılavuzu)
+  rpm_cap_v1: 11500.0                           # V1_PROVISIONAL — |RPM| üst işletme sınırı (omega durumuna uygulanan sayısal/işletme kırpması), rpm_physical_limit'in hemen altında; APC tablosunun kendi arama aralığıyla ([rpm_table_min, rpm_table_max]) çakışmak zorunda değildir
 
 physics:
-  rho_kg_m3: 1.225                              # CONFIRMED, ISA sea-level, V1 fixed config parameter (same convention as aero_v1_config.yaml environment.air_density_rho_kg_m3)
-  n_safe_floor_rev_s: 1.0e-3                    # TEMPORARY numerical-safety-only floor for the J=V/(nD) denominator (mirrors AeroModel.hh's vSafeFloor pattern) - NOT physically load-bearing: T/P_prop already -> 0 as n->0 via their own n^2/n^3 factors regardless of this floor's value.
-  i_rotor_kg_m2: 2.7349e-4                      # V1_PROVISIONAL_ROTATIONAL_INERTIA - see i_rotor_derivation note below
+  rho_kg_m3: 1.225                              # CONFIRMED — ISA deniz seviyesi; V1'de sabit yapılandırma parametresi
+  n_safe_floor_rev_s: 1.0e-3                    # TEMPORARY — yalnızca J=V/(nD) paydası için sayısal güvenlik tabanı; fiziksel olarak belirleyici değildir: T ve P_prop kendi n^2/n^3 çarpanları nedeniyle n->0 giderken bu tabandan bağımsız olarak 0'a gider.
+  i_rotor_kg_m2: 2.7349e-4                      # V1_PROVISIONAL — türetme için aşağıdaki i_rotor_derivation notuna bakın
   i_rotor_derivation: >
-    I_rotor (V1) = prop-only rotational inertia = (1/12)*m_prop*D^2, using
-    the REAL propeller mass (0.0301 kg) and REAL diameter (D=0.3302 m,
-    never the STL mesh figure) = 2.7349e-4 kg*m^2 - IDENTICAL to the value
-    already used as model/model.sdf's left_prop/right_prop
-    <inertial><inertia> placeholder (tagged V1_PROVISIONAL_ROTATIONAL_INERTIA
-    there too, the geometry layer's own derivation, reused here rather than
-    recomputed as a second, potentially-inconsistent source of truth for the
-    same quantity).
-    MOTOR-ROTOR CONTRIBUTION: deliberately NOT included. No motor-internal
-    dimensional data (bell/rotor diameter, wall thickness, magnet mass
-    distribution) exists anywhere in the source of truth for the SunnySky
-    X2820 860KV. Per the project specification/'s explicit "no arbitrary
-    curves/no invented plausible-looking constant" rule, this V1
-    implementation does NOT add a specific mass-fraction/radius-based
-    estimate for the motor's own rotating mass, even tagged ASSUMPTION -
-    the project's demonstrated pattern elsewhere (e.g. I0 voltage-scaling,
-    negative-alpha CLmax) is to keep missing data DATA_REQUIRED rather than
-    invent a specific unsourced number. KNOWN EFFECT: since the true I_rotor
-    is (prop-only + motor-rotor), and the motor-rotor term is omitted
-    entirely, this V1 I_rotor is very likely an UNDERESTIMATE of the true
-    combined value - meaning V1 spin-up/spin-down transients will likely be
-    FASTER than real hardware. This affects ONLY the transient time constant
-    of the angular-dynamics ODE, NOT steady-state thrust ( point 3) - do not calibrate this number to hit the SunnySky bench
-    thrust figure (sec 1.6).
-  i_rotor_motor_rotor_contribution_status: DATA_REQUIRED   #/4/8.2 item 2 - only a V1-estimate/bench-spin-up-calibration PATH is authorized, no number is given anywhere in the source of truth
+    I_rotor (V1) = yalnızca pervanenin dönel ataleti = (1/12)*m_prop*D^2;
+    GERÇEK pervane kütlesi (0.0301 kg) ve GERÇEK çap (D=0.3302 m, asla STL
+    mesh ölçüsü değil) ile = 2.7349e-4 kg*m^2. Bu değer, model/model.sdf
+    içindeki left_prop/right_prop <inertial><inertia> yer tutucusunda
+    kullanılan değerle AYNIdır (orada da V1_PROVISIONAL_ROTATIONAL_INERTIA
+    etiketlidir): geometri katmanının kendi türetmesi, aynı büyüklük için
+    ikinci ve tutarsız olabilecek bir kaynak yaratmamak adına yeniden
+    hesaplanmayıp buraya olduğu gibi alınmıştır.
+    MOTOR ROTORUNUN KATKISI: bilinçli olarak DAHİL EDİLMEMİŞTİR. SunnySky
+    X2820 860KV için kaynak veride motor içi boyut verisi (çan/rotor çapı,
+    cidar kalınlığı, mıknatıs kütle dağılımı) yoktur. Projenin "keyfî eğri
+    yok, makul görünen sabit uydurulmaz" kuralı gereği bu V1 gerçeklemesi,
+    ASSUMPTION etiketiyle bile olsa, motorun kendi dönen kütlesi için
+    kütle-oranına veya yarıçapa dayalı bir tahmin eklemez; projenin başka
+    yerlerde de izlediği yol (örneğin I0'ın gerilime bağlı ölçeklemesi),
+    kaynağı olmayan belirli bir sayı uydurmak yerine eksik veriyi
+    DATA_REQUIRED olarak bırakmaktır. BİLİNEN ETKİ: gerçek I_rotor (yalnızca
+    pervane + motor rotoru) olduğundan ve motor rotoru terimi tamamen
+    atlandığından, bu V1 I_rotor değeri gerçek birleşik değerin büyük
+    olasılıkla ALTINDADIR; yani V1'deki hızlanma/yavaşlama geçici rejimleri
+    gerçek donanımdan daha HIZLI olacaktır. Bu, yalnızca açısal dinamik
+    ODE'sinin geçici rejim zaman sabitini etkiler; kararlı hâl itkisini
+    etkilemez. Bu sayı, SunnySky'ın tezgâh itki değerini tutturmak için
+    kalibre edilmemelidir.
+  i_rotor_motor_rotor_contribution_status: DATA_REQUIRED   # kaynak veride motor rotorunun kendi ataleti için hiçbir sayı yoktur; yalnızca bir V1 tahmini veya tezgâhta hızlanma ölçümüyle kalibrasyon yolu öngörülmüştür
 
 geometry:
-  # Coordinates and thrust axis are defined in model.sdf and cited here;
-  # the propulsion model consumes them as given and does not set them. Both hubs use the SAME body-frame thrust axis; only the Y
-  # coordinate differs (mirror placement).
-  left_hub_m: [0.2951, 0.3000, 0.1271]          # CONFIRMED / - expressed relative to base_link's own origin (base_link <pose>=0 0 0 0 0 0), i.e. directly usable as a gz-sim Link "offset in the link-fixed frame"
-  right_hub_m: [0.2951, -0.3000, 0.1271]        # CONFIRMED /
-  thrust_axis_body: [1.0, 0.0, 0.0]             # CONFIRMED / - V1 idealized +X (measured prop-face normal is (+0.999996,+0.000018,-0.002668), ~0.15deg off pure +X; master dataset sec 48 explicitly accepts the idealized +X for V1)
+  # Koordinatlar ve itki ekseni model.sdf içinde tanımlanır, burada yalnızca
+  # alıntılanır: itki modeli bunları verildiği gibi tüketir, kendisi belirlemez.
+  # Her iki göbek aynı gövde çerçevesi itki eksenini kullanır; yalnızca Y
+  # koordinatı farklıdır (ayna yerleşim).
+  left_hub_m: [0.2951, 0.3000, 0.1271]          # CONFIRMED — base_link'in kendi orijinine göre (base_link <pose>=0 0 0 0 0 0), yani doğrudan gz-sim'in "bağlantı çerçevesinde ofset" girdisi olarak kullanılabilir
+  right_hub_m: [0.2951, -0.3000, 0.1271]        # CONFIRMED — sol göbeğin Y ekseni boyunca aynası
+  thrust_axis_body: [1.0, 0.0, 0.0]             # CONFIRMED — V1 için idealleştirilmiş +X (ölçülen pervane yüzeyi normali (+0.999996,+0.000018,-0.002668), saf +X'ten ~0.15 derece sapar; V1'de idealleştirilmiş +X kabul edilmiştir)
 
 rotation:
-  # Explicit simulator-native sign convention (the project's requirement 8) -
-  # never described in terms of an external front/behind viewing frame,
-  # since states only "Left=CCW, Right=CW" with NO
-  # stated viewing frame (a prior validation finding already flagged and
-  # removed an unsourced "as viewed from behind" SDF comment claim).
+  # Açıkça simülatör-yerel işaret düzeni. Hiçbir zaman "önden/arkadan
+  # bakıldığında" gibi harici bir bakış çerçevesiyle tanımlanmaz, çünkü kaynak
+  # veri yalnızca "Sol=CCW, Sağ=CW" der ve bakış çerçevesini belirtmez.
   sign_convention: >
-    Each motor's OWN internal rotor-dynamics state (omega_left, omega_right,
-    the plugin's explicit ODE-integrated variables) is expressed in that
-    motor's OWN "positive = normal spin-up-under-positive-throttle"
-    direction - i.e. omega>0 always means "this motor accelerating under
-    positive throttle", identically in form for both motors (Kt/Ke/Ct/Cp do
-    not change sign based on mounting side). This own-frame state is then
-    mapped onto the single shared body +X axis (right-hand rule) ONLY at two
-    output points: (a) commanding the SDF joint's angular velocity
-    (left_prop_joint/right_prop_joint, both axis=+X), and (b) computing the
-    reaction-torque vector applied to base_link - both via the
-    left_sign/right_sign multipliers below, applied identically to both
-    quantities (they are the same physical axis).
-  left_sign: 1.0                                # ASSUMPTION - left motor's own-frame positive direction is arbitrarily chosen as the +X/right-hand-rule reference (a free labeling choice - see status note below)
-  right_sign: -1.0                              # DERIVED from the CONFIRMED counter-rotation fact (Left CCW / Right CW - opposite handedness) combined with the left_sign ASSUMPTION above: since the two motors counter-rotate RELATIVE TO EACH OTHER (a viewpoint-independent, unambiguous, CONFIRMED fact), fixing left_sign=+1 forces right_sign=-1 under the same +X/RHR convention.
-  viewpoint_status: DATA_REQUIRED               # The master dataset's "Left=CCW,Right=CW" statement does not specify whether this was stated as viewed from in front of or behind the aircraft. This convention block only fixes the two motors' signs RELATIVE TO EACH OTHER and to this project's own arbitrarily-chosen +X/RHR reference (left=+1) - it does NOT claim to reproduce the "visually CCW/CW as seen from a specific real-world viewpoint" sense. Do not write "as viewed from front/behind" anywhere per this project's prior corrected finding.
+    Her motorun KENDİ iç rotor dinamiği durumu (omega_left, omega_right;
+    eklentinin açıkça ODE ile entegre ettiği değişkenler) o motorun KENDİ
+    "pozitif = pozitif throttle altında normal hızlanma" yönünde ifade
+    edilir: omega>0 daima "bu motor pozitif throttle altında hızlanıyor"
+    demektir ve bu, her iki motor için biçimsel olarak aynıdır (Kt/Ke/Ct/Cp
+    montaj tarafına göre işaret değiştirmez). Bu kendi-çerçeve durumu,
+    paylaşılan tek gövde +X eksenine (sağ-el kuralı) YALNIZCA iki çıkış
+    noktasında eşlenir: (a) SDF ekleminin açısal hızının sürülmesi
+    (left_prop_joint/right_prop_joint, ikisinde de axis=+X) ve (b) base_link'e
+    uygulanan reaksiyon tork vektörünün hesaplanması. İkisi de aşağıdaki
+    left_sign/right_sign çarpanlarıyla, aynı fiziksel eksen oldukları için
+    birbirinin aynı biçimde uygulanır.
+  left_sign: 1.0                                # ASSUMPTION — sol motorun kendi pozitif yönü, +X/sağ-el kuralı referansı olarak seçilmiştir (serbest bir etiketleme tercihi, bkz. aşağıdaki viewpoint_status)
+  right_sign: -1.0                              # DERIVED — iki motorun birbirine göre ters döndüğü (bakış açısından bağımsız, CONFIRMED) olgusu ile yukarıdaki left_sign seçimi birleştiğinde, aynı +X/sağ-el kuralı altında right_sign=-1 zorunlu hâle gelir
+  viewpoint_status: DATA_REQUIRED               # Kaynak verinin "Sol=CCW, Sağ=CW" ifadesi uçağın önünden mi arkasından mı bakıldığını belirtmez. Bu blok yalnızca iki motorun işaretini BİRBİRİNE GÖRE ve bu projenin seçtiği +X/sağ-el referansına göre sabitler; belirli bir gerçek bakış noktasından görünen CCW/CW yönünü yeniden ürettiğini iddia etmez.
 
 interfaces:
-  # V1 test interface - no ArduPilot/SITL exists yet (the controls layer's
-  # future work). Per-motor commandable throttle via gz-transport, mirroring
-  # AerodynamicsSystem.cc's wind-topic subscriber pattern. Default throttle
-  # is 0 if never commanded (both topics use gz.msgs.Double, clamped to
-  # [0,1] by the plugin regardless of the published value).
+  # Motor başına gaz komutu gz-transport üzerinden verilir. Hiç komut
+  # gelmezse gaz 0'dır; her iki konu da gz.msgs.Double kullanır ve yayınlanan
+  # değer ne olursa olsun eklenti [0,1] aralığına kırpar.
   left_throttle_topic: "/model/falcon_v2/propulsion/left/throttle_cmd"
   right_throttle_topic: "/model/falcon_v2/propulsion/right/throttle_cmd"
-  wind_topic: "/model/falcon_v2/wind"           # same topic aerodynamics already subscribes to (gz.msgs.Vector3d, world frame, m/s) - read-only here, used for relative-airflow V_axial, zero until a publisher exists
+  wind_topic: "/model/falcon_v2/wind"           # aerodinamik katmanın da abone olduğu konu (gz.msgs.Vector3d, dünya çerçevesi, m/s) — burada salt okunur, bağıl hava akışı V_axial için kullanılır, bir yayıncı olana kadar sıfırdır
   diagnostics_topic: "/model/falcon_v2/propulsion/diagnostics"
   diagnostics_rate_hz: 20.0

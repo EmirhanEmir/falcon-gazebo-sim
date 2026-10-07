@@ -1,26 +1,9 @@
-// =============================================================================
-// FALCON V2 - Gazebo Sim Harmonic actuator/servo System plugin
-// =============================================================================
-// Scope: strictly the physical actuator/servo command chain (actuator command
-// -> rate-limited/clamped setpoint -> effort-bounded torque -> real Gazebo
-// joint motion) for the five control-surface joints: left_aileron_joint,
-// right_aileron_joint, left_elevator_joint, right_elevator_joint,
-// rudder_joint. It does not change how AerodynamicsSystem.cc reads those same
-// joint positions, and it implements no ArduPlane/MAVLink/SITL/TECS logic -
-// this plugin ends at the physical actuator interface.
-//
-// The class is intentionally thin: all math lives in ActuatorModel.hh, a
-// pure, Gazebo-independent header. This class's only job is to read the five
-// per-surface command topics, maintain five persistent rate-limited setpoint
-// states, read each joint's actual position/velocity from the ECM, compute a
-// bounded PID torque via ActuatorModel.hh, and apply it with
-// gz::sim::Joint::SetForce() - a genuine joint-space torque integrated by the
-// physics engine, never an instantaneous ResetPosition() teleport. It also
-// applies gz::sim::Joint::SetVelocityLimits()/SetEffortLimits() once at
-// Configure() as physics-engine-level hard constraints (see the
-// ActuatorModel.hh header comment for why this is necessary given the
-// placeholder control-surface link inertia), and publishes diagnostics.
-// =============================================================================
+// FALCON V2 - Gazebo Sim Harmonic aktüatör/servo System plugin'i.
+// Beş kontrol yüzeyi joint'i için fiziksel aktüatör komut zinciri: komut ->
+// kırpılmış/hız limitli setpoint -> effort sınırlı tork -> gerçek joint
+// hareketi. Sınıf kasten incedir; matematik ActuatorModel.hh'dedir.
+// Sınır: burada ArduPlane/MAVLink/SITL/TECS mantığı yoktur - bu plugin
+// fiziksel aktüatör arayüzünde biter.
 #ifndef FALCON_V2_ACTUATOR_SYSTEM_HH_
 #define FALCON_V2_ACTUATOR_SYSTEM_HH_
 
@@ -37,9 +20,8 @@
 namespace falcon_v2_actuators
 {
 
-/// \brief The 5 control-surface actuators, in a fixed order used
-/// consistently for entity arrays, config arrays, and diagnostics field
-/// order (see Configure()'s logged field-order gzmsg line).
+/// \brief Beş kontrol yüzeyi aktüatörü; bu sabit sıra entity dizileri, config
+/// dizileri ve diagnostik alan sırası boyunca aynen kullanılır.
 enum SurfaceIndex
 {
   kLeftAileron = 0,
@@ -68,17 +50,15 @@ class ActuatorSystem :
               const gz::sim::UpdateInfo &_info,
               gz::sim::EntityComponentManager &_ecm) override;
 
-  /// \brief Per-surface command topic callback. Physical-angle-radians
-  /// interface (see config/actuator_v1_config.yaml
-  /// "command_interface" block). Failsafe policy: HOLD-LAST-VALID-COMMAND -
-  /// this callback simply overwrites the persistent commandRad[idx] state;
-  /// with no new message, the state is left unchanged (no timeout/return-
-  /// to-neutral logic), which is the documented V1 policy.
+  /// \brief Yüzey başına komut topic geri çağrısı; arayüz fiziksel açı
+  /// radyandır. Failsafe politikası SON GEÇERLİ KOMUTU TUT: bu geri çağrı
+  /// kalıcı commandRad[idx] durumunu yalnızca yeni mesaj gelince yazar, yeni
+  /// mesaj yokken durum olduğu gibi kalır (timeout/nötre dönüş yoktur).
   private: void OnCommand(std::size_t idx, const gz::msgs::Double &_msg);
 
-  /// \brief Load config/actuator_v1_config.yaml
-  /// (path given by the <config_path> SDF parameter) into this->config[].
-  /// \return true on success.
+  /// \brief config/actuator_v1_config.yaml dosyasını (<config_path> SDF
+  /// parametresinden gelen yol) this->config[] içine yükler.
+  /// \return Başarılıysa true.
   private: bool LoadConfig(const std::string &_path);
 
   private: gz::sim::Entity modelEntity{gz::sim::kNullEntity};
@@ -88,14 +68,10 @@ class ActuatorSystem :
   private: std::array<ActuatorConfig, kNumSurfaces> config{};
   private: bool validConfig{false};
 
-  /// \brief Persistent per-surface state. commandRad = last received raw
-  /// command (rad, hold-last-valid, defaults to 0.0 = neutral until
-  /// commanded). setpointRad = rate-limited internal target state (also
-  /// starts at 0.0 = neutral - "no startup kick" requirement). integralRadS
-  /// = PidEffort()'s integral-of-error accumulator (rad*s), added
-  /// 2026-08-24 for the gravity-droop fix (see ActuatorModel.hh's Stage 3
-  /// header note) - also starts at 0.0, consistent with the same
-  /// "no startup kick" requirement (zero accumulated error at t=0).
+  /// \brief Yüzey başına kalıcı durum. commandRad = alınan son ham komut
+  /// (rad, son geçerli komut tutulur). setpointRad = hız limitli dahili hedef.
+  /// integralRadS = PidEffort()'un hata integrali birikimi (rad*s). Üçü de
+  /// 0.0'dan (nötr, sıfır birikmiş hata) başlar: "açılışta tekme yok".
   private: std::array<double, kNumSurfaces> commandRad{};
   private: std::array<double, kNumSurfaces> setpointRad{};
   private: std::array<double, kNumSurfaces> integralRadS{};

@@ -1,9 +1,6 @@
-// =============================================================================
-// FALCON V2 - Simulated pitot (airspeed) sensor plugin (implementation)
-// =============================================================================
-// See PitotSystem.hh for the architecture summary; PitotModel.hh for the
-// physical model and the native-sensor-vs-custom-plugin decision record.
-// =============================================================================
+// FALCON V2 - Simüle pitot (airspeed) sensörü plugin'i (uygulama).
+// Mimari özeti PitotSystem.hh'de; fiziksel model ve yerleşik sensör yerine özel
+// plugin kararının gerekçesi PitotModel.hh'de.
 #include "PitotSystem.hh"
 
 #include <chrono>
@@ -124,7 +121,7 @@ void PitotSystem::PreUpdate(
   const auto vPointWorldOpt =
       baseLink.WorldLinearVelocity(_ecm, this->mountOffsetBody);
   if (!vPointWorldOpt.has_value())
-    return;  // velocity checks not yet enabled this tick - skip, no stale publish
+    return;  // hız okuması bu tick'te henüz hazır değil - bayat yayın yapma
 
   const gz::math::Vector3d vRelWorld =
       AirRelativeVelocityWorld(*vPointWorldOpt, this->windWorld);
@@ -134,7 +131,7 @@ void PitotSystem::PreUpdate(
   {
     airspeedMps += this->noiseStddevMps * this->noiseDist(this->noiseRng);
     if (airspeedMps < 0.0)
-      airspeedMps = 0.0;  // a real pitot cannot report negative airspeed
+      airspeedMps = 0.0;  // gerçek bir pitot negatif airspeed bildiremez
   }
 
   const double pressurePa = DifferentialPressurePa(airspeedMps, this->rhoKgM3);

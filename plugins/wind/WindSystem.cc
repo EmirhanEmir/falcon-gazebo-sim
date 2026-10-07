@@ -1,13 +1,8 @@
-// =============================================================================
-// FALCON V2 - Gazebo Sim Harmonic wind/gust generator System plugin (impl)
-// =============================================================================
-// See WindSystem.hh for the architecture summary. All formulas live in
-// WindModel.hh (pure math, no Gazebo dependency) - this file is only the
-// gz-sim Configure()/PreUpdate() plumbing (topic advertise/subscribe,
-// SDF parameter reads, publishing every tick). No aerodynamic coefficient,
-// control lookup table, actuator parameter, or propulsion parameter is
-// read, written, or referenced anywhere in this file.
-// =============================================================================
+// FALCON V2 — rüzgâr/hamle üreticisi System eklentisinin Gazebo bağlantı katmanı.
+// Mimari özet için WindSystem.hh'ye bakınız. Tüm formüller WindModel.hh'dedir;
+// bu dosya yalnızca Configure()/PreUpdate() tesisatıdır (konu ilanı/aboneliği,
+// SDF parametre okuma, her tikte yayın). Burada hiçbir aerodinamik, eyleyici
+// veya itki parametresi okunmaz.
 #include "WindSystem.hh"
 
 #include <chrono>
@@ -36,10 +31,8 @@ void WindSystem::Configure(
     return;
   }
 
-  // ---- Topic names (all optionally overridable via SDF, mirroring the
-  // existing aerodynamics/propulsion/actuator plugins' override pattern -
-  // defaults match the EXISTING wind topic those two plugins already
-  // subscribe to). ----
+  // ---- Konu adları: hepsi SDF'ten geçersiz kılınabilir; varsayılanlar
+  // tüketici eklentilerin zaten abone olduğu rüzgâr konusuyla eşleşir. ----
   const std::string windTopic =
       _sdf->Get<std::string>("wind_topic", "/model/falcon_v2/wind").first;
   const std::string steadyCmdTopic = _sdf->Get<std::string>(
@@ -47,11 +40,10 @@ void WindSystem::Configure(
   const std::string gustCmdTopic = _sdf->Get<std::string>(
       "gust_cmd_topic", "/model/falcon_v2/wind/gust_cmd").first;
 
-  // ---- Steady wind: SDF-configured initial value (world frame, m/s),
-  // default zero vector if absent - live-overwritable afterward via
-  // OnSteadyCmd(). gz::math::Vector3d is a natively-supported sdf::Param
-  // type (same mechanism SDF itself uses for <xyz>/<pose> elements), so no
-  // custom parsing is needed here. ----
+  // ---- Sabit rüzgâr: SDF'ten gelen başlangıç değeri (dünya çerçevesi, m/s),
+  // yoksa sıfır vektör; sonrasında OnSteadyCmd() ile canlı değiştirilebilir.
+  // gz::math::Vector3d doğal olarak desteklenen bir sdf::Param tipidir, bu
+  // yüzden özel bir ayrıştırmaya gerek yoktur. ----
   this->steadyWindWorld =
       _sdf->Get<gz::math::Vector3d>(
           "steady_wind_mps", gz::math::Vector3d::Zero).first;
@@ -94,9 +86,8 @@ void WindSystem::OnSteadyCmd(const gz::msgs::Vector3d &_msg)
   const double z = _msg.z();
   if (!std::isfinite(x) || !std::isfinite(y) || !std::isfinite(z))
   {
-    // Hold-last-valid-command failsafe (same policy as
-    // ActuatorSystem::OnCommand()): never let a NaN/Inf command reach the
-    // published wind - the previous valid steady value is left unchanged.
+    // Son geçerli komutu koruma emniyeti: NaN/Inf bir komutun yayınlanan
+    // rüzgâra ulaşmasına asla izin verilmez.
     gzerr << "[FalconV2Wind] Ignored non-finite steady-wind command "
           << "(previous value held).\n";
     return;
@@ -148,19 +139,14 @@ void WindSystem::OnGustCmd(const gz::msgs::Double_V &_msg)
     return;
   }
 
-  // V1 LIMITATION (WindSystem.hh class comment / OnGustCmd() doc comment):
-  // a new, VALID gust command REPLACES this->gustState in full - no
-  // queueing, no superposition with a still-in-progress gust.
+  // V1 SINIRI: geçerli yeni bir komut gustState'i tümüyle değiştirir; kuyruk
+  // yok, sürmekte olan hamleyle üst üste bindirme yok.
   //
-  // start_delay_s is documented as relative to THIS COMMAND'S RECEIPT, not
-  // absolute sim time. The exact reference used is this->lastSimTimeSec -
-  // the sim time as of the most recently COMPLETED PreUpdate() tick, which
-  // gz-transport updates asynchronously relative to the physics thread (see
-  // WindSystem.hh's lastSimTimeSec field comment for the accepted, already-
-  // precedented tick-granularity/no-mutex rationale). This choice (vs.
-  // requiring the caller to supply an absolute sim time) was made so a
-  // human/test-script caller can schedule "N seconds from now" without
-  // first querying the current absolute sim time out-of-band.
+  // start_delay_s, mutlak benzetim zamanına değil BU KOMUTUN ALINMASINA
+  // görelidir. Referans olarak this->lastSimTimeSec, yani en son tamamlanan
+  // PreUpdate() tikinin benzetim zamanı kullanılır (tik hassasiyeti gerekçesi
+  // için WindSystem.hh'deki alan yorumuna bakınız). Böylece çağıran taraf
+  // mevcut benzetim zamanını ayrıca sorgulamak zorunda kalmaz.
   GustState newGust;
   newGust.directionUnit = dirUnit;
   newGust.amplitudeMps = amplitude;
@@ -187,19 +173,17 @@ void WindSystem::PreUpdate(
 
   this->lastSimTimeSec = std::chrono::duration<double>(_info.simTime).count();
 
-  // ---- Pure-math evaluation (WindModel.hh) ----
+  // ---- Saf matematik değerlendirmesi (WindModel.hh) ----
   const gz::math::Vector3d gustVec =
       EvaluateGust(this->gustState, this->lastSimTimeSec);
   const gz::math::Vector3d totalWind =
       ComposeWind(this->steadyWindWorld, gustVec);
 
-  // ---- Publish every tick (never throttled - AerodynamicsSystem.cc/
-  // PropulsionSystem.cc each hold only the LAST received wind message, so a
-  // smoothly time-varying gust requires a fresh publish every physics step
-  // to actually be seen as smoothly time-varying by those consumers). This
-  // is ONLY ever a velocity-vector publish - no AddWorldForce()/
-  // AddWorldWrench() call exists anywhere in this file (task section 20
-  // hard requirement). ----
+  // ---- Her tikte yayın (hız sınırlaması yok): tüketici eklentiler yalnızca
+  // SON gelen rüzgâr mesajını saklar, bu yüzden zamanla düzgün değişen bir
+  // hamlenin düzgün görünmesi için her fizik adımında yeni yayın gerekir.
+  // Bu yalnızca bir hız vektörü yayınıdır; bu dosyada hiçbir
+  // AddWorldForce()/AddWorldWrench() çağrısı yoktur. ----
   gz::msgs::Vector3d msg;
   msg.set_x(totalWind.X());
   msg.set_y(totalWind.Y());

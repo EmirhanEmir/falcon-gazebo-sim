@@ -1,11 +1,11 @@
 cmake_minimum_required(VERSION 3.16)
 project(falcon_v2_sensors LANGUAGES CXX)
 
-# FALCON V2 - sensor-suite plugin build.
-# IMU/GPS/baro use the native installed gz-sim system plugins, loaded at the
-# world level rather than built here. Pitot and magnetometer are custom
-# plugins built from this directory - see PitotModel.hh and
-# MagnetometerSystem.hh for the rationale.
+# FALCON V2 - sensör paketi plugin derlemesi.
+# IMU/GPS/barometre, world seviyesinde yüklenen yerleşik gz-sim system
+# plugin'lerini kullanır; burada derlenmez. Pitot ve magnetometre ise bu
+# dizinden derlenen özel plugin'lerdir - gerekçesi PitotModel.hh ve
+# MagnetometerSystem.hh başlıklarındadır.
 
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
@@ -18,7 +18,7 @@ find_package(gz-msgs10 REQUIRED)
 find_package(gz-math7 REQUIRED)
 
 # ---------------------------------------------------------------------------
-# Main Gazebo System plugin (requires the full gz-sim runtime environment).
+# Ana Gazebo System plugin'i (tam gz-sim runtime ortamını gerektirir).
 # ---------------------------------------------------------------------------
 add_library(FalconV2Pitot SHARED PitotSystem.cc)
 target_compile_features(FalconV2Pitot PRIVATE cxx_std_17)
@@ -33,9 +33,8 @@ target_link_libraries(FalconV2Pitot PRIVATE
 set_target_properties(FalconV2Pitot PROPERTIES OUTPUT_NAME FalconV2Pitot)
 
 # ---------------------------------------------------------------------------
-# Custom magnetometer System plugin (replaces the native
-# gz-sim-magnetometer-system - see MagnetometerSystem.hh header comment for
-# the root-cause record).
+# Özel magnetometre System plugin'i (yerleşik gz-sim-magnetometer-system'in
+# yerini alır - kök neden kaydı MagnetometerSystem.hh başlığındadır).
 # ---------------------------------------------------------------------------
 add_library(FalconV2Magnetometer SHARED MagnetometerSystem.cc)
 target_compile_features(FalconV2Magnetometer PRIVATE cxx_std_17)

@@ -1,809 +1,797 @@
 # =============================================================================
-# FALCON V2 - Actuator/Servo V1 config dataset (source of truth)
+# FALCON V2 - Aktüatör/servo V1 veri seti (kaynak dosya)
 # =============================================================================
-# Owner: the controls layer
-# Task:  ACTUATOR_SERVO_MODEL_V1 (2026-08-23)
+# Bu dosya, plugins/actuators/ altındaki Gazebo Sim Harmonic System plugin'i
+# ("FalconV2Actuators") tarafından tüketilen her sayısal parametrenin tek
+# yapılandırılmış kaynağıdır. Proje kaynak dosya politikası gereği bu veri
+# seti burada yaşar, plugin kaynak koduna gömülmez. Plugin dosyayı Configure
+# anında, model/model.sdf içindeki <config_path> SDF parametresinin verdiği
+# yoldan okur. Biçim/konvansiyonlar config/aero_v1_config.yaml ve
+# config/propulsion_v1_config.yaml ile aynıdır.
 #
-# This file is the single structured-data source for every numeric parameter
-# consumed by plugins/actuators/ (the Gazebo Sim Harmonic System plugin
-# "FalconV2Actuators"). Per the project specification's source-of-truth policy, this dataset
-# lives here, not hardcoded inline in plugin source code. The plugin loads
-# this file at Configure time from the path given by the <config_path> SDF
-# plugin parameter in model/model.sdf. Mirrors
-# config/aero_v1_config.yaml and
-# config/propulsion_v1_config.yaml's format/
-# conventions.
+# KAPSAM: burada yalnızca AKTÜATÖR/SERVO katmanı vardır - komut edilen açıyı
+# gerçek joint hareketine çeviren fiziksel mekanizma. AERODİNAMİK kontrol
+# yüzeyi işaret eşlemesini veya türevlerini (Cmde, Clda, Cndr, CYdr, ...)
+# TANIMLAMAZ ve onlarla karıştırılmamalıdır; onlar
+# config/aero_v1_config.yaml içindedir ve bu dosyadan etkilenmez.
+# plugins/aerodynamics/AerodynamicsSystem.cc beş joint'in GERÇEK pozisyonlarını
+# her tick ECM'den okur, onları ne sürüyorsa sürsün; bu dosya yalnızca projenin
+# kendi aktüatör plugin'inin onları nasıl sürdüğünü yönetir.
 #
-# SCOPE: this is the ACTUATOR/SERVO layer only - the physical mechanism that
-# turns a commanded angle into real joint motion. It does NOT define, and
-# must never be confused with, the AERODYNAMIC control-surface-sign mapping
-# or derivatives (Cmde, Clda, Cndr, CYdr,...), which live in
-# config/aero_v1_config.yaml and are UNCHANGED by
-# this file. plugins/aerodynamics/AerodynamicsSystem.cc reads the 5 joints'
-# ACTUAL positions from the ECM each tick, regardless of what drives them -
-# this file only governs how this project's own actuator plugin drives them.
+# PROVENANCE KURALI: aşağıdaki her değer kaynağını belirtir. Açık bir etiket
+# olmadan hiçbir şey uydurulmaz.
 #
-# PROVENANCE RULE: every value below cites its exact source. Nothing here is
-# invented without an explicit tag.
+# KULLANILAN DURUM ETİKETLERİ (aero_v1_config.yaml /
+# propulsion_v1_config.yaml ile aynı sözlük):
+#   USER_CONFIRMED_MECHANICAL_CAPABILITY - proje sahibi tarafından doğrudan
+#                 beyan edilmiştir, burada yeniden türetilmemiştir.
+#   V1_PROVISIONAL - gerçek bir servo datasheet'i/ölçümü gelene kadar geçerli,
+#                 açıkça işaretlenmiş yer tutucu; ÜRETİCİ ONAYLI DEĞİLDİR.
+#                 Bu depoya herhangi bir Emax ES08MAII datasheet'i
+#                 alınmamıştır (tork/hız/PWM spesifikasyonları orada
+#                 DATA_REQUIRED'dır) - aşağıdaki her V1_PROVISIONAL değer bu
+#                 dosyanın kendi muhafazakâr, belgelenmiş seçimidir, üretici
+#                 rakamı değildir.
+#   DERIVED     - CONFIRMED/V1_PROVISIONAL bir değerden belgelenmiş bir
+#                 yöntemle hesaplanmıştır.
+#   DATA_REQUIRED - gerçekten eksiktir, tahmin edilmemiştir.
 #
-# STATUS TAGS USED BELOW (consistent with aero_v1_config.yaml/
-# propulsion_v1_config.yaml's legend):
-#   USER_CONFIRMED_MECHANICAL_CAPABILITY - stated directly by the task
-#                 owner for this specific task (ACTUATOR_SERVO_MODEL_V1),
-#                 not re-derived here.
-#   V1_PROVISIONAL - an explicitly-flagged placeholder pending a real
-#                 servo datasheet/measurement, NOT manufacturer-confirmed.
-#                 See: no Emax ES08MAII datasheet has been
-#                 ingested into this repository (torque/speed/PWM specs are
-#                 DATA_REQUIRED there) - every V1_PROVISIONAL value below is
-#                 this file's own conservative, documented choice, not a
-#                 manufacturer figure.
-#   DERIVED     - computed from a CONFIRMED/V1_PROVISIONAL value via a
-#                 documented method.
-#   DATA_REQUIRED - genuinely missing, not guessed.
-#
-# Do not edit numeric values here without updating this file's own
-# documentation. Do not add a per-surface value not present in the task
-# instruction or an authorized derivation.
+# Buradaki sayısal değerler, bu dosyanın kendi dokümantasyonu güncellenmeden
+# değiştirilmemelidir. Belgelenmiş bir türetmeye dayanmayan yüzey başına değer
+# eklenmemelidir.
 # =============================================================================
 
 # -----------------------------------------------------------------------------
-# Mechanical travel limits (min/max_angle_rad) and V1_PROVISIONAL servo
-# rate/effort limits, per surface, PLUS (as of 2026-09-12,
-# ACTUATOR_CONTROL_LIMIT_CYCLE_FIX) the PER-SURFACE control-law gains.
+# Mekanik hareket limitleri (min/max_angle_rad), V1_PROVISIONAL servo
+# hız/effort limitleri ve YÜZEY BAŞINA kontrol yasası kazançları.
 #
-# WHY THE GAINS MOVED HERE (2026-09-12, fix F1): the gains are derived from
-# each surface's own inertia ABOUT ITS OWN HINGE AXIS, and those three
-# inertias are genuinely different (aileron 1.054098e-06, elevator
-# 6.100859e-07, rudder 5.826813e-07 kg*m^2). The previous single shared
-# `control_law` kp/kd/ki applied ONE number to all five surfaces - see
-# hinge_inertia_derivation_note below, sub-finding (2). `control_law` is
-# retained as the documented FALLBACK for any surface that omits its own
-# gains (ActuatorSystem.cc::LoadConfig), and as the home of the shared,
-# genuinely-surface-independent `sp_weight_b` and of all the derivation
-# prose.
+# KAZANÇLAR NEDEN BURADA: kazançlar her yüzeyin KENDİ MENTEŞE EKSENİ
+# etrafındaki ataletinden türetilir ve bu üç atalet gerçekten farklıdır
+# (aileron 1.054098e-06, elevator 6.100859e-07, rudder 5.826813e-07 kg*m^2).
+# Önceki tek paylaşılan `control_law` kp/kd/ki seti BİR sayıyı beş yüzeye
+# uyguluyordu - bkz. hinge_inertia_derivation_note, alt bulgu (2).
+# `control_law` bloğu, kendi kazancını vermeyen bir yüzey için belgelenmiş
+# YEDEK olarak (ActuatorSystem.cc::LoadConfig) ve gerçekten yüzeyden bağımsız
+# olan `sp_weight_b` ile tüm türetme metninin evi olarak korunur.
 #
-# min/max_angle_rad, max_rate_rad_s, max_effort_nm are UNCHANGED by the
-# 2026-09-12 fix - byte-for-byte the same values as before.
+# min/max_angle_rad, max_rate_rad_s ve max_effort_nm, menteşe ataleti
+# düzeltmesinden ETKİLENMEMİŞTİR - birebir eski değerlerdir.
 # -----------------------------------------------------------------------------
 surfaces:
   left_aileron:   &servo_aileron_v2
-    min_angle_rad: -0.7853981634   # -45 deg, USER_CONFIRMED_MECHANICAL_CAPABILITY (the project's instruction; matches model/model.sdf's MECHANICAL_ACTUATOR_LIMIT_V1 joint <limit>). UNCHANGED 2026-09-12.
-    max_angle_rad: 0.7853981634    # +45 deg, USER_CONFIRMED_MECHANICAL_CAPABILITY. UNCHANGED 2026-09-12.
-    max_rate_rad_s: 5.2360         # V1_PROVISIONAL = 300 deg/s. UNCHANGED 2026-09-12 (see limit_cycle_fix_scope_note: this value is the limit cycle's AMPLITUDE-BOUNDING nonlinearity, not its cause, and was deliberately NOT touched). Reasoning: no Emax ES08MAII datasheet exists in-repo (, DATA_REQUIRED). 300 deg/s (~0.20 sec/60deg) is a conservative, middle-of-the-road order-of-magnitude figure for a "high torque micro servo" class part under some mechanical load (published no-load speeds for visually similar micro digital servos in the broader hobby market commonly range ~0.10-0.20 sec/60deg = ~300-600 deg/s; this V1 deliberately picks the SLOWER end of that range rather than the fastest advertised no-load figure, since (a) no-load bench speeds always exceed loaded/real speeds and (b) a slower assumed rate is the conservative choice for a flight-control actuator - it never overstates the actuator's real capability). NOT sourced from the ES08MAII's own datasheet - explicitly flagged V1_PROVISIONAL, to be replaced the moment a real datasheet is ingested.
-    max_effort_nm: 0.20            # V1_PROVISIONAL = 0.20 N*m (~2.04 kgf*cm). UNCHANGED 2026-09-12 (measured PID torque utilisation in flight was 0.6-1.0 % of this value with 0.0 % clamp duty - it is not implicated in the limit cycle). Reasoning: same no-datasheet caveat as max_rate_rad_s. "High torque" micro digital servos in this general weight/size class are commonly advertised in the ~2-4 kgf*cm range at typical operating voltage; V1 picks a conservative value near the LOW end of that range (2.04 kgf*cm) rather than the high end, so this V1 model does not overstate the actuator's real torque capability. NOT sourced from the ES08MAII's own datasheet - explicitly flagged V1_PROVISIONAL.
-    hinge_inertia_kg_m2: 1.054098e-06  # DERIVED (2026-09-12, F1) from model/model.sdf left_aileron: I_com,nn(iyy)=3.4788e-07 + m*d_perp^2 = 0.001*7.062178e-04 = 7.062178e-07. Documentation/traceability field only - NOT read by the plugin; kp/kd/ki below are what the plugin consumes. See hinge_inertia_derivation_note.
-    kp_nm_per_rad:   4.216391e-02      # DERIVED (2026-09-12, F1+F2) = omega_n^2 * hinge_inertia = 200^2 * 1.054098e-06. Was 0.0034788 (shared, wrong inertia reference).
-    kd_nm_per_rad_s: 4.216391e-04      # DERIVED = 2*zeta*omega_n*hinge_inertia = 2*1.0*200*1.054098e-06. Was 6.9576e-05.
-    ki_nm_per_rad_s: 8.432782e-02      # DERIVED = kp/Ti with Ti = 0.5 s UNCHANGED. Was 6.9576e-03.
-  right_aileron:  *servo_aileron_v2    # exact Y-mirror; identical hinge inertia (same mass, same |d_perp|, same I_com) - model/model.sdf right_aileron is the exact mirror of left_aileron
+    min_angle_rad: -0.7853981634   # -45 deg, USER_CONFIRMED_MECHANICAL_CAPABILITY (proje sahibinin beyanı; model/model.sdf'deki MECHANICAL_ACTUATOR_LIMIT_V1 joint <limit> ile eşleşir). Menteşe ataleti düzeltmesinden etkilenmedi.
+    max_angle_rad: 0.7853981634    # +45 deg, USER_CONFIRMED_MECHANICAL_CAPABILITY. Menteşe ataleti düzeltmesinden etkilenmedi.
+    max_rate_rad_s: 5.2360         # V1_PROVISIONAL = 300 deg/s. Limit-cycle düzeltmesinde KASTEN DOKUNULMADI (bkz. limit_cycle_fix_scope_note: bu değer limit-cycle'ın GENLİĞİNİ SINIRLAYAN doğrusal olmayan etkidir, nedeni değildir). Gerekçe: depoda Emax ES08MAII datasheet'i yok (DATA_REQUIRED). 300 deg/s (~0.20 sn/60deg), bir miktar mekanik yük altındaki "yüksek torklu mikro servo" sınıfı bir parça için muhafazakâr, orta yolcu bir mertebe değeridir (benzer görünen mikro dijital servolar için yayımlanan yüksüz hızlar genel hobi pazarında yaygın olarak ~0.10-0.20 sn/60deg = ~300-600 deg/s aralığındadır; bu V1 kasten en hızlı reklam edilen yüksüz rakam yerine aralığın YAVAŞ ucunu seçer, çünkü (a) tezgâhtaki yüksüz hızlar her zaman yüklü/gerçek hızları aşar ve (b) bir uçuş kontrol aktüatörü için daha yavaş varsayılan hız muhafazakâr seçimdir - aktüatörün gerçek yeteneğini asla olduğundan fazla göstermez). ES08MAII'nin kendi datasheet'inden ALINMAMIŞTIR - açıkça V1_PROVISIONAL, gerçek datasheet geldiği an değiştirilecek.
+    max_effort_nm: 0.20            # V1_PROVISIONAL = 0.20 N*m (~2.04 kgf*cm). Limit-cycle düzeltmesinde değişmedi (uçuşta ölçülen PID tork kullanımı bu değerin %0.6-1.0'ı, kırpma oranı %0.0 - limit-cycle ile ilgisi yok). Gerekçe: max_rate_rad_s ile aynı datasheet-yokluğu kaydı. Bu genel ağırlık/boy sınıfındaki "yüksek torklu" mikro dijital servolar tipik çalışma geriliminde yaygın olarak ~2-4 kgf*cm aralığında reklam edilir; V1 üst uç yerine alt uca yakın muhafazakâr bir değer (2.04 kgf*cm) seçer, böylece model aktüatörün gerçek tork yeteneğini olduğundan fazla göstermez. ES08MAII'nin kendi datasheet'inden ALINMAMIŞTIR - açıkça V1_PROVISIONAL.
+    hinge_inertia_kg_m2: 1.054098e-06  # DERIVED, model/model.sdf left_aileron'dan: I_com,nn(iyy)=3.4788e-07 + m*d_perp^2 = 0.001*7.062178e-04 = 7.062178e-07. Yalnızca dokümantasyon/izlenebilirlik alanı - plugin bunu OKUMAZ; plugin'in tükettiği şey aşağıdaki kp/kd/ki'dir. Bkz. hinge_inertia_derivation_note.
+    kp_nm_per_rad:   4.216391e-02      # DERIVED = omega_n^2 * hinge_inertia = 200^2 * 1.054098e-06. Eskiden 0.0034788 (paylaşılan ve yanlış atalet referansına dayalı).
+    kd_nm_per_rad_s: 4.216391e-04      # DERIVED = 2*zeta*omega_n*hinge_inertia = 2*1.0*200*1.054098e-06. Eskiden 6.9576e-05.
+    ki_nm_per_rad_s: 8.432782e-02      # DERIVED = kp/Ti, Ti = 0.5 s (değişmedi). Eskiden 6.9576e-03.
+  right_aileron:  *servo_aileron_v2    # tam Y-aynası; menteşe ataleti birebir aynı (aynı kütle, aynı |d_perp|, aynı I_com) - model/model.sdf right_aileron, left_aileron'un tam aynasıdır
   left_elevator:  &servo_elevator_v2
-    min_angle_rad: -0.7853981634   # UNCHANGED 2026-09-12, same provenance as left_aileron above
-    max_angle_rad: 0.7853981634    # UNCHANGED 2026-09-12
-    max_rate_rad_s: 5.2360         # UNCHANGED 2026-09-12, V1_PROVISIONAL, same provenance as left_aileron above
-    max_effort_nm: 0.20            # UNCHANGED 2026-09-12, V1_PROVISIONAL, same provenance as left_aileron above
-    hinge_inertia_kg_m2: 6.100859e-07  # DERIVED (2026-09-12, F1) from model/model.sdf left_elevator: I_com,nn(iyy)=1.7540e-07 + 0.001*4.346859e-04 = 4.346859e-07
-    kp_nm_per_rad:   2.440344e-02      # DERIVED = 200^2 * 6.100859e-07. Was 0.0034788 - which was the AILERON's I_com, applied to the elevator; see sub-finding (2).
-    kd_nm_per_rad_s: 2.440344e-04      # DERIVED = 2*1.0*200*6.100859e-07. Was 6.9576e-05.
-    ki_nm_per_rad_s: 4.880687e-02      # DERIVED = kp/0.5. Was 6.9576e-03.
-  right_elevator: *servo_elevator_v2   # exact Y-mirror of left_elevator
+    min_angle_rad: -0.7853981634   # left_aileron ile aynı provenance
+    max_angle_rad: 0.7853981634    # left_aileron ile aynı provenance
+    max_rate_rad_s: 5.2360         # V1_PROVISIONAL, left_aileron ile aynı provenance
+    max_effort_nm: 0.20            # V1_PROVISIONAL, left_aileron ile aynı provenance
+    hinge_inertia_kg_m2: 6.100859e-07  # DERIVED, model/model.sdf left_elevator'dan: I_com,nn(iyy)=1.7540e-07 + 0.001*4.346859e-04 = 4.346859e-07
+    kp_nm_per_rad:   2.440344e-02      # DERIVED = 200^2 * 6.100859e-07. Eskiden 0.0034788 - ki bu AILERON'un I_com'uydu ve elevatöre uygulanıyordu; bkz. alt bulgu (2).
+    kd_nm_per_rad_s: 2.440344e-04      # DERIVED = 2*1.0*200*6.100859e-07. Eskiden 6.9576e-05.
+    ki_nm_per_rad_s: 4.880687e-02      # DERIVED = kp/0.5. Eskiden 6.9576e-03.
+  right_elevator: *servo_elevator_v2   # left_elevator'un tam Y-aynası
   rudder:
-    min_angle_rad: -0.7853981634   # UNCHANGED 2026-09-12, same provenance as left_aileron above
-    max_angle_rad: 0.7853981634    # UNCHANGED 2026-09-12
-    max_rate_rad_s: 5.2360         # UNCHANGED 2026-09-12, V1_PROVISIONAL, same provenance as left_aileron above
-    max_effort_nm: 0.20            # UNCHANGED 2026-09-12, V1_PROVISIONAL, same provenance as left_aileron above
-    hinge_inertia_kg_m2: 5.826813e-07  # DERIVED (2026-09-12, F1) from model/model.sdf rudder: I_com,nn(IZZ - the rudder hinge is Z-dominant, not Y)=1.7775e-07 + 0.001*4.049313e-04 = 4.049313e-07
-    kp_nm_per_rad:   2.330725e-02      # DERIVED = 200^2 * 5.826813e-07. Was 0.0034788. The rudder is included NOT because it oscillated (it did not - measured 0.002 deg p2p) but because its immunity is EXCITATION-dependent, not structural - see rudder_immunity_is_excitation_dependent_note.
-    kd_nm_per_rad_s: 2.330725e-04      # DERIVED = 2*1.0*200*5.826813e-07. Was 6.9576e-05.
-    ki_nm_per_rad_s: 4.661450e-02      # DERIVED = kp/0.5. Was 6.9576e-03.
+    min_angle_rad: -0.7853981634   # left_aileron ile aynı provenance
+    max_angle_rad: 0.7853981634    # left_aileron ile aynı provenance
+    max_rate_rad_s: 5.2360         # V1_PROVISIONAL, left_aileron ile aynı provenance
+    max_effort_nm: 0.20            # V1_PROVISIONAL, left_aileron ile aynı provenance
+    hinge_inertia_kg_m2: 5.826813e-07  # DERIVED, model/model.sdf rudder'dan: I_com,nn(IZZ - rudder menteşesi Z-baskındır, Y değil)=1.7775e-07 + 0.001*4.049313e-04 = 4.049313e-07
+    kp_nm_per_rad:   2.330725e-02      # DERIVED = 200^2 * 5.826813e-07. Eskiden 0.0034788. Rudder, salındığı için değil (salınmadı - ölçülen 0.002 deg tepeden tepeye) bağışıklığı YAPISAL değil UYARIM'a bağlı olduğu için kapsama alındı; bkz. rudder_immunity_is_excitation_dependent_note.
+    kd_nm_per_rad_s: 2.330725e-04      # DERIVED = 2*1.0*200*5.826813e-07. Eskiden 6.9576e-05.
+    ki_nm_per_rad_s: 4.661450e-02      # DERIVED = kp/0.5. Eskiden 6.9576e-03.
 
 # -----------------------------------------------------------------------------
-# Control law (PID gains used by ActuatorModel.hh's PidEffort to drive the
-# REAL Gazebo joint toward the rate-limited setpoint via
-# gz::sim::Joint::SetForce). Shared across all 5 surfaces (no per-surface
-# data exists to differentiate them). V1_PROVISIONAL - see PLACEHOLDER-
-# INERTIA NOTE below for why this project also relies on
-# gz::sim::Joint::SetVelocityLimits/SetEffortLimits (physics-engine-level
-# hard constraints) rather than trusting these gains alone.
+# Kontrol yasası: ActuatorModel.hh'deki PidEffort'un, hız limitli setpoint'e
+# doğru gerçek Gazebo joint'ini gz::sim::Joint::SetForce ile sürmek için
+# kullandığı PID kazançları. Bu blok artık YEDEK kazançların ve tüm türetme
+# metninin evidir; canlı kazançlar yukarıdaki `surfaces` haritasındadır.
+# Yer tutucu atalet nedeniyle bu projenin neden ek olarak
+# gz::sim::Joint::SetVelocityLimits/SetEffortLimits (fizik motoru seviyesinde
+# sert kısıtlar) kullandığı: placeholder_inertia_note.
 # -----------------------------------------------------------------------------
 control_law:
   # -------------------------------------------------------------------------
-  # FALLBACK gains only, as of 2026-09-12 (ACTUATOR_CONTROL_LIMIT_CYCLE_FIX).
-  # The gains the plugin ACTUALLY uses are the per-surface ones in the
-  # `surfaces:` map above; ActuatorSystem.cc::LoadConfig reads these three
-  # keys only for a surface that omits its own (same graceful-degradation
-  # pattern already used for ki_nm_per_rad_s and sp_weight_b). In the current
-  # config every surface supplies its own, so these three values are
-  # UNREACHABLE at runtime and are kept here purely so a hand-edited config
-  # that deletes a per-surface gain degrades to a documented, conservative
-  # value rather than to zero. They are set to the SMALLEST (gentlest) of the
-  # three corrected per-surface gain sets - the rudder's - so an accidental
-  # fallback is never stiffer than any real surface's own design.
+  # YALNIZCA YEDEK kazançlar. Plugin'in FİİLEN kullandığı kazançlar
+  # yukarıdaki `surfaces` haritasındakilerdir; ActuatorSystem.cc::LoadConfig
+  # bu üç anahtarı yalnızca kendi kazancını vermeyen bir yüzey için okur
+  # (ki_nm_per_rad_s ve sp_weight_b için zaten kullanılan aynı nazik
+  # bozunma kalıbı). Mevcut config'de her yüzey kendi kazancını verdiği için
+  # bu üç değere runtime'da ERİŞİLMEZ; yalnızca, elle düzenlenmiş bir
+  # config'den yüzey başına bir kazanç silinirse sıfıra değil belgelenmiş ve
+  # muhafazakâr bir değere düşülsün diye burada tutulurlar. Düzeltilmiş üç
+  # yüzey kazanç setinin EN KÜÇÜĞÜ (en yumuşağı) olan rudder'ın değerlerine
+  # ayarlanmışlardır, böylece kazara bir geri düşüş hiçbir gerçek yüzeyin
+  # kendi tasarımından daha sert olmaz.
   # -------------------------------------------------------------------------
-  kp_nm_per_rad: 2.330725e-02          # FALLBACK ONLY (see block comment). DERIVED = omega_n^2 * I_hinge_rudder = 200^2 * 5.826813e-07. WAS 0.0034788 and WAS the live value for all 5 surfaces until 2026-09-12 - that value is now known to be wrong; see hinge_inertia_derivation_note.
-  kd_nm_per_rad_s: 2.330725e-04        # FALLBACK ONLY. DERIVED = 2*zeta*omega_n*I_hinge_rudder. WAS 6.9576e-05.
-  ki_nm_per_rad_s: 4.661450e-02        # FALLBACK ONLY. DERIVED = kp/Ti, Ti = 0.5 s UNCHANGED. WAS 6.9576e-03.
-  sp_weight_b: 0.7                     # V1_PROVISIONAL, DERIVED - see sp_weight_derivation_note below. Added 2026-08-24, ACTUATOR_SERVO_MODEL_V1_GRAVITY_DROOP_FIX round 2 ("OVERSHOOT_AFTER_STEP" fix). Dimensionless, standard PID setpoint-weighting parameter in [0,1] applied to the P-term ONLY (ActuatorModel.hh PidEffort); does NOT change kp/kd/ki. GENUINELY SURFACE-INDEPENDENT (it is a dimensionless structural choice, not an inertia-derived gain), so it stays here and is NOT duplicated per surface. EXPLICITLY UNCHANGED by the 2026-09-12 fix - it was out of that fix's authorized scope.
+  kp_nm_per_rad: 2.330725e-02          # YALNIZCA YEDEK (bkz. blok yorumu). DERIVED = omega_n^2 * I_hinge_rudder = 200^2 * 5.826813e-07. ESKİDEN 0.0034788'di ve beş yüzeyin TAMAMI için canlı değerdi - o değerin yanlış olduğu artık biliniyor; bkz. hinge_inertia_derivation_note.
+  kd_nm_per_rad_s: 2.330725e-04        # YALNIZCA YEDEK. DERIVED = 2*zeta*omega_n*I_hinge_rudder. ESKİDEN 6.9576e-05.
+  ki_nm_per_rad_s: 4.661450e-02        # YALNIZCA YEDEK. DERIVED = kp/Ti, Ti = 0.5 s (değişmedi). ESKİDEN 6.9576e-03.
+  sp_weight_b: 0.7                     # V1_PROVISIONAL, DERIVED - bkz. sp_weight_derivation_note. Boyutsuz, standart PID setpoint-ağırlıklandırma parametresi, [0,1] aralığında ve YALNIZCA P terimine uygulanır (ActuatorModel.hh PidEffort); kp/kd/ki'yi DEĞİŞTİRMEZ. GERÇEKTEN YÜZEYDEN BAĞIMSIZDIR (atalete bağlı bir kazanç değil, boyutsuz bir yapısal seçimdir), bu yüzden burada kalır ve yüzey başına kopyalanmaz. Menteşe ataleti/bant genişliği düzeltmesinin yetkili kapsamı dışındaydı ve AÇIKÇA DEĞİŞTİRİLMEDİ.
   hinge_inertia_derivation_note: >
     ======================================================================
-    2026-09-12, ACTUATOR_CONTROL_LIMIT_CYCLE_FIX, changes F1 + F2.
-    This note CORRECTS an error in derivation_note below. derivation_note
-    is deliberately left in place, unrewritten, as the historical record -
-    read it together with this note, never on its own.
+    PARALLEL-AXIS MENTEŞE ATALETİ DÜZELTMESİ + BANT GENİŞLİĞİ ARTIŞI.
+    Bu not, aşağıdaki derivation_note içindeki bir hatayı DÜZELTİR.
+    derivation_note tarihsel kayıt olarak kasten yeniden yazılmadan
+    bırakılmıştır - onu bu notla birlikte okuyun, asla tek başına.
     ======================================================================
 
-    THE ERROR (F1). derivation_note below states its inertia reference as:
-      "I_ref = 3.4788e-07 kg*m^2 (the LARGEST of the three distinct
-       placeholder inertia values among the 5 surfaces - model/model.sdf
-       left_aileron <inertial><inertia><iyy>, about the hinge-ish axis...)"
-    An SDF <inertial><inertia> tensor is expressed about an axis through the
-    LINK'S CENTRE OF MASS, at the link's <inertial><pose>. It is NOT the
-    inertia about the hinge. None of these 5 joints has a <pose>, so the
-    joint frame IS the child link frame and the hinge axis passes through
-    the link ORIGIN - while the CoM sits at the <inertial><pose>, a
-    perpendicular distance d_perp = 20.1-26.6 mm away from that axis. The
-    correct plant inertia is the parallel-axis (Huygens-Steiner) result
+    HATA. Aşağıdaki derivation_note atalet referansını şöyle belirtir:
+      "I_ref = 3.4788e-07 kg*m^2 (5 yüzey arasındaki üç farklı yer tutucu
+       atalet değerinin EN BÜYÜĞÜ - model/model.sdf left_aileron
+       <inertial><inertia><iyy>, menteşe-ish eksen etrafında...)"
+    Bir SDF <inertial><inertia> tensörü, LİNK'İN KÜTLE MERKEZİNDEN geçen bir
+    eksen etrafında, link'in <inertial><pose> konumunda ifade edilir. Menteşe
+    etrafındaki atalet DEĞİLDİR. Bu 5 joint'in hiçbirinde <pose> yoktur, yani
+    joint çerçevesi çocuk link çerçevesidir ve menteşe ekseni link
+    ORİJİNİNDEN geçer - oysa kütle merkezi <inertial><pose> konumunda, o
+    eksenden d_perp = 20.1-26.6 mm dik uzaklıkta durur. Doğru plant ataleti
+    parallel-axis (Huygens-Steiner) sonucudur:
       I_hinge = n. (I_com + m*(|d|^2 * E - d d^T)). n
               = I_com,nn + m * d_perp^2,
-      d_perp^2 = |d|^2 - (n.d)^2,  n = the UNIT hinge axis,
-      d        = model.sdf <inertial><pose> translation (hinge -> CoM).
-    The omitted m*d_perp^2 term is 2.0-2.5x LARGER than the term that was
-    kept:
+      d_perp^2 = |d|^2 - (n.d)^2,  n = BİRİM menteşe ekseni,
+      d        = model.sdf <inertial><pose> ötelemesi (menteşe -> CoM).
+    Atlanan m*d_perp^2 terimi, korunan terimden 2.0-2.5 kat BÜYÜKTÜR:
 
-      surface   I_com,nn      m*d_perp^2    I_hinge       ratio
+      yüzey     I_com,nn      m*d_perp^2    I_hinge       oran
       aileron   3.4788e-07    7.062178e-07  1.054098e-06  3.03006
       elevator  1.7540e-07    4.346859e-07  6.100859e-07  3.47826
       rudder    1.7775e-07    4.049313e-07  5.826813e-07  3.27809
 
-    (d_perp = 26.5748 / 20.8491 / 20.1229 mm respectively. The SDF axis
-    vectors are not exactly unit length - |n| = 0.99999955 / 0.99999960 /
-    0.99999985 - so n is normalised before use; skipping that step changes
-    d_perp in the 7th significant figure only.)
+    (d_perp sırasıyla 26.5748 / 20.8491 / 20.1229 mm. SDF eksen vektörleri
+    tam olarak birim uzunlukta değildir - |n| = 0.99999955 / 0.99999960 /
+    0.99999985 - bu yüzden n kullanılmadan önce normalize edilir; bu adımı
+    atlamak d_perp'i yalnızca 7. anlamlı basamakta değiştirir.)
 
-    SUB-FINDING (2), SEPARATE FROM THE PARALLEL-AXIS ERROR. The previous
-    single shared gain set used the AILERON's I_com for the ELEVATOR and the
-    RUDDER as well. derivation_note argued this was "if anything mildly
-    conservative/gentler for those three surfaces" - gentler is the wrong
-    direction here, and in any case the two errors partly cancelled for the
-    elevator/rudder and compounded for the aileron, which is why the
-    as-running bandwidth and damping were different on every surface. Gains
-    are now per-surface (see the `surfaces:` map above).
+    ALT BULGU (2), PARALLEL-AXIS HATASINDAN AYRI. Önceki tek paylaşılan
+    kazanç seti, AILERON'un I_com değerini ELEVATOR ve RUDDER için de
+    kullanıyordu. derivation_note bunun "olsa olsa o üç yüzey için hafifçe
+    muhafazakâr/yumuşak" olduğunu savunuyordu - burada yumuşak olmak yanlış
+    yöndür ve her hâlükârda iki hata elevator/rudder için kısmen birbirini
+    götürürken aileron için birbirine eklenmiştir; çalışan sistemdeki bant
+    genişliği ve sönümün her yüzeyde farklı olmasının nedeni budur. Kazançlar
+    artık yüzey başınadır (yukarıdaki `surfaces` haritası).
 
-    WHAT THE RUNNING SYSTEM'S DYNAMICS ACTUALLY WERE (measured against
-    I_hinge, kp=0.0034788, kd=6.9576e-05, ki=6.9576e-03) - NOT what
-    derivation_note and integral_derivation_note claimed:
+    ÇALIŞAN SİSTEMİN DİNAMİĞİ GERÇEKTE NEYDİ (I_hinge'e karşı ölçüldü;
+    kp=0.0034788, kd=6.9576e-05, ki=6.9576e-03) - derivation_note ve
+    integral_derivation_note'un iddia ettiği şey DEĞİL:
 
-      surface   claimed            ACTUAL omega_n   ACTUAL zeta
+      yüzey     iddia edilen       GERÇEK omega_n   GERÇEK zeta
       aileron   omega_n=100 z=1.0  57.448           0.5745
       elevator  omega_n=100 z=1.0  75.513           0.7551
       rudder    omega_n=100 z=1.0  77.268           0.7727
 
-    integral_derivation_note's claim of "three REAL, negative roots
-    (-113.29, -84.63, -2.09 rad/s) - i.e. no oscillatory (complex-
-    conjugate) mode is introduced at all" was therefore FALSE of the
-    running system. The actual roots of I_hinge*s^3 + kd*s^2 + kp*s + ki
-    were COMPLEX on every surface:
+    integral_derivation_note'un "üç GERÇEK, negatif kök (-113.29, -84.63,
+    -2.09 rad/s) - yani hiç salınımlı (karmaşık eşlenik) mod oluşmaz"
+    iddiası bu yüzden çalışan sistem için YANLIŞTI.
+    I_hinge*s^3 + kd*s^2 + kp*s + ki denkleminin gerçek kökleri her yüzeyde
+    KARMAŞIKTI:
       aileron   -31.9606 +/- 46.3202j, -2.0841
       elevator  -55.9788 +/- 48.3223j, -2.0854
       rudder    -58.6606 +/- 47.7975j, -2.0855
-    The -113.29/-84.63/-2.09 triple is what you get from
-    I_ref = 3.4788e-07, i.e. it described a plant that does not exist.
-    The Routh-Hurwitz conclusion in integral_derivation_note survives
-    unharmed, because that criterion is inertia-INDEPENDENT here:
-    kd*kp > I*ki  <=>  2*zeta*omega_n > 1/Ti  <=>  400 > 2 (was 200 > 2).
+    -113.29/-84.63/-2.09 üçlüsü I_ref = 3.4788e-07 ile elde edilen sonuçtur;
+    yani var olmayan bir plantı tarif ediyordu. integral_derivation_note'un
+    Routh-Hurwitz sonucu ise zarar görmeden ayakta kalır, çünkü bu ölçüt
+    burada atalettEN BAĞIMSIZDIR:
+    kd*kp > I*ki  <=>  2*zeta*omega_n > 1/Ti  <=>  400 > 2 (eskiden 200 > 2).
 
-    CONSEQUENCE - the defect this fix addresses. Because the joint is a
-    revolute hinge with the surface CoM offset d_perp off the axis, any
-    body-frame specific force f at the hinge station produces a hinge
-    torque tau = -m * (n x d_perp). f. The surfaces are not mass-balanced,
-    so the coefficient (n x d_perp) is large in the body-Z (normal)
-    direction for the ailerons (26.194 mm) and elevators (20.493 mm) - and
-    EXACTLY ZERO for the rudder (see rudder_immunity_is_excitation_
-    dependent_note). Deflection then feeds pitching moment, which feeds
-    body normal acceleration at the hinge station, which feeds back into
-    hinge torque: a closed aeroservo-inertial loop with quasi-static gain
+    SONUÇ - bu düzeltmenin ele aldığı kusur. Joint bir revolute menteşe
+    olduğu ve yüzey kütle merkezi eksenden d_perp kadar ötede durduğu için,
+    menteşe istasyonundaki herhangi bir gövde çerçevesi özgül kuvveti f bir
+    menteşe torku üretir: tau = -m * (n x d_perp). f. Yüzeyler kütle
+    dengelenmiş değildir, bu yüzden (n x d_perp) katsayısı ailerolar
+    (26.194 mm) ve elevatorlar (20.493 mm) için gövde-Z (normal) yönünde
+    büyüktür - ve rudder için TAM OLARAK SIFIRDIR (bkz.
+    rudder_immunity_is_excitation_dependent_note). Sapma ardından pitch
+    momentini besler, o menteşe istasyonundaki gövde normal ivmesini besler,
+    o da menteşe torkuna geri döner: kapalı bir aeroservo-inersiyal döngü;
+    yarı-statik kazancı
       G = [qbar*S*c_ref*(dCm/dtheta)/Iyy] * |r_x| * m*c_z / kp.
-    With kp = 0.0034788 this evaluated to G = 1.571 (elevator, measured
-    dCm/dtheta = 1.1912 at qbar = 862.7) - i.e. NET NEGATIVE HINGE
-    STIFFNESS, kp - G*kp = -1.985e-03 N*m/rad, a static divergence that the
-    physics-engine Joint::SetVelocityLimits constraint then bounded into
-    a ~4 Hz, 34-43 deg peak-to-peak uncommanded limit cycle. Full
-    derivation, measurements and the 5 %-accurate frequency prediction are
-    recorded alongside this file's control_law block.
+    kp = 0.0034788 ile bu G = 1.571 çıkıyordu (elevator, qbar = 862.7'de
+    ölçülen dCm/dtheta = 1.1912) - yani NET NEGATİF MENTEŞE SERTLİĞİ,
+    kp - G*kp = -1.985e-03 N*m/rad; statik bir ıraksama, ki fizik motorunun
+    Joint::SetVelocityLimits kısıtı bunu ~4 Hz, 34-43 deg tepeden tepeye,
+    komut edilmemiş bir limit-cycle hâline sınırlıyordu. Tam türetme,
+    ölçümler ve %5 doğrulukla frekans öngörüsü
+    docs/validation/2026-09-10_airborne_actuator_limit_cycle_root_cause.md ve
+    docs/validation/2026-09-12_actuator_limit_cycle_fix_implementation.md
+    içindedir.
 
     -------------------------------------------------------------------
-    F1 ALONE IS NOT ENOUGH - WHY F2 EXISTS AT ALL.
+    PARALLEL-AXIS DÜZELTMESİ TEK BAŞINA YETMEZ - BANT GENİŞLİĞİ ARTIŞI
+    NEDEN GEREKLİ.
     -------------------------------------------------------------------
-    Applying ONLY the parallel-axis correction, at the unchanged
-    omega_n = 100 rad/s, raises the elevator's kp by 1.7537x (not 3.478x -
-    the elevator's own I_hinge is SMALLER than the aileron's I_com-derived
-    shared value was stiff). That moves the elevator loop's critical speed
-    from V_crit = 22.5 m/s to only V_crit = 30.6 m/s. Both flown records in
-    this repository cruise ABOVE that (32.9 and 37.5 m/s equivalent
-    airspeed from qbar), so F1 alone would leave |L| > 1 in the flown
-    envelope. That, and only that, is why F2 exists. Bandwidth-matching
-    does not equalise disturbance rejection: the static compliance is
+    Yalnızca parallel-axis düzeltmesi uygulanıp omega_n = 100 rad/s
+    bırakılsaydı, elevator'un kp'si 1.7537 kat artardı (3.478 kat değil -
+    elevator'un kendi I_hinge'i, aileron'un I_com'undan türetilen paylaşılan
+    değerin sertliğinden KÜÇÜKTÜR). Bu, elevator döngüsünün kritik hızını
+    V_crit = 22.5 m/s'den yalnızca V_crit = 30.6 m/s'ye taşır. Bu depodaki
+    iki uçuş kaydı da bunun ÜSTÜNDE seyir yapıyor (qbar'dan 32.9 ve 37.5 m/s
+    eşdeğer hava hızı), yani tek başına düzeltme uçulan zarfta |L| > 1
+    bırakırdı. Bant genişliği artışının tek nedeni budur. Bant genişliğini
+    eşitlemek bozucu bastırmayı eşitlemez: statik esneklik
       theta_eq / a = d_perp / ((k_g^2 + d_perp^2) * omega_n^2)
-    = 34.17 (elevator) / 34.54 (rudder) / 25.21 (aileron) [1/m] per
-    omega_n^2 - the elevator is the MOST compliant per unit acceleration
-    and also carries the largest destabilising lever arm (|r_x| = 0.6433 m
-    vs the aileron's 0.1354 m).
+    = 34.17 (elevator) / 34.54 (rudder) / 25.21 (aileron) [1/m], omega_n^2
+    başına - yani elevator birim ivme başına EN ESNEK olan yüzeydir ve aynı
+    zamanda en büyük kararsızlaştırıcı kaldıraç kolunu taşır
+    (|r_x| = 0.6433 m, aileron'un 0.1354 m'sine karşı).
 
-    NOTE, PER VALIDATION FINDING M1 (2026-09-11), WHICH THIS FIX HONOURS:
-    theta_eq / a = d_perp/((k_g^2 + d_perp^2)*omega_n^2) is MASS-
-    INDEPENDENT. Replacing model/model.sdf's TEMPORARY_NUMERICAL_MASS =
-    0.001 kg with a real surface mass and re-deriving these gains at the
-    same omega_n changes the compliance by EXACTLY ZERO. The mass was NOT
-    touched by this fix, and re-deriving against a real mass later must NOT
-    be expected to improve this behaviour by itself. The only levers are
-    geometry (d_perp, k_g - geometry-owned, and found to be
-    internally self-consistent, see geometry_consistency_note), bandwidth
-    omega_n (this note, F2), and real hinge damping (DATA_REQUIRED).
+    BAĞIMSIZ İNCELEMENİN SAPTAMASI, BU DÜZELTMENİN UYDUĞU KURAL:
+    theta_eq / a = d_perp/((k_g^2 + d_perp^2)*omega_n^2) KÜTLEDEN
+    BAĞIMSIZDIR. model/model.sdf'deki TEMPORARY_NUMERICAL_MASS = 0.001 kg
+    yerine gerçek bir yüzey kütlesi konup bu kazançlar aynı omega_n'de
+    yeniden türetilirse esneklik TAM OLARAK SIFIR kadar değişir. Bu
+    düzeltmede kütleye DOKUNULMADI ve ileride gerçek bir kütleye karşı
+    yeniden türetmenin bu davranışı kendiliğinden iyileştirmesi
+    BEKLENMEMELİDİR. Elde kalan kollar yalnızca geometri (d_perp, k_g -
+    geometri katmanının sahipliğinde ve kendi içinde tutarlı bulundu, bkz.
+    geometry_consistency_note), bant genişliği omega_n (bu not ve
+    bandwidth_requirement_note) ve gerçek menteşe sönümüdür
+    (DATA_REQUIRED).
   bandwidth_requirement_note: >
     ======================================================================
-    2026-09-12, fix F2: omega_n 100 -> 200 rad/s. zeta = 1.0 UNCHANGED,
-    Ti = 0.5 s UNCHANGED. STATUS: ASSUMPTION (a modelling ceiling), NOT a
-    servo measurement. Read this whole note before quoting the number.
+    omega_n 100 -> 200 rad/s. zeta = 1.0 DEĞİŞMEDİ, Ti = 0.5 s DEĞİŞMEDİ.
+    DURUM: ASSUMPTION (bir modelleme tavanı), servo ÖLÇÜMÜ DEĞİL. Sayıyı
+    alıntılamadan önce bu notun tamamını okuyun.
     ======================================================================
 
-    THE REQUIREMENT IS STATED FIRST, AND THE BANDWIDTH FOLLOWS FROM IT.
-    This ordering is deliberate: the requirement below is one that would
-    have been correct to state when this actuator model was first written,
-    before any limit cycle was observed. It is not back-solved from "the
-    oscillation stopped".
+    GEREKSİNİM ÖNCE YAZILIR, BANT GENİŞLİĞİ ONDAN TÜRETİLİR. Bu sıralama
+    kasıtlıdır: aşağıdaki gereksinim, bu aktüatör modeli ilk yazıldığında,
+    herhangi bir limit-cycle gözlenmeden önce de doğru olarak yazılabilecek
+    bir gereksinimdir. "Salınım durdu"dan geriye doğru çözülmemiştir.
 
-      REQUIREMENT ASI-1 (aeroservo-inertial stability margin).
-      The closed hinge/airframe loop
+      GEREKSİNİM ASI-1 (aeroservo-inersiyal kararlılık marjı).
+      Kapalı menteşe/gövde döngüsü
         L(s) = [m * c_z * |r_x| * (qdot/delta)(s)] / (I_h s^2 + kd s + kp + ki/s)
-      shall satisfy
-        (a) max|L| <= 0.32  (>= 10 dB gain margin) at the highest airspeed
-            present in this repository's own recorded flight data, 33 m/s;
-        (b) max|L| <= 0.13  (>= 18 dB gain margin) at the documented trim
-            airspeed, 21.244 m/s (the project specification, "trim velocity").
-      Rationale for the two margin figures: 10 dB is the conventional
-      minimum gain margin for a structural/servoelastic loop; the larger
-      18 dB applies at the design point the aircraft actually spends its
-      time at. Envelope VNE is DATA_REQUIRED, so 33 m/s (observed, not
-      assumed) is used as the upper evaluation point.
+      şunları sağlamalıdır:
+        (a) max|L| <= 0.32  (>= 10 dB kazanç marjı), bu deponun kendi kayıtlı
+            uçuş verisinde bulunan en yüksek hava hızında, 33 m/s;
+        (b) max|L| <= 0.13  (>= 18 dB kazanç marjı), belgelenmiş trim hava
+            hızında, 21.244 m/s.
+      İki marj değerinin gerekçesi: 10 dB, yapısal/servoelastik bir döngü
+      için alışılmış asgari kazanç marjıdır; daha büyük olan 18 dB ise
+      uçağın zamanının çoğunu geçirdiği tasarım noktası için geçerlidir.
+      Zarf VNE'si DATA_REQUIRED olduğundan üst değerlendirme noktası olarak
+      33 m/s (varsayılan değil, gözlenen) kullanılır.
 
-    SOLVING THE REQUIREMENT. Since |L| scales as qbar/kp, i.e. as
-    V^2 / omega_n^2, the requirement is linear in omega_n:
-      at omega_n = 100 rad/s with the F1-corrected inertia, the elevator
-      loop gives max|L| = 1.153 at 33 m/s, i.e. 3.7x over requirement (a);
-      omega_n >= 100 * sqrt(1.153/0.32) = 189.8 rad/s satisfies (a), and
-      (b) is then satisfied with room to spare.
-      => omega_n = 200 rad/s. Resulting margins, elevator loop:
-         V = 21.24 m/s: max|L| = 0.124 (18.1 dB)  [requirement (b): 0.13]
-         V = 33.0  m/s: max|L| = 0.298 (10.5 dB)  [requirement (a): 0.32]
+    GEREKSİNİMİN ÇÖZÜMÜ. |L|, qbar/kp ile, yani V^2 / omega_n^2 ile
+    ölçeklendiği için gereksinim omega_n'de doğrusaldır:
+      düzeltilmiş atalet ile omega_n = 100 rad/s'de elevator döngüsü
+      33 m/s'de max|L| = 1.153 verir, yani (a) gereksiniminin 3.7 katı;
+      omega_n >= 100 * sqrt(1.153/0.32) = 189.8 rad/s (a)'yı sağlar ve (b)
+      bol marjla sağlanır.
+      => omega_n = 200 rad/s. Elde edilen marjlar, elevator döngüsü:
+         V = 21.24 m/s: max|L| = 0.124 (18.1 dB)  [gereksinim (b): 0.13]
+         V = 33.0  m/s: max|L| = 0.298 (10.5 dB)  [gereksinim (a): 0.32]
          V_crit (max|L| = 1):  61.7 m/s
-      Aileron loop, same gains: 0.021 / 0.050, V_crit = 176.7 m/s.
+      Aileron döngüsü, aynı kazançlarla: 0.021 / 0.050, V_crit = 176.7 m/s.
 
-    UPPER BOUND - THE TIMESTEP CEILING, AND THE ACTUAL MARGIN TO IT.
-    The torque is recomputed once per physics tick (SetForce from
-    PreUpdate, <max_step_size> = 0.001 s, dartsim) and the joint velocity
-    is advanced semi-implicitly. The binding discrete-time condition is the
-    damping term:
-      2*zeta*omega_n*dt < 2   <=>   omega_n < 1/(zeta*dt) = 1000 rad/s at
-      zeta = 1.0, dt = 1e-3 s.
-    The stiffness condition omega_n^2 * dt^2 < 4 (omega_n < 2000 rad/s) is
-    slacker and does not bind. This project's own analysis independently
-    found divergence at omega_n = 2566 rad/s (omega_n*dt = 2.566) - see
-    derivation_note below - consistent with a ceiling of that order.
+    ÜST SINIR - ZAMAN ADIMI TAVANI VE ONA KALAN GERÇEK MARJ.
+    Tork her fizik tick'inde bir kez yeniden hesaplanır (PreUpdate'ten
+    SetForce, <max_step_size> = 0.001 s, dartsim) ve joint hızı
+    yarı-örtük (semi-implicit) olarak ilerletilir. Bağlayıcı ayrık zaman
+    koşulu sönüm terimidir:
+      2*zeta*omega_n*dt < 2   <=>   omega_n < 1/(zeta*dt) = 1000 rad/s
+      (zeta = 1.0, dt = 1e-3 s).
+    Sertlik koşulu omega_n^2 * dt^2 < 4 (omega_n < 2000 rad/s) daha gevşektir
+    ve bağlayıcı olmaz. Bu projenin kendi analizi omega_n = 2566 rad/s'de
+    (omega_n*dt = 2.566) ıraksama bulmuştur - bkz. aşağıdaki
+    derivation_note - bu mertebede bir tavanla tutarlıdır.
       omega_n = 200 rad/s  =>  omega_n*dt = 0.200,  2*zeta*omega_n*dt =
-      0.400.  MARGIN TO THE CEILING: 5.0x in omega_n (the previous
-      omega_n = 100 sat 10x inside it). This is the quantity that must not
-      be eroded silently if dt or zeta ever change.
+      0.400.  TAVANA MARJ: omega_n'de 5.0 kat (önceki omega_n = 100 tavanın
+      10 kat içindeydi). dt veya zeta ileride değişirse sessizce
+      aşındırılmaması gereken büyüklük budur.
 
-    EFFORT CHECK (confirms max_effort_nm did not need to move, and did not
-    move). Worst case is the P-term at a full-travel tracking error,
-    1.5707963268 rad:
-      aileron  kp*1.5708 = 0.066231 N*m = 33.1 % of max_effort_nm
-      elevator kp*1.5708 = 0.038333 N*m = 19.2 %
-      rudder   kp*1.5708 = 0.036611 N*m = 18.3 %
-    max_effort_nm = 0.20 N*m remains non-binding in normal operation and is
-    UNCHANGED. (At omega_n = 300 the aileron would reach 0.149 N*m = 75 %
-    and would begin clamping on large steps - an additional reason this
-    fix stops at 200 rather than taking all the margin the dt ceiling
-    would allow.)
+    EFFORT KONTROLÜ (max_effort_nm'nin değişmesi gerekmediğini ve
+    değişmediğini doğrular). En kötü durum, tam hareket aralığı kadar bir
+    izleme hatasında P terimidir, 1.5707963268 rad:
+      aileron  kp*1.5708 = 0.066231 N*m = max_effort_nm'nin %33.1'i
+      elevator kp*1.5708 = 0.038333 N*m = %19.2
+      rudder   kp*1.5708 = 0.036611 N*m = %18.3
+    max_effort_nm = 0.20 N*m normal işletimde bağlayıcı olmamayı sürdürür ve
+    DEĞİŞMEDİ. (omega_n = 300'de aileron 0.149 N*m = %75'e çıkar ve büyük
+    basamaklarda kırpmaya başlardı - bu düzeltmenin dt tavanının izin
+    verdiği tüm marjı almayıp 200'de durmasının bir başka nedeni budur.)
 
-    PHYSICAL DEFENSIBILITY, AND ITS LIMITS - READ THIS BEFORE CITING
-    omega_n = 200 AS A SERVO PROPERTY. A real geared servo's resistance to
-    a BACK-DRIVING hinge torque is set by its gear ratio and gearbox
-    friction, not by its position-loop bandwidth. For an ES08MAII-class
-    part the back-drive stiffness against the ~1e-3 N*m disturbance torques
-    measured here is effectively rigid - orders of magnitude stiffer than
-    ANY kp a 1 kHz once-per-tick explicit torque loop can represent against
-    a 1-gram placeholder link. So the physically defensible DIRECTION is
-    unambiguously "stiffer than 100 rad/s"; what is NOT established is the
-    specific value, which is bounded from above by the timestep, not by the
-    servo. omega_n = 200 rad/s is therefore labelled ASSUMPTION: it is the
-    smallest round value meeting REQUIREMENT ASI-1, chosen well inside the
-    dt ceiling. It is NOT a measurement and must not be quoted as one.
+    FİZİKSEL SAVUNULABİLİRLİK VE SINIRLARI - omega_n = 200'Ü BİR SERVO
+    ÖZELLİĞİ OLARAK ALINTILAMADAN ÖNCE BUNU OKUYUN. Gerçek bir dişlili
+    servonun GERİ SÜRÜLMEYE (back-drive) direnci, dişli oranı ve dişli
+    kutusu sürtünmesiyle belirlenir; pozisyon döngüsünün bant genişliğiyle
+    değil. ES08MAII sınıfı bir parça için, burada ölçülen ~1e-3 N*m
+    mertebesindeki bozucu torklara karşı geri sürülme sertliği pratikte
+    rijittir - 1 gramlık bir yer tutucu link'e karşı 1 kHz'de tick başına bir
+    kez güncellenen açık bir tork döngüsünün temsil edebileceği HERHANGİ bir
+    kp'den mertebelerce daha sert. Yani fiziksel olarak savunulabilir YÖN
+    tartışmasız "100 rad/s'den daha sert"tir; kurulamayan şey belirli
+    değerdir ve o değer yukarıdan servo tarafından değil zaman adımı
+    tarafından sınırlanır. Bu nedenle omega_n = 200 rad/s ASSUMPTION olarak
+    etiketlenir: GEREKSİNİM ASI-1'i karşılayan en küçük yuvarlak değerdir ve
+    dt tavanının çok içinde seçilmiştir. Bir ÖLÇÜM DEĞİLDİR ve öyle
+    alıntılanmamalıdır.
 
-    DATA_REQUIRED (unchanged and still open by this fix): Emax ES08MAII (or
-    whichever servo is actually fitted) datasheet - stall torque, no-load
-    speed, gear ratio, and back-drive/holding stiffness; real per-surface
-    control-surface mass; real joint damping/friction (model/model.sdf's 5
-    control-surface joints currently have NO <dynamics> element at all -
-    zero damping, zero friction - so the ONLY damping anywhere in the hinge
-    system is this control law's own kd term). Once any of those land, this
-    entire note must be re-derived, not patched.
+    DATA_REQUIRED (bu düzeltmeyle değişmedi, hâlâ açık): Emax ES08MAII (ya da
+    fiilen takılı olan servo) datasheet'i - stall torku, yüksüz hız, dişli
+    oranı ve geri sürülme/tutma sertliği; gerçek yüzey başına kontrol yüzeyi
+    kütlesi; gerçek joint sönümü/sürtünmesi (model/model.sdf'deki 5 kontrol
+    yüzeyi joint'inde şu anda hiç <dynamics> elemanı YOKTUR - sıfır sönüm,
+    sıfır sürtünme - yani menteşe sistemindeki TEK sönüm bu kontrol yasasının
+    kendi kd terimidir). Bunlardan biri geldiğinde bu notun tamamı
+    yamanmamalı, yeniden türetilmelidir.
   rate_saturation_antiwindup_note: >
-    2026-09-12, fix F3 (ActuatorModel.hh PidEffort). NOT a gain, NOT a
-    tuning knob - a correctness fix to the anti-windup logic, recorded here
-    because its one numeric constant needs provenance.
+    ActuatorModel.hh PidEffort'taki hız doygunluğu anti-windup maddesi. Bir
+    kazanç DEĞİL, bir ayar düğmesi DEĞİL - anti-windup mantığına yapılan bir
+    doğruluk düzeltmesidir; buraya kaydedilmesinin nedeni tek bir sayısal
+    sabitinin provenance'a ihtiyaç duymasıdır.
 
-    FINDING: the pre-existing anti-windup froze integral accumulation on
-    (a) Stage-1 target clamp and (b) EFFORT saturation. Measured over both
-    1 kHz airborne records, all 5 surfaces, both flight modes: effort-clamp
-    duty = 0.0 %, integral-freeze duty = 0.0 % - anti-windup NEVER engaged,
-    in any run. Meanwhile the joint was at the physics-engine VELOCITY
-    limit 44-85 % of the time, and the integrator accumulated against that
-    unreachable demand unopposed, reaching ki*I = 9.00e-04 N*m (79 % of the
-    peak kp*theta term). The integral path's measured mean mechanical power
-    was POSITIVE (+1.26e-04 to +3.04e-04 W) - inside the actuator, the
-    integrator was a net energy CONTRIBUTOR to the limit cycle. Anti-windup
-    was watching the saturation that never happens and blind to the one
-    that always does.
+    BULGU: mevcut anti-windup integral birikimini (a) Aşama 1 hedef kırpması
+    ve (b) EFFORT doyması durumlarında donduruyordu. İki 1 kHz havada kayıt,
+    beş yüzey ve iki uçuş modu boyunca ölçülen: effort kırpma oranı %0.0,
+    integral dondurma oranı %0.0 - yani anti-windup hiçbir koşumda HİÇ
+    devreye girmedi. Bu sırada joint, fizik motorunun HIZ limitinde zamanın
+    %44-85'i kadar duruyordu ve integratör o karşılanamayan talebe karşı
+    hiçbir engel olmadan birikerek ki*I = 9.00e-04 N*m'ye ulaşıyordu (tepe
+    kp*theta teriminin %79'u). İntegral yolunun ölçülen ortalama mekanik gücü
+    POZİTİFTİ (+1.26e-04 ila +3.04e-04 W) - yani aktüatörün içinde integratör
+    limit-cycle'a net enerji KATKISI yapıyordu. Anti-windup hiç olmayan
+    doygunluğu izliyor, her zaman olana karşı kördü.
 
-    FIX: standard conditional integration extended to the velocity
-    saturation - freeze accumulation when the joint is at its velocity
-    limit AND the true error has the same sign as the joint's motion (i.e.
-    integrating further would only deepen an already-unreachable demand).
-    Direction-conditional, exactly like the existing effort branch, so it
-    can never freeze while the integrator is unwinding.
+    DÜZELTME: standart koşullu integral, hız doygunluğunu da kapsayacak
+    şekilde genişletildi - joint hız limitindeyken VE gerçek hata joint'in
+    hareket yönüyle aynı işaretliyken (yani biriktirmek yalnızca zaten
+    karşılanamayan bir talebi derinleştirecekken) birikim dondurulur. Mevcut
+    effort maddesiyle tam olarak aynı biçimde yönseldir, bu yüzden integratör
+    geri sarmakta olduğu sürece asla donduramaz.
 
-    THE ONE CONSTANT: rate_saturation_detect_fraction = 0.999. This is a
-    DETECTION THRESHOLD on |actual_rate| >= 0.999 * max_rate_rad_s, not a
-    physical coefficient. Provenance: it is the identical definition of
-    "rate-pinned" already used by this project's own analysis. Adopting
-    the same threshold
-    keeps the plugin's internal notion of saturation and the test harness's
-    published duty statistics referring to the same event. Defined in
-    ActuatorModel.hh as kRateSaturationDetectFraction rather than inline.
+    TEK SABİT: rate_saturation_detect_fraction = 0.999. Bu,
+    |actual_rate| >= 0.999 * max_rate_rad_s üzerinde bir TESPİT EŞİĞİDİR,
+    fiziksel bir katsayı değildir. Provenance: bu projenin kendi analizinin
+    zaten kullandığı "hıza dayanmış" tanımının birebir aynısıdır. Aynı eşiğin
+    benimsenmesi, plugin'in iç doygunluk kavramı ile test altyapısının
+    yayımladığı oran istatistiklerinin aynı olaya atıfta bulunmasını sağlar.
+    Satır içine gömülmek yerine ActuatorModel.hh'de
+    kRateSaturationDetectFraction olarak tanımlıdır.
 
-    INERTNESS GUARANTEE: when |actual_rate| < 0.999 * max_rate_rad_s the
-    new branch evaluates false and PidEffort is bit-for-bit the
-    pre-F3 computation. Nominal (unsaturated) tracking is therefore
-    provably unaffected - confirmed by the standalone model check, whose
-    anti-windup cases all pass rate = 0.0 and are unchanged by F3.
+    ETKİSİZLİK GARANTİSİ: |actual_rate| < 0.999 * max_rate_rad_s olduğunda
+    yeni dal false olarak değerlendirilir ve PidEffort, bu madde eklenmeden
+    önceki hesabın bit düzeyinde aynısıdır. Dolayısıyla nominal (doymamış)
+    izleme kanıtlanabilir biçimde etkilenmez - bağımsız model kontrolüyle
+    teyit edilmiştir; o kontrolün tüm anti-windup senaryoları rate = 0.0
+    geçtiği için bu maddeden etkilenmez.
   geometry_consistency_note: >
-    2026-09-12. Recorded because a review raised the concern that the
-    placeholder radius of
-    gyration k_g = 18.7 mm "sits inconsistently" against the placeholder
-    CoM offset d_perp = 27.1 mm, since "no plausible surface geometry has
-    k_g < d for a hinge-rotated body". the controls layer checked this
-    directly before assuming any geometry change was needed, and concludes
-    NO GEOMETRY CHANGE IS REQUIRED. The arithmetic:
+    Bir incelemenin, yer tutucu jirasyon yarıçapı k_g = 18.7 mm'nin yer
+    tutucu CoM ofseti d_perp = 27.1 mm'ye göre "tutarsız durduğu" - çünkü
+    "menteşe etrafında dönen bir cisim için makul hiçbir yüzey geometrisinde
+    k_g < d olmaz" - kaygısını dile getirmesi üzerine kaydedilmiştir. Bir
+    geometri değişikliği gerektiği varsayılmadan önce bu doğrudan kontrol
+    edilmiş ve HİÇBİR GEOMETRİ DEĞİŞİKLİĞİNİN GEREKMEDİĞİ sonucuna
+    varılmıştır. Aritmetik:
 
-    (1) Each surface's SDF inertia reproduces its OWN collision box as a
-        uniform solid box, to 5 significant figures:
-          aileron  box (0.061119, 0.479366, 0.020953):
-                   (x^2+z^2)/12 = 3.4788003e-04 vs iyy/m = 3.4788e-04
-          elevator box (0.044973, 0.189400, 0.009066):
-                   (x^2+z^2)/12 = 1.7540e-04     vs iyy/m = 1.7540e-04
-          rudder   box (0.045316, 0.008911, 0.169500):
-                   (x^2+y^2)/12 = 1.7774e-04     vs izz/m = 1.7775e-04
-        The inertia tensor and the geometry are mutually consistent.
-    (2) k_g < d_perp is EXPECTED, not anomalous, for a surface hinged near
-        its leading edge. For a uniform box of chord c hinged at the
-        leading edge, k_g = c/sqrt(12) = 0.2887c while d_perp = c/2, so
-        k_g/d_perp = 0.577 < 1 by construction. The SDF values imply a
-        hinge 4.0 mm (aileron) / 1.6 mm (elevator) / 2.5 mm (rudder) aft of
-        the box front face - i.e. essentially leading-edge hinged, exactly
-        as a plain hinged control surface should be.
-    (3) Validation's own flat-plate reference figure, d/k^2 = 1.5/c, is the
-        HINGE-REFERENCED form (k^2 = c^2/3 about the leading edge, giving
-        (c/2)/(c^2/3) = 1.5/c). For the aileron that predicts
-        1.5/0.061119 = 24.54 1/m, and the SDF's hinge-referenced value is
-        d_perp/(I_hinge/m) = 0.0265748/1.054098e-03 = 25.21 1/m - agreeing
-        to 2.8 %. Validation's sanity check was therefore correct AND was
-        implicitly computed with the parallel-axis term included; it is the
-        GAIN DERIVATION, not the geometry, that disagreed with it. The
-        apparent inconsistency was a symptom of the very defect F1 fixes.
+    (1) Her yüzeyin SDF ataleti, kendi collision kutusunu düzgün yoğunluklu
+        katı bir kutu olarak 5 anlamlı basamağa kadar yeniden üretir:
+          aileron  kutu (0.061119, 0.479366, 0.020953):
+                   (x^2+z^2)/12 = 3.4788003e-04 ve iyy/m = 3.4788e-04
+          elevator kutu (0.044973, 0.189400, 0.009066):
+                   (x^2+z^2)/12 = 1.7540e-04     ve iyy/m = 1.7540e-04
+          rudder   kutu (0.045316, 0.008911, 0.169500):
+                   (x^2+y^2)/12 = 1.7774e-04     ve izz/m = 1.7775e-04
+        Atalet tensörü ile geometri karşılıklı olarak tutarlıdır.
+    (2) Hücum kenarına yakın menteşelenmiş bir yüzey için k_g < d_perp
+        BEKLENEN durumdur, anormal değil. Hücum kenarından menteşelenmiş,
+        veter uzunluğu c olan düzgün bir kutuda k_g = c/sqrt(12) = 0.2887c
+        iken d_perp = c/2'dir, yani k_g/d_perp = 0.577 < 1 yapı gereğidir.
+        SDF değerleri menteşenin kutu ön yüzünün 4.0 mm (aileron) / 1.6 mm
+        (elevator) / 2.5 mm (rudder) arkasında olduğunu ima eder - yani
+        esasen hücum kenarından menteşeli, sade bir menteşeli kontrol
+        yüzeyinin olması gerektiği gibi.
+    (3) İncelemenin kendi düz plaka referans değeri olan d/k^2 = 1.5/c,
+        MENTEŞE REFERANSLI formdur (hücum kenarı etrafında k^2 = c^2/3,
+        bu da (c/2)/(c^2/3) = 1.5/c verir). Aileron için bu
+        1.5/0.061119 = 24.54 1/m öngörür; SDF'nin menteşe referanslı değeri
+        ise d_perp/(I_hinge/m) = 0.0265748/1.054098e-03 = 25.21 1/m - %2.8
+        uyumla. Yani incelemenin akıl sağlığı kontrolü DOĞRUYDU ve parallel-
+        axis terimi örtük olarak hesaba katılmış hâlde yapılmıştı; onunla
+        çelişen şey geometri değil KAZANÇ TÜRETMESİYDİ. Görünen tutarsızlık,
+        parallel-axis düzeltmesinin giderdiği kusurun bir belirtisiydi.
 
-    Consequence: this fix touches no mesh, no collision box, no inertia, no
-    mass, no CoM and no hinge axis. If any future finding shows a genuine
-    geometry change is needed, that is the geometry layer's call, not this
-    's.
+    Sonuç: bu düzeltme hiçbir mesh'e, collision kutusuna, atalete, kütleye,
+    CoM'a ve menteşe eksenine dokunmaz. İleride gerçek bir geometri
+    değişikliğinin gerektiğini gösteren bir bulgu çıkarsa, bu kararı
+    geometri katmanı verir, aktüatör katmanı değil.
   rudder_immunity_is_excitation_dependent_note: >
-    2026-09-12. The rudder did NOT exhibit the limit cycle (measured 0.002
-    deg peak-to-peak while the four +Y-hinge surfaces swung 33.7-35.8 deg),
-    and it is important to record WHY, because the reason is not a property
-    of the rudder's actuator and does not generalise.
+    Rudder limit-cycle sergilemedi (dört +Y menteşeli yüzey 33.7-35.8 deg
+    salınırken rudder'da ölçülen 0.002 deg tepeden tepeye) ve NEDENİNİ
+    kaydetmek önemlidir, çünkü bu neden rudder aktüatörünün bir özelliği
+    değildir ve genellenemez.
 
-    The hinge-torque sensitivity vector c = n x d_perp, with
-    tau_hinge = -m * (c. f) for a specific force f at the hinge station:
+    Menteşe torku duyarlılık vektörü c = n x d_perp olmak üzere, menteşe
+    istasyonundaki bir özgül kuvvet f için tau_hinge = -m * (c. f):
       aileron   c = (+4.466, -0.375, +26.194) mm
       elevator  c = (-3.835, +0.054, +20.493) mm
-      rudder    c = ( 0.000,  -20.123,  0.000) mm   <- c_x and c_z EXACTLY 0
-    The rudder link origin, its CoM (<inertial><pose> y = 0.000000) and its
-    hinge axis (<axis><xyz> y = 0.000000) all lie in the aircraft plane of
-    symmetry, so n and d_perp both lie in the X-Z plane and n x d_perp is
-    exactly +/-Y. The rudder hinge can therefore ONLY be driven by LATERAL
-    (body-Y) specific force. The excitation in both recorded runs was
-    purely longitudinal (measured body roll rate rms 0.0-0.1 deg/s), so the
-    rudder saw nothing: measured disturbance hinge torque 5.15e-08 N*m vs
-    the aileron's 3.93e-04 N*m, a factor of 7600. The same coefficient also
-    predicts the 2026-08-24 gravity-droop observation exactly - 4.23 deg
-    (aileron) / 3.31 deg (elevator) / 0.00 deg (rudder) predicted against
-    2.6-4.2 / 2.6-4.2 / <=0.012 deg measured.
+      rudder    c = ( 0.000,  -20.123,  0.000) mm   <- c_x ve c_z TAM SIFIR
+    Rudder link orijini, kütle merkezi (<inertial><pose> y = 0.000000) ve
+    menteşe ekseni (<axis><xyz> y = 0.000000) uçağın simetri düzleminde yer
+    alır; dolayısıyla n ve d_perp X-Z düzlemindedir ve n x d_perp tam olarak
+    +/-Y'dir. Yani rudder menteşesi YALNIZCA YANAL (gövde-Y) özgül kuvvetle
+    sürülebilir. Her iki kayıtlı koşumdaki uyarım tamamen boylamsaldı
+    (ölçülen gövde roll hızı rms 0.0-0.1 deg/s), bu yüzden rudder hiçbir şey
+    görmedi: ölçülen bozucu menteşe torku 5.15e-08 N*m, aileron'un
+    3.93e-04 N*m değerine karşı - 7600 kat. Aynı katsayı, daha önceki
+    yerçekimi sarkması gözlemini de birebir öngörür: öngörülen 4.23 deg
+    (aileron) / 3.31 deg (elevator) / 0.00 deg (rudder), ölçülen
+    2.6-4.2 / 2.6-4.2 / <=0.012 deg değerlerine karşı.
 
-    THE RUDDER IS NOT INTRINSICALLY SAFE. It carries a 20.123 mm arm
-    against lateral specific force at a tail station r_x = -0.6444 m. A
-    yaw- or sideslip-excited manoeuvre will drive it through exactly the
-    same mechanism. That is why F1+F2 were applied to the rudder as well,
-    even though it never oscillated, and why YAW_RESPONSE_TEST belongs in
-    the verification set for this fix.
+    RUDDER YAPISAL OLARAK GÜVENLİ DEĞİLDİR. Kuyruk istasyonunda
+    r_x = -0.6444 m'de, yanal özgül kuvvete karşı 20.123 mm'lik bir kol
+    taşır. Yaw veya yan kayma ile uyarılmış bir manevra onu tam olarak aynı
+    mekanizmadan geçirecektir. Hiç salınmamış olmasına rağmen menteşe ataleti
+    ve bant genişliği düzeltmelerinin rudder'a da uygulanmasının ve bu
+    düzeltmenin doğrulama setine YAW_RESPONSE_TEST'in dahil olmasının nedeni
+    budur.
   limit_cycle_fix_scope_note: >
-    2026-09-12. What the ACTUATOR_CONTROL_LIMIT_CYCLE_FIX deliberately did
-    NOT touch, and why - recorded so a future reader does not assume these
-    were overlooked:
-      max_rate_rad_s (5.2360)  - it is the limit cycle's AMPLITUDE-BOUNDING
-        nonlinearity, not its cause. In MANUAL the Stage-2 SETPOINT rate
-        limiter was provably inert (setpoint peak-to-peak = 0.000 deg,
-        command bit-level constant) while the JOINT was pinned at exactly
-        +/-5.2360 rad/s for 47-52 % of the time - i.e. the observed rate
-        saturation was 100 % the physics-engine
-        Joint::SetVelocityLimits constraint. That constraint is what
-        turns a static divergence into a bounded ~4 Hz triangle wave
-        (p2p = R/2f predicts 33.33 deg vs 33.80-34.09 deg measured).
-        Lowering it would shrink the symptom and leave the cause. It is
-        still V1_PROVISIONAL and still DATA_REQUIRED against a datasheet.
-      max_effort_nm (0.20)     - measured utilisation 0.6-1.0 %, clamp duty
-        0.0 %. Not implicated.
-      min/max_angle_rad (+/-45 deg), the PWM->rad transport mapping
-        (multiplier = pi/2, offset = -0.5, 800-2200 us), and every verified
-        control-surface sign mapping - UNCHANGED.
-      sp_weight_b (0.7)        - out of the authorized scope of this fix.
-      model/model.sdf mass, CG, inertia, TEMPORARY_NUMERICAL_MASS, meshes,
-        hinge axes - UNCHANGED (and see the M1 note above: replacing the
-        mass would not have helped).
-      Aerodynamic coefficients, propulsion, sensors, ArduPilot roll/pitch
-        PID, TECS - UNCHANGED.
-    ACCEPTANCE-CRITERION TRAP, carried forward for live testing: the
-    limit-cycle FREQUENCY is set by the airframe short period
-    (f_LC ~= 1.18 * f_shortperiod at both recorded flight conditions), NOT
-    by kp. A residual or re-excited oscillation would appear at very nearly
-    the same ~4.0-4.2 Hz. Acceptance must be judged on AMPLITUDE
-    (uncommanded peak-to-peak) and on RATE-PINNED DUTY - never on
-    frequency.
+    Limit-cycle düzeltmesinin KASTEN dokunmadığı şeyler ve nedenleri - ileride
+    okuyan biri bunların gözden kaçtığını varsaymasın diye kaydedilmiştir:
+      max_rate_rad_s (5.2360)  - limit-cycle'ın GENLİĞİNİ SINIRLAYAN
+        doğrusal olmayan etkidir, nedeni değil. MANUAL modda Aşama 2 SETPOINT
+        hız limitleyici kanıtlanabilir biçimde etkisizdi (setpoint tepeden
+        tepeye = 0.000 deg, komut bit düzeyinde sabit) oysa JOINT zamanın
+        %47-52'sinde tam olarak +/-5.2360 rad/s'de duruyordu - yani gözlenen
+        hız doygunluğu %100 fizik motorunun Joint::SetVelocityLimits
+        kısıtıydı. Statik bir ıraksamayı sınırlı bir ~4 Hz üçgen dalgaya
+        çeviren şey o kısıttır (p2p = R/2f, öngörülen 33.33 deg, ölçülen
+        33.80-34.09 deg). Bu limiti düşürmek belirtiyi küçültür, nedeni
+        yerinde bırakır. Hâlâ V1_PROVISIONAL ve datasheet'e karşı hâlâ
+        DATA_REQUIRED.
+      max_effort_nm (0.20)     - ölçülen kullanım %0.6-1.0, kırpma oranı
+        %0.0. İlgisi yok.
+      min/max_angle_rad (+/-45 deg), PWM->rad transport eşlemesi
+        (multiplier = pi/2, offset = -0.5, 800-2200 us) ve doğrulanmış her
+        kontrol yüzeyi işaret eşlemesi - DEĞİŞMEDİ.
+      sp_weight_b (0.7)        - bu düzeltmenin yetkili kapsamı dışındaydı.
+      model/model.sdf kütlesi, CG, atalet, TEMPORARY_NUMERICAL_MASS, mesh'ler,
+        menteşe eksenleri - DEĞİŞMEDİ (ve yukarıdaki kütleden bağımsızlık
+        paragrafına bakın: kütleyi değiştirmek yardımcı olmayacaktı).
+      Aerodinamik katsayılar, itki, sensörler, ArduPilot roll/pitch PID,
+        TECS - DEĞİŞMEDİ.
+    KABUL ÖLÇÜTÜ TUZAĞI, canlı testler için taşınmıştır: limit-cycle
+    FREKANSINI gövdenin kısa periyot modu belirler (her iki kayıtlı uçuş
+    koşulunda da f_LC ~= 1.18 * f_shortperiod), kp DEĞİL. Artık kalan ya da
+    yeniden uyarılan bir salınım neredeyse aynı ~4.0-4.2 Hz'de görünecektir.
+    Kabul, GENLİK (komut edilmemiş tepeden tepeye) ve HIZA DAYANMA ORANI
+    üzerinden değerlendirilmelidir - asla frekans üzerinden.
   sp_weight_derivation_note: >
-    FINDING (validation, same-day round-2 review of the 2026-08-24
-    gravity-droop/integral-action fix above): `live testing`'s live
-    re-measurement of the fix found the original steady-state droop bug
-    fully resolved (all 12 flight-load residuals sub-0.1 deg), but a NEW
-    transient OVERSHOOT of 1.96-3.46 deg on 6/12 cases, peaking ~50-150 ms
-    after a step command before settling cleanly - exceeding the live
-    test's own <1 deg acceptance bar. `validation` confirmed the overshoot
-    is DIRECTIONAL: it only appears on commands that move WITH gravity's
-    pull, never on commands opposing it. Root cause: the live test's own
-    warm-up procedure holds each surface at its neutral commanded position
-    for a period BEFORE the step is issued; under gravity, the integral
-    term (correctly, per the round-1 fix above) charges up during that hold
-    to whatever value cancels the gravity disturbance torque AT THAT
-    HOLDING POINT. When the setpoint then steps to a new target, the
-    P-term's full-strength reaction to the new (now large) tracking error
-    is added ON TOP of that already-nonzero, correctly-pre-charged integral
-    contribution - for a step in the disturbance's own direction, the
-    combined transient authority briefly exceeds what critical damping
-    (zeta=1.0, derivation_note above) alone would produce, causing the
-    overshoot; for a step opposing the disturbance, the same pre-charged
-    integral instead partially cancels the disturbance's own pull as the
-    surface travels, so no equivalent overshoot appears - consistent with
-    the reported directionality.
+    BULGU (yerçekimi sarkması/integral etki düzeltmesinin ikinci tur
+    incelemesi): düzeltmenin canlı olarak yeniden ölçülmesi, özgün kalıcı
+    sarkma hatasının tamamen giderildiğini gösterdi (12 uçuş yükü artığının
+    tamamı 0.1 deg altında), ancak 12 durumun 6'sında 1.96-3.46 deg'lik YENİ
+    bir geçici AŞMA (overshoot) ortaya çıktı; basamak komutundan ~50-150 ms
+    sonra tepe yapıp ardından temiz biçimde oturuyordu - canlı testin kendi
+    <1 deg kabul çıtasını aşarak. Aşmanın YÖNE BAĞLI olduğu teyit edildi:
+    yalnızca yerçekiminin çekişiyle AYNI yönde hareket eden komutlarda
+    görünüyor, ona karşı olanlarda hiç görünmüyordu. Kök neden: canlı testin
+    kendi ısınma prosedürü, basamak verilmeden ÖNCE her yüzeyi nötr komut
+    konumunda bir süre tutar; yerçekimi altında integral terim (birinci tur
+    düzeltmesi gereği doğru biçimde) bu tutma sırasında, O TUTMA NOKTASINDAKİ
+    yerçekimi bozucu torkunu götüren değere kadar yüklenir. Setpoint yeni bir
+    hedefe basamak yaptığında, P teriminin yeni (artık büyük) izleme hatasına
+    tam güçle verdiği tepki, zaten sıfırdan farklı ve doğru biçimde ön
+    yüklenmiş integral katkısının ÜZERİNE eklenir - bozucunun kendi yönündeki
+    bir basamakta birleşik geçici yetki, kritik sönümün (zeta=1.0, aşağıdaki
+    derivation_note) tek başına üreteceğini kısa süreli olarak aşar ve aşmaya
+    yol açar; bozucuya karşı bir basamakta ise aynı ön yüklü integral, yüzey
+    yol alırken bozucunun çekişini kısmen götürdüğü için eşdeğer bir aşma
+    görünmez - bildirilen yöne bağlılıkla tutarlı.
 
-    CHOICE: setpoint weighting on the proportional term only (`validation`'s
-    suggested technique 1), NOT integral pre-charge bounding/reset-on-step
-    (`validation`'s suggested technique 2). Reasoning: technique 2 requires
-    detecting a "genuine setpoint step" (vs. a setpoint already being
-    continuously tracked, e.g. mid-ramp under the Stage-2 rate limiter) and
-    then deciding how much of the CORRECTLY pre-charged integral to discard
-    - for this project's disturbance model (a constant torque, independent
-    of the commanded target - see integral_derivation_note above), the
-    integral value required at the OLD setpoint and at the NEW setpoint are
-    IDENTICAL (ki*I_ss = -T_disturbance regardless of target angle, since
-    the disturbance is modeled as constant, not target-dependent) - so
-    discarding/bounding the pre-charged integral at a step would actively
-    fight a value that is already correct for the new target too, and would
-    have to be re-earned via the slow (Ti=0.5s) integral path, undoing part
-    of the round-1 fix's own responsiveness for no benefit in this specific
-    disturbance model. Setpoint weighting has no such failure mode: it only
-    reshapes the P-term's reaction to a setpoint CHANGE (whether a fresh
-    step or a rate-limited ramp step), never touches the I-term or its
-    accumulated state, and is provably neutral to steady-state tracking (at
-    true convergence, error=setpoint-actual->0 via the same I-term dynamics
-    as before, regardless of spWeightB - see PidEffort's own doc comment).
-    It is also provably neutral to the existing pole-placement/Routh-Hurwitz
-    analysis above: setpoint weighting changes only the NUMERATOR (a zero)
-    of the closed-loop reference-tracking transfer function, never the
-    DENOMINATOR (the poles) - the characteristic polynomial
-    I_ref*s^3 + kd*s^2 + kp*s + ki = 0 and its three real roots
-    (-113.29, -84.63, -2.09 rad/s) are completely unaffected by spWeightB,
-    because spWeightB never appears in the equations governing how the
-    STATE (theta, omega, integral) responds to a DISTURBANCE - only in how
-    the P-term reacts to the setpoint input itself.
+    SEÇİM: yalnızca oransal terime setpoint ağırlıklandırma; integral ön
+    yükünü sınırlama/basamakta sıfırlama DEĞİL. Gerekçe: ikinci teknik
+    "gerçek bir setpoint basamağını" (sürekli izlenmekte olan bir
+    setpoint'ten, örneğin Aşama 2 hız limitleyicisi altında bir rampanın
+    ortasından ayırt ederek) tespit etmeyi ve ardından DOĞRU biçimde ön
+    yüklenmiş integralin ne kadarının atılacağına karar vermeyi gerektirir -
+    bu projenin bozucu modelinde (komut edilen hedeften bağımsız, sabit bir
+    tork - bkz. integral_derivation_note) ESKİ setpoint'te ve YENİ
+    setpoint'te gereken integral değeri AYNIDIR (bozucu hedefe bağlı değil
+    sabit modellendiği için ki*I_ss = -T_disturbance, hedef açıdan bağımsız),
+    dolayısıyla basamakta ön yüklü integrali atmak/sınırlamak yeni hedef için
+    de zaten doğru olan bir değerle aktif olarak boğuşur ve bu değerin yavaş
+    (Ti=0.5 s) integral yolundan yeniden kazanılması gerekir; bu özel bozucu
+    modelinde hiçbir kazanç sağlamadan birinci tur düzeltmesinin
+    tepkiselliğinin bir kısmını geri alır. Setpoint ağırlıklandırmasının böyle
+    bir başarısızlık kipi yoktur: yalnızca P teriminin setpoint DEĞİŞİMİNE
+    tepkisini yeniden şekillendirir (taze bir basamak da olsa, hız limitli bir
+    rampa basamağı da olsa), I terimine ya da birikmiş durumuna hiç dokunmaz
+    ve kalıcı izlemeye kanıtlanabilir biçimde nötrdür (gerçek yakınsamada
+    hata = setpoint - actual -> 0, spWeightB ne olursa olsun aynı I terimi
+    dinamiğiyle - bkz. PidEffort'un kendi doc yorumu). Mevcut kutup
+    yerleşimi/Routh-Hurwitz analizine de kanıtlanabilir biçimde nötrdür:
+    setpoint ağırlıklandırma kapalı çevrim referans izleme transfer
+    fonksiyonunun yalnızca PAYINI (bir sıfırı) değiştirir, PAYDASINI
+    (kutupları) asla; karakteristik polinom
+    I_ref*s^3 + kd*s^2 + kp*s + ki = 0 ve onun üç gerçek kökü
+    (-113.29, -84.63, -2.09 rad/s) spWeightB'den tamamen etkilenmez, çünkü
+    spWeightB, DURUMUN (theta, omega, integral) bir BOZUCUYA nasıl yanıt
+    verdiğini yöneten denklemlerde hiç görünmez - yalnızca P teriminin
+    setpoint girdisine nasıl tepki verdiğinde görünür.
 
-    DERIVATION/VALIDATION (this project's own pure-math model check,
-    ACTUATOR_SETPOINT_STEP_OVERSHOOT_TEST in
-    the actuator model check): reproduced the
-    reported mechanism at reduced scale against the SAME I_ref=3.4788e-07
-    kg*m^2 reference inertia and a representative constant disturbance
-    (2.0e-4 N*m, same order-of-magnitude basis as
-    ACTUATOR_INTEGRAL_DISTURBANCE_REJECTION_INFO above) - NOT a
-    reproduction of the live 1.96-3.46 deg magnitude itself (this reduced-
-    order model's overshoot before the fix was ~0.69 deg, smaller in scale
-    since it uses a different, smaller-order-of-magnitude disturbance/
-    inertia pairing than the real Gazebo joint/link, exactly like the
-    existing disturbance-rejection check's own documented "not a
-    re-derivation of the real gravity torque" caveat) but a faithful,
-    order-of-magnitude analogue of the SAME confirmed mechanism (neutral-
-    hold pre-charge, then a step in the disturbance's own direction). A
-    sweep of spWeightB in {1.0 (pre-fix baseline), 0.9, 0.8, 0.7, 0.6, 0.5}
-    against this scenario found the overshoot fully eliminated (down to
-    numerical noise, <0.001 deg) at spWeightB<=0.9 already; spWeightB=0.7
-    was chosen (not the bare-minimum 0.9) for margin against the live
-    system's larger, not-fully-characterized directional asymmetry (this
-    reduced-order model does not include the likely angle-dependent real
-    hinge-moment behavior - a true pendulum-like sin(theta) gravity moment,
-    not this model's simplified constant-torque abstraction - that
-    plausibly explains why the live magnitude and directionality are larger
-    than this model reproduces), while remaining within the standard
-    0.5-1.0 setpoint-weighting range and not degrading disturbance-free
-    step-response settling time so much as to be impractical (fresh-start,
-    no-disturbance step-to-target 99%-settling time grows from ~0.09 s at
-    spWeightB=1.0 to ~1.6 s at spWeightB=0.7 in this same reduced-order
-    model, dominated by the intentionally slow Ti=0.5s integral tail once
-    the weighted P-term's own authority approaches zero near the target -
-    an expected, accepted consequence of setpoint weighting, not a defect;
-    90%-settling time only grows from ~0.08s to ~0.53s, i.e. the bulk of
-    the physical motion is not materially slower, only the final trim-in).
-    Steady-state droop-rejection (ACTUATOR_INTEGRAL_DISTURBANCE_REJECTION_
-    INFO's own check) re-confirmed unaffected by this change (residual
-    stays <0.05 deg with spWeightB=0.7, matching the round-1 fix exactly)
-    because that check's I-term dynamics are untouched by spWeightB.
+    TÜRETME/DOĞRULAMA (bu projenin kendi saf matematik model kontrolü):
+    bildirilen mekanizma, AYNI I_ref = 3.4788e-07 kg*m^2 referans ataletine ve
+    temsili sabit bir bozucuya (2.0e-4 N*m, integral bozucu bastırma
+    kontrolüyle aynı mertebe temeli) karşı küçültülmüş ölçekte yeniden
+    üretildi. Bu, canlı 1.96-3.46 deg büyüklüğünün bir kopyası DEĞİLDİR (bu
+    düşük mertebeli modelin düzeltme öncesi aşması ~0.69 deg'dir, çünkü
+    gerçek Gazebo joint/link'inden farklı, daha küçük mertebeli bir
+    bozucu/atalet eşlemesi kullanır - mevcut bozucu bastırma kontrolünün
+    "gerçek yerçekimi torkunun yeniden türetilmesi değildir" kaydıyla aynı
+    biçimde), AYNI teyit edilmiş mekanizmanın (nötr tutmada ön yükleme,
+    ardından bozucunun kendi yönünde bir basamak) sadık, mertebe düzeyinde
+    bir analoğudur. spWeightB'nin {1.0 (düzeltme öncesi referans), 0.9, 0.8,
+    0.7, 0.6, 0.5} üzerinden taranması, aşmanın spWeightB<=0.9'da zaten
+    tamamen ortadan kalktığını gösterdi (sayısal gürültüye, <0.001 deg
+    düzeyine kadar); spWeightB=0.7, asgari yeterli olan 0.9 yerine, canlı
+    sistemin daha büyük ve tam karakterize edilmemiş yöne bağlı
+    asimetrisine karşı marj için seçildi (bu düşük mertebeli model, canlı
+    büyüklüğün ve yöne bağlılığın modelin ürettiğinden daha fazla olmasını
+    makul biçimde açıklayan, açıya bağlı gerçek menteşe momenti davranışını -
+    gerçek bir sarkaç benzeri sin(theta) yerçekimi momentini, bu modelin
+    basitleştirilmiş sabit tork soyutlaması yerine - içermez). Seçilen değer
+    standart 0.5-1.0 setpoint ağırlıklandırma aralığında kalır ve bozucusuz
+    basamak yanıtının oturma süresini kullanışsız olacak kadar bozmaz (aynı
+    düşük mertebeli modelde, taze başlangıçlı ve bozucusuz hedefe basamakta
+    %99 oturma süresi spWeightB=1.0'da ~0.09 s iken spWeightB=0.7'de ~1.6 s'ye
+    çıkar; bu, ağırlıklı P teriminin kendi yetkisi hedefe yaklaşırken sıfıra
+    indiğinde devreye giren, kasten yavaş olan Ti=0.5 s integral kuyruğunun
+    hâkimiyetindedir - setpoint ağırlıklandırmanın beklenen ve kabul edilmiş
+    sonucu, bir kusur değil; %90 oturma süresi ise yalnızca ~0.08 s'den
+    ~0.53 s'ye çıkar, yani fiziksel hareketin büyük kısmı belirgin biçimde
+    yavaşlamaz, yalnızca son ince ayar yavaşlar). Kalıcı sarkma bastırma
+    (integral bozucu bastırma kontrolü) bu değişiklikten etkilenmediği
+    yeniden teyit edildi (spWeightB=0.7 ile artık <0.05 deg'de kalıyor,
+    birinci tur düzeltmesiyle birebir), çünkü o kontrolün I terimi dinamiği
+    spWeightB'den etkilenmez.
 
-    `live testing`'s live re-measurement remains the authoritative check
-    of the actual overshoot magnitude/timing on the real joint; this note
-    documents the expected mechanism, the chosen value's derivation, and
-    this project's own reduced-order confirmation, not a live result.
+    Gerçek joint üzerindeki aşma büyüklüğünün/zamanlamasının yetkili
+    kontrolü, canlı yeniden ölçümdür; bu not beklenen mekanizmayı, seçilen
+    değerin türetmesini ve projenin kendi düşük mertebeli teyidini belgeler,
+    canlı bir sonucu değil.
 
-    Once real per-surface component mass/inertia data replaces the
-    TEMPORARY_NUMERICAL_MASS placeholder (set in model.sdf),
-    spWeightB here should be re-examined alongside kp/kd/ki per
-    placeholder_inertia_note below - a different real inertia changes the
-    disturbance-free settling-time tradeoff this value was chosen against,
-    even though spWeightB itself does not depend on I_ref algebraically the
-    way kp/kd/ki do.
+    TEMPORARY_NUMERICAL_MASS yer tutucusunun (model.sdf'de ayarlı) yerine
+    gerçek yüzey başına kütle/atalet verisi geldiğinde, buradaki spWeightB de
+    placeholder_inertia_note uyarınca kp/kd/ki ile birlikte yeniden
+    gözden geçirilmelidir - farklı bir gerçek atalet, bu değerin karşısında
+    seçildiği bozucusuz oturma süresi ödünleşimini değiştirir; spWeightB'nin
+    kendisi kp/kd/ki gibi I_ref'e cebirsel olarak bağlı olmasa bile.
   integral_derivation_note: >
-    !! SUPERSEDED IN PART, 2026-09-12. READ hinge_inertia_derivation_note
-    ABOVE FIRST. ki is still ki = kp/Ti with Ti = 0.5 s UNCHANGED, and the
-    Routh-Hurwitz conclusion below still holds (it is inertia-independent:
-    kd*kp > I*ki <=> 2*zeta*omega_n > 1/Ti, now 400 > 2). But the claimed
-    root triple "(-113.29, -84.63, -2.09 rad/s)... no oscillatory
-    (complex-conjugate) mode is introduced at all" was FALSE of the
-    running system, which had COMPLEX roots on every surface
-    (-31.96+/-46.32j aileron, -55.98+/-48.32j elevator, -58.66+/-47.80j
-    rudder, plus ~-2.085). With the corrected per-surface inertia and
-    omega_n = 200 the roots are -219.108, -178.851, -2.0415 - real and
-    negative, identical on all five surfaces, as intended. The ROOT-CAUSE
-    narrative below (a pure-P(D) law cannot reject a constant disturbance;
-    droop = T_gravity/kp; rudder predicted exactly 0 because its hinge
-    axis is Z-dominant) remains correct and is in fact reinforced - see
-    rudder_immunity_is_excitation_dependent_note for the exact-zero
-    coefficient behind it.
+    !! KISMEN SUPERSEDED. ÖNCE YUKARIDAKİ hinge_inertia_derivation_note'U
+    OKUYUN. ki hâlâ ki = kp/Ti ve Ti = 0.5 s değişmedi; aşağıdaki
+    Routh-Hurwitz sonucu da geçerliliğini korur (atalette bağımsızdır:
+    kd*kp > I*ki <=> 2*zeta*omega_n > 1/Ti, artık 400 > 2). Ancak iddia
+    edilen kök üçlüsü "(-113.29, -84.63, -2.09 rad/s)... hiç salınımlı
+    (karmaşık eşlenik) mod oluşmaz" ifadesi çalışan sistem için YANLIŞTI;
+    sistemin her yüzeyde KARMAŞIK kökleri vardı (-31.96+/-46.32j aileron,
+    -55.98+/-48.32j elevator, -58.66+/-47.80j rudder, artı ~-2.085).
+    Düzeltilmiş yüzey başına atalet ve omega_n = 200 ile kökler -219.108,
+    -178.851, -2.0415'tir - gerçek ve negatif, beş yüzeyde de birebir aynı,
+    amaçlandığı gibi. Aşağıdaki KÖK NEDEN anlatısı (saf P(D) yasası sabit bir
+    bozucuyu bastıramaz; sarkma = T_gravity/kp; rudder'ın tam sıfır
+    öngörülmesinin nedeni menteşe ekseninin Z-baskın olmasıdır) doğru
+    kalmıştır ve aslında pekişmiştir - ardındaki tam-sıfır katsayı davranışı
+    için bkz. rudder_immunity_is_excitation_dependent_note.
 
-    FINDING (surfaced live by live testing at the powered trim condition,
-    V=18.165 m/s, gravity ON, ACTUATOR_SERVO_MODEL_V1_GRAVITY_DROOP_FIX task,
-    2026-08-24): commanding small symmetric elevator / differential aileron
-    deflections settled 2.6-4.2 deg SHORT of target in a stable,
-    non-oscillating, non-effort-saturated equilibrium (rudder unaffected,
-    <=0.012 deg residual at all 4 tested angles). Root cause, confirmed by a
-    3-way zero-g / base-free / base-held diagnostic plus a first-principles
-    prediction (droop = T_gravity/kp, matching observed droop to within
-    ~5-9% for elevator, aileron, AND rudder - predicting exactly 0 deg for
-    rudder, whose hinge axis is Z-dominant/near-vertical so a vertical
-    gravity force produces zero moment about it by construction, unlike the
-    Y-dominant elevator/aileron axes): the pure-P(D) law in
-    ActuatorModel.hh's PdEffort (now PidEffort) cannot drive
-    steady-state error to zero under ANY nonzero constant disturbance
-    torque - gravity acting on the control surface's own
-    TEMPORARY_NUMERICAL_MASS placeholder weight about its hinge, in this
-    case - no matter how kp is tuned (kp only shrinks the droop
-    proportionally; it never eliminates it, and kp cannot simply be
-    increased given the placeholder-inertia dt-compatibility bandwidth
-    ceiling already established by kp_nm_per_rad's own derivation_note
-    above).
+    BULGU (canlı testlerde, güçlü trim koşulunda, V=18.165 m/s, yerçekimi
+    AÇIK): küçük simetrik elevator / diferansiyel aileron sapmaları komut
+    edildiğinde, kararlı, salınımsız ve effort doygunluğuna girmemiş bir
+    dengede hedeften 2.6-4.2 deg GERİDE oturuyordu (rudder etkilenmedi,
+    test edilen 4 açının tümünde <=0.012 deg artık). Kök neden, 3 yollu
+    sıfır-g / taban serbest / taban sabit tanılamasıyla ve ilk ilkelerden bir
+    öngörüyle teyit edildi (sarkma = T_gravity/kp; elevator, aileron VE
+    rudder için gözlenen sarkmayı ~%5-9 içinde tutuyor - rudder için tam
+    olarak 0 deg öngörüyor, çünkü rudder menteşe ekseni Z-baskın/neredeyse
+    düşeydir ve düşey bir yerçekimi kuvveti onun etrafında yapı gereği sıfır
+    moment üretir; Y-baskın elevator/aileron eksenlerinin tersine):
+    ActuatorModel.hh'deki saf P(D) yasası (PdEffort, artık PidEffort)
+    SIFIRDAN FARKLI HERHANGİ bir sabit bozucu tork altında - burada,
+    yüzeyin kendi TEMPORARY_NUMERICAL_MASS yer tutucu ağırlığının menteşe
+    etrafındaki yerçekimi momenti - kalıcı hatayı sıfıra indiremez; kp nasıl
+    ayarlanırsa ayarlansın (kp sarkmayı yalnızca oransal olarak küçültür,
+    asla yok etmez; ayrıca kp, kp_nm_per_rad'ın kendi derivation_note'unda
+    kurulan yer tutucu atalet/dt uyumluluğu bant genişliği tavanı nedeniyle
+    serbestçe artırılamaz).
 
-    CHOICE: integral action (PID), not gravity feedforward. Integral action
-    rejects ANY constant disturbance torque generically (not gravity
-    specifically) and requires no new dependency on link mass/CoM/
-    orientation data in either ActuatorModel.hh (still fully Gazebo-
-    independent, zero new dependencies) or ActuatorSystem.cc (still touches
-    only joints, never link inertial properties) - a materially smaller,
-    more contained change for a SCOPED bug fix than feedforward would be.
-    Feedforward would also only ever cancel gravity specifically, whereas
-    integral action is future-proof against any other constant disturbance
-    (e.g. a future hinge-moment model) without further code changes.
+    SEÇİM: integral etki (PID), yerçekimi ileri beslemesi değil. Integral
+    etki HERHANGİ bir sabit bozucu torku genel olarak bastırır (özellikle
+    yerçekimini değil) ve ne ActuatorModel.hh'de (hâlâ tamamen
+    Gazebo'dan bağımsız, sıfır yeni bağımlılık) ne de ActuatorSystem.cc'de
+    (hâlâ yalnızca joint'lere dokunuyor, link atalet özelliklerine asla)
+    link kütlesi/CoM/yönelim verisine yeni bir bağımlılık gerektirir - kapsamı
+    belirli bir hata düzeltmesi için ileri beslemeden belirgin biçimde daha
+    küçük ve daha sınırlı bir değişiklik. İleri besleme ayrıca yalnızca
+    yerçekimini götürürdü; integral etki ise başka herhangi bir sabit bozucuya
+    (örneğin ileride bir menteşe momenti modeline) karşı ek kod değişikliği
+    gerektirmeden dayanıklıdır.
 
-    DERIVATION: ki is chosen via the standard ISA form ki = kp / Ti, where
-    Ti is the integral time constant. Deriving Ti/ki by full closed-loop
-    pole placement (not by guessing, then checking it doesn't oscillate):
-    for a constant setpoint, the tracking-error dynamics of this augmented
-    PID loop against the SAME I_ref = 3.4788e-07 kg*m^2 reference inertia
-    used to derive kp/kd above satisfy the characteristic cubic
+    TÜRETME: ki standart ISA formuyla seçilir, ki = kp / Ti; burada Ti
+    integral zaman sabitidir. Ti/ki'nin tahminle değil tam kapalı çevrim
+    kutup yerleşimiyle türetilmesi (sonra salınmadığını kontrol etmek
+    yerine): sabit bir setpoint için, bu genişletilmiş PID döngüsünün izleme
+    hatası dinamiği, kp/kd'yi türetmek için kullanılan AYNI
+    I_ref = 3.4788e-07 kg*m^2 referans ataletine karşı karakteristik kübiği
+    sağlar:
       I_ref*s^3 + kd*s^2 + kp*s + ki = 0.
-    Ti = 0.5 s (i.e. an integral corner frequency omega_i = 1/Ti = 2 rad/s,
-    deliberately >>1 octave below the kp/kd pair's own omega_n=100 rad/s
-    design - "err toward slow-but-stable rather than aggressive", per this
-    task's own instruction) gives ki = kp/Ti = 0.0034788/0.5 = 6.9576e-03
-    N*m/(rad*s). Solving the cubic numerically at this ki gives three REAL,
-    negative roots (-113.29, -84.63, -2.09 rad/s) - i.e. no oscillatory
-    (complex-conjugate) mode is introduced at all, the slowest pole
-    (-2.09 rad/s, tau~0.48 s) is the new integral-driven mode and is far
-    slower than the ~100 rad/s PD dynamics, and Routh-Hurwitz
-    (a2*a1 > a3*a0, i.e. kd*kp > I_ref*ki) holds with a ~100x margin
-    (2.4207e-7 vs 2.4207e-9). A closed-loop simulation (this project's own
-    reference-inertia pattern, PidEffort plus a single-DOF integrator
-    against a constant 2.0e-4 N*m disturbance torque, order-of-magnitude
-    matched to the observed droop/kp) confirms the residual decays smoothly
-    (no overshoot/ringing) from ~3.3 deg to <0.06 deg by t=2 s and <0.01 deg
-    by t=3 s, fully consistent with the -2.09 rad/s dominant-pole estimate.
-    Anti-windup: integral accumulation is frozen whenever Stage 1's target
-    clamp is active OR whenever integrating would keep the effort output
-    saturated in the same direction it already is ("conditional
-    integration" - see ActuatorModel.hh's PidEffort doc comment for the
-    exact same-tick mechanism); this is deliberately NOT a lagged
-    "freeze using last tick's effort_clamp_active flag" scheme.
+    Ti = 0.5 s (yani integral köşe frekansı omega_i = 1/Ti = 2 rad/s, kp/kd
+    çiftinin kendi omega_n=100 rad/s tasarımının kasten >>1 oktav altında -
+    "agresif olmaktan çok yavaş ama kararlı tarafa yanıl" ilkesi gereği)
+    ki = kp/Ti = 0.0034788/0.5 = 6.9576e-03 N*m/(rad*s) verir. Kübiğin bu
+    ki'de sayısal çözümü üç GERÇEK, negatif kök verir (-113.29, -84.63,
+    -2.09 rad/s) - yani hiç salınımlı (karmaşık eşlenik) mod oluşmaz; en
+    yavaş kutup (-2.09 rad/s, tau~0.48 s) integralin getirdiği yeni moddur ve
+    ~100 rad/s'lik PD dinamiğinden çok daha yavaştır; Routh-Hurwitz
+    (a2*a1 > a3*a0, yani kd*kp > I_ref*ki) ~100 kat marjla sağlanır
+    (2.4207e-7'ye karşı 2.4207e-9). Kapalı çevrim bir benzetim (bu projenin
+    kendi referans atalet kalıbı: PidEffort artı tek serbestlik dereceli bir
+    integratör, sabit 2.0e-4 N*m bozucu torka karşı, gözlenen sarkma/kp ile
+    mertebe eşleşmeli) artığın yumuşak biçimde (aşma/çınlama olmadan)
+    ~3.3 deg'den t=2 s'de <0.06 deg'e ve t=3 s'de <0.01 deg'e indiğini
+    doğrular; -2.09 rad/s baskın kutup tahminiyle tamamen tutarlı.
+    Anti-windup: integral birikimi, Aşama 1 hedef kırpması etkin olduğunda
+    VEYA biriktirmek effort çıkışını zaten doygun olduğu yönde doygun tutacak
+    olduğunda dondurulur ("koşullu integral" - aynı tick içinde işleyen
+    mekanizma için bkz. ActuatorModel.hh'deki PidEffort doc yorumu); bu
+    kasten, "geçen tick'in effort_clamp_active bayrağına bakıp dondur"
+    biçiminde gecikmeli bir şema DEĞİLDİR.
 
-    EXPECTED RESULT AT THE FLIGHT CONDITION THAT SURFACED THIS BUG: the
-    disturbance driving the original 2.6-4.2 deg droop was small relative to
-    max_effort_nm (implied T_gravity ~1.6-2.5e-4 N*m from droop*kp, vs
-    max_effort_nm=0.20 N*m) - the integral term never needs to approach
-    saturation to cancel it, so no windup/clamping interaction is expected
-    in normal operation. Full elimination of the fixed offset is expected
-    (ideal linear theory: steady-state error -> 0 under a constant
-    disturbance with integral action), with the residual decaying on the
-    ~0.5 s Ti timescale above rather than remaining a fixed number of
-    degrees - the test harness's live measurement is the authoritative check,
-    this note only documents the expected order of magnitude and settling
-    behavior.
+    BU HATAYI ORTAYA ÇIKARAN UÇUŞ KOŞULUNDA BEKLENEN SONUÇ: özgün
+    2.6-4.2 deg sarkmayı süren bozucu, max_effort_nm'ye göre küçüktü
+    (sarkma*kp'den ima edilen T_gravity ~1.6-2.5e-4 N*m, max_effort_nm=0.20
+    N*m'ye karşı) - integral terimin bunu götürmek için doygunluğa yaklaşması
+    hiç gerekmez, dolayısıyla normal işletimde windup/kırpma etkileşimi
+    beklenmez. Sabit ofsetin tamamen ortadan kalkması beklenir (ideal
+    doğrusal teori: integral etki ile sabit bir bozucu altında kalıcı hata ->
+    0); artık, sabit bir derece sayısı olarak kalmak yerine yukarıdaki ~0.5 s
+    Ti zaman ölçeğinde sönümlenir. Yetkili kontrol test altyapısının canlı
+    ölçümüdür; bu not yalnızca beklenen mertebeyi ve oturma davranışını
+    belgeler.
 
-    Once real per-surface component mass/inertia data replaces the
-    TEMPORARY_NUMERICAL_MASS placeholder (set in model.sdf), ki here
-    MUST be re-derived alongside kp/kd against that real inertia, for the
-    same reason stated in placeholder_inertia_note below - reusing this
-    specific ki unmodified once real inertia data lands would be an error.
+    TEMPORARY_NUMERICAL_MASS yer tutucusunun (model.sdf'de ayarlı) yerine
+    gerçek yüzey başına kütle/atalet verisi geldiğinde, buradaki ki,
+    placeholder_inertia_note'taki aynı gerekçeyle kp/kd ile birlikte o gerçek
+    atalete karşı yeniden TÜRETİLMELİDİR - gerçek atalet verisi geldikten
+    sonra bu ki'yi değiştirmeden kullanmak bir hata olur.
   derivation_note: >
-    !! SUPERSEDED IN PART, 2026-09-12 (ACTUATOR_CONTROL_LIMIT_CYCLE_FIX,
-    F1+F2). READ hinge_inertia_derivation_note AND bandwidth_requirement_
-    note ABOVE FIRST. Two specific statements below are now known to be
-    WRONG and are deliberately left unrewritten as the historical record:
-    (i) "I_ref = 3.4788e-07... about the hinge-ish axis" - an SDF
-        <inertial><inertia> is about the CoM, not the hinge; the
-        parallel-axis term m*d_perp^2 (2.0-2.5x LARGER) was omitted, so
-        the real plant inertia is 3.03/3.48/3.28x bigger than this;
-    (ii) the resulting "omega_n = 100 rad/s, zeta = 1.0" was never what
-        the running system had - it actually ran at omega_n = 57.4/75.5/
-        77.3 rad/s with zeta = 0.575/0.755/0.773.
-    omega_n is now 200 rad/s (F2) and the gains are per-surface. The
-    METHOD described below (choose a dt-compatible closed-loop bandwidth
-    and derive kp = omega_n^2*I, kd = 2*zeta*omega_n*I, rather than
-    sizing kp from max_effort/a reference error) is still correct and is
-    still the method used - only its inertia argument and its numbers
-    changed. The max_effort/reference-error draft it rejects is still
-    correctly rejected.
+    !! KISMEN SUPERSEDED. ÖNCE YUKARIDAKİ hinge_inertia_derivation_note VE
+    bandwidth_requirement_note'U OKUYUN. Aşağıdaki iki ifadenin yanlış
+    olduğu artık biliniyor ve tarihsel kayıt olarak kasten yeniden yazılmadan
+    bırakılmışlardır:
+    (i) "I_ref = 3.4788e-07... menteşe-ish eksen etrafında" - bir SDF
+        <inertial><inertia> CoM etrafındadır, menteşe etrafında değil;
+        parallel-axis terimi m*d_perp^2 (2.0-2.5 kat BÜYÜK) atlanmıştı,
+        yani gerçek plant ataleti bundan 3.03/3.48/3.28 kat büyüktür;
+    (ii) buradan çıkan "omega_n = 100 rad/s, zeta = 1.0" çalışan sistemde hiç
+        geçerli olmadı - sistem fiilen omega_n = 57.4/75.5/77.3 rad/s ve
+        zeta = 0.575/0.755/0.773 ile çalışıyordu.
+    omega_n artık 200 rad/s'dir ve kazançlar yüzey başınadır. Aşağıda
+    anlatılan YÖNTEM (dt ile uyumlu bir kapalı çevrim bant genişliği seçip
+    kp = omega_n^2*I, kd = 2*zeta*omega_n*I türetmek; kp'yi
+    max_effort/referans hata açısından boyutlandırmak yerine) hâlâ doğrudur
+    ve hâlâ kullanılan yöntemdir - yalnızca atalet argümanı ve sayıları
+    değişti. Reddettiği max_effort/referans-hata taslağı da hâlâ doğru
+    biçimde reddedilmektedir.
 
-    FINDING (surfaced by this project's own closed-loop tracking check,
-    not silently tuned away): an earlier V1
-    draft derived kp directly from max_effort_nm / a reference tracking-error
-    angle (~2.29 N*m/rad), independent of any inertia. Against the CURRENT
-    placeholder joint inertia (model/model.sdf's control-surface links carry
-    TEMPORARY_NUMERICAL_MASS = 0.001 kg each, the geometry layer's own
-    documented near-massless numerical placeholder - NOT a physical claim),
-    that gain gives a closed-loop natural frequency omega_n = sqrt(kp/I) ~
-    2566 rad/s, corresponding to a period (~2.45 ms) shorter than the
-    physics engine's own per-tick torque-update interval
-    (the worlds' <max_step_size> = 0.001 s = 1 kHz, i.e.
-    gz::sim::Joint::SetForce can only be re-issued once per 1 ms). A
-    control loop that only updates its actuation once per tick cannot
-    stably control a plant whose own natural period is comparable to or
-    shorter than that tick - confirmed directly
-    (oscillation growing to several radians even with a 1000x finer
-    REFERENCE-INTEGRATION substep - i.e. NOT merely an integration-accuracy
-    artifact, a genuine discrete-control undersampling problem). V1
-    therefore instead derives kp/kd from an explicitly chosen, dt-compatible
-    closed-loop bandwidth: omega_n = 100 rad/s (omega_n*dt = 0.1, comfortably
-    inside a stable margin for a once-per-tick torque update), zeta = 1.0
-    (critically damped, no overshoot), against I_ref = 3.4788e-07 kg*m^2
-    (the LARGEST of the three distinct placeholder inertia values among the
-    5 surfaces - model/model.sdf left_aileron/right_aileron
-    <inertial><inertia><iyy>, about the hinge-ish axis; elevator/rudder's own
-    placeholder inertia is smaller, ~1.75-1.78e-07 kg*m^2, so this shared
-    gain set is if anything mildly conservative/gentler for those three
-    surfaces, not under-damped):
+    BULGU (bu projenin kendi kapalı çevrim izleme kontrolünde ortaya çıktı,
+    sessizce ayarlanıp geçilmedi): daha eski bir V1 taslağı kp'yi doğrudan
+    max_effort_nm / bir referans izleme hata açısından türetiyordu
+    (~2.29 N*m/rad), hiçbir ataletten bağımsız. MEVCUT yer tutucu joint
+    ataletine karşı (model/model.sdf'nin kontrol yüzeyi link'leri, geometri
+    katmanının belgelenmiş neredeyse kütlesiz sayısal yer tutucusu olan
+    TEMPORARY_NUMERICAL_MASS = 0.001 kg taşır - fiziksel bir iddia DEĞİL), bu
+    kazanç omega_n = sqrt(kp/I) ~ 2566 rad/s'lik bir kapalı çevrim doğal
+    frekansı verir; buna karşılık gelen periyot (~2.45 ms) fizik motorunun
+    tick başına tork güncelleme aralığından kısadır (world'lerin
+    <max_step_size> = 0.001 s = 1 kHz, yani gz::sim::Joint::SetForce 1 ms'de
+    yalnızca bir kez yeniden verilebilir). Eyletimini tick başına yalnızca bir
+    kez güncelleyen bir kontrol döngüsü, doğal periyodu o tick'le
+    karşılaştırılabilir ya da ondan kısa olan bir plantı kararlı biçimde
+    kontrol edemez - doğrudan teyit edildi (REFERANS İNTEGRASYONU 1000 kat
+    daha ince alt adımlarla yapıldığında bile salınım birkaç radyana kadar
+    büyüyordu; yani bu bir integrasyon doğruluğu kusuru DEĞİL, gerçek bir
+    ayrık kontrol yetersiz örnekleme problemidir). Bu yüzden V1 kp/kd'yi
+    açıkça seçilmiş, dt ile uyumlu bir kapalı çevrim bant genişliğinden
+    türetir: omega_n = 100 rad/s (omega_n*dt = 0.1; tick başına bir tork
+    güncellemesi için rahatça kararlı bir marj içinde), zeta = 1.0 (kritik
+    sönümlü, aşma yok), I_ref = 3.4788e-07 kg*m^2'ye karşı (5 yüzey
+    arasındaki üç farklı yer tutucu atalet değerinin EN BÜYÜĞÜ -
+    model/model.sdf left_aileron/right_aileron
+    <inertial><inertia><iyy>, menteşe-ish eksen etrafında; elevator/rudder'ın
+    kendi yer tutucu ataleti daha küçüktür, ~1.75-1.78e-07 kg*m^2, yani bu
+    paylaşılan kazanç seti o üç yüzey için olsa olsa hafifçe
+    muhafazakâr/yumuşaktır, yetersiz sönümlü değil):
       kp = omega_n^2 * I_ref = 100^2 * 3.4788e-07 = 3.4788e-03 N*m/rad
-      kd = 2*zeta*omega_n*I_ref = 2*1.0*100*3.4788e-07 = 6.9576e-05 N*m/(rad/s)
-    Re-verified with a substepped closed-loop check: converges
-    smoothly to the commanded target with no overshoot (see
-    the model check's own printed result). This gain set uses
-    only a small fraction of max_effort_nm under normal tracking against the
-    tiny placeholder inertia - expected and correct: a real servo is vastly
-    overpowered relative to a near-massless placeholder link, not a defect.
+      kd = 2*zeta*omega_n*I_ref = 2*1.0*100*3.4788e-07 = 6.9576e-05
+           N*m/(rad/s)
+    Alt adımlı bir kapalı çevrim kontrolüyle yeniden doğrulandı: komut edilen
+    hedefe aşma olmadan yumuşak biçimde yakınsar. Bu kazanç seti, küçücük yer
+    tutucu atalete karşı normal izlemede max_effort_nm'nin yalnızca küçük bir
+    kesrini kullanır - beklenen ve doğru: gerçek bir servo, neredeyse
+    kütlesiz bir yer tutucu link'e göre fazlasıyla güçlüdür, bu bir kusur
+    değildir.
   control_law_form: >
     error_rad = setpoint_rad - actual_angle_rad
-    error_p_rad = sp_weight_b*setpoint_rad - actual_angle_rad   [setpoint-
-                                         weighted error, P-TERM ONLY - see
-                                         sp_weight_derivation_note above]
-    integral_rad_s += error_rad * dt   [TRUE (unweighted) error - UNLESS
-                                         anti-windup freeze active - see
-                                         integral_derivation_note above /
-                                         PidEffort's own doc comment]
+    error_p_rad = sp_weight_b*setpoint_rad - actual_angle_rad   [setpoint
+                                         ağırlıklı hata, YALNIZCA P TERİMİ -
+                                         bkz. sp_weight_derivation_note]
+    integral_rad_s += error_rad * dt   [GERÇEK (ağırlıksız) hata - anti-windup
+                                         dondurması etkin DEĞİLSE - bkz.
+                                         integral_derivation_note /
+                                         PidEffort'un doc yorumu]
     torque_Nm = clamp(kp*error_p_rad + ki*integral_rad_s - kd*actual_rate_rad_s,
                        -max_effort_nm, +max_effort_nm)
-    "Derivative on measurement" form (kd multiplies the ACTUAL joint's own
-    angular rate, not a derivative of the setpoint) - avoids derivative-kick
-    when the rate-limited setpoint itself steps, standard PID-controller
-    practice. Integral term added 2026-08-24 (see integral_derivation_note
-    above) - with ki=0 (e.g. a config predating this fix) this reduces
-    exactly to the original pure-P(D) law. Setpoint weighting on the P-term
-    added 2026-08-24, same day, round 2 (see sp_weight_derivation_note
-    above) - with sp_weight_b=1.0 (e.g. a config predating this round of the
-    fix), error_p_rad==error_rad exactly and this reduces exactly to the
-    round-1 PID law above; the I-term is never weighted, by design.
-    ANTI-WINDUP FREEZE CONDITION (2026-09-12, F3 added the third clause;
-    the first two are unchanged from 2026-08-24):
+    "Türev ölçüm üzerinden" formu (kd, setpoint'in türevini değil GERÇEK
+    joint'in kendi açısal hızını çarpar) - hız limitli setpoint basamak
+    yaptığında türev tekmesini önler, standart PID uygulaması. Integral terim
+    sonradan eklendi (bkz. integral_derivation_note) - ki=0 ile (örneğin bu
+    düzeltmeden önceki bir config) tam olarak özgün saf P(D) yasasına iner.
+    P terimine setpoint ağırlıklandırma da sonradan eklendi (bkz.
+    sp_weight_derivation_note) - sp_weight_b=1.0 ile (örneğin bu turdan
+    önceki bir config) error_p_rad==error_rad olur ve ifade tam olarak
+    birinci tur PID yasasına iner; I terimi tasarım gereği hiç
+    ağırlıklandırılmaz.
+    ANTI-WINDUP DONDURMA KOŞULU (üçüncü madde hız doygunluğu düzeltmesiyle
+    eklendi; ilk ikisi değişmedi):
       freeze = target_clamp_active
-               OR (effort would saturate AND sign(output)==sign(error_rad))
-               OR (|actual_rate_rad_s| >= 0.999*max_rate_rad_s
-                   AND sign(actual_rate_rad_s)==sign(error_rad))
-    The third clause is inert whenever the joint is not at its velocity
-    limit, so unsaturated tracking is bit-for-bit unchanged - see
-    rate_saturation_antiwindup_note above.
+               VEYA (effort doyacak VE sign(output)==sign(error_rad))
+               VEYA (|actual_rate_rad_s| >= 0.999*max_rate_rad_s
+                     VE sign(actual_rate_rad_s)==sign(error_rad))
+    Üçüncü madde, joint hız limitinde değilken etkisizdir; bu yüzden doymamış
+    izleme bit düzeyinde değişmemiştir - bkz.
+    rate_saturation_antiwindup_note.
   placeholder_inertia_note: >
-    !! SUPERSEDED IN PART, 2026-09-12. READ hinge_inertia_derivation_note
-    ABOVE FIRST, in particular its M1 paragraph. This note says kp/kd/ki
-    "MUST be re-derived against that real inertia" once the placeholder
-    mass is replaced. That is still true for BANDWIDTH fidelity, but it
-    must NOT be expected to change the static compliance that caused the
-    2026-09-12 limit cycle: theta_eq/a = d_perp/((k_g^2+d_perp^2)*
-    omega_n^2) is MASS-INDEPENDENT (validation finding M1, 2026-09-11).
-    Re-deriving at an unchanged omega_n against a real mass changes that
-    compliance by exactly zero. The statement below that "a heavier real
-    surface will generally tolerate, and likely need, a stiffer/faster
-    gain set" is correct; the implication that this would by itself fix
-    disturbance-driven deflection is not. The SetVelocityLimits/
-    SetEffortLimits defense-in-depth described below is UNCHANGED and
-    still in force.
+    !! KISMEN SUPERSEDED. ÖNCE YUKARIDAKİ hinge_inertia_derivation_note'U,
+    özellikle kütleden bağımsızlık paragrafını OKUYUN. Bu not, yer tutucu
+    kütle değiştirildiğinde kp/kd/ki'nin "o gerçek atalete karşı yeniden
+    TÜRETİLMESİ gerektiğini" söyler. BANT GENİŞLİĞİ sadakati için bu hâlâ
+    doğrudur, ancak limit-cycle'a yol açan statik esnekliği değiştirmesi
+    BEKLENMEMELİDİR: theta_eq/a = d_perp/((k_g^2+d_perp^2)*omega_n^2)
+    KÜTLEDEN BAĞIMSIZDIR (bağımsız incelemenin saptaması). omega_n
+    değişmeden gerçek bir kütleye karşı yeniden türetmek o esnekliği tam
+    olarak sıfır kadar değiştirir. Aşağıdaki "daha ağır gerçek bir yüzey
+    genellikle daha sert/hızlı bir kazanç setini kaldırır ve büyük olasılıkla
+    gerektirir" ifadesi doğrudur; bunun tek başına bozucu kaynaklı sapmayı
+    çözeceği imasıysa doğru değildir. Aşağıda anlatılan
+    SetVelocityLimits/SetEffortLimits çok katmanlı savunması DEĞİŞMEMİŞTİR ve
+    hâlâ yürürlüktedir.
 
-    model/model.sdf's 5 control-surface links currently carry
-    TEMPORARY_NUMERICAL_MASS = 0.001 kg each (the geometry layer's own
-    documented near-massless numerical placeholder, NOT a physical claim -
-    see model.sdf's "MASS DISTRIBUTION STRATEGY" header comment). Even with
-    kp/kd (and, as of 2026-08-24, ki) now derived against this placeholder inertia (see derivation_note
-    above, chosen for dt=0.001s compatibility), plugins/actuators/
-    ActuatorSystem.cc STILL ALSO calls gz::sim::Joint::SetVelocityLimits
-    and SetEffortLimits once at Configure (genuine physics-engine-level
-    hard constraints, using these SAME max_rate_rad_s/max_effort_nm values)
-    as defense in depth - not relying on PD-gain tuning alone to bound the
-    REAL joint's velocity, consistent with this project's established
-    style. Once real per-surface component mass/inertia data exists
-    (set in model.sdf), kp/kd/ki here MUST be re-derived against that
-    real inertia (a heavier real surface will generally tolerate, and likely
-    need, a stiffer/faster gain set for adequate tracking authority, and a
-    real (non-placeholder) surface mass will also change the ACTUAL gravity
-    disturbance torque ki is compensating for) - reusing these specific
-    numbers unmodified once real inertia data lands would be an error, not a
-    convenience.
+    model/model.sdf'nin 5 kontrol yüzeyi link'i şu anda her biri
+    TEMPORARY_NUMERICAL_MASS = 0.001 kg taşır (geometri katmanının
+    belgelenmiş, neredeyse kütlesiz sayısal yer tutucusu; fiziksel bir iddia
+    DEĞİL - bkz. model.sdf'nin "MASS DISTRIBUTION STRATEGY" başlık yorumu).
+    kp/kd (ve ki) artık bu yer tutucu atalete karşı türetilmiş olsa bile
+    (bkz. derivation_note; dt=0.001 s uyumluluğu için seçildi),
+    plugins/actuators/ActuatorSystem.cc HÂLÂ AYRICA Configure anında
+    gz::sim::Joint::SetVelocityLimits ve SetEffortLimits çağırır (gerçek fizik
+    motoru seviyesinde sert kısıtlar, AYNI max_rate_rad_s/max_effort_nm
+    değerleriyle) - çok katmanlı savunma olarak: GERÇEK joint'in hızını
+    sınırlamak için yalnızca PD kazanç ayarına güvenilmez, bu projenin
+    yerleşik tarzıyla tutarlı biçimde. Gerçek yüzey başına kütle/atalet
+    verisi var olduğunda (model.sdf'de ayarlı), buradaki kp/kd/ki o gerçek
+    atalete karşı yeniden TÜRETİLMELİDİR (daha ağır gerçek bir yüzey
+    genellikle yeterli izleme yetkisi için daha sert/hızlı bir kazanç setini
+    kaldırır ve büyük olasılıkla gerektirir; ayrıca gerçek bir yüzey kütlesi,
+    ki'nin telafi ettiği GERÇEK yerçekimi bozucu torkunu da değiştirir) -
+    gerçek atalet verisi geldikten sonra bu sayıları değiştirmeden kullanmak
+    kolaylık değil hata olur.
 
 # -----------------------------------------------------------------------------
-# Command interface
+# Komut arayüzü
 # -----------------------------------------------------------------------------
 command_interface:
   wire_format: >
-    Physical-angle-radians, gz.msgs.Double per surface (one topic per
-    surface - see topics block below). This is the ONLY implemented command
-    interface in V1.
+    Yüzey başına fiziksel açı radyan, gz.msgs.Double (yüzey başına bir topic -
+    aşağıdaki topics bloğu). V1'de uygulanmış TEK komut arayüzü budur.
   topics:
     left_aileron:   "/model/falcon_v2/actuators/left_aileron/cmd_rad"
     right_aileron:  "/model/falcon_v2/actuators/right_aileron/cmd_rad"
@@ -813,97 +801,98 @@ command_interface:
   diagnostics_topic: "/model/falcon_v2/actuators/diagnostics"
   diagnostics_rate_hz: 20.0
   diagnostics_field_order_per_surface: >
-    cmd_rad (raw, pre-clamp, last received command), target_clamped_rad
-    (after the mechanical +/-45deg clamp), setpoint_rad (after the
-    rate-limiter - this is what actually drives the PID torque), actual_angle_rad
-    (read back from the real Gazebo joint), actual_rate_rad_s (read back from
-    the real Gazebo joint), target_clamp_active (1.0 if cmd_rad was outside
-    [min_angle_rad,max_angle_rad] this tick), effort_clamp_active (1.0 if the
-    PID torque saturated at +/-max_effort_nm this tick). Repeated for all 5
-    surfaces in the fixed order left_aileron, right_aileron, left_elevator,
-    right_elevator, rudder (35 fields total). UNCHANGED by the 2026-08-24
-    gravity-droop/integral-action fix - the internal integralRadS
-    accumulator (ActuatorModel.hh EffortResult::integralRadS) is
-    deliberately NOT added as a 36th field here, so the fixed 35-field
-    layout that downstream consumers rely on is not broken by a scoped
-    fix. It can be exposed in a future revision if needed.
+    cmd_rad (ham, kırpma öncesi, alınan son komut), target_clamped_rad
+    (mekanik +/-45 deg kırpmasından sonra), setpoint_rad (hız
+    limitleyiciden sonra - PID torkunu fiilen süren değer bu),
+    actual_angle_rad (gerçek Gazebo joint'inden geri okunur),
+    actual_rate_rad_s (gerçek Gazebo joint'inden geri okunur),
+    target_clamp_active (bu tick'te cmd_rad
+    [min_angle_rad,max_angle_rad] dışındaysa 1.0), effort_clamp_active (bu
+    tick'te PID torku +/-max_effort_nm'de doyduysa 1.0). Beş yüzeyin tamamı
+    için sabit sırada yinelenir: left_aileron, right_aileron, left_elevator,
+    right_elevator, rudder (toplam 35 alan). Yerçekimi sarkması/integral
+    etki düzeltmesi bu düzeni DEĞİŞTİRMEDİ - dahili integralRadS birikimi
+    (ActuatorModel.hh EffortResult::integralRadS) kasten 36. alan olarak
+    EKLENMEMİŞTİR, böylece aşağı akıştaki tüketicilerin dayandığı sabit
+    35 alanlık düzen kapsamı belirli bir düzeltmeyle bozulmaz. Gerekirse
+    ileride bir revizyonda açığa çıkarılabilir.
   optional_normalized_mapping_NOT_IMPLEMENTED: >
-    An optional normalized [-1,+1] -> +/-45deg command interface was
-    considered per the project's instruction ("theta_cmd = normalized_cmd *
-    45deg, clamped to [-1,+1], no hidden nonlinearity"). It was NOT
-    implemented as a second live gz-transport topic per surface in V1 - doing
-    so would double the subscription/topic surface (10 topics instead of 5)
-    for no V1 benefit, since no upstream mixer/ArduPilot layer exists yet to
-    use it (this work explicitly ends at the physical actuator interface, no
-    ArduPlane/MAVLink/SITL). The formula is documented here so a FUTURE
-    mixer/ArduPilot-integration layer can implement it upstream of the
-    existing physical-angle-radians topics without this actuator plugin
-    itself needing to change:
+    Normalize edilmiş [-1,+1] -> +/-45 deg komut arayüzü düşünüldü
+    ("theta_cmd = normalized_cmd * 45 deg, [-1,+1] aralığına kırpılmış, gizli
+    doğrusal olmayan etki yok"). V1'de yüzey başına ikinci bir canlı
+    gz-transport topic olarak UYGULANMADI; bu, henüz onu kullanacak bir üst
+    mikser/ArduPilot katmanı yokken abonelik/topic yüzeyini iki katına
+    çıkarırdı (5 yerine 10 topic). Formül burada belgelenmiştir ki ileride bir
+    mikser/ArduPilot entegrasyon katmanı, mevcut fiziksel açı radyan
+    topic'lerinin üstünde bunu uygulayabilsin ve aktüatör plugin'inin kendisi
+    değişmek zorunda kalmasın:
       theta_cmd_rad = clamp(normalized_cmd, -1.0, 1.0) * max_angle_rad
-    (max_angle_rad = 0.7853981634 rad = 45 deg, per-surface value above -
-    identical for all 5 surfaces in V1, so a single shared formula applies).
+    (max_angle_rad = 0.7853981634 rad = 45 deg, yukarıdaki yüzey başına
+    değer - V1'de beş yüzey için birebir aynı, dolayısıyla tek bir paylaşılan
+    formül geçerli.)
   failsafe_policy: >
-    HOLD-LAST-VALID-COMMAND (chosen explicitly over return-to-neutral).
-    Rationale: a real servo that loses its command signal physically holds
-    its last commanded position (it has no "return to center" spring/motor
-    action of its own) - hold-last-valid is the more physically realistic V1
-    default for what this plugin actually models (the servo/actuator itself,
-    not an RC receiver or autopilot failsafe policy, which is a separate,
-    higher-level concern this work does not implement). Mechanism: each
-    per-surface command topic callback (ActuatorSystem::OnCommand)
-    unconditionally overwrites a persistent commandRad[] state only when a
-    new message arrives; with no new message, the state is simply left
-    unchanged - no timeout/watchdog logic exists or is needed for this
-    policy. A non-finite (NaN/Inf) incoming command is explicitly rejected
-    (logged, previous valid command retained) rather than propagated.
+    SON GEÇERLİ KOMUTU TUT (nötre dönüş yerine açıkça bu seçildi). Gerekçe:
+    komut sinyalini yitiren gerçek bir servo fiziksel olarak son komut edilen
+    pozisyonunu tutar (kendine ait bir "merkeze dön" yayı/motor eylemi
+    yoktur) - bu plugin'in fiilen modellediği şey (servonun/aktüatörün
+    kendisi, bir RC alıcısı ya da otopilot failsafe politikası değil; o ayrı
+    ve daha üst seviye bir konudur) için son geçerli komutu tutmak daha
+    fiziksel gerçekçi V1 varsayılanıdır. Mekanizma: yüzey başına komut topic
+    geri çağrısı (ActuatorSystem::OnCommand) kalıcı commandRad[] durumunu
+    yalnızca yeni bir mesaj geldiğinde koşulsuz olarak yazar; yeni mesaj
+    yokken durum olduğu gibi bırakılır - bu politika için timeout/watchdog
+    mantığı ne vardır ne de gerekir. Sonlu olmayan (NaN/Inf) gelen bir komut
+    açıkça reddedilir (loglanır, önceki geçerli komut korunur), aktarılmaz.
   startup_behavior: >
-    All 5 surfaces default to commandRad=0.0 (neutral) and setpointRad=0.0
-    (neutral) until a real message is received on that surface's topic - no
-    startup kick, no NaN, no large transient (setpoint starts equal to
-    target, so RateLimitSetpoint's very first call produces zero motion).
+    Beş yüzeyin tamamı, kendi topic'inde gerçek bir mesaj alınana kadar
+    commandRad=0.0 (nötr) ve setpointRad=0.0 (nötr) değerlerindedir - açılışta
+    tekme yok, NaN yok, büyük geçici yok (setpoint hedefe eşit başlar, yani
+    RateLimitSetpoint'in ilk çağrısı sıfır hareket üretir).
 
 # -----------------------------------------------------------------------------
-# Aerodynamic-validity note (the controls layer does not own this data -
-# cited here only so nobody reading this actuator config mistakes the +/-45
-# deg MECHANICAL travel range for an aerodynamically-validated range)
+# Aerodinamik geçerlilik notu (bu veri aktüatör katmanının sahipliğinde
+# değildir - yalnızca bu aktüatör config'ini okuyan biri +/-45 deg MEKANİK
+# hareket aralığını aerodinamik olarak doğrulanmış bir aralık sanmasın diye
+# burada alıntılanmıştır)
 # -----------------------------------------------------------------------------
 aerodynamic_validity_note: >
-  The +/-45 deg mechanical limits above describe what the SERVO/JOINT can
-  physically travel to (USER_CONFIRMED_MECHANICAL_CAPABILITY for this work).
-  They are NOT a statement about aerodynamic-model validity. Per the project specification
-  and, the aerodynamic
-  derivatives this project uses (Cmde, Clda, Cndr, CYdr, etc. -
-  config/aero_v1_config.yaml, UNCHANGED by this
-  task) are only directly validated by XFLR5 swept data over approximately
-  +/-10 deg - beyond that, the linear extrapolation used by
-  plugins/aerodynamics/AeroModel.hh is NOT_YET_VALIDATED. A commanded
-  deflection between +/-10 deg and +/-45 deg will physically move the real
-  Gazebo joint (this plugin has no aerodynamic-validity awareness and does
-  not clamp to +/-10 deg - that would incorrectly conflate a servo/mechanical
-  concern with a separate aerodynamic-model concern, exactly the conflation warns against), but the resulting aerodynamic force/
-  moment beyond +/-10 deg should not be trusted as validated. A future
-  HIGH_DEFLECTION_CONTROL_AERO_VALIDATION stage will use XFLR5 wide-sweep
-  data to update CL_delta_e and the other high-deflection derivatives - this
-  is explicitly NOT part of this work (ACTUATOR_SERVO_MODEL_V1) or this
-  file's scope.
+  Yukarıdaki +/-45 deg mekanik limitler, SERVONUN/JOINT'İN fiziksel olarak
+  nereye kadar gidebildiğini tarif eder
+  (USER_CONFIRMED_MECHANICAL_CAPABILITY). Aerodinamik model geçerliliği
+  hakkında bir ifade DEĞİLDİR. Bu projenin kullandığı aerodinamik türevler
+  (Cmde, Clda, Cndr, CYdr vb. - config/aero_v1_config.yaml, bu dosyadan
+  etkilenmez) yalnızca yaklaşık +/-10 deg aralığında XFLR5 taranmış verisiyle
+  doğrudan doğrulanmıştır; bunun ötesinde
+  plugins/aerodynamics/AeroModel.hh'nin kullandığı doğrusal ekstrapolasyon
+  NOT_YET_VALIDATED'dır. +/-10 deg ile +/-45 deg arasında komut edilen bir
+  sapma gerçek Gazebo joint'ini fiziksel olarak hareket ettirir (bu plugin'in
+  aerodinamik geçerlilik farkındalığı yoktur ve +/-10 deg'e kırpmaz - bu,
+  servo/mekanik bir konuyu ayrı bir aerodinamik model konusuyla hatalı biçimde
+  birbirine karıştırmak olurdu, tam olarak proje kurallarının kaçınılmasını
+  istediği karıştırma), ancak +/-10 deg ötesinde ortaya çıkan aerodinamik
+  kuvvet/moment doğrulanmış sayılmamalıdır. İleride yüksek sapma aerodinamik
+  doğrulaması, CL_delta_e ve diğer yüksek sapma türevlerini güncellemek için
+  XFLR5 geniş tarama verisini kullanacaktır - bu, aktüatör katmanının ya da bu
+  dosyanın kapsamında açıkça DEĞİLDİR.
 
 # -----------------------------------------------------------------------------
-# No-load-holding-capability caveat (explicit, per the project's instruction -
-# do not let a future reader mistake actuator-dynamics validation for
-# validated load-holding capability)
+# Yük altında tutma yeteneğine dair kayıt (açıkça belirtilir ki ileride okuyan
+# biri aktüatör dinamiği doğrulamasını, doğrulanmış yük altında tutma
+# yeteneğiyle karıştırmasın)
 # -----------------------------------------------------------------------------
 no_opposing_aero_torque_caveat: >
-  plugins/aerodynamics/AerodynamicsSystem.cc applies its computed
-  force/moment to base_link ONLY - it does NOT apply any hinge-moment
-  reaction torque back onto these 5 individual control-surface joints and both list per-surface
-  hinge-moment data as DATA_REQUIRED, and no such torque exists anywhere in
-  AerodynamicsSystem.cc, unmodified by this work). This means there is
-  currently NO simulated aerodynamic load pushing back on these joints. Any
-  future test that commands a deflection and confirms the actuator "holds"
-  it within some tolerance (e.g. a +/-5deg or +/-10deg hold-under-load style
-  test) is validating ONLY this actuator's own rate-limit/effort-bound
-  dynamics against zero external load - it is NOT validating that this
-  actuator can hold a commanded deflection against a real aerodynamic hinge
-  moment, because no such moment is modeled yet. Do not cite a passing
-  "holds under load" test as evidence of real load-holding capability until
-  a hinge-moment model exists and is applied to these joints.
+  plugins/aerodynamics/AerodynamicsSystem.cc hesapladığı kuvvet/momenti
+  YALNIZCA base_link'e uygular - bu 5 kontrol yüzeyi joint'ine herhangi bir
+  menteşe momenti reaksiyon torku UYGULAMAZ (yüzey başına menteşe momenti
+  verisi DATA_REQUIRED'dır ve AerodynamicsSystem.cc'nin hiçbir yerinde böyle
+  bir tork yoktur; bu dosya onu değiştirmez). Yani şu anda bu joint'lere geri
+  bastıran simüle edilmiş HİÇBİR aerodinamik yük yoktur. İleride bir sapma
+  komut edip aktüatörün onu belli bir tolerans içinde "tuttuğunu" doğrulayan
+  herhangi bir test (örneğin +/-5 deg veya +/-10 deg yük altında tutma
+  tarzında bir test) YALNIZCA bu aktüatörün kendi hız limiti/effort sınırı
+  dinamiğini sıfır dış yüke karşı doğrular - bu aktüatörün gerçek bir
+  aerodinamik menteşe momentine karşı komut edilen bir sapmayı tutabildiğini
+  DOĞRULAMAZ, çünkü böyle bir moment henüz modellenmemiştir. Bir menteşe
+  momenti modeli var olup bu joint'lere uygulanana kadar, geçen bir "yük
+  altında tutuyor" testi gerçek yük altında tutma yeteneğinin kanıtı olarak
+  alıntılanmamalıdır.

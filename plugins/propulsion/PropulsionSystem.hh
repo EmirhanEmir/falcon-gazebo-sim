@@ -1,20 +1,8 @@
-// =============================================================================
-// FALCON V2 - Gazebo Sim Harmonic propulsion System plugin
-// =============================================================================
-// Scope: strictly the motor/ESC/propeller physics chain (throttle ->
-// electrical -> motor torque -> rotor angular dynamics -> RPM -> advance
-// ratio -> APC Ct/Cp -> thrust/torque -> reaction torque -> force/moment at
-// the real hub). No aerodynamic-coefficient physics, no control-surface
-// actuation, no ArduPilot/SITL.
-//
-// The class is intentionally thin: all math lives in PropulsionModel.hh, a
-// pure, Gazebo-independent header. This class's only job is to read Gazebo
-// state (link velocity/pose, wind topic, throttle topics), maintain the two
-// explicit omega_left/omega_right ODE states, call PropulsionModel.hh, apply
-// the resulting force/wrench to base_link at the real hub, drive the visual
-// propeller joints' angular velocity from the same state, and publish
-// diagnostics.
-// =============================================================================
+// FALCON V2 — itki sistemi Gazebo Sim Harmonic System eklentisi (arayüz).
+// Kapsam yalnızca motor/ESC/pervane fiziğidir; aerodinamik katsayı, kumanda
+// yüzeyi tahriki veya otopilot mantığı içermez. Tüm matematik, Gazebo'dan
+// bağımsız olan PropulsionModel.hh içindedir; bu sınıf yalnızca Gazebo
+// durumunu okur, omega durumlarını tutar ve kuvveti/torku göbeğe uygular.
 #ifndef FALCON_V2_PROPULSION_SYSTEM_HH_
 #define FALCON_V2_PROPULSION_SYSTEM_HH_
 
@@ -52,22 +40,18 @@ class PropulsionSystem :
   private: void OnThrottleLeft(const gz::msgs::Double &_msg);
   private: void OnThrottleRight(const gz::msgs::Double &_msg);
 
-  /// \brief Wind topic subscriber, same topic/frame convention as
-  /// AerodynamicsSystem.cc's OnWind() (gz.msgs.Vector3d, world frame, m/s) -
-  /// read-only here, used for relative-airflow V_axial. Zero until a
-  /// publisher exists.
+  /// \brief Rüzgâr konusu aboneliği (gz.msgs.Vector3d, dünya çerçevesi, m/s);
+  /// burada salt okunur, bağıl hava akışı V_axial için kullanılır.
   private: void OnWind(const gz::msgs::Vector3d &_msg);
 
-  /// \brief Load config/propulsion_v1_config.yaml
-  /// (path given by the <config_path> SDF parameter) and the parsed APC
-  /// table CSV it points to.
-  /// \return true on success.
+  /// \brief config/propulsion_v1_config.yaml dosyasını (<config_path> SDF
+  /// parametresindeki yol) ve işaret ettiği ayrıştırılmış APC CSV'sini yükler.
+  /// \return başarılıysa true.
   private: bool LoadConfig(const std::string &_path);
 
-  /// \brief Runs the full per-motor chain for one PreUpdate tick: electrical
-  /// -> ODE step -> aero loading -> force/wrench application -> joint
-  /// position drive (cosmetic) -> diagnostics accumulation. Called once per
-  /// motor.
+  /// \brief Bir PreUpdate tikinde tek bir motor için tüm zinciri işletir:
+  /// elektrik -> ODE adımı -> aerodinamik yüklenme -> kuvvet/tork uygulaması ->
+  /// görsel eklem konumu -> teşhis birikimi. Motor başına bir kez çağrılır.
   private: void StepMotor(
       gz::sim::EntityComponentManager &_ecm,
       double dt,
@@ -97,34 +81,21 @@ class PropulsionSystem :
   private: double rotationSignLeft{1.0};
   private: double rotationSignRight{-1.0};
 
-  /// \brief Explicit, plugin-owned rotor angular-velocity states (rad/s,
-  /// each motor's OWN "positive = normal spin-up" frame - see
-  /// PropulsionModel.hh header note and propulsion_v1_config.yaml's
-  /// "rotation" block). Integrated every PreUpdate tick via
-  /// IntegrateRotorStep() - NEVER set instantaneously, NEVER driven by
-  /// Gazebo's native joint-torque integration.
+  /// \brief Eklentinin kendi tuttuğu rotor açısal hız durumları (rad/s; her
+  /// motorun kendi "pozitif = normal hızlanma yönü" çerçevesinde — bkz.
+  /// propulsion_v1_config.yaml "rotation" bloğu). Her PreUpdate tikinde
+  /// IntegrateRotorStep() ile entegre edilir; asla anlık atanmaz ve asla
+  /// Gazebo'nun kendi eklem-torku entegrasyonuyla sürülmez.
   private: double omegaLeft{0.0};
   private: double omegaRight{0.0};
 
-  /// \brief Cosmetic-only visual prop-joint angular position (rad, same
-  /// own-frame/rotation-sign convention as the joint velocity it is
-  /// integrated from). NOT a physics state: never read by, or fed back
-  /// into, PropulsionModel.hh/IntegrateRotorStep(); exists solely so
-  /// left_prop/right_prop's mesh visually rotates in sync with omegaLeft/
-  /// omegaRight. Integrated once per PreUpdate tick (theta += omega*dt) and
-  /// written to the joint via Joint::ResetPosition() - a direct kinematic
-  /// state write - specifically to AVOID Joint::SetVelocity(), which per
-  /// gz/sim/Joint.hh's own documented contract has the physics engine
-  /// "compute the necessary joint torque for the commanded velocity and
-  /// apply it in the next simulation step", i.e. it is a force-based servo
-  /// that would inject an additional, undocumented torque onto base_link
-  /// through the joint - duplicating the explicit AddWorldWrench()
-  /// reaction-torque call below during any transient (dOmega/dt != 0).
-  /// ResetPosition()/ResetVelocity() are documented as direct internal
-  /// joint-state writes ("does not modify... instead the physics engine
-  /// computes...") - no constraint-solver force is applied to achieve them,
-  /// which is exactly what driving a joint kinematically rather than
-  /// dynamically requires.
+  /// \brief Yalnızca görsel amaçlı pervane eklemi açısal konumu (rad, omega ile
+  /// aynı işaret düzeninde). Fizik durumu DEĞİLDİR: PropulsionModel.hh'ye geri
+  /// beslenmez, sadece pervane meshi omega ile eşzamanlı dönsün diye vardır.
+  /// Her tikte theta += omega*dt olarak entegre edilip Joint::ResetPosition()
+  /// ile yazılır; Joint::SetVelocity() bilinçli olarak kullanılmaz, çünkü o
+  /// kuvvet tabanlı bir servodur ve eklem üzerinden base_link'e, aşağıdaki
+  /// açık AddWorldWrench() reaksiyon torkunu çiftleyen ek bir tork bindirir.
   private: double thetaLeft{0.0};
   private: double thetaRight{0.0};
 
