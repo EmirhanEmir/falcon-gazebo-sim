@@ -1,0 +1,97 @@
+<!-- falconv2-flap paketi: dört kanat yüzeyi. Değerler geometry_links.json'dan. -->
+<link name="left_flap">
+  <pose>0.030330 0.310374 0.116292 0 0 0</pose>
+  <inertial>
+    <pose>-0.015594 0.114236 -0.000523 0 0 0</pose>
+    <mass>0.001</mass>  <!-- YER TUTUCU (v1 kuralı); gerçek kütle ölçülmedi -->
+    <inertia><ixx>4.5812e-06</ixx><ixy>1.3608e-08</ixy><ixz>-2.8154e-08</ixz><iyy>2.1123e-07</iyy><iyz>-5.9365e-08</iyz><izz>4.7676e-06</izz></inertia>
+  </inertial>
+  <visual name="left_flap_visual">
+    <pose>-0.030330 -0.310374 -0.116292 0 0 0</pose>
+    <geometry><mesh><uri>meshes/left_flap.stl</uri><scale>0.001 0.001 0.001</scale></mesh></geometry>
+  </visual>
+  <collision name="left_flap_collision">
+    <pose>-0.023349 0.119750 0.000436 0 0 0</pose>
+    <geometry><box><size>0.061119 0.239501 0.018084</size></box></geometry>
+  </collision>
+</link>
+<joint name="left_flap_joint" type="revolute">
+  <parent>base_link</parent>
+  <child>left_flap</child>
+  <axis>
+    <xyz>0.000000 0.999910 0.013389</xyz>  <!-- pozitif = firar kenarı yukarı (DOĞRULANACAK) -->
+    <limit><lower>-0.4625122518</lower><upper>0.4625122518</upper></limit>
+  </axis>
+</joint>
+<link name="right_flap">
+  <pose>0.030330 -0.310374 0.116292 0 0 0</pose>
+  <inertial>
+    <pose>-0.015594 -0.114236 -0.000523 0 0 0</pose>
+    <mass>0.001</mass>  <!-- YER TUTUCU (v1 kuralı); gerçek kütle ölçülmedi -->
+    <inertia><ixx>4.5812e-06</ixx><ixy>-1.3608e-08</ixy><ixz>-2.8154e-08</ixz><iyy>2.1123e-07</iyy><iyz>5.9365e-08</iyz><izz>4.7676e-06</izz></inertia>
+  </inertial>
+  <visual name="right_flap_visual">
+    <pose>-0.030330 0.310374 -0.116292 0 0 0</pose>
+    <geometry><mesh><uri>meshes/right_flap.stl</uri><scale>0.001 0.001 0.001</scale></mesh></geometry>
+  </visual>
+  <collision name="right_flap_collision">
+    <pose>-0.023349 -0.119750 0.000436 0 0 0</pose>
+    <geometry><box><size>0.061119 0.239501 0.018084</size></box></geometry>
+  </collision>
+</link>
+<joint name="right_flap_joint" type="revolute">
+  <parent>base_link</parent>
+  <child>right_flap</child>
+  <axis>
+    <xyz>0.000000 0.999910 -0.013389</xyz>  <!-- pozitif = firar kenarı yukarı (DOĞRULANACAK) -->
+    <limit><lower>-0.4625122518</lower><upper>0.4625122518</upper></limit>
+  </axis>
+</joint>
+<link name="left_aileron">
+  <pose>0.030330 0.550250 0.119504 0 0 0</pose>
+  <inertial>
+    <pose>-0.013713 0.116599 -0.000287 0 0 0</pose>
+    <mass>0.001</mass>  <!-- YER TUTUCU (v1 kuralı); gerçek kütle ölçülmedi -->
+    <inertia><ixx>4.7793e-06</ixx><ixy>-2.9894e-08</ixy><ixz>-2.2946e-08</ixz><iyy>1.8447e-07</iyy><iyz>-6.6651e-08</iyz><izz>4.9427e-06</izz></inertia>
+  </inertial>
+  <visual name="left_aileron_visual">
+    <pose>-0.030330 -0.550250 -0.119504 0 0 0</pose>
+    <geometry><mesh><uri>meshes/left_aileron.stl</uri><scale>0.001 0.001 0.001</scale></mesh></geometry>
+  </visual>
+  <collision name="left_aileron_collision">
+    <pose>-0.021400 0.119745 0.000816 0 0 0</pose>
+    <geometry><box><size>0.056841 0.239490 0.016638</size></box></geometry>
+  </collision>
+</link>
+<joint name="left_aileron_joint" type="revolute">
+  <parent>base_link</parent>
+  <child>left_aileron</child>
+  <axis>
+    <xyz>0.000000 0.999910 0.013389</xyz>  <!-- pozitif = firar kenarı yukarı (DOĞRULANACAK) -->
+    <limit><lower>-0.7853981634</lower><upper>0.7853981634</upper></limit>
+  </axis>
+</joint>
+<link name="right_aileron">
+  <pose>0.030330 -0.550250 0.119504 0 0 0</pose>
+  <inertial>
+    <pose>-0.013713 -0.116599 -0.000287 0 0 0</pose>
+    <mass>0.001</mass>  <!-- YER TUTUCU (v1 kuralı); gerçek kütle ölçülmedi -->
+    <inertia><ixx>4.7793e-06</ixx><ixy>2.9894e-08</ixy><ixz>-2.2946e-08</ixz><iyy>1.8447e-07</iyy><iyz>6.6651e-08</iyz><izz>4.9427e-06</izz></inertia>
+  </inertial>
+  <visual name="right_aileron_visual">
+    <pose>-0.030330 0.550250 -0.119504 0 0 0</pose>
+    <geometry><mesh><uri>meshes/right_aileron.stl</uri><scale>0.001 0.001 0.001</scale></mesh></geometry>
+  </visual>
+  <collision name="right_aileron_collision">
+    <pose>-0.021400 -0.119745 0.000816 0 0 0</pose>
+    <geometry><box><size>0.056841 0.239490 0.016638</size></box></geometry>
+  </collision>
+</link>
+<joint name="right_aileron_joint" type="revolute">
+  <parent>base_link</parent>
+  <child>right_aileron</child>
+  <axis>
+    <xyz>0.000000 0.999910 -0.013389</xyz>  <!-- pozitif = firar kenarı yukarı (DOĞRULANACAK) -->
+    <limit><lower>-0.7853981634</lower><upper>0.7853981634</upper></limit>
+  </axis>
+</joint>

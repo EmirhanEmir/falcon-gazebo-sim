@@ -1,0 +1,220 @@
+{
+ "trim": [
+  {
+   "V": 13.0,
+   "flap_sym_deg": 0.0,
+   "alpha_deg": 7.864,
+   "deltaE_deg": -3.0611,
+   "CL": 1.2593,
+   "CD": 0.1198,
+   "L/D": 10.5155,
+   "T_N": 5.5956
+  },
+  {
+   "V": 15.0,
+   "flap_sym_deg": 0.0,
+   "alpha_deg": 4.226,
+   "deltaE_deg": 4.6844,
+   "CL": 0.9458,
+   "CD": 0.0812,
+   "L/D": 11.6453,
+   "T_N": 5.0527
+  },
+  {
+   "V": 18.0,
+   "flap_sym_deg": 0.0,
+   "alpha_deg": 1.0388,
+   "deltaE_deg": 10.7018,
+   "CL": 0.6568,
+   "CD": 0.0562,
+   "L/D": 11.692,
+   "T_N": 5.0325
+  },
+  {
+   "V": 22.0,
+   "flap_sym_deg": 0.0,
+   "alpha_deg": -1.3555,
+   "deltaE_deg": 15.8317,
+   "CL": 0.4397,
+   "CD": 0.0438,
+   "L/D": 10.05,
+   "T_N": 5.8547
+  },
+  {
+   "V": 13.0,
+   "flap_sym_deg": 26.5,
+   "alpha_deg": 6.2548,
+   "deltaE_deg": -8.4428,
+   "CL": 1.2593,
+   "CD": 0.129,
+   "L/D": 9.764,
+   "T_N": 6.0262
+  },
+  {
+   "V": 14.0,
+   "flap_sym_deg": 26.5,
+   "alpha_deg": 4.3415,
+   "deltaE_deg": -2.1881,
+   "CL": 1.0858,
+   "CD": 0.1055,
+   "L/D": 10.294,
+   "T_N": 5.7159
+  },
+  {
+   "V": 15.0,
+   "flap_sym_deg": 26.5,
+   "alpha_deg": 2.798,
+   "deltaE_deg": 1.3008,
+   "CL": 0.9458,
+   "CD": 0.0895,
+   "L/D": 10.5738,
+   "T_N": 5.5647
+  }
+ ],
+ "roll": [
+  {
+   "V": 14.0,
+   "durum": "tam aileron, flap 0",
+   "aileron_deg": 45.0,
+   "flaperon_sym_deg": 0.0,
+   "flaperon_anti_deg": 26.5,
+   "p_deg_s": 119.04,
+   "p_deg_s_yalniz_dis_aileron": 76.98,
+   "pHat": 0.1553
+  },
+  {
+   "V": 14.0,
+   "durum": "yarım aileron, flap 0",
+   "aileron_deg": 22.5,
+   "flaperon_sym_deg": 0.0,
+   "flaperon_anti_deg": 13.25,
+   "p_deg_s": 76.99,
+   "p_deg_s_yalniz_dis_aileron": 51.56,
+   "pHat": 0.1004
+  },
+  {
+   "V": 14.0,
+   "durum": "tam aileron, tam flap",
+   "aileron_deg": 45.0,
+   "flaperon_sym_deg": 13.25,
+   "flaperon_anti_deg": 13.25,
+   "p_deg_s": 93.69,
+   "p_deg_s_yalniz_dis_aileron": 76.98,
+   "pHat": 0.1222
+  },
+  {
+   "V": 14.0,
+   "durum": "tam aileron, yarım flap",
+   "aileron_deg": 45.0,
+   "flaperon_sym_deg": 6.625,
+   "flaperon_anti_deg": 19.875,
+   "p_deg_s": 108.24,
+   "p_deg_s_yalniz_dis_aileron": 76.98,
+   "pHat": 0.1412
+  },
+  {
+   "V": 18.0,
+   "durum": "tam aileron, flap 0",
+   "aileron_deg": 45.0,
+   "flaperon_sym_deg": 0.0,
+   "flaperon_anti_deg": 26.5,
+   "p_deg_s": 153.06,
+   "p_deg_s_yalniz_dis_aileron": 98.97,
+   "pHat": 0.1553
+  },
+  {
+   "V": 18.0,
+   "durum": "yarım aileron, flap 0",
+   "aileron_deg": 22.5,
+   "flaperon_sym_deg": 0.0,
+   "flaperon_anti_deg": 13.25,
+   "p_deg_s": 98.98,
+   "p_deg_s_yalniz_dis_aileron": 66.29,
+   "pHat": 0.1004
+  },
+  {
+   "V": 18.0,
+   "durum": "tam aileron, tam flap",
+   "aileron_deg": 45.0,
+   "flaperon_sym_deg": 13.25,
+   "flaperon_anti_deg": 13.25,
+   "p_deg_s": 120.46,
+   "p_deg_s_yalniz_dis_aileron": 98.97,
+   "pHat": 0.1222
+  },
+  {
+   "V": 18.0,
+   "durum": "tam aileron, yarım flap",
+   "aileron_deg": 45.0,
+   "flaperon_sym_deg": 6.625,
+   "flaperon_anti_deg": 19.875,
+   "p_deg_s": 139.17,
+   "p_deg_s_yalniz_dis_aileron": 98.97,
+   "pHat": 0.1412
+  }
+ ],
+ "failures": [
+  {
+   "durum": "sol flaperon 26.5° aşağı takılı",
+   "Cl_14ms": 0.0125
+  },
+  {
+   "durum": "sol dış aileron 45° aşağı takılı (deltaA 22.5° yaklaşımı)",
+   "Cl_14ms": 0.0385
+  },
+  {
+   "durum": "karşı: dış aileron tam (deltaA −45°)",
+   "Cl_14ms": -0.0575
+  },
+  {
+   "durum": "karşı: flaperon tam roll (sol −26.5°, sağ +26.5°)",
+   "Cl_14ms": -0.0314
+  }
+ ],
+ "v1_trim": [
+  {
+   "V": 13.0,
+   "alpha_deg": 10.2296,
+   "deltaE_deg": -16.3766,
+   "CL": 1.2593,
+   "CD": 0.1216,
+   "L/D": 10.3526,
+   "T_N": 5.6836
+  },
+  {
+   "V": 15.0,
+   "alpha_deg": 6.0736,
+   "deltaE_deg": -9.4814,
+   "CL": 0.9458,
+   "CD": 0.0826,
+   "L/D": 11.4539,
+   "T_N": 5.1371
+  },
+  {
+   "V": 18.0,
+   "alpha_deg": 2.5937,
+   "deltaE_deg": -3.7033,
+   "CL": 0.6568,
+   "CD": 0.0576,
+   "L/D": 11.4085,
+   "T_N": 5.1575
+  },
+  {
+   "V": 22.0,
+   "alpha_deg": -0.0204,
+   "deltaE_deg": 0.6394,
+   "CL": 0.4397,
+   "CD": 0.0454,
+   "L/D": 9.6767,
+   "T_N": 6.0806
+  }
+ ],
+ "zero_state": {
+  "CL": 0.51592,
+  "CD": 0.049154,
+  "CY": 0.0,
+  "Cl": 0.0,
+  "Cm": 0.11075,
+  "Cn": 0.0
+ }
+}

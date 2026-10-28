@@ -1,0 +1,25 @@
+# actuator_v2 — yüzey bölümü (falconv2-flap paketi). Sağ taraf YAML alias ile solun aynısı.
+# Atalet/kazanç: STL geometrisi + YER TUTUCU kütle 0.001 kg (v1 kuralı; gerçek kütle ölçülmedi).
+# Tork/hız: EMAX ES3054 standart, üretici, 4.8 V: 3.0 kgf·cm = 0.2942 N·m, 0.15 s/60° (yüksüz).
+#   6.0 V: 0.3432 N·m, 0.13 s/60°. HV sürümü bayi verisi; hangisi takılı DOĞRULANACAK.
+surfaces:
+  left_aileron: &outer_aileron
+    min_angle_rad: -0.7853981634    # ±45.0°
+    max_angle_rad: 0.7853981634
+    max_rate_rad_s: 6.9813    # ES3054 0.15 s/60° (4.8 V, yüksüz)
+    max_effort_nm: 0.2942    # ES3054 4.8 V stall torku
+    hinge_inertia_kg_m2: 3.750130e-07    # DERIVED, yer tutucu kütle
+    kp_nm_per_rad: 1.500052e-02    # ω²·I (ω 200 rad/s)
+    kd_nm_per_rad_s: 1.500052e-04    # 2ζωI (ζ 1)
+    ki_nm_per_rad_s: 3.000104e-02    # kp/Ti (Ti 0.5 s)
+  right_aileron: *outer_aileron
+  left_flap: &inner_flaperon
+    min_angle_rad: -0.4625122518    # ±26.5°
+    max_angle_rad: 0.4625122518
+    max_rate_rad_s: 6.9813    # ES3054 0.15 s/60° (4.8 V, yüksüz)
+    max_effort_nm: 0.2942    # ES3054 4.8 V stall torku
+    hinge_inertia_kg_m2: 4.578531e-07    # DERIVED, yer tutucu kütle
+    kp_nm_per_rad: 1.831412e-02    # ω²·I (ω 200 rad/s)
+    kd_nm_per_rad_s: 1.831412e-04    # 2ζωI (ζ 1)
+    ki_nm_per_rad_s: 3.662825e-02    # kp/Ti (Ti 0.5 s)
+  right_flap: *inner_flaperon
