@@ -32,7 +32,7 @@ Tahminler ve düşük güvenli değerler aşağıda ayrıca işaretlidir. Doğru
 | `meshes/{left,right}_{flap,aileron}.stl` | Yeni parçalar, **sim CAD çerçevesinde, mm** (SDF'de ölçek 0.001) |
 | `geometry_links.json` | Menteşe noktası/ekseni, hacim, COM, kg başına atalet, çarpışma kutusu, servo kazançları |
 | `expected_values.json` | Test beklenen değerleri (trim, roll; v2 ve v1 karşılaştırması) |
-| `tests/sim_aero_mirror.py` | Eklenti matematiğinin Python aynası + v2 flaperon uzantısı + trim/roll çözücü |
+| `dogrulama/sim_aero_mirror.py` | Eklenti matematiğinin Python aynası + v2 flaperon uzantısı + trim/roll çözücü |
 | `data/gazebo_coeffs.json` | Ham sonuçlar: δ_eff tabloları, AVL farkları, şerit alanları, temel türevler |
 | `data/modes.json`, `fuselage_effect.json`, `stall.json` | Mod analizi, gövde etkisi, stall tahmini |
 
@@ -105,7 +105,7 @@ ayarlanmalı.
 | `AerodynamicsSystem.cc:219–248` | v2 yükleyici; doğrulama: artan, sonlu, eşit uzunluk, 0 içerir, uçlar = ±domain_bound |
 | `AeroModel.hh:369–417` | Toplamsal katkı: `L = side(deltaFL)`, `R = side(deltaFR)`; `CL += L.dCL + R.dCL`, `cmStatic += L.dCm + R.dCm` (My bu güncel cmStatic ile), `CD += L.dCD + R.dCD`, `CY/Cl/Cn += L.* − R.*` |
 
-`tests/sim_aero_mirror.py` bu formülleri birebir uygular (v1 için kendi testinden geçer:
+`dogrulama/sim_aero_mirror.py` bu formülleri birebir uygular (v1 için kendi testinden geçer:
 sıfır durumda CL 0.437035, Cm 0.010550, CD 0.04518477841668). C++ değişikliğini bu aynayla
 karşılaştırın.
 
@@ -186,7 +186,7 @@ Saf durumlarda iki yöntem aynıdır (tam antisimetrik ±26.5°: Cl 0.0314).
 
 ## 6. Testler ve beklenen değerler
 
-`expected_values.json` dosyası `tests/sim_aero_mirror.py` ile **v2 yapılandırmasından** üretildi
+`expected_values.json` dosyası `dogrulama/sim_aero_mirror.py` ile **v2 yapılandırmasından** üretildi
 (JSON'da trim 4, roll 2, sıfır durum 6 ondalığa yuvarlı; karşılaştırma toleransı buna göre).
 C++ eklentisi değiştirildikten sonra aynı girdilerle aynı sonucu vermeli. Ayna:
 `load_config("config/aero_v2_config.yaml")` (yolu açıkça verin; DEFAULT_PATH falconv2-flap'e göredir).
